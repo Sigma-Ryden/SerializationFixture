@@ -1,5 +1,5 @@
-// If you want to undef all external user's macro
-// yoy should include given file only after library files
+// If you want to undef all external users macros
+// you should include given file only after library files
 // clean up
 #undef SERIALIZATION_HAS_FUNCTION_TPL_HELPER
 
