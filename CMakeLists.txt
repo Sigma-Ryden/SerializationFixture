@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.5)
+
+project(Serializer LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_executable(${PROJECT_NAME} test.cpp
+    Serialization/Detail/Tools.hpp
+    Serialization/Detail/TypeDetection.hpp
+    Serialization/Detail/Pointer.hpp
+    Serialization/Detail/Meta.hpp
+    Serialization/Detail/MacroScope.hpp
+    Serialization/Detail/MacroUnscope.hpp
+    Serialization/UndefMacro.hpp
+    Serialization/Scope.hpp
+    Serialization/Access.hpp
+    Serialization/ReadArchive.hpp
+    Serialization/WriteArchive.hpp
+    Serialization/Core.hpp
+)
