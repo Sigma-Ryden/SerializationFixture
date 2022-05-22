@@ -3,15 +3,14 @@
 
 #include <cstddef> // size_t
 
+#include <memory> // operator new
+
 #include "Access.hpp"
 #include "Scope.hpp"
 
 #include "Detail/Tools.hpp"
 
 #include "Detail/Meta.hpp"
-#include "Detail/TypeDetection.hpp"
-
-#include "Detail/MacroScope.hpp"
 
 #define SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, ...)                                              \
     template <class InStream, class StreamWrapper, typename T,                                          \
@@ -87,6 +86,9 @@ auto ReadArchive<InStream, StreamWrapper>::operator>> (T& data) -> ReadArchive&
     return (*this) & data;
 }
 
+namespace make
+{
+
 // Class Template Argument Deduction by make function
 template <class InStream>
 ReadArchive<InStream> read_archive(InStream& archive)
@@ -94,10 +96,10 @@ ReadArchive<InStream> read_archive(InStream& archive)
     return { archive };
 }
 
-namespace support
-{
+} // namespace make
 
-namespace common
+// inline namespace common also used in namespace library
+inline namespace common
 {
 
 SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_serialize_class<T>())
@@ -135,50 +137,35 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(array, meta::is_array<T>())
     return archive;
 }
 
+SERIALIZATION_READ_ARCHIVE_GENERIC(scope, meta::is_scope<T>())
+{
+    auto first = scope.data();
+    auto last  = scope.data() + scope.size();
+
+    while(first != last)
+    {
+        archive & (*first);
+        ++first;
+    }
+
+    return archive;
+}
+
 // will be change
 SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_pointer<T>())
 {
     using value_type = meta::deref<T>;
 
-    if (pointer == nullptr)
-        throw "load pointer was not allocated.";
+    // this will not work correct if object was serialized on stack
+    pointer = new value_type;
 
-    value_type item;
-
-    archive & item;
-
-    new (pointer) value_type(std::move(item));
+    archive & (*pointer);
 
     return archive;
 }
 
-} // namespace common
-
-namespace library
-{
-
-SERIALIZATION_READ_ARCHIVE_GENERIC(string, meta::is_std_basic_string<T>())
-{
-    using size_type = typename T::size_type;
-
-    size_type string_size = 0;
-
-    archive & string_size;
-
-    string.resize(string_size);
-
-    for(auto& character : string)
-        archive & character;
-
-    return archive;
-}
-
-} // library
-
-} // namespace support
+} // inline namespace common
 
 } // namespace serialization
-
-#include "Detail/MacroUnscope.hpp"
 
 #endif // SERIALIZATION_READ_ARCHIVE_HPP

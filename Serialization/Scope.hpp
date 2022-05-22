@@ -285,6 +285,9 @@ auto Scope<T, 1>::operator[] (size_type i) const noexcept -> const_reference
     return data_[i];
 }
 
+namespace make
+{
+
 template <typename D, typename... Dn,
     meta::require<meta::and_<std::is_arithmetic<D>, std::is_arithmetic<Dn>...>::value> = 0>
 auto dim(D d, Dn... dn) -> Dimention<sizeof...(Dn) + 1>
@@ -311,6 +314,8 @@ Scope<CharType, 1> scope(CharType* data)
 {
     return { data, detail::size(data) };
 }
+
+} // namespace make
 
 namespace meta
 {

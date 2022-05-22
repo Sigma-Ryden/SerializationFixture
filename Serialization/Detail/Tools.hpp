@@ -1,5 +1,5 @@
-#ifndef SERIALIZATION_TOOLS_HPP
-#define SERIALIZATION_TOOLS_HPP
+#ifndef SERIALIZATION_DETAIL_TOOLS_HPP
+#define SERIALIZATION_DETAIL_TOOLS_HPP
 
 #include <cstddef> // size_t
 
@@ -65,4 +65,4 @@ std::size_t size(const CharType* str) noexcept
 
 } // namespace serialization
 
-#endif // SERIALIZATION_TOOLS_HPP
+#endif // SERIALIZATION_DETAIL_TOOLS_HPP

@@ -4,7 +4,9 @@
 #include "Access.hpp"
 #include "Scope.hpp"
 
-#include "ReadArchive.hpp"
+#include "Registry.hpp"
+
 #include "WriteArchive.hpp"
+#include "ReadArchive.hpp"
 
 #endif // SERIALIZATION_CORE_HPP

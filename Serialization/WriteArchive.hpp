@@ -9,9 +9,6 @@
 #include "Detail/Tools.hpp"
 
 #include "Detail/Meta.hpp"
-#include "Detail/TypeDetection.hpp"
-
-#include "Detail/MacroScope.hpp"
 
 #define SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, ...)                                             \
     template <class OutStream, class StreamWrapper, typename T,                                         \
@@ -57,9 +54,6 @@ public:
 
     template <typename T>
     auto operator<< (T& data) -> WriteArchive&;
-
-    template <typename T, typename... Tn>
-    auto operator() (T& data, Tn&... data_n) -> WriteArchive&;
 };
 
 template <class OutStream, class StreamWrapper>
@@ -90,14 +84,8 @@ auto WriteArchive<OutStream, StreamWrapper>::operator<< (T& data) -> WriteArchiv
     return (*this) & data;
 }
 
-template <class OutStream, class StreamWrapper>
-template <typename T, typename... Tn>
-auto WriteArchive<OutStream, StreamWrapper>::operator() (T& data, Tn&... data_n) -> WriteArchive&
+namespace make
 {
-    (*this) & data;
-
-    return (*this).operator() (data_n...);
-}
 
 // Class Template Argument Deduction by make function
 template <class OutStream>
@@ -106,10 +94,10 @@ WriteArchive<OutStream> write_archive(OutStream& archive)
     return { archive };
 }
 
-namespace support
-{
+} // namespace make
 
-namespace common
+// inline namespace common also used in namespace library
+inline namespace common
 {
 
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_serialize_class<T>())
@@ -164,32 +152,8 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_pointer<T>())
     return archive & (*pointer);
 }
 
-} // namespace common
-
-namespace library
-{
-
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(string, meta::is_std_basic_string<T>())
-{
-    using char_type = typename T::value_type;
-
-    const auto string_size = string.size();
-
-    archive & string_size;
-
-    // explicit auto declaration of character without &
-    for (auto character : string)
-        archive & character;
-
-    return archive;
-}
-
-} // library
-
-} // namespace support
+} // inline namespace common
 
 } // namespace serialization
-
-#include "Detail/MacroUnscope.hpp"
 
 #endif // SERIALIZATION_WRITE_ARCHIVE_HPP

@@ -1,5 +1,5 @@
-#ifndef SERIALIZATION_META_HPP
-#define SERIALIZATION_META_HPP
+#ifndef SERIALIZATION_DETAIL_META_HPP
+#define SERIALIZATION_DETAIL_META_HPP
 
 #include <type_traits>
 // is_enum, is_arithmetic, is_array, is_pointer,
@@ -118,4 +118,4 @@ template <typename T> constexpr bool is_pointer() noexcept
 
 #include "MacroUnscope.hpp"
 
-#endif // SERIALIZATION_META_HPP
+#endif // SERIALIZATION_DETAIL_META_HPP

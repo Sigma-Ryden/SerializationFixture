@@ -1,5 +1,5 @@
-#ifndef SERIALIZATION_POINTER_HPP
-#define SERIALIZATION_POINTER_HPP
+#ifndef SERIALIZATION_DETAIL_POINTER_HPP
+#define SERIALIZATION_DETAIL_POINTER_HPP
 
 #include <cstddef> // size_t
 
@@ -33,4 +33,4 @@ using pointer = typename detail::pointer_impl<T, N>::type;
 
 } // namespace serialization
 
-#endif // SERIALIZATION_POINTER_HPP
+#endif // SERIALIZATION_DETAIL_POINTER_HPP

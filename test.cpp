@@ -2,14 +2,19 @@
 #include <fstream> // ifstream, ofstream
 
 #include <array> // array
+#include <vector> // vector
 #include <string> // string
 
 #include "Serialization/Core.hpp"
 
+#include "Serialization/Support/string.hpp"
+#include "Serialization/Support/vector.hpp"
+#include "Serialization/Support/array.hpp"
+
 namespace sr = serialization;
 
-using namespace sr::support::common;
-using namespace sr::support::library;
+using namespace sr::common;
+using namespace sr::library;
 
 class B
 {
@@ -127,23 +132,6 @@ auto operator& (FormatWriteArchive<OutStream>& archive, B& t) -> decltype(archiv
     return archive;
 }
 
-template <typename> struct is_std_array : std::false_type {};
-template <typename T, std::size_t N>
-struct is_std_array<std::array<T, N>> : std::true_type {};
-
-// user definition of std::array serialization
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(array, is_std_array<T>::value)
-{
-    using value_type = typename T::value_type;
-
-    auto array_size = array.size();
-
-    archive & array_size;
-    for (auto item : array) archive & item;
-
-    return archive;
-}
-
 void test_std_array_serialization()
 {
     FormatWriteArchive<std::ostream> ar(std::cout);
@@ -182,10 +170,13 @@ void test_more()
     for (int i = 0; i < width; ++i)
         dynamic_tensor[i] = new int [width] { i, i + 1, i, i - 1 };
 
-    auto scope_boo = sr::scope(boo);
-    auto scope_tensor = sr::scope(dynamic_tensor, sr::dim(height, width));
-    auto scope_array = sr::scope(dynamic_array, width);
+    auto scope_boo = sr::make::scope(boo);
+    auto scope_tensor = sr::make::scope(dynamic_tensor, sr::make::dim(height, width));
+    auto scope_array = sr::make::scope(dynamic_array, width);
 
+    std::ofstream file("D:/x.bin");
+    auto ar2 = sr::make::write_archive(file);
+    ar2 & hi;
     ar & hi;
     ar & number;
 
@@ -209,7 +200,7 @@ void test_object_serialization()
 
         if (not file.is_open()) return;
 
-        auto ar = sr::write_archive(file);
+        auto ar = sr::make::write_archive(file);
 
         A obj(1, 2, 3.1415926f);
 
@@ -230,7 +221,7 @@ void test_object_serialization()
 
         if (not file.is_open()) return;
 
-        auto ar = sr::read_archive(file);
+        auto ar = sr::make::read_archive(file);
 
         A obj;
 
@@ -249,9 +240,189 @@ void test_object_serialization()
     }
 }
 
+class Human
+{
+    friend class sr::Access;
+
+public:
+//private:
+    std::string name_;
+    int age_;
+
+public:
+    Human(const std::string& name, int age)
+        : name_(name), age_(age)
+    {
+    }
+
+private:
+    template <class Archive>
+    Archive& serialize(Archive& ar)
+    {
+        ar & name_;
+        ar & age_;
+
+        return ar;
+    }
+};
+
+class Boy : public Human
+{
+    friend class sr::Access;
+
+public:
+//private:
+    int force_;
+
+public:
+    Boy() : Human("untitled", 0), force_(0)
+    {
+    }
+
+    Boy(const std::string& name, int age, int force)
+        : Human(name, age), force_(force)
+    {
+    }
+
+private:
+    template <class Archive>
+    Archive& serialize(Archive& ar)
+    {
+        ar & sr::base<Human>(*this);
+
+        ar & force_;
+
+        return ar;
+    }
+};
+
+class Animal
+{
+    friend class sr::Access;
+
+public:
+    using size_type = std::size_t;
+
+protected:
+    std::string m_name;
+    std::string m_speak;
+
+public:
+    Animal(std::string name = "...", std::string speak = "???") : m_name(name), m_speak(speak)
+    {
+    }
+
+public:
+    const std::string& getName() const { return m_name; }
+    const std::string& speak() const { return m_speak; }
+
+private:
+    template <class Archive>
+    Archive& serialize(Archive& ar)
+    {
+        ar & m_name;
+        ar & m_speak;
+
+        return ar;
+    }
+};
+
+class Cat : public Animal
+{
+    friend class sr::Access;
+
+public:
+    Cat(std::string name)
+        : Animal(name, "Meow")
+    {
+    }
+
+    const char* speak() { return "Meow"; }
+
+private:
+    template <class Archive>
+    Archive& serialize(Archive& ar)
+    {
+        ar & sr::base<Animal>(*this);
+
+        return ar;
+    }
+};
+
+class Dog : public Animal
+{
+    friend class sr::Access;
+
+public:
+    Dog(std::string name)
+        : Animal(name, "Woof")
+    {
+    }
+
+    const char* speak() { return "Woof"; }
+
+private:
+    template <class Archive>
+    Archive& serialize(Archive& ar)
+    {
+        ar & sr::base<Animal>(*this);
+
+        return ar;
+    }
+};
+
+void test_derived()
+{
+    using sr::detail::size;
+
+    {
+        std::vector<Animal*> zoo;
+        zoo.reserve(3);
+
+        zoo.push_back(new Cat("Matros"));
+        zoo.push_back(new Dog("Barsik"));
+        zoo.push_back(new Cat("Ivan"));
+
+        for (const auto& animal : zoo)
+            std::cout << animal->getName() << " says " << animal->speak() << '\n';
+
+        std::ofstream file("D:\\experimental.bin");
+
+        if (not file.is_open()) return;
+
+        auto ar = sr::make::write_archive(file);
+
+        ar & zoo;
+
+        file.close();
+
+        std::cout << "Serialization done.\n";
+    }
+
+    {
+        std::vector<Animal*> zoo;
+
+        std::ifstream file("D:\\experimental.bin");
+
+        if (not file.is_open()) return;
+
+        auto ar = sr::make::read_archive(file);
+
+        ar & zoo;
+
+        file.close();
+
+        std::cout << "Deserialization done.\n";
+
+        for (const auto& animal : zoo)
+            std::cout << animal->getName() << " says " << animal->speak() << '\n';
+    }
+}
+
 int main()
 {
-    test_object_serialization();
+    //test_object_serialization();
+    test_derived();
 
     return 0;
 }
