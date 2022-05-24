@@ -13,10 +13,10 @@
 #include "Detail/Meta.hpp"
 
 #define SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, ...)                                              \
-    template <class InStream, class StreamWrapper, typename T,                                          \
+    template <class Registry, class InStream, class StreamWrapper, typename T,                          \
               serialization::meta::require<(bool)(__VA_ARGS__)> = 0>                                    \
     auto operator& (                                                                                    \
-        serialization::ReadArchive<InStream, StreamWrapper>& archive,                                   \
+        serialization::ReadArchive<Registry, InStream, StreamWrapper>& archive,                         \
         T& parameter) -> decltype(archive)
 
 namespace serialization
@@ -40,9 +40,12 @@ public:
     }
 };
 
-template <class InStream, class StreamWrapper = InStreamWrapper<InStream>>
+template <class Registry, class InStream, class StreamWrapper = InStreamWrapper<InStream>>
 class ReadArchive
 {
+public:
+    using registry = Registry;
+
 private:
     StreamWrapper archive_;
 
@@ -58,57 +61,57 @@ public:
     auto operator>> (T& data) -> ReadArchive&;
 };
 
-template <class InStream, class StreamWrapper>
-ReadArchive<InStream, StreamWrapper>::ReadArchive(InStream& stream)
+template <class Registry, class InStream, class StreamWrapper>
+ReadArchive<Registry, InStream, StreamWrapper>::ReadArchive(InStream& stream)
     : archive_(stream)
 {
 }
 
-template <class InStream, class StreamWrapper>
-auto ReadArchive<InStream, StreamWrapper>::stream() -> StreamWrapper&
+template <class Registry, class InStream, class StreamWrapper>
+auto ReadArchive<Registry, InStream, StreamWrapper>::stream() -> StreamWrapper&
 {
     return archive_;
 }
 
-template <class InStream, class StreamWrapper>
+template <class Registry, class InStream, class StreamWrapper>
 template <typename T, meta::require<meta::is_arithmetic<T>()>>
-auto ReadArchive<InStream, StreamWrapper>::operator& (T& number) -> ReadArchive&
+auto ReadArchive<Registry, InStream, StreamWrapper>::operator& (T& number) -> ReadArchive&
 {
     archive_.read(number, sizeof(number));
 
     return *this;
 }
 
-template <class InStream, class StreamWrapper>
+template <class Registry, class InStream, class StreamWrapper>
 template <typename T>
-auto ReadArchive<InStream, StreamWrapper>::operator>> (T& data) -> ReadArchive&
+auto ReadArchive<Registry, InStream, StreamWrapper>::operator>> (T& data) -> ReadArchive&
 {
     return (*this) & data;
 }
-
+/*
 namespace make
 {
 
 // Class Template Argument Deduction by make function
-template <class InStream>
+template <class Registry, class InStream>
 ReadArchive<InStream> read_archive(InStream& archive)
 {
     return { archive };
 }
 
 } // namespace make
-
+*/
 // inline namespace common also used in namespace library
 inline namespace common
 {
-
+/*
 SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_serialize_class<T>())
 {
     Access::serialize(archive, object);
 
     return archive;
 }
-
+*/
 SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
 {
     Access::load(archive, object);
@@ -151,15 +154,28 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(scope, meta::is_scope<T>())
     return archive;
 }
 
-// will be change
-SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_pointer<T>())
+SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
 {
     using value_type = meta::deref<T>;
 
-    // this will not work correct if object was serialized on stack
+    delete pointer;
     pointer = new value_type;
 
     archive & (*pointer);
+
+    return archive;
+}
+
+SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
+    // or meta::is_abstract_pointer<T>())
+{
+    using value_type = meta::deref<T>;
+    using index_type = decltype(value_type::static_index());
+
+    index_type id;
+    archive & id;
+
+    Registry::load(archive, pointer, id);
 
     return archive;
 }

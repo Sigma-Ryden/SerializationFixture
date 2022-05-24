@@ -22,11 +22,31 @@ using require = when<condition, int>;
 template <typename... Args>
 using void_t = void;
 
-template <typename It>
-using deref = typename std::remove_reference<decltype(*std::declval<It>())>::type;
+template <typename T>
+using remove_ptr = typename std::remove_pointer<T>::type;
 
 template <typename T>
 using remove_cv = typename std::remove_cv<T>::type;
+
+template <typename T>
+using remove_ref = typename std::remove_reference<T>::type;
+
+namespace detail
+{
+
+template <typename T, typename = void_t<>>
+struct deref_impl { using type = T; };
+
+template <typename T>
+struct deref_impl<T, void_t<decltype(*std::declval<T>())>>
+{
+    using type = remove_ref<decltype(*std::declval<T>())>;
+};
+
+} // namespace detail
+
+template <typename It>
+using deref = typename detail::deref_impl<It>::type;
 
 template <bool condition, typename if_true, typename if_false>
 using if_ = typename std::conditional<condition, if_true, if_false>::type;
@@ -82,6 +102,41 @@ struct is_same_all: and_<std::is_same<T, Tn>...> {};
 
 } // namespace detail
 
+template <std::size_t...>
+struct index_sequence {};
+
+namespace detail
+{
+
+template <std::size_t I, std::size_t... In>
+struct index_sequence_helper : public index_sequence_helper<I - 1, I - 1, In...> {};
+
+template <std::size_t... In>
+struct index_sequence_helper<0, In...>
+{
+    using type = index_sequence<In...>;
+};
+
+} // namespace detail
+
+template <std::size_t N>
+using make_index_sequence = typename detail::index_sequence_helper<N>::type;
+
+template <class Base, class Derived> constexpr bool is_base_of() noexcept
+{
+    return std::is_base_of<Base, Derived>::value;
+}
+
+template <typename T> constexpr bool is_abstract() noexcept
+{
+    return std::is_abstract<T>::value;
+}
+
+template <typename T> constexpr bool is_polymorphic() noexcept
+{
+    return std::is_polymorphic<T>::value;
+}
+
 template <typename T, typename... Tn> constexpr bool is_same_all() noexcept
 {
     return detail::is_same_all<T, Tn...>::value;
@@ -110,6 +165,23 @@ template <typename T> constexpr bool is_array() noexcept
 template <typename T> constexpr bool is_pointer() noexcept
 {
     return std::is_pointer<T>::value;
+}
+
+template <typename T> constexpr bool is_abstract_pointer() noexcept
+{
+    return is_pointer<T>() and std::is_abstract<meta::deref<T>>::value;
+}
+
+template <typename T> constexpr bool is_polymorphic_pointer() noexcept
+{
+    return is_pointer<T>() and std::is_polymorphic<meta::deref<T>>::value;
+}
+
+template <typename T> constexpr bool is_pod_pointer() noexcept
+{
+    return is_pointer<T>()
+           and not is_abstract_pointer<T>()
+           and not is_polymorphic_pointer<T>();
 }
 
 } // namespace meta

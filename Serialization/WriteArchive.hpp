@@ -11,10 +11,10 @@
 #include "Detail/Meta.hpp"
 
 #define SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, ...)                                             \
-    template <class OutStream, class StreamWrapper, typename T,                                         \
+    template <class Registry, class OutStream, class StreamWrapper, typename T,                         \
               serialization::meta::require<(bool)(__VA_ARGS__)> = 0>                                    \
     auto operator& (                                                                                    \
-        serialization::WriteArchive<OutStream, StreamWrapper>& archive,                                 \
+        serialization::WriteArchive<Registry, OutStream, StreamWrapper>& archive,                       \
         T& parameter) -> decltype(archive)
 
 namespace serialization
@@ -38,9 +38,12 @@ public:
     }
 };
 
-template <class OutStream, class StreamWrapper = OutStreamWrapper<OutStream>>
+template <class Registry, class OutStream, class StreamWrapper = OutStreamWrapper<OutStream>>
 class WriteArchive
 {
+public:
+    using registry = Registry;
+
 private:
     StreamWrapper archive_;
 
@@ -56,34 +59,34 @@ public:
     auto operator<< (T& data) -> WriteArchive&;
 };
 
-template <class OutStream, class StreamWrapper>
-WriteArchive<OutStream, StreamWrapper>::WriteArchive(OutStream& stream)
+template <class Registry, class OutStream, class StreamWrapper>
+WriteArchive<Registry, OutStream, StreamWrapper>::WriteArchive(OutStream& stream)
     : archive_(stream)
 {
 }
 
-template <class OutStream, class StreamWrapper>
-auto WriteArchive<OutStream, StreamWrapper>::stream() -> StreamWrapper&
+template <class Registry, class OutStream, class StreamWrapper>
+auto WriteArchive<Registry, OutStream, StreamWrapper>::stream() -> StreamWrapper&
 {
     return archive_;
 }
 
-template <class OutStream, class StreamWrapper>
+template <class Registry, class OutStream, class StreamWrapper>
 template <typename T, meta::require<meta::is_arithmetic<T>()>>
-auto WriteArchive<OutStream, StreamWrapper>::operator& (T& number) -> WriteArchive&
+auto WriteArchive<Registry, OutStream, StreamWrapper>::operator& (T& number) -> WriteArchive&
 {
     archive_.write(number, sizeof(number));
 
     return *this;
 }
 
-template <class OutStream, class StreamWrapper>
+template <class Registry, class OutStream, class StreamWrapper>
 template <typename T>
-auto WriteArchive<OutStream, StreamWrapper>::operator<< (T& data) -> WriteArchive&
+auto WriteArchive<Registry, OutStream, StreamWrapper>::operator<< (T& data) -> WriteArchive&
 {
     return (*this) & data;
 }
-
+/*
 namespace make
 {
 
@@ -95,18 +98,18 @@ WriteArchive<OutStream> write_archive(OutStream& archive)
 }
 
 } // namespace make
-
+*/
 // inline namespace common also used in namespace library
 inline namespace common
 {
-
+/*
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_serialize_class<T>())
 {
     Access::serialize(archive, object);
 
     return archive;
 }
-
+*/
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
 {
     Access::save(archive, object);
@@ -143,13 +146,28 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(scope, meta::is_scope<T>())
     return archive;
 }
 
-// will be change
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_pointer<T>())
+SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
 {
     if (pointer == nullptr)
         throw "save pointer was not allocated.";
 
-    return archive & (*pointer);
+    archive & (*pointer);
+
+    return archive;
+}
+
+SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
+    // or meta::is_abstract_pointer<T>())
+{
+    if (pointer == nullptr)
+        throw "save pointer was not allocated.";
+
+    auto index = Registry::index(pointer);
+    archive & index;
+
+    Registry::save(archive, pointer, index);
+
+    return archive;
 }
 
 } // inline namespace common

@@ -1,21 +1,176 @@
 #include <iostream> // cin, cout
 #include <fstream> // ifstream, ofstream
 
-#include <array> // array
-#include <vector> // vector
-#include <string> // string
-
 #include "Serialization/Core.hpp"
-
-#include "Serialization/Support/string.hpp"
-#include "Serialization/Support/vector.hpp"
-#include "Serialization/Support/array.hpp"
 
 namespace sr = serialization;
 
 using namespace sr::common;
-using namespace sr::library;
 
+struct Base
+{
+    SERIALIZATION_ARCHIVE_ACCESS()
+    SERIALIZATION_IMPLEMENT_CLASS_INFO(0)
+
+protected:
+    int x;
+
+public:
+    virtual ~Base() = default;
+
+    Base(int x = 0) : x(x) {}
+
+    virtual void show()
+    {
+        std::cout << x << '\n';
+    }
+
+private:
+    SERIALIZATION_SAVE(ar)
+    {
+        std::cout << "Save Base class\n";
+        return ar & x;
+    }
+
+    SERIALIZATION_LOAD(ar)
+    {
+        std::cout << "Load Base class\n";
+        return ar & x;
+    }
+};
+
+struct Derived : Base
+{
+    SERIALIZATION_ARCHIVE_ACCESS()
+    SERIALIZATION_IMPLEMENT_CLASS_INFO(1)
+
+private:
+    float y;
+
+public:
+    Derived(int x = 0, float y = 0.) : Base(x), y(y) {}
+
+    virtual void show()
+    {
+        std::cout << x << ' ' << y << '\n';
+    }
+
+private:
+    SERIALIZATION_UNIFIED(ar)
+    {
+        ar & sr::base<Base>(*this);
+        ar & y;
+
+        return ar;
+    }
+};
+
+#define println(...) \
+    std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
+
+int main()
+{
+    using Registry = sr::Registry<Base, Derived>;
+
+    using WriteArchive = sr::WriteArchive<Registry, std::ofstream>;
+    using ReadArchive = sr::ReadArchive<Registry, std::ifstream>;
+    //
+    {
+        std::ofstream file("D:/test.bin", std::ios::binary);
+
+        WriteArchive ar(file);
+
+        Base* b = new Base(777);
+        Base* d = new Derived(1010101, 3.1415926);
+
+        ar & b;
+        ar & d;
+
+        println(b->index());
+        println(d->index());
+
+        b->show();
+        d->show();
+
+        delete b;
+        delete d;
+    }
+    //
+    //
+    {
+        std::ifstream file("D:/test.bin", std::ios::binary);
+
+        ReadArchive ar(file);
+
+        Base* b = nullptr;
+        Base* d = nullptr;
+
+        ar & b;
+        ar & d;
+
+        println(b->index());
+        println(d->index());
+
+        b->show();
+        d->show();
+
+        delete b;
+        delete d;
+    }
+    //
+    return 0;
+}
+/*
+#include <array> // array
+#include <vector> // vector
+#include <string> // string
+*/
+// support library
+/*
+#include "Serialization/Support/string.hpp"
+#include "Serialization/Support/vector.hpp"
+*/
+/*
+using namespace sr::library;
+*/
+/*
+template <typename InStream>
+class FormatInStreamWrapper
+{
+private:
+    InStream& stream_;
+
+public:
+    FormatInStreamWrapper(InStream& stream) : stream_(stream) {}
+
+    template <typename T>
+    FormatInStreamWrapper& read(T& data, std::size_t)
+    {
+        stream_ >> data;
+
+        return *this;
+    }
+};
+
+template <typename OutStream>
+class FormatOutStreamWrapper
+{
+private:
+    OutStream& stream_;
+
+public:
+    FormatOutStreamWrapper(OutStream& stream) : stream_(stream) {}
+
+    template <typename T>
+    FormatOutStreamWrapper& write(const T& data, std::size_t)
+    {
+        stream_ << data << ' ';
+
+        return *this;
+    }
+};
+*/
+/*
 class B
 {
     // is same friend class serialization::Access;
@@ -83,43 +238,8 @@ public:
 
 enum Axis { X, Y, Z };
 enum class Color { Red, Green, Blue, Alpha };
-
-template <typename InStream>
-class FormatInStreamWrapper
-{
-private:
-    InStream& stream_;
-
-public:
-    FormatInStreamWrapper(InStream& stream) : stream_(stream) {}
-
-    template <typename T>
-    FormatInStreamWrapper& read(T& data, std::size_t /*n*/)
-    {
-        stream_ >> data;
-
-        return *this;
-    }
-};
-
-template <typename OutStream>
-class FormatOutStreamWrapper
-{
-private:
-    OutStream& stream_;
-
-public:
-    FormatOutStreamWrapper(OutStream& stream) : stream_(stream) {}
-
-    template <typename T>
-    FormatOutStreamWrapper& write(const T& data, std::size_t /*n*/)
-    {
-        stream_ << data << ' ';
-
-        return *this;
-    }
-};
-
+*/
+/*
 template <typename OutStream>
 using FormatWriteArchive = sr::WriteArchive<OutStream, FormatOutStreamWrapper<OutStream>>;
 
@@ -418,11 +538,4 @@ void test_derived()
             std::cout << animal->getName() << " says " << animal->speak() << '\n';
     }
 }
-
-int main()
-{
-    //test_object_serialization();
-    test_derived();
-
-    return 0;
-}
+*/
