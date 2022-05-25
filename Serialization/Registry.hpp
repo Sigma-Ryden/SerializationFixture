@@ -3,14 +3,24 @@
 
 #include "Detail/Meta.hpp"
 
-#define SERIALIZATION_IMPLEMENT_CLASS_INFO(id)                                                                  \
-    static constexpr std::size_t static_index() noexcept { return id; }                                         \
-    virtual std::size_t index() noexcept { return static_index(); }
-/*
-#define SERIALIZATION_CLASS_REGISTRATION_CXX17(fullname)                                                        \
-    static constexpr std::size_t static_index() noexcept { return STATIC_HASH(#fullname); }                     \
-    virtual std::size_t index() noexcept { return static_index(); }
-*/
+#define SERIALIZATION_IMPLEMENT_CLASS_INFO(...)                                                         \
+    static constexpr std::size_t static_index() noexcept {                                              \
+        return ::serialization::static_hash(#__VA_ARGS__);                                              \
+    }                                                                                                   \
+    virtual std::size_t index() const noexcept {                                                        \
+        return static_index();                                                                          \
+    }
+
+#define SERIALIZATION_IMPLEMENT_CLASS_TPL_INFO(...)                                                     \
+    template<>                                                                                          \
+    constexpr std::size_t __VA_ARGS__::static_index() noexcept {                                        \
+        return ::serialization::static_hash(#__VA_ARGS__);                                              \
+    }                                                                                                   \
+    template<>                                                                                          \
+    std::size_t __VA_ARGS__::index() const noexcept {                                                   \
+        return static_index();                                                                          \
+    }
+
 namespace serialization
 {
 

@@ -2,64 +2,70 @@
 #include <fstream> // ifstream, ofstream
 
 #include "Serialization/Core.hpp"
+#include "Serialization/Support/string.hpp"
 
 namespace sr = serialization;
 
-using namespace sr::common;
+using namespace sr::common; // support of common types
+using namespace sr::library; // support of std library
 
+template <class SomeType>
 struct Base
 {
     SERIALIZATION_ARCHIVE_ACCESS()
-    SERIALIZATION_IMPLEMENT_CLASS_INFO(0)
+    SERIALIZATION_IMPLEMENT_CLASS_INFO(Base<SomeType>)
 
 protected:
-    int x;
+    SomeType data;
 
 public:
     virtual ~Base() = default;
 
-    Base(int x = 0) : x(x) {}
+    Base(const SomeType& data = "") : data(data) {}
 
     virtual void show()
     {
-        std::cout << x << '\n';
+        std::cout << data << '\n';
     }
 
 private:
     SERIALIZATION_SAVE(ar)
     {
         std::cout << "Save Base class\n";
-        return ar & x;
+        return ar & data;
     }
 
     SERIALIZATION_LOAD(ar)
     {
         std::cout << "Load Base class\n";
-        return ar & x;
+        return ar & data;
     }
 };
+// partial class info
+SERIALIZATION_IMPLEMENT_CLASS_TPL_INFO(Base<double>)
+SERIALIZATION_IMPLEMENT_CLASS_TPL_INFO(Base<std::string>)
 
-struct Derived : Base
+struct Derived : Base<std::string>
 {
     SERIALIZATION_ARCHIVE_ACCESS()
-    SERIALIZATION_IMPLEMENT_CLASS_INFO(1)
+    SERIALIZATION_IMPLEMENT_CLASS_INFO(Derived)
 
 private:
-    float y;
+    float value;
 
 public:
-    Derived(int x = 0, float y = 0.) : Base(x), y(y) {}
+    Derived(std::string data = "", float c = 0.) : Base(data), value(c) {}
 
     virtual void show()
     {
-        std::cout << x << ' ' << y << '\n';
+        std::cout << data << ' ' << value << '\n';
     }
 
 private:
     SERIALIZATION_UNIFIED(ar)
     {
         ar & sr::base<Base>(*this);
-        ar & y;
+        ar & value;
 
         return ar;
     }
@@ -68,20 +74,30 @@ private:
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
 
-int main()
+void test_polymorphic()
 {
-    using Registry = sr::Registry<Base, Derived>;
+    using Registry = sr::Registry<Base<std::string>, Derived>;
 
     using WriteArchive = sr::WriteArchive<Registry, std::ofstream>;
-    using ReadArchive = sr::ReadArchive<Registry, std::ifstream>;
+    using ReadArchive  = sr::ReadArchive<Registry, std::ifstream>;
+
+    using Parent = Base<std::string>;
+    using Child  = Derived;
+
+    {
+        println(Base<char>::static_index()); // <-- default
+        println(Base<std::string>::static_index()); // <-- specialization
+    }
     //
     {
         std::ofstream file("D:/test.bin", std::ios::binary);
 
+        if (not file.is_open()) return;
+
         WriteArchive ar(file);
 
-        Base* b = new Base(777);
-        Base* d = new Derived(1010101, 3.1415926);
+        Parent* b = new Parent("Hello!");
+        Parent* d = new Child("Bye!", 3.1415926);
 
         ar & b;
         ar & d;
@@ -94,16 +110,20 @@ int main()
 
         delete b;
         delete d;
+
+        file.close();
     }
     //
     //
     {
         std::ifstream file("D:/test.bin", std::ios::binary);
 
+        if (not file.is_open()) return;
+
         ReadArchive ar(file);
 
-        Base* b = nullptr;
-        Base* d = nullptr;
+        Parent* b = nullptr;
+        Parent* d = nullptr;
 
         ar & b;
         ar & d;
@@ -116,8 +136,16 @@ int main()
 
         delete b;
         delete d;
+
+        file.close();
     }
     //
+}
+
+int main()
+{
+    test_polymorphic();
+
     return 0;
 }
 /*

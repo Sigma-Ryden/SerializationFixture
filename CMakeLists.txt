@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${PROJECT_NAME} test.cpp
     Serialization/Detail/Tools.hpp
     Serialization/Detail/Pointer.hpp
-    Serialization/Detail/StaticString.hpp
     Serialization/Detail/Meta.hpp
     Serialization/Detail/MacroScope.hpp
     Serialization/Detail/MacroUnscope.hpp
