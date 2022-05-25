@@ -8,7 +8,7 @@
 namespace serialization
 {
 
-namespace detail
+namespace utility
 {
 
 template <typename T, std::size_t N>
@@ -61,7 +61,7 @@ std::size_t size(const CharType* str) noexcept
     return count;
 }
 
-} // namespace detail
+} // namespace utility
 
 } // namespace serialization
 

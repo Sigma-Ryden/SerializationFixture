@@ -12,6 +12,9 @@
 namespace serialization
 {
 
+namespace utility
+{
+
 template <std::size_t N>
 class Dimention
 {
@@ -68,13 +71,13 @@ public:
 template <std::size_t N>
 Dimention<N>::Dimention(std::initializer_list<value_type> list) noexcept
 {
-    detail::copy(list.begin(), list.end(), data_);
+    utility::copy(list.begin(), list.end(), data_);
 }
 
 template <std::size_t N>
 Dimention<N>::Dimention(const_pointer first, const_pointer last) noexcept
 {
-    detail::copy(first, last, data_);
+    utility::copy(first, last, data_);
 }
 
 template <std::size_t N>
@@ -285,37 +288,34 @@ auto Scope<T, 1>::operator[] (size_type i) const noexcept -> const_reference
     return data_[i];
 }
 
-namespace make
-{
+} // namespace utility
 
 template <typename D, typename... Dn,
     meta::require<meta::and_<std::is_arithmetic<D>, std::is_arithmetic<Dn>...>::value> = 0>
-auto dim(D d, Dn... dn) -> Dimention<sizeof...(Dn) + 1>
+auto dim(D d, Dn... dn) -> utility::Dimention<sizeof...(Dn) + 1>
 {
-    using value_type = typename Dimention<sizeof...(Dn) + 1>::value_type;
+    using value_type = typename utility::Dimention<sizeof...(Dn) + 1>::value_type;
 
     return { static_cast<value_type>(d), static_cast<value_type>(dn)... };
 }
 
 template <typename Pointer, std::size_t N, typename T = meta::remove_pointer<Pointer, N>>
-Scope<T, N> scope(Pointer data, Dimention<N> dimention)
+utility::Scope<T, N> scope(Pointer data, utility::Dimention<N> dimention)
 {
     return { data, dimention };
 }
 
 template <typename Pointer, typename T = meta::remove_pointer<Pointer, 1>>
-Scope<T, 1> scope(Pointer data, std::size_t dimention)
+utility::Scope<T, 1> scope(Pointer data, std::size_t dimention)
 {
     return { data, dimention };
 }
 
 template <typename CharType, meta::require<meta::is_character<CharType>()> = 0>
-Scope<CharType, 1> scope(CharType* data)
+utility::Scope<CharType, 1> scope(CharType* data)
 {
-    return { data, detail::size(data) };
+    return { data, utility::size(data) };
 }
-
-} // namespace make
 
 namespace meta
 {
@@ -327,7 +327,7 @@ template <typename>
 struct is_scope : std::false_type {};
 
 template <typename Type, std::size_t Dimention>
-struct is_scope<serialization::Scope<Type, Dimention>> : std::true_type {};
+struct is_scope<serialization::utility::Scope<Type, Dimention>> : std::true_type {};
 
 } // namespcae detail
 

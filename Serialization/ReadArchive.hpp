@@ -22,6 +22,9 @@
 namespace serialization
 {
 
+namespace utility
+{
+
 template <typename InStream>
 class InStreamWrapper
 {
@@ -34,13 +37,16 @@ public:
     template <typename T>
     InStreamWrapper& read(T& data, std::size_t n)
     {
-        stream_.read(detail::byte_cast(data), n);
+        stream_.read(utility::byte_cast(data), n);
 
         return *this;
     }
 };
 
-template <class Registry, class InStream, class StreamWrapper = InStreamWrapper<InStream>>
+} // namespace utility
+
+template <class Registry, class InStream,
+          class StreamWrapper = utility::InStreamWrapper<InStream>>
 class ReadArchive
 {
 public:
@@ -88,30 +94,11 @@ auto ReadArchive<Registry, InStream, StreamWrapper>::operator>> (T& data) -> Rea
 {
     return (*this) & data;
 }
-/*
-namespace make
-{
 
-// Class Template Argument Deduction by make function
-template <class Registry, class InStream>
-ReadArchive<InStream> read_archive(InStream& archive)
-{
-    return { archive };
-}
-
-} // namespace make
-*/
 // inline namespace common also used in namespace library
 inline namespace common
 {
-/*
-SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_serialize_class<T>())
-{
-    Access::serialize(archive, object);
 
-    return archive;
-}
-*/
 SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
 {
     Access::load(archive, object);

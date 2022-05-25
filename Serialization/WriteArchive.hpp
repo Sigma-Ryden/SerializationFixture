@@ -20,6 +20,9 @@
 namespace serialization
 {
 
+namespace utility
+{
+
 template <typename OutStream>
 class OutStreamWrapper
 {
@@ -32,13 +35,16 @@ public:
     template <typename T>
     OutStreamWrapper& write(const T& data, std::size_t n)
     {
-        stream_.write(detail::const_byte_cast(data), n);
+        stream_.write(utility::const_byte_cast(data), n);
 
         return *this;
     }
 };
 
-template <class Registry, class OutStream, class StreamWrapper = OutStreamWrapper<OutStream>>
+} // namespace utility
+
+template <class Registry, class OutStream,
+          class StreamWrapper = utility::OutStreamWrapper<OutStream>>
 class WriteArchive
 {
 public:
@@ -86,30 +92,11 @@ auto WriteArchive<Registry, OutStream, StreamWrapper>::operator<< (T& data) -> W
 {
     return (*this) & data;
 }
-/*
-namespace make
-{
 
-// Class Template Argument Deduction by make function
-template <class OutStream>
-WriteArchive<OutStream> write_archive(OutStream& archive)
-{
-    return { archive };
-}
-
-} // namespace make
-*/
 // inline namespace common also used in namespace library
 inline namespace common
 {
-/*
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_serialize_class<T>())
-{
-    Access::serialize(archive, object);
 
-    return archive;
-}
-*/
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
 {
     Access::save(archive, object);

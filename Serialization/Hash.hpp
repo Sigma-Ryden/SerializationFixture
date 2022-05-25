@@ -6,6 +6,9 @@
 namespace serialization
 {
 
+namespace utility
+{
+
 enum class Word
 {
     x32,
@@ -86,16 +89,18 @@ public:
     }
 };
 
-template <Word word = Word::x64>
+} // namespace utility
+
+template <utility::Word word = utility::Word::x64>
 std::size_t hash(const char* text)
 {
-    return Hash<word>::run(text);
+    return utility::Hash<word>::run(text);
 }
 
-template <Word word = Word::x64>
+template <utility::Word word = utility::Word::x64>
 constexpr std::size_t static_hash(const char* text)
 {
-    return Hash<word>::static_run(text);
+    return utility::Hash<word>::static_run(text);
 }
 
 } // namepace serialization
