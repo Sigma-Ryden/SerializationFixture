@@ -33,16 +33,13 @@ Is a header-only library implemented purely in C++11.
 Preparing:
 
 ```C++
-#include "Serialization/Core.hpp"
+#include "<Serialization/Core.hpp>
 ```
 Let's include support of std::string serialization:
 ```C++
-#include "Serialization/Support/string.hpp"
+#include <Serialization/Support/string.hpp>
 
 using namespace serialization::library; // support of string
-
-using serialization::WriteArchive;
-using serialization::ReadArchive;
 ```
 And let's equip our simple class with serialization support:
 ```C++
@@ -93,6 +90,8 @@ Sinse we are going to use hard drive storage, let's include standard file stream
 ```C++
 void save(Shape& shape)
 {
+    using serialization::WriteArchive;
+
     std::ofstream file("example.bin", std::ios::binary);
 
     if (not file.is_open()) return;
@@ -107,6 +106,8 @@ void save(Shape& shape)
 ```C++
 void load(Shape& shape)
 {
+    using serialization::ReadArchive;
+    
     std::ifstream file("example.bin", std::ios::binary);
 
     if (not file.is_open()) return;
