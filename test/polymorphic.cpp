@@ -64,7 +64,8 @@ public:
 private:
     SERIALIZATION_UNIFIED(ar)
     {
-        ar & sr::base<Base>(*this);
+        sr::base<Base>(ar, *this);
+
         ar & value;
 
         return ar;
@@ -142,9 +143,130 @@ void test_polymorphic()
     //
 }
 
+
+struct A
+{
+    virtual ~A() {}
+
+    static constexpr int static_index() { return 0; }
+    virtual int index() { return 0; }
+
+    SERIALIZATION_UNIFIED(ar) { return ar; }
+};
+
+struct B : virtual A
+{
+    virtual int index() { return 1; }
+    static constexpr int static_index() { return 1; }
+
+    SERIALIZATION_UNIFIED(ar)
+    {
+        sr::virtual_base<A>(ar, *this);
+        return ar;
+    }
+};
+
+// if this->virtual_id != this->static_id
+//     throw "the srializable object must serialize the virtual base object."
+// else do something...
+struct C :  virtual A
+{
+    virtual int index() { return 2; }
+    static constexpr int static_index() { return 2; }
+
+    SERIALIZATION_UNIFIED(ar)
+    {
+        sr::virtual_base<A>(ar, *this);
+
+        return ar;
+    }
+};
+
+struct D : B, C
+{
+    virtual int index() { return 3; }
+    static constexpr int static_index() { return 3; }
+
+    SERIALIZATION_UNIFIED(ar)
+    {
+        sr::base<A>(ar, *this);
+        sr::base<B>(ar, *this);
+        sr::base<C>(ar, *this);
+
+        return ar;
+    }
+};
+struct F : D
+{
+    virtual int index() { return 4; }
+    static constexpr int static_index() { return 4; }
+
+    SERIALIZATION_UNIFIED(ar)
+    {
+        serialization::base<D>(ar, *this);
+
+        return ar;
+    }
+};
+
+void test_virtual_base()
+{
+    using Registry = sr::Registry<A, B, C, D, F>;
+
+    using WriteArchive = sr::WriteArchive<std::ofstream, Registry>;
+    using ReadArchive  = sr::ReadArchive<std::ifstream, Registry>;
+    //
+    {
+        A* a = new F;
+        std::cout << a->index() << '\n';
+
+        std::ofstream file("D:/test.bin", std::ios::binary);
+
+        if (not file.is_open()) return;
+
+        WriteArchive ar(file);
+
+        try
+        {
+            ar & a;
+        }
+        catch (const char* e)
+        {
+            std::cout << e << '\n';
+        }
+
+        file.close();
+    }
+    //
+    //
+    {
+        A* a = nullptr;
+
+        std::ifstream file("D:/test.bin", std::ios::binary);
+
+        if (not file.is_open()) return;
+
+        ReadArchive ar(file);
+
+        try
+        {
+            ar & a;
+        }
+        catch (const char* e)
+        {
+            std::cout << e << '\n';
+        }
+
+        std::cout << a->index() << '\n';
+
+        file.close();
+    }
+    //
+}
 int main()
 {
-    test_polymorphic();
+    //test_polymorphic();
+    test_virtual_base();
 
     return 0;
 }

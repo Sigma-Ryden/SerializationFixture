@@ -29,14 +29,14 @@ public:
 public:
     template <class Archive, class T,
               meta::require<is_save_load_class<T>()> = 0>
-    static void save(Archive& archive, T& object) noexcept
+    static void save(Archive& archive, T& object)
     {
         object.save(archive);
     }
 
     template <class Archive, class T,
               meta::require<is_save_load_class<T>()> = 0>
-    static void load(Archive& archive, T& object) noexcept
+    static void load(Archive& archive, T& object)
     {
         object.load(archive);
     }

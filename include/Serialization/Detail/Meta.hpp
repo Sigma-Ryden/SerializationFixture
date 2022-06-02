@@ -60,6 +60,19 @@ struct and_<B1, Bn...>
 namespace detail
 {
 
+template <typename From, typename To, typename = void_t<>>
+struct can_static_cast: std::false_type {};
+
+template <typename From, typename To>
+struct can_static_cast<From, To,
+    void_t<decltype( static_cast<To>(std::declval<From>()) )>>
+: std::true_type {};
+
+} // namespace detail
+
+namespace detail
+{
+
 template <typename, std::size_t N>
 struct remove_pointer_impl;
 
@@ -125,6 +138,12 @@ using make_index_sequence = typename detail::index_sequence_helper<N>::type;
 template <class Base, class Derived> constexpr bool is_base_of() noexcept
 {
     return std::is_base_of<Base, Derived>::value;
+}
+
+template <class Base, class Derived> constexpr bool is_virtual_base_of() noexcept
+{
+    return  is_base_of<Base, Derived>() and
+            not detail::can_static_cast<Base*, Derived*>::value;
 }
 
 template <typename T> constexpr bool is_abstract() noexcept

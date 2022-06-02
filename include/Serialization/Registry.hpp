@@ -24,11 +24,23 @@
 namespace serialization
 {
 
-// will be repair
-template <typename To, typename From>
-To& base(From& derived)
+template <typename Base, class Archive, typename Derived,
+    meta::require<meta::is_base_of<Base, Derived>()> = 0>
+void base(Archive& archive, Derived& derived)
 {
-    return static_cast<To&>(derived);
+    archive & static_cast<Base&>(derived);
+}
+
+template <typename Base, class Archive, typename Derived,
+    meta::require<meta::is_virtual_base_of<Base, Derived>()> = 0>
+void virtual_base(Archive& archive, Derived& derived)
+{
+    if (derived.index() == Derived::static_index())
+        static_cast<Base&>(derived);
+
+#ifdef SERIALIZATION_DEBUG
+    else throw "the srializable object must serialize the virtual base object.";
+#endif
 }
 
 template <class... Tn>
@@ -67,7 +79,7 @@ private:
               meta::require<meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
     static void save_if_derived_of(Archive& archive, Base& pointer)
     {
-        archive & static_cast<Derived&>(*pointer);
+        archive & dynamic_cast<Derived&>(*pointer);
     }
 
     template <class Derived, class Archive, class Base,
@@ -77,7 +89,7 @@ private:
     template <class Archive, class Base>
     static void save_impl(Archive& archive, Base& pointer, index_type id)
     {
-        throw "serializable type was not registered.";
+        throw "the serializable type was not registered.";
     }
 
     template <class Derived, class... Derived_n, class Archive, class Base>
@@ -98,7 +110,7 @@ private:
 
         pointer = new Derived;
 
-        archive & (static_cast<Derived&>(*pointer));
+        archive & (dynamic_cast<Derived&>(*pointer));
     }
 
     template <class Derived, class Archive, class Base,
@@ -109,7 +121,7 @@ private:
     template <class Archive, class Base>
     static void load_impl(Archive& archive, Base& pointer, index_type id)
     {
-        throw "serializable type was not registered.";
+        throw "the serializable type was not registered.";
     }
 
     template <class Derived, class... Derived_n, class Archive, class Base>
