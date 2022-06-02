@@ -154,6 +154,10 @@ struct A
     SERIALIZATION_UNIFIED(ar) { return ar; }
 };
 
+// virtual_base serialization proccess:
+// if this->virtual_id != this->static_id
+//     throw "the srializable object must serialize the virtual base object."
+// else do something...
 struct B : virtual A
 {
     virtual int index() { return 1; }
@@ -166,9 +170,6 @@ struct B : virtual A
     }
 };
 
-// if this->virtual_id != this->static_id
-//     throw "the srializable object must serialize the virtual base object."
-// else do something...
 struct C :  virtual A
 {
     virtual int index() { return 2; }
@@ -263,9 +264,10 @@ void test_virtual_base()
     }
     //
 }
+
 int main()
 {
-    //test_polymorphic();
+    test_polymorphic();
     test_virtual_base();
 
     return 0;
