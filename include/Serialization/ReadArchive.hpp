@@ -2,8 +2,9 @@
 #define SERIALIZATION_READ_ARCHIVE_HPP
 
 #include <cstddef> // size_t
+#include <unordered_map> // unordered_map
 
-#include <memory> // operator new
+#include <memory> // addressof
 
 #include <Serialization/Access.hpp>
 #include <Serialization/Registry.hpp>
@@ -52,16 +53,26 @@ template <class InStream,
           class StreamWrapper = utility::InStreamWrapper<InStream>>
 class ReadArchive
 {
+private:
+    struct TrackingData
+    {
+        void* address = nullptr;
+        bool is_tracking = false;
+    };
+
 public:
     using registry = Registry;
+    using TrackTable = std::unordered_map<std::size_t, TrackingData>;
 
 private:
     StreamWrapper archive_;
+    TrackTable track_table_;
 
 public:
     ReadArchive(InStream& stream);
 
     auto stream() noexcept -> StreamWrapper&;
+    auto tracking() noexcept -> TrackTable&;
 
     template <typename T, meta::require<meta::is_arithmetic<T>()> = 0>
     auto operator& (T& number) -> ReadArchive&;
@@ -70,9 +81,19 @@ public:
     auto operator>> (T& data) -> ReadArchive&;
 };
 
+namespace meta
+{
+
+template <typename> struct is_read_archive : std::false_type {};
+
+template <class InStream, class Registry, class StreamWrapper>
+struct is_read_archive<ReadArchive<InStream, Registry, StreamWrapper>> : std::true_type {};
+
+} // namespace meta
+
 template <class InStream, class Registry, class StreamWrapper>
 ReadArchive<InStream, Registry, StreamWrapper>::ReadArchive(InStream& stream)
-    : archive_(stream)
+    : archive_(stream), track_table_()
 {
 }
 
@@ -80,6 +101,12 @@ template <class InStream, class Registry, class StreamWrapper>
 auto ReadArchive<InStream, Registry, StreamWrapper>::stream() noexcept -> StreamWrapper&
 {
     return archive_;
+}
+
+template <class InStream, class Registry, class StreamWrapper>
+auto ReadArchive<InStream, Registry, StreamWrapper>::tracking() noexcept -> TrackTable&
+{
+    return track_table_;
 }
 
 template <class InStream, class Registry, class StreamWrapper>
@@ -97,6 +124,68 @@ auto ReadArchive<InStream, Registry, StreamWrapper>::operator>> (T& data) -> Rea
 {
     return (*this) & data;
 }
+
+namespace tracking
+{
+
+template <class InStream, class Registry, class StreamWrapper,
+          typename T>
+void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
+{
+    std::size_t key;
+    archive & key;
+
+    auto& track_data = archive.tracking()[key];
+
+    auto address = std::addressof(data);
+
+    track_data.address = address;
+    track_data.is_tracking = true;
+
+    archive & data;
+}
+
+template <class InStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<meta::is_pointer<T>()> = 0>
+void track_partial(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
+{
+    std::size_t key;
+    archive & key;
+
+    auto& track_data = archive.tracking()[key];
+
+    if (not track_data.is_tracking)
+    {
+        archive & pointer; // call the serialization of not tracking pointer
+
+        track_data.address = pointer;
+        track_data.is_tracking = true;
+    }
+    else
+    {
+        pointer = static_cast<T>(track_data.address);
+    }
+}
+
+template <class InStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<meta::is_pointer<T>()> = 0>
+void track_always(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
+{
+    std::size_t key = 0;
+
+    archive & key;
+
+    auto& track_data = archive.tracking()[key];
+
+    if (pointer != nullptr)
+        throw "the read tracking pointer must be initialized to nullptr.";
+
+    pointer = static_cast<T>(track_data.address);
+}
+
+} // namespace tracking
 
 // inline namespace common also used in namespace library
 inline namespace common
@@ -148,7 +237,9 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
 {
     using value_type = meta::deref<T>;
 
-    delete pointer;
+    if (pointer != nullptr)
+        throw "the read pointer must be initialized to nullptr.";
+
     pointer = new value_type;
 
     archive & (*pointer);
@@ -157,7 +248,6 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
 }
 
 SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
-    // or meta::is_abstract_pointer<T>())
 {
     using value_type = meta::deref<T>;
     using index_type = decltype(value_type::static_index());

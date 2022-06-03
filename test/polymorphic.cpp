@@ -8,6 +8,7 @@ namespace sr = serialization;
 
 using namespace sr::common; // support of common types
 using namespace sr::library; // support of std library
+using namespace sr::tracking; // support of data tracking
 
 template <class SomeType>
 struct Base
@@ -237,6 +238,8 @@ void test_virtual_base()
         }
 
         file.close();
+
+        delete a;
     }
     //
     //
@@ -261,6 +264,8 @@ void test_virtual_base()
         std::cout << a->index() << '\n';
 
         file.close();
+
+        delete a;
     }
     //
 }

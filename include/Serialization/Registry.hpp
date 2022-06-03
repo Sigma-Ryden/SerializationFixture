@@ -106,7 +106,8 @@ private:
                             meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
     static void load_if_derived_of(Archive& archive, Base& pointer)
     {
-        delete pointer;
+        if (pointer != nullptr)
+            throw "the read pointer must be initialized to nullptr.";
 
         pointer = new Derived;
 
