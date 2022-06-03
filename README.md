@@ -18,7 +18,7 @@ Is a header-only library implemented purely in C++11.
 - arithmetic
 - enum
 - static array
-- pointer
+- pointer (with data tracking)
 #### Sserialization of library types:
 - STL: string, vector, array...
 - any usage type
