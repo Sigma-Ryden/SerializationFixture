@@ -89,7 +89,7 @@ private:
     template <class Archive, class Base>
     static void save_impl(Archive& archive, Base& pointer, index_type id)
     {
-        throw "the serializable type was not registered.";
+        throw "serializable type was not registered.";
     }
 
     template <class Derived, class... Derived_n, class Archive, class Base>
@@ -122,7 +122,7 @@ private:
     template <class Archive, class Base>
     static void load_impl(Archive& archive, Base& pointer, index_type id)
     {
-        throw "the serializable type was not registered.";
+        throw "serializable type was not registered.";
     }
 
     template <class Derived, class... Derived_n, class Archive, class Base>

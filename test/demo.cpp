@@ -141,7 +141,7 @@ public:
 
     SERIALIZATION_UNIFIED(ar)
     {
-        ar & serialization::base<Human>(*this);
+        serialization::base<Human>(ar, *this);
 
         ar & force_;
 

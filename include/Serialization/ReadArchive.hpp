@@ -61,18 +61,19 @@ private:
     };
 
 public:
-    using registry = Registry;
-    using TrackTable = std::unordered_map<std::size_t, TrackingData>;
+    using TrackingTable = std::unordered_map<std::size_t, TrackingData>;
 
 private:
     StreamWrapper archive_;
-    TrackTable track_table_;
+    TrackingTable track_table_;
+    Registry registry_;
 
 public:
     ReadArchive(InStream& stream);
 
     auto stream() noexcept -> StreamWrapper&;
-    auto tracking() noexcept -> TrackTable&;
+    auto tracking() noexcept -> TrackingTable&;
+    auto registry() noexcept -> Registry&;
 
     template <typename T, meta::require<meta::is_arithmetic<T>()> = 0>
     auto operator& (T& number) -> ReadArchive&;
@@ -93,7 +94,7 @@ struct is_read_archive<ReadArchive<InStream, Registry, StreamWrapper>> : std::tr
 
 template <class InStream, class Registry, class StreamWrapper>
 ReadArchive<InStream, Registry, StreamWrapper>::ReadArchive(InStream& stream)
-    : archive_(stream), track_table_()
+    : archive_(stream), track_table_(), registry_()
 {
 }
 
@@ -104,9 +105,15 @@ auto ReadArchive<InStream, Registry, StreamWrapper>::stream() noexcept -> Stream
 }
 
 template <class InStream, class Registry, class StreamWrapper>
-auto ReadArchive<InStream, Registry, StreamWrapper>::tracking() noexcept -> TrackTable&
+auto ReadArchive<InStream, Registry, StreamWrapper>::tracking() noexcept -> TrackingTable&
 {
     return track_table_;
+}
+
+template <class InStream, class Registry, class StreamWrapper>
+auto ReadArchive<InStream, Registry, StreamWrapper>::registry() noexcept -> Registry&
+{
+    return registry_;
 }
 
 template <class InStream, class Registry, class StreamWrapper>
@@ -129,7 +136,8 @@ namespace tracking
 {
 
 template <class InStream, class Registry, class StreamWrapper,
-          typename T>
+          typename T,
+          meta::require<not meta::is_pointer<T>()> = 0>
 void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
 {
     std::size_t key;
@@ -137,6 +145,10 @@ void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
 
     auto& track_data = archive.tracking()[key];
 
+#ifdef SERIALIZATION_DEBUG
+    if (track_data.is_tracking)
+        throw  "the read tracking data is already tracked.";
+#endif
     auto address = std::addressof(data);
 
     track_data.address = address;
@@ -148,8 +160,11 @@ void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
 template <class InStream, class Registry, class StreamWrapper,
           typename T,
           meta::require<meta::is_pointer<T>()> = 0>
-void track_partial(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
+void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
 {
+    if (pointer != nullptr)
+        throw "the read tracking pointer must be initialized to nullptr.";
+
     std::size_t key;
     archive & key;
 
@@ -166,23 +181,6 @@ void track_partial(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& p
     {
         pointer = static_cast<T>(track_data.address);
     }
-}
-
-template <class InStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<meta::is_pointer<T>()> = 0>
-void track_always(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
-{
-    std::size_t key = 0;
-
-    archive & key;
-
-    auto& track_data = archive.tracking()[key];
-
-    if (pointer != nullptr)
-        throw "the read tracking pointer must be initialized to nullptr.";
-
-    pointer = static_cast<T>(track_data.address);
 }
 
 } // namespace tracking

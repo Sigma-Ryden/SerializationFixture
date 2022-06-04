@@ -53,18 +53,19 @@ template <class OutStream,
 class WriteArchive
 {
 public:
-    using registry = Registry;
-    using TrackTable = std::unordered_map<std::size_t, bool>;
+    using TrackingTable = std::unordered_map<std::size_t, bool>;
 
 private:
     StreamWrapper archive_;
-    TrackTable track_table_;
+    TrackingTable track_table_;
+    Registry registry_;
 
 public:
     WriteArchive(OutStream& stream);
 
     auto stream() noexcept -> StreamWrapper&;
-    auto tracking() noexcept -> TrackTable&;
+    auto tracking() noexcept -> TrackingTable&;
+    auto registry() noexcept -> Registry&;
 
     template <typename T, meta::require<meta::is_arithmetic<T>()> = 0>
     auto operator& (T& number) -> WriteArchive&;
@@ -85,20 +86,26 @@ struct is_write_archive<WriteArchive<OutStream, Registry, StreamWrapper>> : std:
 
 template <class OutStream, class Registry, class StreamWrapper>
 WriteArchive<OutStream, Registry, StreamWrapper>::WriteArchive(OutStream& stream)
-    : archive_(stream), track_table_()
+    : archive_(stream), track_table_(), registry_()
 {
 }
 
-template <class Registry, class OutStream, class StreamWrapper>
-auto WriteArchive<Registry, OutStream, StreamWrapper>::stream() noexcept -> StreamWrapper&
+template <class OutStream, class Registry, class StreamWrapper>
+auto WriteArchive<OutStream, Registry, StreamWrapper>::stream() noexcept -> StreamWrapper&
 {
     return archive_;
 }
 
-template <class Registry, class OutStream, class StreamWrapper>
-auto WriteArchive<Registry, OutStream, StreamWrapper>::tracking() noexcept -> TrackTable&
+template <class OutStream, class Registry, class StreamWrapper>
+auto WriteArchive<OutStream, Registry, StreamWrapper>::tracking() noexcept -> TrackingTable&
 {
     return track_table_;
+}
+
+template <class OutStream, class Registry, class StreamWrapper>
+auto WriteArchive<OutStream, Registry, StreamWrapper>::registry() noexcept -> Registry&
+{
+    return registry_;
 }
 
 template <class OutStream, class Registry, class StreamWrapper>
@@ -121,14 +128,21 @@ namespace tracking
 {
 
 template <class OutStream, class Registry, class StreamWrapper,
-          typename T>
+          typename T,
+          meta::require<not meta::is_pointer<T>()> = 0>
 void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
 {
     auto address = std::addressof(data);
 
     auto key = reinterpret_cast<std::size_t>(address);
 
-    archive.tracking()[key] = true;
+    bool& is_tracking = archive.tracking()[key];
+
+#ifdef SERIALIZATION_DEBUG
+    if (is_tracking)
+        throw "the write tracking data is already tracked.";
+#endif
+    is_tracking = true;
 
     archive & key;
     archive & data;
@@ -137,7 +151,7 @@ void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
 template <class OutStream, class Registry, class StreamWrapper,
           typename T,
           meta::require<meta::is_pointer<T>()> = 0>
-void track_partial(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer)
+void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer)
 {
     auto key = reinterpret_cast<std::size_t>(pointer);
 
@@ -154,18 +168,6 @@ void track_partial(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T&
     {
         archive & key;
     }
-}
-
-template <class OutStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<meta::is_pointer<T>()> = 0>
-void track_always(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer)
-{
-    auto key = reinterpret_cast<std::size_t>(pointer);
-
-    archive.tracking()[key] = true; // explicit data tracking
-
-    archive & key;
 }
 
 } // namespace tracking

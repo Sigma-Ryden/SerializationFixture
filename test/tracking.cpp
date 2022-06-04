@@ -25,15 +25,25 @@ void test_tracking()
         int* p1 = &x;
         int* p2 = p1;
 
-        println(x);
+        println(&x);
         println(p1);
         println(p2);
+
+        println(x);
         println(*p1);
         println(*p2);
 
-        track(ar, x); // track data and read/write with key
-        track_partial(ar, p1); // track data if not track and read/write with key
-        track_always(ar, p2); // track data and read/write key even if it first track
+        try
+        {
+            track(ar, x); // track data and read/write with key
+            track(ar, p1); // track data if not track and read/write with key
+            track(ar, p2); // is the same as above
+        }
+        catch(const char* e)
+        {
+            std::cout << e << '\n';
+            return;
+        }
     }
     {
         std::ifstream file("D:/tracking.bin", std::ios::binary);
@@ -43,16 +53,27 @@ void test_tracking()
         auto ar = sr::ReadArchive<std::ifstream>(file);
 
         int x;
-        int* p1;
-        int* p2;
+        int* p1 = nullptr;
+        int* p2 = nullptr; // track function will throw exception if pointer == nullptr
 
-        track(ar, x);
-        track_partial(ar, p1);
-        track_always(ar, p2);
+        try
+        {
+            track(ar, x);
+            track(ar, p1);
+            track(ar, p2);
 
-        println(x);
+        }
+        catch(const char* e)
+        {
+            std::cout << e << '\n';
+            return;
+        }
+
+        println(&x);
         println(p1);
         println(p2);
+
+        println(x);
         println(*p1);
         println(*p2);
     }
