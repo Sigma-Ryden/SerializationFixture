@@ -1,6 +1,7 @@
 #ifndef SERIALIZATION_WRITE_ARCHIVE_HPP
 #define SERIALIZATION_WRITE_ARCHIVE_HPP
 
+#include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
 #include <memory> // addressof
@@ -53,7 +54,7 @@ template <class OutStream,
 class WriteArchive
 {
 public:
-    using TrackingTable = std::unordered_map<std::size_t, bool>;
+    using TrackingTable = std::unordered_map<std::uintptr_t, bool>;
 
 private:
     StreamWrapper archive_;
@@ -132,11 +133,14 @@ template <class OutStream, class Registry, class StreamWrapper,
           meta::require<not meta::is_pointer<T>()> = 0>
 void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
 {
+    using key_type =
+        typename WriteArchive<OutStream, Registry, StreamWrapper>::TrackingTable::key_type;
+
     auto address = std::addressof(data);
 
-    auto key = reinterpret_cast<std::size_t>(address);
+    auto key = reinterpret_cast<key_type>(address);
 
-    bool& is_tracking = archive.tracking()[key];
+    auto& is_tracking = archive.tracking()[key];
 
 #ifdef SERIALIZATION_DEBUG
     if (is_tracking)
@@ -153,9 +157,12 @@ template <class OutStream, class Registry, class StreamWrapper,
           meta::require<meta::is_pointer<T>()> = 0>
 void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer)
 {
-    auto key = reinterpret_cast<std::size_t>(pointer);
+    using key_type =
+        typename WriteArchive<OutStream, Registry, StreamWrapper>::TrackingTable::key_type;
 
-    bool& is_tracking = archive.tracking()[key];
+    auto key = reinterpret_cast<key_type>(pointer);
+
+    auto& is_tracking = archive.tracking()[key];
 
     if (not is_tracking)
     {

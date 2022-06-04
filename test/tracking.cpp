@@ -39,7 +39,7 @@ void test_tracking()
             track(ar, p1); // track data if not track and read/write with key
             track(ar, p2); // is the same as above
         }
-        catch(const char* e)
+        catch (const char* e)
         {
             std::cout << e << '\n';
             return;
@@ -63,7 +63,7 @@ void test_tracking()
             track(ar, p2);
 
         }
-        catch(const char* e)
+        catch (const char* e)
         {
             std::cout << e << '\n';
             return;

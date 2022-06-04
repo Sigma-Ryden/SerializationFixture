@@ -21,7 +21,7 @@ namespace detail
 template <std::size_t FnvPrime, std::size_t OffsetBasis>
 std::size_t fnv_1a(const char* text)
 {
-    std::size_t hash = OffsetBasis;
+    auto hash = OffsetBasis;
     while(*text != '\0')
     {
         hash ^= *text;
@@ -51,8 +51,8 @@ struct Hash<Word::x32>
 {
 private:
     // For 32 bit machines:
-    static constexpr std::size_t fnv_prime        = 16777619u;
-    static constexpr std::size_t fnv_offset_basis = 2166136261u;
+    static constexpr std::size_t fnv_prime        = 16777619ull;
+    static constexpr std::size_t fnv_offset_basis = 2166136261ull;
 
 public:
     static std::size_t run(const char* text)
@@ -71,8 +71,8 @@ struct Hash<Word::x64>
 {
 private:
     // For 64 bit machines:
-    static constexpr std::size_t fnv_prime        = 1099511628211u;
-    static constexpr std::size_t fnv_offset_basis = 14695981039346656037u;
+    static constexpr std::size_t fnv_prime        = 1099511628211ull;
+    static constexpr std::size_t fnv_offset_basis = 14695981039346656037ull;
 
 public:
     static std::size_t run(const char* text)

@@ -1,6 +1,7 @@
 #ifndef SERIALIZATION_READ_ARCHIVE_HPP
 #define SERIALIZATION_READ_ARCHIVE_HPP
 
+#include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
 
@@ -61,7 +62,7 @@ private:
     };
 
 public:
-    using TrackingTable = std::unordered_map<std::size_t, TrackingData>;
+    using TrackingTable = std::unordered_map<std::uintptr_t, TrackingData>;
 
 private:
     StreamWrapper archive_;
@@ -140,7 +141,10 @@ template <class InStream, class Registry, class StreamWrapper,
           meta::require<not meta::is_pointer<T>()> = 0>
 void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
 {
-    std::size_t key;
+    using key_type =
+        typename ReadArchive<InStream, Registry, StreamWrapper>::TrackingTable::key_type;
+
+    key_type key;
     archive & key;
 
     auto& track_data = archive.tracking()[key];
@@ -162,10 +166,13 @@ template <class InStream, class Registry, class StreamWrapper,
           meta::require<meta::is_pointer<T>()> = 0>
 void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
 {
+    using key_type =
+        typename ReadArchive<InStream, Registry, StreamWrapper>::TrackingTable::key_type;
+
     if (pointer != nullptr)
         throw "the read tracking pointer must be initialized to nullptr.";
 
-    std::size_t key;
+    key_type key;
     archive & key;
 
     auto& track_data = archive.tracking()[key];
