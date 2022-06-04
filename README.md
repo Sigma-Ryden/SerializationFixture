@@ -33,7 +33,7 @@ Is a header-only library implemented purely in C++11.
 Preparing:
 
 ```C++
-#include "<Serialization/Core.hpp>
+#include <Serialization/Core.hpp>
 ```
 Let's include support of std::string serialization:
 ```C++
