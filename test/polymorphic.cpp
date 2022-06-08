@@ -11,7 +11,7 @@ using namespace sr::library; // support of std library
 using namespace sr::tracking; // support of data tracking
 
 template <class SomeType>
-struct Base
+class Base
 {
     SERIALIZATION_ARCHIVE_ACCESS()
     SERIALIZATION_IMPLEMENT_CLASS_INFO(Base<SomeType>)
@@ -46,7 +46,7 @@ private:
 SERIALIZATION_IMPLEMENT_CLASS_TPL_INFO(Base<double>)
 SERIALIZATION_IMPLEMENT_CLASS_TPL_INFO(Base<std::string>)
 
-struct Derived : Base<std::string>
+class Derived : public Base<std::string>
 {
     SERIALIZATION_ARCHIVE_ACCESS()
     SERIALIZATION_IMPLEMENT_CLASS_INFO(Derived)
@@ -87,8 +87,8 @@ void test_polymorphic()
     using Child  = Derived;
 
     {
-        println(Base<char>::static_index()); // <-- default
-        println(Base<std::string>::static_index()); // <-- specialization
+        println(Registry::key<Base<char>>()); // <-- default
+        println(Registry::key<Base<std::string>>()); // <-- specialization
     }
     //
     {
@@ -104,8 +104,8 @@ void test_polymorphic()
         ar & b;
         ar & d;
 
-        println(b->index());
-        println(d->index());
+        println(Registry::key(*b));
+        println(Registry::key(*d));
 
         b->show();
         d->show();
@@ -130,8 +130,8 @@ void test_polymorphic()
         ar & b;
         ar & d;
 
-        println(b->index());
-        println(d->index());
+        println(Registry::key(*b));
+        println(Registry::key(*d));
 
         b->show();
         d->show();
@@ -144,13 +144,12 @@ void test_polymorphic()
     //
 }
 
-
 struct A
 {
     virtual ~A() {}
 
-    static constexpr int static_index() { return 0; }
-    virtual int index() { return 0; }
+    static constexpr int static_key() { return 0; }
+    virtual int dynamic_key() { return 0; }
 
     SERIALIZATION_UNIFIED(ar) { return ar; }
 };
@@ -161,8 +160,8 @@ struct A
 // else do something...
 struct B : virtual A
 {
-    virtual int index() { return 1; }
-    static constexpr int static_index() { return 1; }
+    virtual int dynamic_key() { return 1; }
+    static constexpr int static_key() { return 1; }
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -173,8 +172,8 @@ struct B : virtual A
 
 struct C :  virtual A
 {
-    virtual int index() { return 2; }
-    static constexpr int static_index() { return 2; }
+    virtual int dynamic_key() { return 2; }
+    static constexpr int static_key() { return 2; }
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -186,8 +185,8 @@ struct C :  virtual A
 
 struct D : B, C
 {
-    virtual int index() { return 3; }
-    static constexpr int static_index() { return 3; }
+    virtual int dynamic_key() { return 3; }
+    static constexpr int static_key() { return 3; }
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -200,8 +199,8 @@ struct D : B, C
 };
 struct F : D
 {
-    virtual int index() { return 4; }
-    static constexpr int static_index() { return 4; }
+    virtual int dynamic_key() { return 4; }
+    static constexpr int static_key() { return 4; }
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -219,14 +218,14 @@ void test_virtual_base()
     using ReadArchive  = sr::ReadArchive<std::ifstream, Registry>;
     //
     {
-        A* a = new F;
-        std::cout << a->index() << '\n';
-
         std::ofstream file("D:/test.bin", std::ios::binary);
 
         if (not file.is_open()) return;
 
         WriteArchive ar(file);
+
+        A* a = new F;
+        std::cout << a->dynamic_key() << '\n';
 
         try
         {
@@ -261,7 +260,7 @@ void test_virtual_base()
             std::cout << e << '\n';
         }
 
-        std::cout << a->index() << '\n';
+        std::cout << a->dynamic_key() << '\n';
 
         file.close();
 

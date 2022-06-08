@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
 
-add_executable(${PROJECT_NAME} test/tracking.cpp
+add_executable(${PROJECT_NAME} test/polymorphic.cpp
     include/Serialization/Detail/Tools.hpp
     include/Serialization/Detail/Pointer.hpp
     include/Serialization/Detail/Meta.hpp

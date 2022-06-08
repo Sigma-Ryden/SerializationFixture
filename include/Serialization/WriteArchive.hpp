@@ -234,7 +234,7 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
     if (pointer == nullptr)
         throw "the write pointer was not allocated.";
 
-    auto index = Registry::index(pointer);
+    auto index = Access::dynamic_key(*pointer);
     archive & index;
 
     Registry::save(archive, pointer, index);

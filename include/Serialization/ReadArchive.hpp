@@ -255,7 +255,7 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
 SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
 {
     using value_type = meta::deref<T>;
-    using index_type = decltype(value_type::static_index());
+    using index_type = decltype(Access::template static_key<value_type>());
 
     index_type id;
     archive & id;
