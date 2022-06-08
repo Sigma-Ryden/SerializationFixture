@@ -36,8 +36,8 @@ template <typename Base, class Archive, typename Derived,
     meta::require<meta::is_virtual_base_of<Base, Derived>()> = 0>
 void virtual_base(Archive& archive, Derived& derived)
 {
-    if (derived.dynamic_key() == Derived::static_key())
-        static_cast<Base&>(derived);
+    if (Access::dynamic_key(derived) == Access::template static_key<Derived>())
+        archive & static_cast<Base&>(derived);
 
 #ifdef SERIALIZATION_DEBUG
     else throw "the srializable object must serialize the virtual base object.";
