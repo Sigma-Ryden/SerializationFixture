@@ -17,18 +17,12 @@
 
 #include <Serialization/Detail/Meta.hpp>
 
-#define SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(function_name, parameter_name, ...)                   \
+#define SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, ...)                                              \
     template <class InStream, class Registry, class StreamWrapper, typename T,                          \
               serialization::meta::require<(bool)(__VA_ARGS__)> = 0>                                    \
-    auto function_name(                                                                                 \
+    auto operator& (                                                                                    \
         serialization::ReadArchive<InStream, Registry, StreamWrapper>& archive,                         \
-        T& parameter_name) -> decltype(archive)
-
-#define SERIALIZATION_READ_ARCHIVE_GENERIC(parameter_name, ...)                                         \
-    SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(                                                          \
-        operator&,                                                                                      \
-        parameter_name,                                                                                 \
-        __VA_ARGS__)
+        T& parameter) -> decltype(archive)
 
 namespace serialization
 {
@@ -79,15 +73,21 @@ private:
 public:
     ReadArchive(InStream& stream);
 
-    auto stream() noexcept -> StreamWrapper&;
-    auto tracking() noexcept -> TrackingTable&;
-    auto registry() noexcept -> Registry&;
+    auto stream() noexcept -> StreamWrapper& { return archive_; }
+    auto tracking() noexcept -> TrackingTable& { return track_table_; }
+    auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T, meta::require<meta::is_arithmetic<T>()> = 0>
     auto operator& (T& number) -> ReadArchive&;
 
     template <typename T>
     auto operator>> (T& data) -> ReadArchive&;
+
+    template <typename T, typename... Tn>
+    auto operator() (T& data, Tn&... data_n) -> ReadArchive&;
+
+private:
+    auto operator() () -> ReadArchive& { return *this; }
 };
 
 namespace meta
@@ -107,24 +107,6 @@ ReadArchive<InStream, Registry, StreamWrapper>::ReadArchive(InStream& stream)
 }
 
 template <class InStream, class Registry, class StreamWrapper>
-auto ReadArchive<InStream, Registry, StreamWrapper>::stream() noexcept -> StreamWrapper&
-{
-    return archive_;
-}
-
-template <class InStream, class Registry, class StreamWrapper>
-auto ReadArchive<InStream, Registry, StreamWrapper>::tracking() noexcept -> TrackingTable&
-{
-    return track_table_;
-}
-
-template <class InStream, class Registry, class StreamWrapper>
-auto ReadArchive<InStream, Registry, StreamWrapper>::registry() noexcept -> Registry&
-{
-    return registry_;
-}
-
-template <class InStream, class Registry, class StreamWrapper>
 template <typename T, meta::require<meta::is_arithmetic<T>()>>
 auto ReadArchive<InStream, Registry, StreamWrapper>::operator& (T& number) -> ReadArchive&
 {
@@ -140,10 +122,22 @@ auto ReadArchive<InStream, Registry, StreamWrapper>::operator>> (T& data) -> Rea
     return (*this) & data;
 }
 
+template <class InStream, class Registry, class StreamWrapper>
+template <typename T, typename... Tn>
+auto ReadArchive<InStream, Registry, StreamWrapper>::operator() (T& data, Tn&... data_n) -> ReadArchive&
+{
+    (*this) & data;
+
+    return (*this)(data_n...);
+}
+
 namespace tracking
 {
 
-SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(track, data, not meta::is_pointer<T>())
+template <class InStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<not meta::is_pointer<T>()> = 0>
+void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
 {
     using key_type =
         typename ReadArchive<InStream, Registry, StreamWrapper>::TrackingTable::key_type;
@@ -163,11 +157,12 @@ SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(track, data, not meta::is_pointer<T>()
     track_data.is_tracking = true;
 
     archive & data;
-
-    return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(track, pointer, meta::is_pointer<T>())
+template <class InStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<meta::is_pointer<T>()> = 0>
+void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
 {
     using key_type =
         typename ReadArchive<InStream, Registry, StreamWrapper>::TrackingTable::key_type;
@@ -191,8 +186,6 @@ SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(track, pointer, meta::is_pointer<T>())
     {
         pointer = static_cast<T>(track_data.address);
     }
-
-    return archive;
 }
 
 } // namespace tracking
@@ -232,15 +225,19 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(array, meta::is_array<T>())
 namespace detail
 {
 
-SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(raw_scope, data, not meta::is_scope<T>())
+template <class InStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<not meta::is_scope<T>()> = 0>
+void raw_scope(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
 {
     archive & data;
-
-    return archive;
 }
 
 // serialization of scoped data with previous dimension initialization
-SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(raw_scope, zip, meta::is_scope<T>())
+template <class InStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<meta::is_scope<T>()> = 0>
+void raw_scope(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& zip)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
@@ -252,22 +249,23 @@ SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(raw_scope, zip, meta::is_scope<T>())
 
     for (size_type i = 0; i < zip.size(); ++i)
         raw_scope(archive, zip[i]);
-
-    return archive;
 }
 
 } // namespace detail
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(zip, meta::is_scope<T>())
+template <class InStream, class Registry, class StreamWrapper,
+          typename T,
+          typename D, typename... Dn>
+void scope(ReadArchive<InStream, Registry, StreamWrapper>& archive,
+           T& pointer, D& d, Dn&... dn)
 {
-    if (zip.data() != nullptr)
-        throw "serialization scoped data must be initialized to nullptr.";
+    if (pointer != nullptr)
+        throw "the read scoped data must be initialized to nullptr.";
 
-    archive & zip.dim();
+    archive(d, dn...);
 
-    detail::raw_scope(archive, zip);
-
-    return archive;
+    auto data = zip(pointer, d, dn...);
+    detail::raw_scope(archive, data);
 }
 
 SERIALIZATION_READ_ARCHIVE_GENERIC(ref, meta::is_ref<T>())

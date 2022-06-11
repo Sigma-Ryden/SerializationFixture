@@ -16,18 +16,12 @@
 
 #include <Serialization/Detail/Meta.hpp>
 
-#define SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(function_name, parameter_name, ...)                  \
+#define SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, ...)                                             \
     template <class OutStream, class Registry, class StreamWrapper, typename T,                         \
               serialization::meta::require<(bool)(__VA_ARGS__)> = 0>                                    \
-    auto function_name(                                                                                 \
+    auto operator& (                                                                                    \
         serialization::WriteArchive<OutStream, Registry, StreamWrapper>& archive,                       \
-        T& parameter_name) -> decltype(archive)
-
-#define SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter_name, ...)                                        \
-    SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(                                                         \
-        operator&,                                                                                      \
-        parameter_name,                                                                                 \
-        __VA_ARGS__)
+        T& parameter) -> decltype(archive)
 
 namespace serialization
 {
@@ -71,15 +65,21 @@ private:
 public:
     WriteArchive(OutStream& stream);
 
-    auto stream() noexcept -> StreamWrapper&;
-    auto tracking() noexcept -> TrackingTable&;
-    auto registry() noexcept -> Registry&;
+    auto stream() noexcept -> StreamWrapper& { return archive_; }
+    auto tracking() noexcept -> TrackingTable& { return track_table_; }
+    auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T, meta::require<meta::is_arithmetic<T>()> = 0>
     auto operator& (T& number) -> WriteArchive&;
 
     template <typename T>
     auto operator<< (T& data) -> WriteArchive&;
+
+    template <typename T, typename... Tn>
+    auto operator() (T& data, Tn&... data_n) -> WriteArchive&;
+
+private:
+    auto operator() () -> WriteArchive& { return *this; }
 };
 
 namespace meta
@@ -99,24 +99,6 @@ WriteArchive<OutStream, Registry, StreamWrapper>::WriteArchive(OutStream& stream
 }
 
 template <class OutStream, class Registry, class StreamWrapper>
-auto WriteArchive<OutStream, Registry, StreamWrapper>::stream() noexcept -> StreamWrapper&
-{
-    return archive_;
-}
-
-template <class OutStream, class Registry, class StreamWrapper>
-auto WriteArchive<OutStream, Registry, StreamWrapper>::tracking() noexcept -> TrackingTable&
-{
-    return track_table_;
-}
-
-template <class OutStream, class Registry, class StreamWrapper>
-auto WriteArchive<OutStream, Registry, StreamWrapper>::registry() noexcept -> Registry&
-{
-    return registry_;
-}
-
-template <class OutStream, class Registry, class StreamWrapper>
 template <typename T, meta::require<meta::is_arithmetic<T>()>>
 auto WriteArchive<OutStream, Registry, StreamWrapper>::operator& (T& number) -> WriteArchive&
 {
@@ -132,10 +114,22 @@ auto WriteArchive<OutStream, Registry, StreamWrapper>::operator<< (T& data) -> W
     return (*this) & data;
 }
 
+template <class OutStream, class Registry, class StreamWrapper>
+template <typename T, typename... Tn>
+auto WriteArchive<OutStream, Registry, StreamWrapper>::operator() (T& data, Tn&... data_n) -> WriteArchive&
+{
+    (*this) & data;
+
+    return (*this)(data_n...);
+}
+
 namespace tracking
 {
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(track, data, not meta::is_pointer<T>())
+template <class OutStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<not meta::is_pointer<T>()> = 0>
+void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
 {
     using key_type =
         typename WriteArchive<OutStream, Registry, StreamWrapper>::TrackingTable::key_type;
@@ -154,11 +148,12 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(track, data, not meta::is_pointer<T>(
 
     archive & key;
     archive & data;
-
-    return archive;
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(track, pointer, meta::is_pointer<T>())
+template <class OutStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<meta::is_pointer<T>()> = 0>
+void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer)
 {
     using key_type =
         typename WriteArchive<OutStream, Registry, StreamWrapper>::TrackingTable::key_type;
@@ -178,8 +173,6 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(track, pointer, meta::is_pointer<T>()
     {
         archive & key;
     }
-
-    return archive;
 }
 
 } // namespace tracking
@@ -213,33 +206,41 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(array, meta::is_array<T>())
 namespace detail
 {
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(raw_scope, data, not meta::is_scope<T>())
+template <class OutStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<not meta::is_scope<T>()> = 0>
+void raw_scope(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
 {
     archive & data;
-
-    return archive;
 }
 
 // serialization of scoped data with previous dimension initialization
-SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(raw_scope, zip, meta::is_scope<T>())
+template <class OutStream, class Registry, class StreamWrapper,
+          typename T,
+          meta::require<meta::is_scope<T>()> = 0>
+void raw_scope(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& zip)
 {
     using size_type = typename T::size_type;
 
     for (size_type i = 0; i < zip.size(); ++i)
-        scope(archive, zip[i]);
-
-    return archive;
+        raw_scope(archive, zip[i]);
 }
 
 } // namespace detail
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(scope, meta::is_scope<T>())
+template <class OutStream, class Registry, class StreamWrapper,
+          typename T,
+          typename D, typename... Dn>
+void scope(WriteArchive<OutStream, Registry, StreamWrapper>& archive,
+           T& pointer, D& d, Dn&... dn)
 {
-    archive & scope.dim();
+    if (pointer == nullptr)
+        throw "the write scoped data must be allocated.";
 
-    detail::raw_scope(archive, scope);
+    archive(d, dn...);
 
-    return archive;
+    auto data = zip(pointer, d, dn...);
+    detail::raw_scope(archive, data);
 }
 
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(ref, meta::is_ref<T>())

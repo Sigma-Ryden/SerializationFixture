@@ -32,7 +32,7 @@ public:
     using const_pointer     = const meta::pointer<T, N>;
 
 private:
-    using Dimension         = Ref<size_type>[N];
+    using Dimension         = size_type[N];
 
 private:
     Ref<pointer> data_;
@@ -45,7 +45,7 @@ public:
 
     template <typename D, typename... Dn,
               meta::require<not meta::is_array<D>()> = 0>
-    Scope(pointer& data, D& d, Dn&... dn);
+    Scope(pointer& data, D d, Dn... dn);
 
     void init(pointer data) noexcept { data_.get() = data; }
     void data(Ref<pointer> data) noexcept { data_ = data; }
@@ -56,8 +56,8 @@ public:
     Dimension& dim() noexcept { return dim_; }
     const Dimension& dim() const noexcept { return dim_; }
 
-    size_type size() const noexcept { return dim_[0].get(); }
-    void size(size_type value) noexcept { dim_[0].get() = value; }
+    size_type size() const noexcept { return dim_[0]; }
+    void size(size_type value) noexcept { dim_[0] = value; }
 
     reference operator[] (size_type i) noexcept;
     const_reference operator[] (size_type i) const noexcept;
@@ -77,7 +77,7 @@ public:
     using pointer           = meta::pointer<T, 1>;
     using const_pointer     = const meta::pointer<T, 1>;
 
-    using Dimension         = Ref<size_type>[1];
+    using Dimension         = size_type[1];
 
 private:
     Ref<pointer> data_;
@@ -85,7 +85,7 @@ private:
 
 public:
     Scope(pointer& data, Dimension size);
-    Scope(pointer& data, size_type& size);
+    Scope(pointer& data, size_type size);
 
     void init(pointer data) noexcept { data_.get() = data; }
     void data(Ref<pointer> data) noexcept { data_ = data; }
@@ -93,7 +93,7 @@ public:
     pointer& data() noexcept { return data_.get(); }
     const_pointer& data() const noexcept { return data_.get(); }
 
-    size_type size() const noexcept { return dim_[0].get(); }
+    size_type size() const noexcept { return dim_[0]; }
 
     Dimension& dim() noexcept { return dim_; }
     const Dimension& dim() const noexcept { return dim_; }
@@ -116,7 +116,7 @@ Scope<T, N>::Scope(pointer& data, Dimension dim)
 template <typename T, std::size_t N>
 template <typename D, typename... Dn,
           meta::require<not meta::is_array<D>()>>
-Scope<T, N>::Scope(pointer& data, D& d, Dn&... dn)
+Scope<T, N>::Scope(pointer& data, D d, Dn... dn)
     : data_(data)
     , dim_{ d, dn... }
     , child_scope_(data[0], dn...)
@@ -147,19 +147,24 @@ Scope<T, 1>::Scope(pointer& data, Dimension dim)
 }
 
 template <typename T>
-Scope<T, 1>::Scope(pointer& data, size_type& size)
+Scope<T, 1>::Scope(pointer& data, size_type size)
     : data_(data), dim_{ size }
 {
 }
 
 } // namespace utility
 
-template <typename Pointer, typename... Dn,
-         std::size_t N = sizeof...(Dn),
-         typename T = meta::remove_pointer<Pointer, N>>
-utility::Scope<T, N> zip(Pointer& data, Dn&... dn)
+template <typename Pointer, typename D, typename... Dn,
+         std::size_t N = sizeof...(Dn) + 1,
+         typename Type = meta::remove_pointer<Pointer, N>,
+         typename Scope = utility::Scope<Type, N>,
+         meta::require<meta::and_<std::is_arithmetic<D>,
+                                  std::is_arithmetic<Dn>...>::value> = 0>
+Scope zip(Pointer& data, D d, Dn... dn)
 {
-    return utility::Scope<T, N>(data, dn...);
+    using size_type = typename Scope::size_type;
+
+    return Scope(data, static_cast<size_type>(d), static_cast<size_type>(dn)...);
 }
 
 namespace meta

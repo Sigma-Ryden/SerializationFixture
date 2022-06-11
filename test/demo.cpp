@@ -275,8 +275,8 @@ void test_scope()
 
         auto ar = sr::WriteArchive<std::ofstream>(file);
 
-        std::size_t height = 3;
-        std::size_t width = 4;
+        int height = 3;
+        unsigned int width = 4;
 
         int** tensor = new int* [height];
         for (int i = 0; i < width; ++i)
@@ -284,11 +284,9 @@ void test_scope()
 
         print(tensor, height, width);
 
-        auto zip = sr::zip(tensor, height, width);
-
         try
         {
-            ar & zip;
+            scope(ar, tensor, height, width);
         }
         catch (const char* e)
         {
@@ -304,16 +302,14 @@ void test_scope()
 
         auto ar = sr::ReadArchive<std::ifstream>(file);
 
-        std::size_t height;
-        std::size_t width;
+        int height;
+        int width;
 
         int** tensor = nullptr;
 
-        auto zip = sr::zip(tensor, height, width);
-
         try
         {
-            ar & zip;
+            scope(ar, tensor, height, width);
         }
         catch (const char* e)
         {
