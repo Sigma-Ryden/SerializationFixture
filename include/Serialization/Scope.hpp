@@ -32,16 +32,16 @@ public:
     using const_pointer     = const meta::pointer<T, N>;
 
 private:
-    using Dimention         = Ref<size_type>[N];
+    using Dimension         = Ref<size_type>[N];
 
 private:
     Ref<pointer> data_;
-    Dimention dim_;
+    Dimension dim_;
 
     mutable value_type child_scope_;
 
 public:
-    Scope(pointer& data, Dimention dim_);
+    Scope(pointer& data, Dimension dim_);
 
     template <typename D, typename... Dn,
               meta::require<not meta::is_array<D>()> = 0>
@@ -53,8 +53,8 @@ public:
     pointer& data() noexcept { return data_; }
     const_pointer& data() const noexcept { return data_; }
 
-    Dimention& dim() noexcept { return dim_; }
-    const Dimention& dim() const noexcept { return dim_; }
+    Dimension& dim() noexcept { return dim_; }
+    const Dimension& dim() const noexcept { return dim_; }
 
     size_type size() const noexcept { return dim_[0].get(); }
     void size(size_type value) noexcept { dim_[0].get() = value; }
@@ -77,14 +77,14 @@ public:
     using pointer           = meta::pointer<T, 1>;
     using const_pointer     = const meta::pointer<T, 1>;
 
-    using Dimention         = Ref<size_type>[1];
+    using Dimension         = Ref<size_type>[1];
 
 private:
     Ref<pointer> data_;
-    Dimention dim_;
+    Dimension dim_;
 
 public:
-    Scope(pointer& data, Dimention size);
+    Scope(pointer& data, Dimension size);
     Scope(pointer& data, size_type& size);
 
     void init(pointer data) noexcept { data_.get() = data; }
@@ -95,15 +95,15 @@ public:
 
     size_type size() const noexcept { return dim_[0].get(); }
 
-    Dimention& dim() noexcept { return dim_; }
-    const Dimention& dim() const noexcept { return dim_; }
+    Dimension& dim() noexcept { return dim_; }
+    const Dimension& dim() const noexcept { return dim_; }
 
     reference operator[] (size_type i) noexcept { return data_[i]; }
     const_reference operator[] (size_type i) const noexcept { return data_[i]; }
 };
 
 template <typename T, std::size_t N>
-Scope<T, N>::Scope(pointer& data, Dimention dim)
+Scope<T, N>::Scope(pointer& data, Dimension dim)
     : data_(data)
     , dim_()
     , child_scope_(data[0], dim + 1)
@@ -140,7 +140,7 @@ auto Scope<T, N>::operator[] (size_type i) const noexcept -> const_reference
 }
 
 template <typename T>
-Scope<T, 1>::Scope(pointer& data, Dimention dim)
+Scope<T, 1>::Scope(pointer& data, Dimension dim)
     : data_(data)
 {
     dim_[0] = dim[0];

@@ -232,14 +232,15 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(array, meta::is_array<T>())
 namespace detail
 {
 
-SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(scope, data, not meta::is_scope<T>())
+SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(raw_scope, data, not meta::is_scope<T>())
 {
     archive & data;
 
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(scope, zip, meta::is_scope<T>())
+// serialization of scoped data with previous dimension initialization
+SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(raw_scope, zip, meta::is_scope<T>())
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
@@ -250,7 +251,7 @@ SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(scope, zip, meta::is_scope<T>())
     zip.init(ptr);
 
     for (size_type i = 0; i < zip.size(); ++i)
-        scope(archive, zip[i]);
+        raw_scope(archive, zip[i]);
 
     return archive;
 }
@@ -264,7 +265,7 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(zip, meta::is_scope<T>())
 
     archive & zip.dim();
 
-    detail::scope(archive, zip);
+    detail::raw_scope(archive, zip);
 
     return archive;
 }

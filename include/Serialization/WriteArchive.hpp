@@ -213,14 +213,15 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(array, meta::is_array<T>())
 namespace detail
 {
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(scope, data, not meta::is_scope<T>())
+SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(raw_scope, data, not meta::is_scope<T>())
 {
     archive & data;
 
     return archive;
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(scope, zip, meta::is_scope<T>())
+// serialization of scoped data with previous dimension initialization
+SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(raw_scope, zip, meta::is_scope<T>())
 {
     using size_type = typename T::size_type;
 
@@ -236,7 +237,7 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(scope, meta::is_scope<T>())
 {
     archive & scope.dim();
 
-    detail::scope(archive, scope);
+    detail::raw_scope(archive, scope);
 
     return archive;
 }
