@@ -194,19 +194,6 @@ void test_common()
     auto axis = Axis::X; // classic C enum
     auto color = Color::Blue; // scoped enum
 
-    const int height = 3;
-    const int width = 4;
-
-    int* dynamic_array = new int [width] { -1, -2, -3, -4 };
-
-    int** dynamic_tensor = new int* [height];
-    for (int i = 0; i < width; ++i)
-        dynamic_tensor[i] = new int [width] { i, i + 1, i, i - 1 };
-
-    auto scope_boo = sr::scope(boo);
-    auto scope_tensor = sr::scope(dynamic_tensor, sr::dim(height, width));
-    auto scope_array = sr::scope(dynamic_array, width);
-
     ar & hi;
     ar & number;
 
@@ -214,13 +201,9 @@ void test_common()
     ar & array;
     ar & matrix;
     ar & obj;
-    ar & scope_array;
-
     std::cout << '\n';
 
-    ar << scope_tensor;
     ar << axis;
-    ar << scope_boo;
     ar << color;
     ar << bye;
 
@@ -249,7 +232,6 @@ void test_object_serialization()
 
         std::cout << "Serialization done.\n";
     }
-
     {
         std::ifstream file("D:\\experimental.bin");
 
@@ -275,12 +257,84 @@ void test_object_serialization()
     }
 }
 
+void print(int** arr, int h, int w)
+{
+    for (int i = 0; i < h; ++i, std::cout << '\n')
+        for (int j = 0; j < w; ++j)
+            std::cout << arr[i][j] << ' ';
+
+    std::cout << '\n';
+}
+
+void test_scope()
+{
+    {
+        std::ofstream file("D:\\experimental.bin");
+
+        if (not file.is_open()) return;
+
+        auto ar = sr::WriteArchive<std::ofstream>(file);
+
+        std::size_t height = 3;
+        std::size_t width = 4;
+
+        int** tensor = new int* [height];
+        for (int i = 0; i < width; ++i)
+            tensor[i] = new int [width] { i, i + 1, i + 2, i + 3 };
+
+        print(tensor, height, width);
+
+        auto zip = sr::zip(tensor, height, width);
+
+        try
+        {
+            ar & zip;
+        }
+        catch (const char* e)
+        {
+            std::cout << e << '\n';
+            return;
+        }
+        // implicit delete pointer
+    }
+    {
+        std::ifstream file("D:\\experimental.bin");
+
+        if (not file.is_open()) return;
+
+        auto ar = sr::ReadArchive<std::ifstream>(file);
+
+        std::size_t height;
+        std::size_t width;
+
+        int** tensor = nullptr;
+
+        auto zip = sr::zip(tensor, height, width);
+
+        try
+        {
+            ar & zip;
+        }
+        catch (const char* e)
+        {
+            std::cout << e << '\n';
+            return;
+        }
+
+        print(tensor, height, width);
+
+        // implicit delete pointer
+    }
+}
+
 int main()
 {
     test_common();
     test_std_array_serialization();
 
     test_object_serialization();
+
+    test_scope();
 
     return 0;
 }

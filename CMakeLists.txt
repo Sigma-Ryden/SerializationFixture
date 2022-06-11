@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
 
-add_executable(${PROJECT_NAME} test/polymorphic.cpp
+add_executable(${PROJECT_NAME} test/demo.cpp
     include/Serialization/Detail/Tools.hpp
     include/Serialization/Detail/Pointer.hpp
     include/Serialization/Detail/Meta.hpp
@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME} test/polymorphic.cpp
     include/Serialization/UndefMacro.hpp
     include/Serialization/Hash.hpp
     include/Serialization/Scope.hpp
+    include/Serialization/Ref.hpp
     include/Serialization/Registry.hpp
     include/Serialization/Access.hpp
     include/Serialization/ReadArchive.hpp

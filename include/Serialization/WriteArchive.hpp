@@ -9,18 +9,25 @@
 #include <Serialization/Access.hpp>
 #include <Serialization//Registry.hpp>
 
+#include <Serialization/Ref.hpp>
 #include <Serialization/Scope.hpp>
 
 #include <Serialization/Detail/Tools.hpp>
 
 #include <Serialization/Detail/Meta.hpp>
 
-#define SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, ...)                                             \
+#define SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(function_name, parameter_name, ...)                  \
     template <class OutStream, class Registry, class StreamWrapper, typename T,                         \
               serialization::meta::require<(bool)(__VA_ARGS__)> = 0>                                    \
-    auto operator& (                                                                                    \
+    auto function_name(                                                                                 \
         serialization::WriteArchive<OutStream, Registry, StreamWrapper>& archive,                       \
-        T& parameter) -> decltype(archive)
+        T& parameter_name) -> decltype(archive)
+
+#define SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter_name, ...)                                        \
+    SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(                                                         \
+        operator&,                                                                                      \
+        parameter_name,                                                                                 \
+        __VA_ARGS__)
 
 namespace serialization
 {
@@ -128,10 +135,7 @@ auto WriteArchive<OutStream, Registry, StreamWrapper>::operator<< (T& data) -> W
 namespace tracking
 {
 
-template <class OutStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<not meta::is_pointer<T>()> = 0>
-void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
+SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(track, data, not meta::is_pointer<T>())
 {
     using key_type =
         typename WriteArchive<OutStream, Registry, StreamWrapper>::TrackingTable::key_type;
@@ -150,12 +154,11 @@ void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
 
     archive & key;
     archive & data;
+
+    return archive;
 }
 
-template <class OutStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<meta::is_pointer<T>()> = 0>
-void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer)
+SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(track, pointer, meta::is_pointer<T>())
 {
     using key_type =
         typename WriteArchive<OutStream, Registry, StreamWrapper>::TrackingTable::key_type;
@@ -175,6 +178,8 @@ void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer
     {
         archive & key;
     }
+
+    return archive;
 }
 
 } // namespace tracking
@@ -205,16 +210,43 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(array, meta::is_array<T>())
     return archive;
 }
 
+namespace detail
+{
+
+SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(scope, data, not meta::is_scope<T>())
+{
+    archive & data;
+
+    return archive;
+}
+
+SERIALIZATION_WRITE_ARCHIVE_GENERIC_HELPER(scope, zip, meta::is_scope<T>())
+{
+    using size_type = typename T::size_type;
+
+    for (size_type i = 0; i < zip.size(); ++i)
+        scope(archive, zip[i]);
+
+    return archive;
+}
+
+} // namespace detail
+
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(scope, meta::is_scope<T>())
 {
-    auto first = scope.data();
-    auto last  = scope.data() + scope.size();
+    archive & scope.dim();
 
-    while(first != last)
-    {
-        archive & (*first);
-        ++first;
-    }
+    detail::scope(archive, scope);
+
+    return archive;
+}
+
+SERIALIZATION_WRITE_ARCHIVE_GENERIC(ref, meta::is_ref<T>())
+{
+    if (ref.is_null())
+        throw "the write reference cannot be null.";
+
+    archive & ref.get();
 
     return archive;
 }

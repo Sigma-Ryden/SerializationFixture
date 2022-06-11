@@ -10,18 +10,25 @@
 #include <Serialization/Access.hpp>
 #include <Serialization/Registry.hpp>
 
+#include <Serialization/Ref.hpp>
 #include <Serialization/Scope.hpp>
 
 #include <Serialization/Detail/Tools.hpp>
 
 #include <Serialization/Detail/Meta.hpp>
 
-#define SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, ...)                                              \
+#define SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(function_name, parameter_name, ...)                   \
     template <class InStream, class Registry, class StreamWrapper, typename T,                          \
               serialization::meta::require<(bool)(__VA_ARGS__)> = 0>                                    \
-    auto operator& (                                                                                    \
+    auto function_name(                                                                                 \
         serialization::ReadArchive<InStream, Registry, StreamWrapper>& archive,                         \
-        T& parameter) -> decltype(archive)
+        T& parameter_name) -> decltype(archive)
+
+#define SERIALIZATION_READ_ARCHIVE_GENERIC(parameter_name, ...)                                         \
+    SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(                                                          \
+        operator&,                                                                                      \
+        parameter_name,                                                                                 \
+        __VA_ARGS__)
 
 namespace serialization
 {
@@ -136,10 +143,7 @@ auto ReadArchive<InStream, Registry, StreamWrapper>::operator>> (T& data) -> Rea
 namespace tracking
 {
 
-template <class InStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<not meta::is_pointer<T>()> = 0>
-void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
+SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(track, data, not meta::is_pointer<T>())
 {
     using key_type =
         typename ReadArchive<InStream, Registry, StreamWrapper>::TrackingTable::key_type;
@@ -159,12 +163,11 @@ void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
     track_data.is_tracking = true;
 
     archive & data;
+
+    return archive;
 }
 
-template <class InStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<meta::is_pointer<T>()> = 0>
-void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
+SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(track, pointer, meta::is_pointer<T>())
 {
     using key_type =
         typename ReadArchive<InStream, Registry, StreamWrapper>::TrackingTable::key_type;
@@ -188,6 +191,8 @@ void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
     {
         pointer = static_cast<T>(track_data.address);
     }
+
+    return archive;
 }
 
 } // namespace tracking
@@ -224,16 +229,49 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(array, meta::is_array<T>())
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(scope, meta::is_scope<T>())
+namespace detail
 {
-    auto first = scope.data();
-    auto last  = scope.data() + scope.size();
 
-    while(first != last)
-    {
-        archive & (*first);
-        ++first;
-    }
+SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(scope, data, not meta::is_scope<T>())
+{
+    archive & data;
+
+    return archive;
+}
+
+SERIALIZATION_READ_ARCHIVE_GENERIC_HELPER(scope, zip, meta::is_scope<T>())
+{
+    using size_type        = typename T::size_type;
+    using dereference_type = typename T::dereference_type;
+
+    using pointer          = typename T::pointer;
+
+    pointer ptr = new dereference_type [zip.size()];
+    zip.init(ptr);
+
+    for (size_type i = 0; i < zip.size(); ++i)
+        scope(archive, zip[i]);
+
+    return archive;
+}
+
+} // namespace detail
+
+SERIALIZATION_READ_ARCHIVE_GENERIC(zip, meta::is_scope<T>())
+{
+    if (zip.data() != nullptr)
+        throw "serialization scoped data must be initialized to nullptr.";
+
+    archive & zip.dim();
+
+    detail::scope(archive, zip);
+
+    return archive;
+}
+
+SERIALIZATION_READ_ARCHIVE_GENERIC(ref, meta::is_ref<T>())
+{
+    archive & ref.get();
 
     return archive;
 }
