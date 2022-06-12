@@ -286,7 +286,7 @@ void test_scope()
 
         try
         {
-            scope(ar, tensor, height, width);
+            span(ar, tensor, height, width);
         }
         catch (const char* e)
         {
@@ -309,7 +309,7 @@ void test_scope()
 
         try
         {
-            scope(ar, tensor, height, width);
+            span(ar, tensor, height, width);
         }
         catch (const char* e)
         {

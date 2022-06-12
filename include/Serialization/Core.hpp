@@ -9,7 +9,7 @@
 #include <Serialization/WriteArchive.hpp>
 #include <Serialization/ReadArchive.hpp>
 
-#include <Serialization/Scope.hpp>
+#include <Serialization/Span.hpp>
 
 #define SERIALIZATION_LOAD(archive)                                                                     \
     template <class Archive>                                                                            \

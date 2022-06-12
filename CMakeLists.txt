@@ -18,7 +18,7 @@ add_executable(${PROJECT_NAME} test/demo.cpp
     include/Serialization/Support/string.hpp
     include/Serialization/UndefMacro.hpp
     include/Serialization/Hash.hpp
-    include/Serialization/Scope.hpp
+    include/Serialization/Span.hpp
     include/Serialization/Ref.hpp
     include/Serialization/Registry.hpp
     include/Serialization/Access.hpp

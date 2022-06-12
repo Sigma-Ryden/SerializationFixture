@@ -11,7 +11,7 @@
 #include <Serialization/Registry.hpp>
 
 #include <Serialization/Ref.hpp>
-#include <Serialization/Scope.hpp>
+#include <Serialization/Span.hpp>
 
 #include <Serialization/Detail/Tools.hpp>
 
@@ -227,8 +227,8 @@ namespace detail
 
 template <class InStream, class Registry, class StreamWrapper,
           typename T,
-          meta::require<not meta::is_scope<T>()> = 0>
-void raw_scope(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
+          meta::require<not meta::is_span<T>()> = 0>
+void raw_span(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
 {
     archive & data;
 }
@@ -236,8 +236,8 @@ void raw_scope(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
 // serialization of scoped data with previous dimension initialization
 template <class InStream, class Registry, class StreamWrapper,
           typename T,
-          meta::require<meta::is_scope<T>()> = 0>
-void raw_scope(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& zip)
+          meta::require<meta::is_span<T>()> = 0>
+void raw_span(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& zip)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
@@ -248,24 +248,26 @@ void raw_scope(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& zip)
     zip.init(ptr);
 
     for (size_type i = 0; i < zip.size(); ++i)
-        raw_scope(archive, zip[i]);
+        raw_span(archive, zip[i]);
 }
 
 } // namespace detail
 
 template <class InStream, class Registry, class StreamWrapper,
           typename T,
-          typename D, typename... Dn>
-void scope(ReadArchive<InStream, Registry, StreamWrapper>& archive,
+          typename D, typename... Dn,
+          meta::require<meta::and_<std::is_arithmetic<D>,
+                                   std::is_arithmetic<Dn>...>::value> = 0>
+void span(ReadArchive<InStream, Registry, StreamWrapper>& archive,
            T& pointer, D& d, Dn&... dn)
 {
     if (pointer != nullptr)
-        throw "the read scoped data must be initialized to nullptr.";
+        throw "the read span data must be initialized to nullptr.";
 
     archive(d, dn...);
 
-    auto data = zip(pointer, d, dn...);
-    detail::raw_scope(archive, data);
+    auto span_data = zip(pointer, d, dn...);
+    detail::raw_span(archive, span_data);
 }
 
 SERIALIZATION_READ_ARCHIVE_GENERIC(ref, meta::is_ref<T>())
