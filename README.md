@@ -15,13 +15,13 @@ Is a header-only library implemented purely in C++11.
 # Functional:
 
 #### Serialization of common types:
-- arithmetic
-- enum
-- static array
+- all arithmetic types
+- enum or scoped enum
+- static or dynamic array
 - pointer (with data tracking)
 #### Sserialization of library types:
 - STL: string, vector, array...
-- any usage type
+- any usage types
 #### serialization of users class:
 - common
 - hierarchy
@@ -154,13 +154,15 @@ For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` 
 and also ```operator >>``` for ```ReadArchive``` objects.
 
 Examples:
-```C++
+```
 // saving objects to the archive
 archive << shape << vector << animal << human;
 // loading objects from the archive
 archive >> shape >> vector >> animal >> human;
 //depends on archive type
 archive & shape & vector & animal & human;
+// or
+archive(shape, vector, animal, human);
 ```
 
 # License:
