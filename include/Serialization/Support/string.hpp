@@ -27,8 +27,6 @@ namespace library
 
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(string, meta::is_std_basic_string<T>::value)
 {
-    using char_type = typename T::value_type;
-
     const auto string_size = string.size();
 
     archive & string_size;

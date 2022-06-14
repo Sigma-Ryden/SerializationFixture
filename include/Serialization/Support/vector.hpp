@@ -25,7 +25,7 @@ namespace library
 
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(vector, meta::is_std_vector<T>::value)
 {
-    auto size = vector.size();
+    const auto size = vector.size();
 
     archive & size;
     for (const auto& item : vector)
