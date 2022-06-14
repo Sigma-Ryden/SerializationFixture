@@ -65,7 +65,7 @@ public:
               typename key_type = decltype(Access::static_key<T>())>
     static void save(Archive& archive, P& pointer, key_type id)
     {
-        return save_impl<T, Tn..., T>(archive, pointer, id);
+        save_impl<T, Tn..., T>(archive, pointer, id);
     }
 
     template <class Archive, class P,
@@ -73,7 +73,33 @@ public:
               typename key_type = decltype(Access::static_key<T>())>
     static void load(Archive& archive, P& pointer, key_type id)
     {
-        return load_impl<T, Tn..., T>(archive, pointer, id);
+        load_impl<T, Tn..., T>(archive, pointer, id);
+    }
+
+    template <class Archive, class P,
+              meta::require<meta::is_polymorphic_pointer<P>()> = 0>
+    static void save(Archive& archive, P& pointer)
+    {
+        if (pointer == nullptr)
+            throw "the write pointer was not allocated.";
+
+        auto id = Access::dynamic_key(*pointer);
+        archive & id;
+
+        save(archive, pointer, id);
+    }
+
+    template <class Archive, class P,
+              meta::require<meta::is_polymorphic_pointer<P>()> = 0>
+    static void load(Archive& archive, P& pointer)
+    {
+        using T = meta::deref<P>;
+        using key_type = decltype(Access::static_key<T>());
+
+        key_type id;
+        archive & id;
+
+        load(archive, pointer, id);
     }
 
 private:

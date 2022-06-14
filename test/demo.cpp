@@ -213,7 +213,7 @@ void test_common()
 void test_object_serialization()
 {
     {
-        std::ofstream file("D:\\experimental.bin");
+        std::ofstream file("D:\\test_object_serialization.bin");
 
         if (not file.is_open()) return;
 
@@ -233,7 +233,7 @@ void test_object_serialization()
         std::cout << "Serialization done.\n";
     }
     {
-        std::ifstream file("D:\\experimental.bin");
+        std::ifstream file("D:\\test_object_serialization.bin");
 
         if (not file.is_open()) return;
 
@@ -269,7 +269,7 @@ void print(int** arr, int h, int w)
 void test_scope()
 {
     {
-        std::ofstream file("D:\\experimental.bin");
+        std::ofstream file("D:\\test_scope.bin");
 
         if (not file.is_open()) return;
 
@@ -296,7 +296,7 @@ void test_scope()
         // implicit delete pointer
     }
     {
-        std::ifstream file("D:\\experimental.bin");
+        std::ifstream file("D:\\test_scope.bin");
 
         if (not file.is_open()) return;
 
