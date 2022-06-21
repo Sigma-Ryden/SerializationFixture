@@ -4,23 +4,19 @@
 #include <Serialization/Access.hpp>
 #include <Serialization/Detail/Meta.hpp>
 
-#define SERIALIZATION_IMPLEMENT_CLASS_INFO(...)                                                         \
-    static constexpr std::size_t static_key() noexcept {                                                \
-        return ::serialization::static_hash(#__VA_ARGS__);                                              \
-    }                                                                                                   \
-    virtual std::size_t dynamic_key() const noexcept {                                                  \
-        return static_key();                                                                            \
-    }
+#define SERIALIZATION_CLASS_INFO(value)                                                                 \
+    static constexpr std::size_t static_key() noexcept { return (value); }                              \
+    virtual std::size_t dynamic_key() const noexcept { return (value); }
 
-#define SERIALIZATION_IMPLEMENT_CLASS_TPL_INFO(...)                                                     \
-    template<>                                                                                          \
-    constexpr std::size_t __VA_ARGS__::static_key() noexcept {                                          \
-        return ::serialization::static_hash(#__VA_ARGS__);                                              \
-    }                                                                                                   \
-    template<>                                                                                          \
-    std::size_t __VA_ARGS__::dynamic_key() const noexcept {                                             \
-        return static_key();                                                                            \
-    }
+#define SERIALIZATION_CLASS_TPL_INFO(value, ...)                                                        \
+    template <> constexpr std::size_t __VA_ARGS__::static_key() noexcept { return (value); }            \
+    template <> std::size_t __VA_ARGS__::dynamic_key() const noexcept { return (value); }
+
+#define SERIALIZATION_CLASS_HASH_INFO(...)                                                              \
+    SERIALIZATION_CLASS_INFO(::serialization::static_hash(#__VA_ARGS__))
+
+#define SERIALIZATION_CLASS_TPL_HASH_INFO(...)                                                          \
+    SERIALIZATION_CLASS_TPL_INFO(::serialization::static_hash(#__VA_ARGS__), __VA_ARGS__)
 
 namespace serialization
 {
@@ -33,7 +29,7 @@ void base(Archive& archive, Derived& derived)
 }
 
 template <typename Base, class Archive, typename Derived,
-    meta::require<meta::is_virtual_base_of<Base, Derived>()> = 0>
+    meta::require<meta::is_base_of<Base, Derived>()> = 0>
 void virtual_base(Archive& archive, Derived& derived)
 {
     if (Access::dynamic_key(derived) == Access::template static_key<Derived>())

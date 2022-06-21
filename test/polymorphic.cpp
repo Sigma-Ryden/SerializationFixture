@@ -14,7 +14,7 @@ template <class SomeType>
 class Base
 {
     SERIALIZATION_ARCHIVE_ACCESS()
-    SERIALIZATION_IMPLEMENT_CLASS_INFO(Base<SomeType>)
+    SERIALIZATION_CLASS_HASH_INFO(Base<SomeType>)
 
 protected:
     SomeType data;
@@ -43,13 +43,13 @@ private:
     }
 };
 // partial class info
-SERIALIZATION_IMPLEMENT_CLASS_TPL_INFO(Base<double>)
-SERIALIZATION_IMPLEMENT_CLASS_TPL_INFO(Base<std::string>)
+SERIALIZATION_CLASS_TPL_HASH_INFO(Base<double>)
+SERIALIZATION_CLASS_TPL_HASH_INFO(Base<std::string>)
 
 class Derived : public Base<std::string>
 {
     SERIALIZATION_ARCHIVE_ACCESS()
-    SERIALIZATION_IMPLEMENT_CLASS_INFO(Derived)
+    SERIALIZATION_CLASS_HASH_INFO(Derived)
 
 private:
     float value;
@@ -148,8 +148,7 @@ struct A
 {
     virtual ~A() {}
 
-    static constexpr int static_key() { return 0; }
-    virtual int dynamic_key() { return 0; }
+    SERIALIZATION_CLASS_INFO(0)
 
     SERIALIZATION_UNIFIED(ar) { return ar; }
 };
@@ -160,20 +159,18 @@ struct A
 // else do something...
 struct B : virtual A
 {
-    virtual int dynamic_key() { return 1; }
-    static constexpr int static_key() { return 1; }
+    SERIALIZATION_CLASS_INFO(1)
 
     SERIALIZATION_UNIFIED(ar)
     {
-        sr::virtual_base<A>(ar, *this);
+        sr::virtual_base<A>(ar, *this); // works even for non-virtual base class
         return ar;
     }
 };
 
 struct C :  virtual A
 {
-    virtual int dynamic_key() { return 2; }
-    static constexpr int static_key() { return 2; }
+    SERIALIZATION_CLASS_INFO(2)
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -185,8 +182,7 @@ struct C :  virtual A
 
 struct D : B, C
 {
-    virtual int dynamic_key() { return 3; }
-    static constexpr int static_key() { return 3; }
+    SERIALIZATION_CLASS_INFO(3)
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -199,8 +195,7 @@ struct D : B, C
 };
 struct F : D
 {
-    virtual int dynamic_key() { return 4; }
-    static constexpr int static_key() { return 4; }
+    SERIALIZATION_CLASS_INFO(4)
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -212,7 +207,7 @@ struct F : D
 
 void test_virtual_base()
 {
-    using Registry = sr::Registry<A, B, C, D, F>;
+    using Registry = sr::Registry<A, B, C, D, F>; // or just specify A and F
 
     using WriteArchive = sr::WriteArchive<std::ofstream, Registry>;
     using ReadArchive  = sr::ReadArchive<std::ifstream, Registry>;
@@ -234,6 +229,7 @@ void test_virtual_base()
         catch (const char* e)
         {
             std::cout << e << '\n';
+            return;
         }
 
         file.close();
@@ -258,6 +254,7 @@ void test_virtual_base()
         catch (const char* e)
         {
             std::cout << e << '\n';
+            return;
         }
 
         std::cout << a->dynamic_key() << '\n';
