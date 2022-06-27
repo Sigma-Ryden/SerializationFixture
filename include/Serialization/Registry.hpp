@@ -104,7 +104,7 @@ private:
     static void save_if_derived_of(Archive& archive, Base& pointer)
     {
         auto derived = Access::template runtime_cast<Derived*>(pointer);
-        archive & (*derived);
+        archive & (*derived); // will never nullptr
     }
 
     template <class Derived, class Archive, class Base,
@@ -141,7 +141,7 @@ private:
         pointer = Access::template runtime_cast<B*>(hold);
 
         auto derived = Access::template runtime_cast<Derived*>(pointer);
-        archive & (*derived);
+        archive & (*derived); // will never nullptr
     }
 
     template <class Derived, class Archive, class Base,
