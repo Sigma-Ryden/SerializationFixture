@@ -66,13 +66,13 @@ public:
     }
 
     template <class To, class From>
-    static To cast(From& from)
+    static To cast(From& from) noexcept
     {
         return static_cast<To>(from);
     }
 
     template <class To, class From>
-    static To runtime_cast(From& from)
+    static To runtime_cast(From& from) // maybe throw exception
     {
         return dynamic_cast<To>(from);
     }
