@@ -23,17 +23,17 @@ namespace serialization
 
 template <typename Base, class Archive, typename Derived,
     meta::require<meta::is_base_of<Base, Derived>()> = 0>
-void base(Archive& archive, Derived& derived)
+void base(Archive& archive, Derived& derived) noexcept
 {
-    archive & static_cast<Base&>(derived);
+    archive & Access::template cast<Base&>(derived);
 }
 
 template <typename Base, class Archive, typename Derived,
     meta::require<meta::is_base_of<Base, Derived>()> = 0>
-void virtual_base(Archive& archive, Derived& derived)
+void virtual_base(Archive& archive, Derived& derived) noexcept
 {
     if (Access::dynamic_key(derived) == Access::template static_key<Derived>())
-        archive & static_cast<Base&>(derived);
+       base<Base>(archive, derived);
 
 #ifdef SERIALIZATION_DEBUG
     else throw "the srializable object must serialize the virtual base object.";
@@ -103,7 +103,8 @@ private:
               meta::require<meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
     static void save_if_derived_of(Archive& archive, Base& pointer)
     {
-        archive & dynamic_cast<Derived&>(*pointer);
+        auto derived = Access::template runtime_cast<Derived*>(pointer);
+        archive & (*derived);
     }
 
     template <class Derived, class Archive, class Base,
@@ -128,16 +129,19 @@ private:
     }
 
     template <class Derived, class Archive, class Base,
+              typename B = meta::deref<Base>,
               meta::require<not meta::is_abstract<Derived>() and
-                            meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
+                            meta::is_base_of<B, Derived>()> = 0>
     static void load_if_derived_of(Archive& archive, Base& pointer)
     {
         if (pointer != nullptr)
             throw "the read pointer must be initialized to nullptr.";
 
-        pointer = new Derived;
+        auto hold = new Derived;
+        pointer = Access::template runtime_cast<B*>(hold);
 
-        archive & (dynamic_cast<Derived&>(*pointer));
+        auto derived = Access::template runtime_cast<Derived*>(pointer);
+        archive & (*derived);
     }
 
     template <class Derived, class Archive, class Base,

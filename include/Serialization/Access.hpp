@@ -64,6 +64,18 @@ public:
     {
         return T::static_key();
     }
+
+    template <class To, class From>
+    static To cast(From& from)
+    {
+        return static_cast<To>(from);
+    }
+
+    template <class To, class From>
+    static To runtime_cast(From& from)
+    {
+        return dynamic_cast<To>(from);
+    }
 };
 
 } // namespace serialization

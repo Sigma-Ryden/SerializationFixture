@@ -51,6 +51,9 @@ using deref = typename detail::deref_impl<It>::type;
 template <bool condition, typename if_true, typename if_false>
 using if_ = typename std::conditional<condition, if_true, if_false>::type;
 
+template <typename T>
+using decay = typename std::decay<T>::type;
+
 template <class...> struct and_ : std::true_type {};
 template <class B1> struct and_<B1> : B1 {};
 template <class B1, class... Bn>
