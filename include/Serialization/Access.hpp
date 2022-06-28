@@ -13,6 +13,9 @@ namespace serialization
 
 class Access
 {
+    template <class... Tn>
+    friend class Registry;
+
 private:
     // Special type for has_function_tpl_helper meta
     struct dummy_type;
@@ -65,6 +68,7 @@ public:
         return T::static_key();
     }
 
+private:
     template <class To, class From>
     static To cast(From& from) noexcept
     {
@@ -76,7 +80,32 @@ public:
     {
         return dynamic_cast<To>(from);
     }
+
+public: // not necessary, friend search applied via ADL or external declaration
+    template <typename Base, class Archive, typename Derived,
+              meta::require<meta::is_base_of<Base, Derived>()> = 0>
+    friend void base(Archive& archive, Derived& derived) noexcept
+    {
+        archive & Access::template cast<Base&>(derived);
+    }
 };
+
+// Declaration friend function template for the Access class
+template <typename Base, class Archive, typename Derived,
+          meta::require<meta::is_base_of<Base, Derived>()>>
+void base(Archive& archive, Derived& derived) noexcept;
+
+template <typename Base, class Archive, typename Derived,
+    meta::require<meta::is_base_of<Base, Derived>()> = 0>
+void virtual_base(Archive& archive, Derived& derived) noexcept
+{
+    if (Access::dynamic_key(derived) == Access::template static_key<Derived>())
+       base<Base>(archive, derived);
+
+#ifdef SERIALIZATION_DEBUG
+    else throw "the srializable object must serialize the virtual base object.";
+#endif
+}
 
 } // namespace serialization
 

@@ -21,25 +21,6 @@
 namespace serialization
 {
 
-template <typename Base, class Archive, typename Derived,
-    meta::require<meta::is_base_of<Base, Derived>()> = 0>
-void base(Archive& archive, Derived& derived) noexcept
-{
-    archive & Access::template cast<Base&>(derived);
-}
-
-template <typename Base, class Archive, typename Derived,
-    meta::require<meta::is_base_of<Base, Derived>()> = 0>
-void virtual_base(Archive& archive, Derived& derived) noexcept
-{
-    if (Access::dynamic_key(derived) == Access::template static_key<Derived>())
-       base<Base>(archive, derived);
-
-#ifdef SERIALIZATION_DEBUG
-    else throw "the srializable object must serialize the virtual base object.";
-#endif
-}
-
 template <class... Tn>
 class Registry
 {
