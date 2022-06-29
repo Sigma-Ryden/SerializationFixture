@@ -12,12 +12,10 @@
 #include <Serialization/Span.hpp>
 
 #define SERIALIZATION_LOAD(archive)                                                                     \
-    template <class Archive>                                                                            \
-    auto load(Archive& archive) -> Archive&                                                             \
+    template <class Archive> void load(Archive& archive)                                                \
 
 #define SERIALIZATION_SAVE(archive)                                                                     \
-    template <class Archive>                                                                            \
-    auto save(Archive& archive) -> Archive&
+    template <class Archive> void save(Archive& archive)
 
 #define SERIALIZATION_UNIFIED(archive)                                                                  \
     SERIALIZATION_LOAD(archive) { return this->save(archive); }                                         \

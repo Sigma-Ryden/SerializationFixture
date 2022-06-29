@@ -53,15 +53,13 @@ public:
 private:
     SERIALIZATION_SAVE(ar)
     {
-        return ar & pi_ & data_;
+        ar & pi_ & data_;
     }
 
     SERIALIZATION_LOAD(ar)
     {
         ar & pi_;
         ar & data_;
-
-        return ar;
     }
 
 public:
@@ -86,7 +84,7 @@ public:
 public:
     SERIALIZATION_UNIFIED(ar)
     {
-        return ar & x & y & b;
+        ar & x & y & b;
     }
 
     friend std::ostream& operator<< (std::ostream& out, const A& obj)
@@ -117,8 +115,6 @@ private:
     {
         ar & name_;
         ar & age_;
-
-        return ar;
     }
 };
 
@@ -144,8 +140,6 @@ public:
         serialization::base<Human>(ar, *this);
 
         ar & force_;
-
-        return ar;
     }
 };
 

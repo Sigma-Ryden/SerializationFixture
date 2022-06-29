@@ -35,8 +35,6 @@ private:
         ar & name_;
         ar & x_;
         ar & y_;
-
-        return ar;
     }
 };
 

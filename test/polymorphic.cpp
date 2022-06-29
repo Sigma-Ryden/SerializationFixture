@@ -33,13 +33,13 @@ private:
     SERIALIZATION_SAVE(ar)
     {
         std::cout << "Save Base class\n";
-        return ar & data;
+        ar & data;
     }
 
     SERIALIZATION_LOAD(ar)
     {
         std::cout << "Load Base class\n";
-        return ar & data;
+        ar & data;
     }
 };
 // partial class info
@@ -68,8 +68,6 @@ private:
         sr::base<Base>(ar, *this);
 
         ar & value;
-
-        return ar;
     }
 };
 
@@ -150,7 +148,7 @@ struct A
 
     SERIALIZATION_CLASS_INFO(0)
 
-    SERIALIZATION_UNIFIED(ar) { return ar; }
+    SERIALIZATION_UNIFIED(ar) {}
 };
 
 // virtual_base serialization proccess:
@@ -164,7 +162,6 @@ struct B : virtual A
     SERIALIZATION_UNIFIED(ar)
     {
         sr::virtual_base<A>(ar, *this); // works even for non-virtual base class
-        return ar;
     }
 };
 
@@ -175,8 +172,6 @@ struct C :  virtual A
     SERIALIZATION_UNIFIED(ar)
     {
         sr::virtual_base<A>(ar, *this);
-
-        return ar;
     }
 };
 
@@ -189,8 +184,6 @@ struct D : B, C
         sr::base<A>(ar, *this);
         sr::base<B>(ar, *this);
         sr::base<C>(ar, *this);
-
-        return ar;
     }
 };
 struct F : D
@@ -200,8 +193,6 @@ struct F : D
     SERIALIZATION_UNIFIED(ar)
     {
         serialization::base<D>(ar, *this);
-
-        return ar;
     }
 };
 
