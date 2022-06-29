@@ -6,7 +6,7 @@
 
 #include <Serialization/Detail/MacroScope.hpp>
 
-#define SERIALIZATION_ARCHIVE_ACCESS(...) friend class serialization::Access;
+#define SERIALIZATION_ACCESS(...) friend class serialization::Access;
 
 namespace serialization
 {
@@ -14,7 +14,7 @@ namespace serialization
 class Access
 {
     template <class... Tn>
-    friend class Registry;
+    friend class Registry; // Access to `cast` and `runtime_cast`
 
 private:
     // Special type for has_function_tpl_helper meta

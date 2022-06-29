@@ -13,7 +13,7 @@ using namespace sr::tracking; // support of data tracking
 template <class SomeType>
 class Base
 {
-    SERIALIZATION_ARCHIVE_ACCESS()
+    SERIALIZATION_ACCESS()
     SERIALIZATION_CLASS_HASH_INFO(Base<SomeType>)
 
 protected:
@@ -48,7 +48,7 @@ SERIALIZATION_CLASS_TPL_HASH_INFO(Base<std::string>)
 
 class Derived : public Base<std::string>
 {
-    SERIALIZATION_ARCHIVE_ACCESS()
+    SERIALIZATION_ACCESS()
     SERIALIZATION_CLASS_HASH_INFO(Derived)
 
 private:

@@ -11,7 +11,7 @@ using serialization::ReadArchive;
 
 class Shape
 {
-    SERIALIZATION_ARCHIVE_ACCESS()
+    SERIALIZATION_ACCESS()
 
 private:
     std::string name_;

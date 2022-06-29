@@ -45,7 +45,7 @@ And let's equip our simple class with serialization support:
 ```C++
 class Shape
 {
-    SERIALIZATION_ARCHIVE_ACCESS()
+    SERIALIZATION_ACCESS()
 
 private:
     std::string name_;
@@ -73,7 +73,7 @@ private:
 };
 ```
 Explaining of using macros above:
-- ```SERIALIZATION_ARCHIVE_ACCESS()``` - Provide us with secure saving and loading of objects.
+- ```SERIALIZATION_ACCESS()``` - Provide us with secure saving and loading of objects.
 You can omit this macro if the serialization functions are public.
 - ```SERIALIZATION_UNIFIED()``` - Generate save/load serialization functions for given class.
 This macro allows you to split into two separate macros: ```SERIALIZATION_SAVE()``` and ```SERIALIZATION_LOAD()``` if needed.
@@ -159,7 +159,7 @@ archive << shape << vector << animal << human;
 archive >> shape >> vector >> animal >> human;
 //depends on archive type
 archive & shape & vector & animal & human;
-// or
+// or operator()
 archive(shape, vector, animal, human);
 ```
 

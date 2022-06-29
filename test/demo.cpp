@@ -36,7 +36,7 @@ public:
 class B
 {
     // is the same: friend class serialization::Access
-    SERIALIZATION_ARCHIVE_ACCESS()
+    SERIALIZATION_ACCESS()
 
 private:
     float pi_;
@@ -95,7 +95,7 @@ public:
 
 class Human
 {
-    SERIALIZATION_ARCHIVE_ACCESS()
+    SERIALIZATION_ACCESS()
 
 protected:
     std::string name_;

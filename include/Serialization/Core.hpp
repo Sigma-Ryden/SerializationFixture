@@ -12,7 +12,7 @@
 #include <Serialization/Span.hpp>
 
 #define SERIALIZATION_LOAD(archive)                                                                     \
-    template <class Archive> void load(Archive& archive)                                                \
+    template <class Archive> void load(Archive& archive)
 
 #define SERIALIZATION_SAVE(archive)                                                                     \
     template <class Archive> void save(Archive& archive)
