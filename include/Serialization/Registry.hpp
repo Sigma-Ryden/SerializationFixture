@@ -6,11 +6,11 @@
 
 #define SERIALIZATION_CLASS_INFO(value)                                                                 \
     static constexpr std::size_t static_key() noexcept { return (value); }                              \
-    virtual std::size_t dynamic_key() const noexcept { return (value); }
+    virtual std::size_t dynamic_key() const noexcept { return static_key(); }
 
 #define SERIALIZATION_CLASS_TPL_INFO(value, ...)                                                        \
     template <> constexpr std::size_t __VA_ARGS__::static_key() noexcept { return (value); }            \
-    template <> std::size_t __VA_ARGS__::dynamic_key() const noexcept { return (value); }
+    template <> std::size_t __VA_ARGS__::dynamic_key() const noexcept { return static_key(); }
 
 #define SERIALIZATION_CLASS_HASH_INFO(...)                                                              \
     SERIALIZATION_CLASS_INFO(::serialization::static_hash(#__VA_ARGS__))
