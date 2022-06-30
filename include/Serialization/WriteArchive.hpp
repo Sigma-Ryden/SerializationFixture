@@ -181,6 +181,15 @@ void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer
 inline namespace common
 {
 
+SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, meta::is_unsupported<T>())
+{
+    static constexpr bool always_false = not meta::is_unsupported<T>();
+
+    static_assert(always_false, "'T' is an unsupported type.");
+
+    return archive;
+}
+
 SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
 {
     Access::save(archive, object);

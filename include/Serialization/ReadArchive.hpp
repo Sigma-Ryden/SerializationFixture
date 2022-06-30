@@ -194,6 +194,15 @@ void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
 inline namespace common
 {
 
+SERIALIZATION_READ_ARCHIVE_GENERIC(unsupported_data, meta::is_unsupported<T>())
+{
+    static constexpr bool always_false = not meta::is_unsupported<T>();
+
+    static_assert(always_false, "'T' is an unsupported type.");
+
+    return archive;
+}
+
 SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
 {
     Access::load(archive, object);

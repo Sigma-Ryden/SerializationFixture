@@ -37,6 +37,12 @@ namespace detail
 template <typename T, typename = void_t<>>
 struct deref_impl { using type = T; };
 
+template <>
+struct deref_impl<void*>
+{
+    using type = void;
+};
+
 template <typename T>
 struct deref_impl<T, void_t<decltype(*std::declval<T>())>>
 {
@@ -145,8 +151,8 @@ template <class Base, class Derived> constexpr bool is_base_of() noexcept
 
 template <class Base, class Derived> constexpr bool is_virtual_base_of() noexcept
 {
-    return  is_base_of<Base, Derived>() and
-            not detail::can_static_cast<Base*, Derived*>::value;
+    return is_base_of<Base, Derived>()
+       and not detail::can_static_cast<Base*, Derived*>::value;
 }
 
 template <typename T> constexpr bool is_abstract() noexcept
@@ -199,11 +205,25 @@ template <typename T> constexpr bool is_polymorphic_pointer() noexcept
     return is_pointer<T>() and std::is_polymorphic<meta::deref<T>>::value;
 }
 
+template <typename T> constexpr bool is_void_pointer() noexcept
+{
+    return std::is_same<T, void*>::value;
+}
+
 template <typename T> constexpr bool is_pod_pointer() noexcept
 {
     return is_pointer<T>()
-           and not is_abstract_pointer<T>()
-           and not is_polymorphic_pointer<T>();
+       and not is_void_pointer<T>()
+       and not is_polymorphic_pointer<T>();
+}
+
+template <typename T> constexpr bool is_unsupported() noexcept
+{
+    return is_void_pointer<T>()
+        or std::is_null_pointer<T>::value
+        or std::is_function<T>::value
+        or std::is_member_function_pointer<T>::value
+        or std::is_member_object_pointer<T>::value;
 }
 
 } // namespace meta
