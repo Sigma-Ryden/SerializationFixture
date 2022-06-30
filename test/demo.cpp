@@ -72,7 +72,7 @@ public:
 class A
 {
     // not required for public save/load function
-    //SERIALIZATION_ARCHIVE_ACCESS()
+    //SERIALIZATION_ACCESS()
 
 private:
     int x, y;
