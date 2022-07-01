@@ -31,8 +31,6 @@ using remove_cv = typename std::remove_cv<T>::type;
 template <typename T>
 using remove_ref = typename std::remove_reference<T>::type;
 
-
-
 namespace detail
 {
 
@@ -234,13 +232,14 @@ template <typename T> constexpr bool is_pod_pointer() noexcept
        and not is_void_pointer<T>()
        and not is_polymorphic_pointer<T>()
        and not is_function_pointer<T>()
-       and not std::is_member_pointer<T>::value
-       and not std::is_function<T>::value;
+       and not std::is_null_pointer<T>()
+       and not std::is_member_pointer<T>::value;
 }
 
 template <typename T> constexpr bool is_unsupported() noexcept
 {
     return is_void_pointer<T>()
+        or is_function_pointer<T>()
         or std::is_null_pointer<T>::value
         or std::is_function<T>::value
         or std::is_member_function_pointer<T>::value
