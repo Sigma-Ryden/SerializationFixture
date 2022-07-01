@@ -8,6 +8,8 @@
 #include <Serialization/WriteArchive.hpp>
 #include <Serialization/ReadArchive.hpp>
 
+#include <Serialization/TypeRegistry.hpp>
+
 namespace serialization
 {
 
@@ -56,5 +58,7 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(string, meta::is_std_basic_string<T>::value)
 } // namespace library
 
 } // namespace serialization
+
+SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_basic_string<T>::value)
 
 #endif // SERIALIZATION_SUPPORT_STRING_HPP

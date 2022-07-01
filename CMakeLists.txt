@@ -25,6 +25,7 @@ add_executable(${PROJECT_NAME}
     include/Serialization/Span.hpp
     include/Serialization/Ref.hpp
     include/Serialization/Registry.hpp
+    include/Serialization/TypeRegistry.hpp
     include/Serialization/Access.hpp
     include/Serialization/ReadArchive.hpp
     include/Serialization/WriteArchive.hpp

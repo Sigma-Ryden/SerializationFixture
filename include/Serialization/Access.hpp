@@ -6,7 +6,8 @@
 
 #include <Serialization/Detail/MacroScope.hpp>
 
-#define SERIALIZATION_ACCESS(...) friend class serialization::Access;
+#define SERIALIZATION_ACCESS(...)                                                                       \
+    friend class serialization::Access;
 
 namespace serialization
 {

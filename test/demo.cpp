@@ -151,6 +151,7 @@ using FormatWriteArchive =
     sr::WriteArchive<OutStream, sr::Registry<>, FormatOutStreamWrapper<OutStream>>;
 
 // FormatWriteArchive overloading operator& for class B
+
 template <typename OutStream>
 auto operator& (FormatWriteArchive<OutStream>& archive, B& t) -> decltype(archive)
 {
@@ -319,12 +320,13 @@ void test_scope()
 
 int main()
 {
+    //
     test_common();
     test_std_array_serialization();
 
     test_object_serialization();
 
     test_scope();
-
+    //
     return 0;
 }

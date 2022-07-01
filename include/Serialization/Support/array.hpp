@@ -8,6 +8,8 @@
 #include <Serialization/WriteArchive.hpp>
 #include <Serialization/ReadArchive.hpp>
 
+#include <Serialization/TypeRegistry.hpp>
+
 namespace serialization
 {
 
@@ -44,9 +46,10 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(array, meta::is_std_array<T>::value)
     return archive;
 }
 
-
 } // namespace library
 
 } // namespace serialization
+
+SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_array<T>::value)
 
 #endif // SERIALIZATION_SUPPORT_ARRAY_HPP

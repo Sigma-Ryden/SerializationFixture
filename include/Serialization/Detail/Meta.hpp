@@ -31,10 +31,12 @@ using remove_cv = typename std::remove_cv<T>::type;
 template <typename T>
 using remove_ref = typename std::remove_reference<T>::type;
 
+
+
 namespace detail
 {
 
-template <typename T, typename = void_t<>>
+template <typename T, typename = void>
 struct deref_impl { using type = T; };
 
 template <>
@@ -69,13 +71,24 @@ struct and_<B1, Bn...>
 namespace detail
 {
 
-template <typename From, typename To, typename = void_t<>>
+template <typename From, typename To, typename = void>
 struct can_static_cast: std::false_type {};
 
 template <typename From, typename To>
 struct can_static_cast<From, To,
     void_t<decltype( static_cast<To>(std::declval<From>()) )>>
 : std::true_type {};
+
+} // namespace detail
+
+namespace detail
+{
+
+template <typename>
+struct is_function_pointer : std::false_type {};
+
+template <typename Ret, typename... Args>
+struct is_function_pointer<Ret (*)(Args...)> : std::true_type {};
 
 } // namespace detail
 
@@ -210,11 +223,19 @@ template <typename T> constexpr bool is_void_pointer() noexcept
     return std::is_same<T, void*>::value;
 }
 
+template <typename T> constexpr bool is_function_pointer() noexcept
+{
+    return detail::is_function_pointer<T>();
+}
+
 template <typename T> constexpr bool is_pod_pointer() noexcept
 {
     return is_pointer<T>()
        and not is_void_pointer<T>()
-       and not is_polymorphic_pointer<T>();
+       and not is_polymorphic_pointer<T>()
+       and not is_function_pointer<T>()
+       and not std::is_member_pointer<T>::value
+       and not std::is_function<T>::value;
 }
 
 template <typename T> constexpr bool is_unsupported() noexcept

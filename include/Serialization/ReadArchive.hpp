@@ -8,6 +8,8 @@
 #include <memory> // addressof
 
 #include <Serialization/Access.hpp>
+#include <Serialization/TypeRegistry.hpp>
+
 #include <Serialization/Registry.hpp>
 
 #include <Serialization/Ref.hpp>
@@ -18,11 +20,11 @@
 #include <Serialization/Detail/Meta.hpp>
 
 #define SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, ...)                                              \
-    template <class InStream, class Registry, class StreamWrapper, typename T,                          \
-              serialization::meta::require<(bool)(__VA_ARGS__)> = 0>                                    \
-    auto operator& (                                                                                    \
-        serialization::ReadArchive<InStream, Registry, StreamWrapper>& archive,                         \
-        T& parameter) -> decltype(archive)
+    template <class ReadArchive, typename T,                                                            \
+    serialization::meta::require<serialization::meta::is_read_archive<ReadArchive>() and                \
+                                 serialization::meta::is_registered<T>() and                            \
+                                 (bool)(__VA_ARGS__)> = 0>                                              \
+    ReadArchive& operator& (ReadArchive& archive, T& parameter)
 
 namespace serialization
 {
@@ -77,9 +79,6 @@ public:
     auto tracking() noexcept -> TrackingTable& { return track_table_; }
     auto registry() noexcept -> Registry& { return registry_; }
 
-    template <typename T, meta::require<meta::is_arithmetic<T>()> = 0>
-    auto operator& (T& number) -> ReadArchive&;
-
     template <typename T>
     auto operator>> (T& data) -> ReadArchive&;
 
@@ -93,10 +92,20 @@ private:
 namespace meta
 {
 
+namespace detail
+{
+
 template <typename> struct is_read_archive : std::false_type {};
 
 template <class InStream, class Registry, class StreamWrapper>
 struct is_read_archive<ReadArchive<InStream, Registry, StreamWrapper>> : std::true_type {};
+
+} // namespace detail
+
+template <class T> constexpr bool is_read_archive()
+{
+    return detail::is_read_archive<T>::value;
+}
 
 } // namespace meta
 
@@ -107,40 +116,51 @@ ReadArchive<InStream, Registry, StreamWrapper>::ReadArchive(InStream& stream)
 }
 
 template <class InStream, class Registry, class StreamWrapper>
-template <typename T, meta::require<meta::is_arithmetic<T>()>>
-auto ReadArchive<InStream, Registry, StreamWrapper>::operator& (T& number) -> ReadArchive&
-{
-    archive_.read(number, sizeof(number));
-
-    return *this;
-}
-
-template <class InStream, class Registry, class StreamWrapper>
 template <typename T>
-auto ReadArchive<InStream, Registry, StreamWrapper>::operator>> (T& data) -> ReadArchive&
+auto ReadArchive<InStream, Registry, StreamWrapper>::operator>> (
+    T& data) -> ReadArchive&
 {
     return (*this) & data;
 }
 
 template <class InStream, class Registry, class StreamWrapper>
 template <typename T, typename... Tn>
-auto ReadArchive<InStream, Registry, StreamWrapper>::operator() (T& data, Tn&... data_n) -> ReadArchive&
+auto ReadArchive<InStream, Registry, StreamWrapper>::operator() (
+    T& data, Tn&... data_n) -> ReadArchive&
 {
     (*this) & data;
 
     return (*this)(data_n...);
 }
 
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and not meta::is_registered<T>()> = 0>
+ReadArchive& operator& (ReadArchive& archive, T& unsupported_data)
+{
+    static constexpr bool always_false = meta::is_registered<T>();
+
+    static_assert(always_false,
+        "'T' is an unsupported type for the 'serialization::ReadArchive'. "
+        "Try overload an operator& to serialize the type 'T' with the macro "
+        "'SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, condition)' "
+        "and then register the type 'T' with the macros "
+        "'SERIALIZATION_TYPE_REGISTRY(name)' or "
+        "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'."
+    );
+
+    return archive;
+}
+
 namespace tracking
 {
 
-template <class InStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<not meta::is_pointer<T>()> = 0>
-void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and not meta::is_pointer<T>()> = 0>
+void track(ReadArchive& archive, T& data)
 {
-    using key_type =
-        typename ReadArchive<InStream, Registry, StreamWrapper>::TrackingTable::key_type;
+    using key_type = typename ReadArchive::TrackingTable::key_type;
 
     key_type key;
     archive & key;
@@ -159,13 +179,12 @@ void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
     archive & data;
 }
 
-template <class InStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<meta::is_pointer<T>()> = 0>
-void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and meta::is_pointer<T>()> = 0>
+void track(ReadArchive& archive, T& pointer)
 {
-    using key_type =
-        typename ReadArchive<InStream, Registry, StreamWrapper>::TrackingTable::key_type;
+    using key_type = typename ReadArchive::TrackingTable::key_type;
 
     if (pointer != nullptr)
         throw "the read tracking pointer must be initialized to nullptr.";
@@ -194,18 +213,16 @@ void track(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& pointer)
 inline namespace common
 {
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(unsupported_data, meta::is_unsupported<T>())
+SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
 {
-    static constexpr bool always_false = not meta::is_unsupported<T>();
-
-    static_assert(always_false, "'T' is an unsupported type.");
+    Access::load(archive, object);
 
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
+SERIALIZATION_READ_ARCHIVE_GENERIC(number, meta::is_arithmetic<T>())
 {
-    Access::load(archive, object);
+    archive.stream().read(number, sizeof(number));
 
     return archive;
 }
@@ -234,19 +251,19 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(array, meta::is_array<T>())
 namespace detail
 {
 
-template <class InStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<not meta::is_span<T>()> = 0>
-void raw_span(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& data)
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and not meta::is_span<T>()> = 0>
+void raw_span(ReadArchive& archive, T& data)
 {
     archive & data;
 }
 
 // serialization of scoped data with previous dimension initialization
-template <class InStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<meta::is_span<T>()> = 0>
-void raw_span(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& zip)
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and meta::is_span<T>()> = 0>
+void raw_span(ReadArchive& archive, T& zip)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
@@ -262,13 +279,12 @@ void raw_span(ReadArchive<InStream, Registry, StreamWrapper>& archive, T& zip)
 
 } // namespace detail
 
-template <class InStream, class Registry, class StreamWrapper,
-          typename T,
+template <class ReadArchive, typename T,
           typename D, typename... Dn,
-          meta::require<meta::and_<std::is_arithmetic<D>,
+          meta::require<meta::is_read_archive<ReadArchive>() and
+                        meta::and_<std::is_arithmetic<D>,
                                    std::is_arithmetic<Dn>...>::value> = 0>
-void span(ReadArchive<InStream, Registry, StreamWrapper>& archive,
-           T& pointer, D& d, Dn&... dn)
+void span(ReadArchive& archive, T& pointer, D& d, Dn&... dn)
 {
     if (pointer != nullptr)
         throw "the read span data must be initialized to nullptr.";
@@ -308,7 +324,7 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
     key_type id;
     archive & id;
 
-    Registry::load(archive, pointer, id);
+    archive.registry().load(archive, pointer, id);
 
     return archive;
 }

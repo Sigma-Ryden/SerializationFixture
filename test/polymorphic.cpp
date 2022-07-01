@@ -161,7 +161,7 @@ struct B : virtual A
 
     SERIALIZATION_UNIFIED(ar)
     {
-        sr::virtual_base<A>(ar, *this); // works even for non-virtual base class
+        sr::virtual_base<A>(ar, *this); // works even for non-virtual base, but maybe ambiguous
     }
 };
 

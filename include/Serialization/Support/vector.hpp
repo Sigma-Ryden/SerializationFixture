@@ -8,6 +8,8 @@
 #include <Serialization/WriteArchive.hpp>
 #include <Serialization/ReadArchive.hpp>
 
+#include <Serialization/TypeRegistry.hpp>
+
 namespace serialization
 {
 
@@ -52,5 +54,7 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(vector, meta::is_std_vector<T>::value)
 } // namespace library
 
 } // namespace serialization
+
+SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_vector<T>::value)
 
 #endif // SERIALIZATION_SUPPORT_VECTOR_HPP

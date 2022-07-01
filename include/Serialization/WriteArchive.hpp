@@ -7,6 +7,8 @@
 #include <memory> // addressof
 
 #include <Serialization/Access.hpp>
+#include <Serialization/TypeRegistry.hpp>
+
 #include <Serialization//Registry.hpp>
 
 #include <Serialization/Ref.hpp>
@@ -17,11 +19,11 @@
 #include <Serialization/Detail/Meta.hpp>
 
 #define SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, ...)                                             \
-    template <class OutStream, class Registry, class StreamWrapper, typename T,                         \
-              serialization::meta::require<(bool)(__VA_ARGS__)> = 0>                                    \
-    auto operator& (                                                                                    \
-        serialization::WriteArchive<OutStream, Registry, StreamWrapper>& archive,                       \
-        T& parameter) -> decltype(archive)
+    template <class WriteArchive, typename T,                                                           \
+    serialization::meta::require<serialization::meta::is_write_archive<WriteArchive>() and              \
+                                 serialization::meta::is_registered<T>() and                            \
+                                 (bool)(__VA_ARGS__)> = 0>                                              \
+    WriteArchive& operator& (WriteArchive& archive, T& parameter)
 
 namespace serialization
 {
@@ -69,9 +71,6 @@ public:
     auto tracking() noexcept -> TrackingTable& { return track_table_; }
     auto registry() noexcept -> Registry& { return registry_; }
 
-    template <typename T, meta::require<meta::is_arithmetic<T>()> = 0>
-    auto operator& (T& number) -> WriteArchive&;
-
     template <typename T>
     auto operator<< (T& data) -> WriteArchive&;
 
@@ -85,10 +84,20 @@ private:
 namespace meta
 {
 
+namespace detail
+{
+
 template <typename> struct is_write_archive : std::false_type {};
 
 template <class OutStream, class Registry, class StreamWrapper>
 struct is_write_archive<WriteArchive<OutStream, Registry, StreamWrapper>> : std::true_type {};
+
+} // namespace detail
+
+template <class T> constexpr bool is_write_archive()
+{
+    return detail::is_write_archive<T>::value;
+}
 
 } // namespace meta
 
@@ -99,40 +108,51 @@ WriteArchive<OutStream, Registry, StreamWrapper>::WriteArchive(OutStream& stream
 }
 
 template <class OutStream, class Registry, class StreamWrapper>
-template <typename T, meta::require<meta::is_arithmetic<T>()>>
-auto WriteArchive<OutStream, Registry, StreamWrapper>::operator& (T& number) -> WriteArchive&
-{
-    archive_.write(number, sizeof(number));
-
-    return *this;
-}
-
-template <class OutStream, class Registry, class StreamWrapper>
 template <typename T>
-auto WriteArchive<OutStream, Registry, StreamWrapper>::operator<< (T& data) -> WriteArchive&
+auto WriteArchive<OutStream, Registry, StreamWrapper>::operator<< (
+    T& data) -> WriteArchive&
 {
     return (*this) & data;
 }
 
 template <class OutStream, class Registry, class StreamWrapper>
 template <typename T, typename... Tn>
-auto WriteArchive<OutStream, Registry, StreamWrapper>::operator() (T& data, Tn&... data_n) -> WriteArchive&
+auto WriteArchive<OutStream, Registry, StreamWrapper>::operator() (
+    T& data, Tn&... data_n) -> WriteArchive&
 {
     (*this) & data;
 
     return (*this)(data_n...);
 }
 
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and not meta::is_registered<T>()> = 0>
+WriteArchive& operator& (WriteArchive& archive, T& unsupported_data)
+{
+    static constexpr bool always_false = meta::is_registered<T>();
+
+    static_assert(always_false,
+        "'T' is an unsupported type for the 'serialization::WriteArchive'. "
+        "Try overload an operator& to serialize the type 'T' with the macro "
+        "'SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, condition)' "
+        "and then register the type 'T' with the macros "
+        "SERIALIZATION_TYPE_REGISTRY(name) or "
+        "SERIALIZATION_TYPE_REGISTRY_IF(condition)."
+    );
+
+    return archive;
+}
+
 namespace tracking
 {
 
-template <class OutStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<not meta::is_pointer<T>()> = 0>
-void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and not meta::is_pointer<T>()> = 0>
+void track(WriteArchive& archive, T& data)
 {
-    using key_type =
-        typename WriteArchive<OutStream, Registry, StreamWrapper>::TrackingTable::key_type;
+    using key_type = typename WriteArchive::TrackingTable::key_type;
 
     auto address = std::addressof(data);
 
@@ -150,13 +170,12 @@ void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
     archive & data;
 }
 
-template <class OutStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<meta::is_pointer<T>()> = 0>
-void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer)
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and meta::is_pointer<T>()> = 0>
+void track(WriteArchive& archive, T& pointer)
 {
-    using key_type =
-        typename WriteArchive<OutStream, Registry, StreamWrapper>::TrackingTable::key_type;
+    using key_type = typename WriteArchive::TrackingTable::key_type;
 
     auto key = reinterpret_cast<key_type>(pointer);
 
@@ -181,18 +200,16 @@ void track(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& pointer
 inline namespace common
 {
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, meta::is_unsupported<T>())
+SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
 {
-    static constexpr bool always_false = not meta::is_unsupported<T>();
-
-    static_assert(always_false, "'T' is an unsupported type.");
+    Access::save(archive, object);
 
     return archive;
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
+SERIALIZATION_WRITE_ARCHIVE_GENERIC(number, meta::is_arithmetic<T>())
 {
-    Access::save(archive, object);
+    archive.stream().write(number, sizeof(number));
 
     return archive;
 }
@@ -215,19 +232,19 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(array, meta::is_array<T>())
 namespace detail
 {
 
-template <class OutStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<not meta::is_span<T>()> = 0>
-void raw_span(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& data)
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and not meta::is_span<T>()> = 0>
+void raw_span(WriteArchive& archive, T& data)
 {
     archive & data;
 }
 
 // serialization of scoped data with previous dimension initialization
-template <class OutStream, class Registry, class StreamWrapper,
-          typename T,
-          meta::require<meta::is_span<T>()> = 0>
-void raw_span(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& zip)
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and meta::is_span<T>()> = 0>
+void raw_span(WriteArchive& archive, T& zip)
 {
     using size_type = typename T::size_type;
 
@@ -237,13 +254,12 @@ void raw_span(WriteArchive<OutStream, Registry, StreamWrapper>& archive, T& zip)
 
 } // namespace detail
 
-template <class OutStream, class Registry, class StreamWrapper,
-          typename T,
+template <class WriteArchive, typename T,
           typename D, typename... Dn,
-          meta::require<meta::and_<std::is_arithmetic<D>,
+          meta::require<meta::is_write_archive<WriteArchive>() and
+                        meta::and_<std::is_arithmetic<D>,
                                    std::is_arithmetic<Dn>...>::value> = 0>
-void span(WriteArchive<OutStream, Registry, StreamWrapper>& archive,
-           T& pointer, D& d, Dn&... dn)
+void span(WriteArchive& archive, T& pointer, D& d, Dn&... dn)
 {
     if (pointer == nullptr)
         throw "the write span data must be allocated.";
@@ -282,7 +298,7 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
     auto id = Access::dynamic_key(*pointer);
     archive & id;
 
-    Registry::save(archive, pointer, id);
+    archive.registry().save(archive, pointer, id);
 
     return archive;
 }
