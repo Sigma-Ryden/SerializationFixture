@@ -135,13 +135,23 @@ auto ReadArchive<InStream, Registry, StreamWrapper>::operator() (
 
 template <class ReadArchive, typename T,
           meta::require<meta::is_read_archive<ReadArchive>()
-                        and not meta::is_registered<T>()> = 0>
-ReadArchive& operator& (ReadArchive& archive, T& unsupported_data)
+                        and meta::is_unsupported<T>()> = 0>
+ReadArchive& operator& (ReadArchive& archive, T& unsupported)
 {
-    static constexpr bool always_false = meta::is_registered<T>();
+    static_assert(meta::to_false<T>(),
+        "'T' is an unsupported type for the 'serialization::ReadArchive'."
+    );
 
-    static_assert(always_false,
-        "'T' is an unsupported type for the 'serialization::ReadArchive'. "
+    return archive;
+}
+
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and not meta::is_registered<T>()> = 0>
+ReadArchive& operator& (ReadArchive& archive, T& unregistered)
+{
+    static_assert(meta::to_false<T>(),
+        "'T' is an unregistered type for the 'serialization::ReadArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
         "'SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, condition)' "
         "and then register the type 'T' with the macros "

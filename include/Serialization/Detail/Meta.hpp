@@ -155,6 +155,8 @@ struct index_sequence_helper<0, In...>
 template <std::size_t N>
 using make_index_sequence = typename detail::index_sequence_helper<N>::type;
 
+template <typename T> constexpr bool to_false() noexcept { return false; }
+
 template <class Base, class Derived> constexpr bool is_base_of() noexcept
 {
     return std::is_base_of<Base, Derived>::value;

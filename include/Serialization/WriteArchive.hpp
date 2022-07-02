@@ -127,18 +127,28 @@ auto WriteArchive<OutStream, Registry, StreamWrapper>::operator() (
 
 template <class WriteArchive, typename T,
           meta::require<meta::is_write_archive<WriteArchive>()
-                        and not meta::is_registered<T>()> = 0>
-WriteArchive& operator& (WriteArchive& archive, T& unsupported_data)
+                        and meta::is_unsupported<T>()> = 0>
+WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 {
-    static constexpr bool always_false = meta::is_registered<T>();
+    static_assert(meta::to_false<T>(),
+        "'T' is an unsupported type for the 'serialization::WriteArchive'."
+    );
 
-    static_assert(always_false,
-        "'T' is an unsupported type for the 'serialization::WriteArchive'. "
+    return archive;
+}
+
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and not meta::is_registered<T>()> = 0>
+WriteArchive& operator& (WriteArchive& archive, T& unregistered)
+{
+    static_assert(meta::to_false<T>(),
+        "'T' is an unregistered type for the 'serialization::WriteArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
         "'SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, condition)' "
         "and then register the type 'T' with the macros "
-        "SERIALIZATION_TYPE_REGISTRY(name) or "
-        "SERIALIZATION_TYPE_REGISTRY_IF(condition)."
+        "'SERIALIZATION_TYPE_REGISTRY(name)' or "
+        "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'."
     );
 
     return archive;

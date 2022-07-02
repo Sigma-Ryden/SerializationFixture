@@ -43,5 +43,6 @@ SERIALIZATION_TYPE_REGISTRY_IF(meta::is_array<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_ref<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_pod_pointer<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_polymorphic_pointer<T>())
+SERIALIZATION_TYPE_REGISTRY_IF(meta::is_unsupported<T>())
 
 #endif // SERIALIZATION_TYPE_REGISTRY_HPP
