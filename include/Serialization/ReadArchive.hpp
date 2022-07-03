@@ -19,7 +19,7 @@
 
 #include <Serialization/Detail/Meta.hpp>
 
-#define SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, ...)                                              \
+#define SERIALIZATION_LOAD_DATA(parameter, ...)                                                         \
     template <class ReadArchive, typename T,                                                            \
     serialization::meta::require<serialization::meta::is_read_archive<ReadArchive>() and                \
                                  serialization::meta::is_registered<T>() and                            \
@@ -153,7 +153,7 @@ ReadArchive& operator& (ReadArchive& archive, T& unregistered)
     static_assert(meta::to_false<T>(),
         "'T' is an unregistered type for the 'serialization::ReadArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
-        "'SERIALIZATION_READ_ARCHIVE_GENERIC(parameter, condition)' "
+        "'SERIALIZATION_LOAD_DATA(parameter, condition)' "
         "and then register the type 'T' with the macros "
         "'SERIALIZATION_TYPE_REGISTRY(name)' or "
         "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'."
@@ -223,21 +223,21 @@ void track(ReadArchive& archive, T& pointer)
 inline namespace common
 {
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
+SERIALIZATION_LOAD_DATA(object, Access::is_save_load_class<T>())
 {
     Access::load(archive, object);
 
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(number, meta::is_arithmetic<T>())
+SERIALIZATION_LOAD_DATA(number, meta::is_arithmetic<T>())
 {
     archive.stream().read(number, sizeof(number));
 
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(enumerator, meta::is_enum<T>())
+SERIALIZATION_LOAD_DATA(enumerator, meta::is_enum<T>())
 {
     using underlying_type = typename std::underlying_type<T>::type;
 
@@ -250,7 +250,7 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(enumerator, meta::is_enum<T>())
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(array, meta::is_array<T>())
+SERIALIZATION_LOAD_DATA(array, meta::is_array<T>())
 {
     for (auto& item : array)
         archive & item;
@@ -305,14 +305,14 @@ void span(ReadArchive& archive, T& pointer, D& d, Dn&... dn)
     detail::raw_span(archive, span_data);
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(ref, meta::is_ref<T>())
+SERIALIZATION_LOAD_DATA(ref, meta::is_ref<T>())
 {
     archive & ref.get();
 
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
+SERIALIZATION_LOAD_DATA(pointer, meta::is_pod_pointer<T>())
 {
     using value_type = meta::deref<T>;
 
@@ -326,7 +326,7 @@ SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
+SERIALIZATION_LOAD_DATA(pointer, meta::is_polymorphic_pointer<T>())
 {
     using value_type = meta::deref<T>;
     using key_type   = decltype(Access::template static_key<value_type>());

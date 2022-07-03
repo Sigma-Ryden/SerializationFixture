@@ -25,7 +25,7 @@ struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
 namespace library
 {
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(vector, meta::is_std_vector<T>::value)
+SERIALIZATION_SAVE_DATA(vector, meta::is_std_vector<T>::value)
 {
     const auto size = vector.size();
 
@@ -36,7 +36,7 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(vector, meta::is_std_vector<T>::value)
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(vector, meta::is_std_vector<T>::value)
+SERIALIZATION_LOAD_DATA(vector, meta::is_std_vector<T>::value)
 {
     using size_type  = typename T::size_type;
 

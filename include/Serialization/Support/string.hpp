@@ -27,7 +27,7 @@ struct is_std_basic_string<std::basic_string<Char, Traits, Alloc>> : std::true_t
 namespace library
 {
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(string, meta::is_std_basic_string<T>::value)
+SERIALIZATION_SAVE_DATA(string, meta::is_std_basic_string<T>::value)
 {
     const auto string_size = string.size();
 
@@ -40,7 +40,7 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(string, meta::is_std_basic_string<T>::value)
     return archive;
 }
 
-SERIALIZATION_READ_ARCHIVE_GENERIC(string, meta::is_std_basic_string<T>::value)
+SERIALIZATION_LOAD_DATA(string, meta::is_std_basic_string<T>::value)
 {
     using size_type = typename T::size_type;
 

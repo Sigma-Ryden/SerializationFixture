@@ -18,7 +18,7 @@
 
 #include <Serialization/Detail/Meta.hpp>
 
-#define SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, ...)                                             \
+#define SERIALIZATION_SAVE_DATA(parameter, ...)                                                         \
     template <class WriteArchive, typename T,                                                           \
     serialization::meta::require<serialization::meta::is_write_archive<WriteArchive>() and              \
                                  serialization::meta::is_registered<T>() and                            \
@@ -145,7 +145,7 @@ WriteArchive& operator& (WriteArchive& archive, T& unregistered)
     static_assert(meta::to_false<T>(),
         "'T' is an unregistered type for the 'serialization::WriteArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
-        "'SERIALIZATION_WRITE_ARCHIVE_GENERIC(parameter, condition)' "
+        "'SERIALIZATION_SAVE_DATA(parameter, condition)' "
         "and then register the type 'T' with the macros "
         "'SERIALIZATION_TYPE_REGISTRY(name)' or "
         "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'."
@@ -210,28 +210,28 @@ void track(WriteArchive& archive, T& pointer)
 inline namespace common
 {
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(object, Access::is_save_load_class<T>())
+SERIALIZATION_SAVE_DATA(object, Access::is_save_load_class<T>())
 {
     Access::save(archive, object);
 
     return archive;
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(number, meta::is_arithmetic<T>())
+SERIALIZATION_SAVE_DATA(number, meta::is_arithmetic<T>())
 {
     archive.stream().write(number, sizeof(number));
 
     return archive;
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(enumerator, meta::is_enum<T>())
+SERIALIZATION_SAVE_DATA(enumerator, meta::is_enum<T>())
 {
     auto value = static_cast<typename std::underlying_type<T>::type>(enumerator);
 
     return archive & value;
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(array, meta::is_array<T>())
+SERIALIZATION_SAVE_DATA(array, meta::is_array<T>())
 {
     for (auto& item : array)
         archive & item;
@@ -280,7 +280,7 @@ void span(WriteArchive& archive, T& pointer, D& d, Dn&... dn)
     detail::raw_span(archive, span_data);
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(ref, meta::is_ref<T>())
+SERIALIZATION_SAVE_DATA(ref, meta::is_ref<T>())
 {
     if (ref.is_null())
         throw "the write reference cannot be null.";
@@ -290,7 +290,7 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(ref, meta::is_ref<T>())
     return archive;
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
+SERIALIZATION_SAVE_DATA(pointer, meta::is_pod_pointer<T>())
 {
     if (pointer == nullptr)
         throw "the write pointer must be allocated.";
@@ -300,7 +300,7 @@ SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_pod_pointer<T>())
     return archive;
 }
 
-SERIALIZATION_WRITE_ARCHIVE_GENERIC(pointer, meta::is_polymorphic_pointer<T>())
+SERIALIZATION_SAVE_DATA(pointer, meta::is_polymorphic_pointer<T>())
 {
     if (pointer == nullptr)
         throw "the write pointer was not allocated.";
