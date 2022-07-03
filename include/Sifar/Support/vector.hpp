@@ -40,10 +40,10 @@ SERIALIZATION_LOAD_DATA(vector, meta::is_std_vector<T>::value)
 {
     using size_type  = typename T::size_type;
 
-    size_type vector_size;
-    archive & vector_size;
+    size_type size;
+    archive & size;
 
-    vector.resize(vector_size);
+    vector.resize(size);
 
     for (auto& item : vector)
         archive & item;

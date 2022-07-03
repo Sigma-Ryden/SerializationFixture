@@ -29,9 +29,9 @@ namespace library
 
 SERIALIZATION_SAVE_DATA(string, meta::is_std_basic_string<T>::value)
 {
-    const auto string_size = string.size();
+    const auto size = string.size();
 
-    archive & string_size;
+    archive & size;
 
     // explicit auto declaration of character without &
     for (auto character : string)
@@ -44,10 +44,10 @@ SERIALIZATION_LOAD_DATA(string, meta::is_std_basic_string<T>::value)
 {
     using size_type = typename T::size_type;
 
-    size_type string_size;
-    archive & string_size;
+    size_type size;
+    archive & size;
 
-    string.resize(string_size);
+    string.resize(size);
 
     for(auto& character : string)
         archive & character;

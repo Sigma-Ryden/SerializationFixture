@@ -40,10 +40,10 @@ SERIALIZATION_LOAD_DATA(forward_list, meta::is_std_forward_list<T>::value)
 {
     using size_type  = typename T::size_type;
 
-    size_type vector_size;
-    archive & vector_size;
+    size_type size;
+    archive & size;
 
-    forward_list.resize(vector_size);
+    forward_list.resize(size);
 
     for (auto& item : forward_list)
         archive & item;

@@ -35,11 +35,6 @@ SERIALIZATION_SAVE_DATA(array, meta::is_std_array<T>::value)
 
 SERIALIZATION_LOAD_DATA(array, meta::is_std_array<T>::value)
 {
-    using size_type  = typename T::size_type;
-
-    size_type vector_size;
-    archive & vector_size;
-
     for (auto& item : array)
         archive & item;
 
