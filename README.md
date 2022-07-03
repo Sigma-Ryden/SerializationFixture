@@ -1,13 +1,13 @@
 # Sifar - Simple serialization library
 
-Sifar is a flexible and extensible C++ library with many features, that will allow you to easily
+`Sifar` is a flexible and extensible C++ library with many features, that will allow you to easily
 and quickly turn your objects into a sequence of bits.
 The library has a small code base, but enough to use it.
 
 Use macros for code generation or read the documentation and write your own code.
-There are 2 main serialization classes under your control: WriteArchive and ReadArchive.
+There are 2 main serialization classes under your control: `WriteArchive` and `ReadArchive`.
 Both classes can be equipped with additional helper classes via template parameters if needed.
-The type Registrar will allow you to properly serialize and deserialize polymorphic and abstract types.
+The type registrar will allow you to properly serialize and deserialize polymorphic and abstract types.
 A wrapper for streams will help you flexibly configure the process of writing and reading data.
 
 Is a header-only library implemented purely in C++11.
