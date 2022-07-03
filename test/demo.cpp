@@ -5,12 +5,12 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Serialization/Core.hpp>
+#include <Sifar/Core.hpp>
 
-#include <Serialization/Support/string.hpp>
-#include <Serialization/Support/array.hpp>
+#include <Sifar/Support/string.hpp>
+#include <Sifar/Support/array.hpp>
 
-namespace sr = serialization;
+namespace sr = sifar;
 
 using namespace sr::library;
 
@@ -137,7 +137,7 @@ public:
 
     SERIALIZATION_UNIFIED(ar)
     {
-        serialization::base<Human>(ar, *this);
+        sr::base<Human>(ar, *this);
 
         ar & force_;
     }

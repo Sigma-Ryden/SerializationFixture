@@ -1,15 +1,15 @@
 // You MUST NOT include other files in this file, than meta and macros.
-#ifndef SERIALIZATION_ACCESS_HPP
-#define SERIALIZATION_ACCESS_HPP
+#ifndef SIFAR_ACCESS_HPP
+#define SIFAR_ACCESS_HPP
 
-#include <Serialization/Detail/Meta.hpp>
+#include <Sifar/Detail/Meta.hpp>
 
-#include <Serialization/Detail/MacroScope.hpp>
+#include <Sifar/Detail/MacroScope.hpp>
 
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class serialization::Access;
+    friend class sifar::Access;
 
-namespace serialization
+namespace sifar
 {
 
 class Access
@@ -21,11 +21,11 @@ private:
     // Special type for has_function_tpl_helper meta
     struct dummy_type;
 
-    SERIALIZATION_HAS_FUNCTION_TPL_HELPER(save);
-    SERIALIZATION_HAS_FUNCTION_TPL_HELPER(load);
+    SIFAR_HAS_FUNCTION_TPL_HELPER(save);
+    SIFAR_HAS_FUNCTION_TPL_HELPER(load);
 
-    SERIALIZATION_HAS_FUNCTION_HELPER(static_key);
-    SERIALIZATION_HAS_FUNCTION_HELPER(dynamic_key);
+    SIFAR_HAS_FUNCTION_HELPER(static_key);
+    SIFAR_HAS_FUNCTION_HELPER(dynamic_key);
 
 public:
     template <class T>
@@ -103,13 +103,13 @@ void virtual_base(Archive& archive, Derived& derived) noexcept
     if (Access::dynamic_key(derived) == Access::template static_key<Derived>())
        base<Base>(archive, derived);
 
-#ifdef SERIALIZATION_DEBUG
+#ifdef SIFAR_DEBUG
     else throw "the srializable object must serialize the virtual base object.";
 #endif
 }
 
-} // namespace serialization
+} // namespace sifar
 
-#include <Serialization/Detail/MacroUnscope.hpp>
+#include <Sifar/Detail/MacroUnscope.hpp>
 
-#endif // SERIALIZATION_ACCESS_HPP
+#endif // SIFAR_ACCESS_HPP

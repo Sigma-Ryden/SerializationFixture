@@ -1,31 +1,31 @@
-#ifndef SERIALIZATION_WRITE_ARCHIVE_HPP
-#define SERIALIZATION_WRITE_ARCHIVE_HPP
+#ifndef SIFAR_WRITE_ARCHIVE_HPP
+#define SIFAR_WRITE_ARCHIVE_HPP
 
 #include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
 #include <memory> // addressof
 
-#include <Serialization/Access.hpp>
-#include <Serialization/TypeRegistry.hpp>
+#include <Sifar/Access.hpp>
+#include <Sifar/TypeRegistry.hpp>
 
-#include <Serialization//Registry.hpp>
+#include <Sifar//Registry.hpp>
 
-#include <Serialization/Ref.hpp>
-#include <Serialization/Span.hpp>
+#include <Sifar/Ref.hpp>
+#include <Sifar/Span.hpp>
 
-#include <Serialization/Detail/Tools.hpp>
+#include <Sifar/Detail/Tools.hpp>
 
-#include <Serialization/Detail/Meta.hpp>
+#include <Sifar/Detail/Meta.hpp>
 
 #define SERIALIZATION_SAVE_DATA(parameter, ...)                                                         \
     template <class WriteArchive, typename T,                                                           \
-    serialization::meta::require<serialization::meta::is_write_archive<WriteArchive>() and              \
-                                 serialization::meta::is_registered<T>() and                            \
-                                 (bool)(__VA_ARGS__)> = 0>                                              \
+              ::sifar::meta::require<::sifar::meta::is_write_archive<WriteArchive>() and                \
+                                     ::sifar::meta::is_registered<T>() and                              \
+                                     (bool)(__VA_ARGS__)> = 0>                                          \
     WriteArchive& operator& (WriteArchive& archive, T& parameter)
 
-namespace serialization
+namespace sifar
 {
 
 namespace utility
@@ -77,7 +77,6 @@ public:
     template <typename T, typename... Tn>
     auto operator() (T& data, Tn&... data_n) -> WriteArchive&;
 
-private:
     auto operator() () -> WriteArchive& { return *this; }
 };
 
@@ -131,7 +130,7 @@ template <class WriteArchive, typename T,
 WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "'T' is an unsupported type for the 'serialization::WriteArchive'."
+        "'T' is an unsupported type for the 'sifar::WriteArchive'."
     );
 
     return archive;
@@ -143,7 +142,7 @@ template <class WriteArchive, typename T,
 WriteArchive& operator& (WriteArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "'T' is an unregistered type for the 'serialization::WriteArchive'. "
+        "'T' is an unregistered type for the 'sifar::WriteArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
         "'SERIALIZATION_SAVE_DATA(parameter, condition)' "
         "and then register the type 'T' with the macros "
@@ -170,7 +169,7 @@ void track(WriteArchive& archive, T& data)
 
     auto& is_tracking = archive.tracking()[key];
 
-#ifdef SERIALIZATION_DEBUG
+#ifdef SIFAR_DEBUG
     if (is_tracking)
         throw "the write tracking data is already tracked.";
 #endif
@@ -194,7 +193,7 @@ void track(WriteArchive& archive, T& pointer)
     if (not is_tracking)
     {
         archive & key;
-        archive & pointer; // call the serialization of not tracking pointer
+        archive & pointer; // call the sifar of not tracking pointer
 
         is_tracking = true;
     }
@@ -250,7 +249,7 @@ void raw_span(WriteArchive& archive, T& data)
     archive & data;
 }
 
-// serialization of scoped data with previous dimension initialization
+// sifar of scoped data with previous dimension initialization
 template <class WriteArchive, typename T,
           meta::require<meta::is_write_archive<WriteArchive>()
                         and meta::is_span<T>()> = 0>
@@ -315,6 +314,6 @@ SERIALIZATION_SAVE_DATA(pointer, meta::is_polymorphic_pointer<T>())
 
 } // inline namespace common
 
-} // namespace serialization
+} // namespace sifar
 
-#endif // SERIALIZATION_WRITE_ARCHIVE_HPP
+#endif // SIFAR_WRITE_ARCHIVE_HPP

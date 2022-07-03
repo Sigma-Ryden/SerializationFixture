@@ -1,13 +1,13 @@
-#ifndef SERIALIZATION_DETAIL_META_HPP
-#define SERIALIZATION_DETAIL_META_HPP
+#ifndef SIFAR_DETAIL_META_HPP
+#define SIFAR_DETAIL_META_HPP
 
 #include <type_traits>
 // is_enum, is_arithmetic, is_array, is_pointer,
 // enable_if, is_same, true_type, false_type
 
-#include <Serialization/Detail/MacroScope.hpp>
+#include <Sifar/Detail/MacroScope.hpp>
 
-namespace serialization
+namespace sifar
 {
 
 namespace meta
@@ -250,8 +250,8 @@ template <typename T> constexpr bool is_unsupported() noexcept
 
 } // namespace meta
 
-} // namespace serialization
+} // namespace sifar
 
-#include "MacroUnscope.hpp"
+#include <Sifar/Detail/MacroUnscope.hpp>
 
-#endif // SERIALIZATION_DETAIL_META_HPP
+#endif // SIFAR_DETAIL_META_HPP

@@ -1,6 +1,6 @@
-# Simple serialization library
+# Sifar - Simple serialization library
 
-A flexible and extensible C++ library with many features, that will allow you to easily
+Sifar is a flexible and extensible C++ library with many features, that will allow you to easily
 and quickly turn your objects into a sequence of bits.
 The library has a small code base, but enough to use it.
 
@@ -29,18 +29,18 @@ Is a header-only library implemented purely in C++11.
 - abstract
 
 ### Quick start.
-Warning! This is a simple example. You can see real applied examples [here](https://github.com/Sigma-Ryden/Serialization/tree/master/test).
+Warning! This is a simple example. You can see real applied examples [here](https://github.com/Sigma-Ryden/Sifar/tree/master/test).
 
 Preparing:
 
 ```C++
-#include <Serialization/Core.hpp>
+#include <Sifar/Core.hpp>
 ```
 Let's include support of std::string serialization:
 ```C++
-#include <Serialization/Support/string.hpp>
+#include <Sifar/Support/string.hpp>
 
-using namespace serialization::library; // support of string
+using namespace sifar::library; // support of string
 ```
 And let's equip our simple class with serialization support:
 ```C++
@@ -89,7 +89,7 @@ Sinse we are going to use hard drive storage, let's include standard file stream
 ```C++
 void save(Shape& shape)
 {
-    using serialization::WriteArchive;
+    using sifar::WriteArchive;
 
     std::ofstream file("example.bin", std::ios::binary);
 
@@ -105,7 +105,7 @@ void save(Shape& shape)
 ```C++
 void load(Shape& shape)
 {
-    using serialization::ReadArchive;
+    using sifar::ReadArchive;
     
     std::ifstream file("example.bin", std::ios::binary);
 
@@ -158,8 +158,10 @@ Examples:
 archive << shape << vector << animal << human;
 // loading objects from the archive
 archive >> shape >> vector >> animal >> human;
+
 //depends on archive type
 archive & shape & vector & animal & human;
+
 // or operator()
 archive(shape, vector, animal, human);
 ```

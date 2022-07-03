@@ -1,11 +1,11 @@
-#ifndef SERIALIZATION_REF_HPP
-#define SERIALIZATION_REF_HPP
+#ifndef SIFAR_REF_HPP
+#define SIFAR_REF_HPP
 
 #include <memory> // addressof
 
-#include <Serialization/Detail/Meta.hpp>
+#include <Sifar/Detail/Meta.hpp>
 
-namespace serialization
+namespace sifar
 {
 
 namespace utility
@@ -47,7 +47,7 @@ template <typename>
 struct is_ref : std::false_type {};
 
 template <typename T>
-struct is_ref<serialization::utility::Ref<T>> : std::true_type {};
+struct is_ref<sifar::utility::Ref<T>> : std::true_type {};
 
 } // namespcae detail
 
@@ -58,6 +58,6 @@ template <class T> constexpr bool is_ref() noexcept
 
 } // namespace meta
 
-} // namespace serialization
+} // namespace sifar
 
-#endif // SERIALIZATION_REF_HPP
+#endif // SIFAR_REF_HPP

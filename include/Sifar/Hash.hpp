@@ -1,9 +1,9 @@
-#ifndef SERIALIZATION_HASH_HPP
-#define SERIALIZATION_HASH_HPP
+#ifndef SIFAR_HASH_HPP
+#define SIFAR_HASH_HPP
 
-#include <string> // string
+#include <cstddef> // size_t
 
-namespace serialization
+namespace sifar
 {
 
 namespace utility
@@ -100,6 +100,6 @@ constexpr std::size_t static_hash(const char* text) noexcept
     return utility::Hash<word>::static_run(text);
 }
 
-} // namepace serialization
+} // namepace sifar
 
-#endif // SERIALIZATION_HASH_HPP
+#endif // SIFAR_HASH_HPP

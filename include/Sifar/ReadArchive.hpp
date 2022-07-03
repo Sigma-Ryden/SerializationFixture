@@ -1,5 +1,5 @@
-#ifndef SERIALIZATION_READ_ARCHIVE_HPP
-#define SERIALIZATION_READ_ARCHIVE_HPP
+#ifndef SIFAR_READ_ARCHIVE_HPP
+#define SIFAR_READ_ARCHIVE_HPP
 
 #include <cstdint> // uintptr_t
 #include <cstddef> // size_t
@@ -7,26 +7,26 @@
 
 #include <memory> // addressof
 
-#include <Serialization/Access.hpp>
-#include <Serialization/TypeRegistry.hpp>
+#include <Sifar/Access.hpp>
+#include <Sifar/TypeRegistry.hpp>
 
-#include <Serialization/Registry.hpp>
+#include <Sifar/Registry.hpp>
 
-#include <Serialization/Ref.hpp>
-#include <Serialization/Span.hpp>
+#include <Sifar/Ref.hpp>
+#include <Sifar/Span.hpp>
 
-#include <Serialization/Detail/Tools.hpp>
+#include <Sifar/Detail/Tools.hpp>
 
-#include <Serialization/Detail/Meta.hpp>
+#include <Sifar/Detail/Meta.hpp>
 
 #define SERIALIZATION_LOAD_DATA(parameter, ...)                                                         \
     template <class ReadArchive, typename T,                                                            \
-    serialization::meta::require<serialization::meta::is_read_archive<ReadArchive>() and                \
-                                 serialization::meta::is_registered<T>() and                            \
-                                 (bool)(__VA_ARGS__)> = 0>                                              \
+              ::sifar::meta::require<::sifar::meta::is_read_archive<ReadArchive>() and                  \
+                                     ::sifar::meta::is_registered<T>() and                              \
+                                     (bool)(__VA_ARGS__)> = 0>                                          \
     ReadArchive& operator& (ReadArchive& archive, T& parameter)
 
-namespace serialization
+namespace sifar
 {
 
 namespace utility
@@ -85,7 +85,6 @@ public:
     template <typename T, typename... Tn>
     auto operator() (T& data, Tn&... data_n) -> ReadArchive&;
 
-private:
     auto operator() () -> ReadArchive& { return *this; }
 };
 
@@ -139,7 +138,7 @@ template <class ReadArchive, typename T,
 ReadArchive& operator& (ReadArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "'T' is an unsupported type for the 'serialization::ReadArchive'."
+        "'T' is an unsupported type for the 'sifar::ReadArchive'."
     );
 
     return archive;
@@ -151,7 +150,7 @@ template <class ReadArchive, typename T,
 ReadArchive& operator& (ReadArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "'T' is an unregistered type for the 'serialization::ReadArchive'. "
+        "'T' is an unregistered type for the 'sifar::ReadArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
         "'SERIALIZATION_LOAD_DATA(parameter, condition)' "
         "and then register the type 'T' with the macros "
@@ -177,7 +176,7 @@ void track(ReadArchive& archive, T& data)
 
     auto& track_data = archive.tracking()[key];
 
-#ifdef SERIALIZATION_DEBUG
+#ifdef SIFAR_DEBUG
     if (track_data.is_tracking)
         throw  "the read tracking data is already tracked.";
 #endif
@@ -206,7 +205,7 @@ void track(ReadArchive& archive, T& pointer)
 
     if (not track_data.is_tracking)
     {
-        archive & pointer; // call the serialization of not tracking pointer
+        archive & pointer; // call the sifar of not tracking pointer
 
         track_data.address = pointer;
         track_data.is_tracking = true;
@@ -269,7 +268,7 @@ void raw_span(ReadArchive& archive, T& data)
     archive & data;
 }
 
-// serialization of scoped data with previous dimension initialization
+// sifar of scoped data with previous dimension initialization
 template <class ReadArchive, typename T,
           meta::require<meta::is_read_archive<ReadArchive>()
                         and meta::is_span<T>()> = 0>
@@ -341,6 +340,6 @@ SERIALIZATION_LOAD_DATA(pointer, meta::is_polymorphic_pointer<T>())
 
 } // inline namespace common
 
-} // namespace serialization
+} // namespace sifar
 
-#endif // SERIALIZATION_READ_ARCHIVE_HPP
+#endif // SIFAR_READ_ARCHIVE_HPP

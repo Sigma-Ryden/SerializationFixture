@@ -1,16 +1,16 @@
-#ifndef SERIALIZATION_SUPPORT_ARRAY_HPP
-#define SERIALIZATION_SUPPORT_ARRAY_HPP
+#ifndef SIFAR_SUPPORT_ARRAY_HPP
+#define SIFAR_SUPPORT_ARRAY_HPP
 
 #include <type_traits> // true_type, false_type
 
 #include <array> // array
 
-#include <Serialization/WriteArchive.hpp>
-#include <Serialization/ReadArchive.hpp>
+#include <Sifar/WriteArchive.hpp>
+#include <Sifar/ReadArchive.hpp>
 
-#include <Serialization/TypeRegistry.hpp>
+#include <Sifar/TypeRegistry.hpp>
 
-namespace serialization
+namespace sifar
 {
 
 namespace meta
@@ -48,8 +48,8 @@ SERIALIZATION_LOAD_DATA(array, meta::is_std_array<T>::value)
 
 } // namespace library
 
-} // namespace serialization
+} // namespace sifar
 
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_array<T>::value)
 
-#endif // SERIALIZATION_SUPPORT_ARRAY_HPP
+#endif // SIFAR_SUPPORT_ARRAY_HPP

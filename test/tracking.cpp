@@ -1,10 +1,10 @@
 #include <iostream> // cin, cout
 #include <fstream> // ifstream, ofstream
 
-#include <Serialization/Core.hpp>
-#include <Serialization/Support/string.hpp>
+#include <Sifar/Core.hpp>
+#include <Sifar/Support/string.hpp>
 
-namespace sr = serialization;
+namespace sr = sifar;
 
 using namespace sr::common; // support of common types
 using namespace sr::tracking; // support of data tracking

@@ -1,17 +1,17 @@
-#ifndef SERIALIZATION_SCOPE_HPP
-#define SERIALIZATION_SCOPE_HPP
+#ifndef SIFAR_SCOPE_HPP
+#define SIFAR_SCOPE_HPP
 
 #include <cstddef> // size_t
 #include <initializer_list> // initializer_list
 
-#include <Serialization/Ref.hpp>
+#include <Sifar/Ref.hpp>
 
-#include <Serialization/Detail/Pointer.hpp>
-#include <Serialization/Detail/Tools.hpp>
+#include <Sifar/Detail/Pointer.hpp>
+#include <Sifar/Detail/Tools.hpp>
 
-#include <Serialization/Detail/Meta.hpp>
+#include <Sifar/Detail/Meta.hpp>
 
-namespace serialization
+namespace sifar
 {
 
 namespace utility
@@ -177,7 +177,7 @@ template <typename>
 struct is_span : std::false_type {};
 
 template <typename T, std::size_t N>
-struct is_span<serialization::utility::Span<T, N>> : std::true_type {};
+struct is_span<sifar::utility::Span<T, N>> : std::true_type {};
 
 } // namespcae detail
 
@@ -188,6 +188,6 @@ template <class T> constexpr bool is_span() noexcept
 
 } // namespace meta
 
-} // namespace serialization
+} // namespace sifar
 
-#endif // SERIALIZATION_SCOPE_HPP
+#endif // SIFAR_SCOPE_HPP

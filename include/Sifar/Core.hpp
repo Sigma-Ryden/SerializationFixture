@@ -1,15 +1,17 @@
-#ifndef SERIALIZATION_CORE_HPP
-#define SERIALIZATION_CORE_HPP
+#ifndef SIFAR_CORE_HPP
+#define SIFAR_CORE_HPP
 
-#include <Serialization/Access.hpp>
+#include <Sifar/Access.hpp>
+#include <Sifar/TypeRegistry.hpp>
 
-#include <Serialization/Registry.hpp>
-#include <Serialization/Hash.hpp>
+#include <Sifar/Registry.hpp>
 
-#include <Serialization/WriteArchive.hpp>
-#include <Serialization/ReadArchive.hpp>
+#include <Sifar/Hash.hpp>
 
-#include <Serialization/Span.hpp>
+#include <Sifar/WriteArchive.hpp>
+#include <Sifar/ReadArchive.hpp>
+
+#include <Sifar/Span.hpp>
 
 #define SERIALIZATION_LOAD(archive)                                                                     \
     template <class Archive> void load(Archive& archive)
@@ -21,4 +23,4 @@
     SERIALIZATION_LOAD(archive) { return this->save(archive); }                                         \
     SERIALIZATION_SAVE(archive)
 
-#endif // SERIALIZATION_CORE_HPP
+#endif // SIFAR_CORE_HPP

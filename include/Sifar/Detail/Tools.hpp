@@ -1,11 +1,11 @@
-#ifndef SERIALIZATION_DETAIL_TOOLS_HPP
-#define SERIALIZATION_DETAIL_TOOLS_HPP
+#ifndef SIFAR_DETAIL_TOOLS_HPP
+#define SIFAR_DETAIL_TOOLS_HPP
 
 #include <cstddef> // size_t
 
-#include <Serialization/Detail/Meta.hpp>
+#include <Sifar/Detail/Meta.hpp>
 
-namespace serialization
+namespace sifar
 {
 
 namespace utility
@@ -63,6 +63,6 @@ std::size_t size(const CharType* str) noexcept
 
 } // namespace utility
 
-} // namespace serialization
+} // namespace sifar
 
-#endif // SERIALIZATION_DETAIL_TOOLS_HPP
+#endif // SIFAR_DETAIL_TOOLS_HPP

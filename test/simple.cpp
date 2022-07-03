@@ -1,13 +1,13 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Serialization/Core.hpp>
-#include <Serialization/Support/string.hpp>
+#include <Sifar/Core.hpp>
+#include <Sifar/Support/string.hpp>
 
-using namespace serialization::library; // support of string
+using namespace sifar::library; // support of string
 
-using serialization::WriteArchive;
-using serialization::ReadArchive;
+using sifar::WriteArchive;
+using sifar::ReadArchive;
 
 class Shape
 {

@@ -1,16 +1,16 @@
-#ifndef SERIALIZATION_SUPPORT_VECTOR_HPP
-#define SERIALIZATION_SUPPORT_VECTOR_HPP
+#ifndef SIFAR_SUPPORT_VECTOR_HPP
+#define SIFAR_SUPPORT_VECTOR_HPP
 
 #include <type_traits> // true_type, false_type
 
 #include <vector> // vector
 
-#include <Serialization/WriteArchive.hpp>
-#include <Serialization/ReadArchive.hpp>
+#include <Sifar/WriteArchive.hpp>
+#include <Sifar/ReadArchive.hpp>
 
-#include <Serialization/TypeRegistry.hpp>
+#include <Sifar/TypeRegistry.hpp>
 
-namespace serialization
+namespace sifar
 {
 
 namespace meta
@@ -53,8 +53,8 @@ SERIALIZATION_LOAD_DATA(vector, meta::is_std_vector<T>::value)
 
 } // namespace library
 
-} // namespace serialization
+} // namespace sifar
 
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_vector<T>::value)
 
-#endif // SERIALIZATION_SUPPORT_VECTOR_HPP
+#endif // SIFAR_SUPPORT_VECTOR_HPP

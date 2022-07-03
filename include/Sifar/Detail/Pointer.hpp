@@ -1,9 +1,9 @@
-#ifndef SERIALIZATION_DETAIL_POINTER_HPP
-#define SERIALIZATION_DETAIL_POINTER_HPP
+#ifndef SIFAR_DETAIL_POINTER_HPP
+#define SIFAR_DETAIL_POINTER_HPP
 
 #include <cstddef> // size_t
 
-namespace serialization
+namespace sifar
 {
 
 namespace meta
@@ -31,6 +31,6 @@ using pointer = typename detail::pointer_impl<T, N>::type;
 
 } // namespace meta
 
-} // namespace serialization
+} // namespace sifar
 
-#endif // SERIALIZATION_DETAIL_POINTER_HPP
+#endif // SIFAR_DETAIL_POINTER_HPP

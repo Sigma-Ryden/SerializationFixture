@@ -1,24 +1,24 @@
-#ifndef SERIALIZATION_TYPE_REGISTRY_HPP
-#define SERIALIZATION_TYPE_REGISTRY_HPP
+#ifndef SIFAR_TYPE_REGISTRY_HPP
+#define SIFAR_TYPE_REGISTRY_HPP
 
-#include <Serialization/Access.hpp>
-#include <Serialization/Ref.hpp>
+#include <Sifar/Access.hpp>
+#include <Sifar/Ref.hpp>
 
-#include <Serialization/Detail/Meta.hpp>
+#include <Sifar/Detail/Meta.hpp>
 
 #define SERIALIZATION_TYPE_REGISTRY_IF(...)                                                             \
-    namespace serialization {                                                                           \
+    namespace sifar {                                                                                   \
     template <typename T>                                                                               \
     struct TypeRegistry<T,                                                                              \
-        serialization::meta::when<(bool)(__VA_ARGS__)>> : std::true_type {};                            \
+        ::sifar::meta::when<(bool)(__VA_ARGS__)>> : std::true_type {};                                  \
     }
 
 #define SERIALIZATION_TYPE_REGISTRY(name)                                                               \
-    namespace serialization {                                                                           \
+    namespace sifar {                                                                                   \
         template <> struct TypeRegistry<name, void> : std::true_type {};                                \
     }
 
-namespace serialization
+namespace sifar
 {
 
 template <typename T, typename enable = void>
@@ -34,7 +34,7 @@ template <typename T> constexpr bool is_registered() noexcept
 
 } // namespace meta
 
-} // namespace serialization
+} // namespace sifar
 
 SERIALIZATION_TYPE_REGISTRY_IF(Access::is_save_load_class<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_arithmetic<T>())
@@ -45,4 +45,4 @@ SERIALIZATION_TYPE_REGISTRY_IF(meta::is_pod_pointer<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_polymorphic_pointer<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_unsupported<T>())
 
-#endif // SERIALIZATION_TYPE_REGISTRY_HPP
+#endif // SIFAR_TYPE_REGISTRY_HPP
