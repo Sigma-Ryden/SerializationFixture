@@ -29,6 +29,7 @@ Is a header-only library implemented purely in C++11.
 - abstract
 
 ### Quick start.
+Warning! This is a simple example. You can see real applied examples [here](https://github.com/Sigma-Ryden/Serialization/tree/master/test).
 
 Preparing:
 
