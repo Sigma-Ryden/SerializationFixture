@@ -53,7 +53,7 @@ public:
 } // namespace utility
 
 template <class InStream,
-          class Registry = Registry<>,
+          class Registry = ExternRegistry,
           class StreamWrapper = utility::InStreamWrapper<InStream>>
 class ReadArchive
 {

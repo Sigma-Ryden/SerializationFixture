@@ -26,6 +26,7 @@ set(SIFAR
     include/Sifar/Hash.hpp
     include/Sifar/Span.hpp
     include/Sifar/Ref.hpp
+    include/Sifar/RegistryBase.hpp
     include/Sifar/Registry.hpp
     include/Sifar/TypeRegistry.hpp
     include/Sifar/Access.hpp

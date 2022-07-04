@@ -12,10 +12,16 @@
 namespace sifar
 {
 
+namespace detail
+{
+
+class RegistryBase;
+
+} // namespace detail
+
 class Access
 {
-    template <class... Tn>
-    friend class Registry; // Access to `cast` and `runtime_cast`
+    friend class detail::RegistryBase; // Access to `cast` and `runtime_cast`
 
 private:
     // Special type for has_function_tpl_helper meta

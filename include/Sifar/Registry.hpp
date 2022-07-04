@@ -1,152 +1,212 @@
 #ifndef SIFAR_REGISTRY_HPP
 #define SIFAR_REGISTRY_HPP
 
-#include <Sifar/Access.hpp>
+#include <Sifar/RegistryBase.hpp>
+
 #include <Sifar/Detail/Meta.hpp>
 
 #define SERIALIZATION_CLASS_INFO(value)                                                                 \
     static constexpr std::size_t static_key() noexcept { return (value); }                              \
     virtual std::size_t dynamic_key() const noexcept { return static_key(); }
 
-#define SERIALIZATION_CLASS_TPL_INFO(value, ...)                                                        \
-    template <> constexpr std::size_t __VA_ARGS__::static_key() noexcept { return (value); }            \
-    template <> std::size_t __VA_ARGS__::dynamic_key() const noexcept { return static_key(); }
-
 #define SERIALIZATION_CLASS_HASH_INFO(...)                                                              \
     SERIALIZATION_CLASS_INFO(::sifar::static_hash(#__VA_ARGS__))
+
+#define SERIALIZATION_CLASS_EXPORT(...)                                                                 \
+    template <> struct sifar::class_export<                                                             \
+        ::sifar::meta::check_depth< ::sifar::Access::static_key<__VA_ARGS__>() >::value>                \
+    { using type = __VA_ARGS__; };
+
+#define SERIALIZATION_CLASS_TPL_INFO(value, ...)                                                        \
+    template <> constexpr std::size_t __VA_ARGS__::static_key() noexcept { return (value); }
 
 #define SERIALIZATION_CLASS_TPL_HASH_INFO(...)                                                          \
     SERIALIZATION_CLASS_TPL_INFO(::sifar::static_hash(#__VA_ARGS__), __VA_ARGS__)
 
+#define SERIALIZATION_CLASS_TPL_EXPORT(value, ...)                                                      \
+    SERIALIZATION_CLASS_TPL_INFO(value, __VA_ARGS__)                                                    \
+    SERIALIZATION_CLASS_EXPORT(__VA_ARGS__)
+
 namespace sifar
 {
 
-template <class... Tn>
-class Registry
+namespace detail
+{
+
+constexpr std::size_t max_template_depth() noexcept
+{
+#ifndef SIFAR_MAX_TEMPLATE_DEPTH
+    return 128;
+#else
+    return SIFAR_MAX_TEMPLATE_DEPTH;
+#endif
+}
+
+} // namespace detail
+
+
+namespace meta
+{
+
+template <std::size_t Key>
+struct check_depth
+{
+private:
+    static constexpr bool require = Key < sifar::detail::max_template_depth();
+    static_assert(require, "'Key' should be less than the 'sifar::detail::max_template_depth()'.");
+
+public:
+    static constexpr std::size_t value = Key;
+};
+
+} // namespace meta
+
+template <std::size_t I>
+struct class_export
+{
+    using type = void;
+};
+
+class ExternRegistry : public detail::RegistryBase
 {
 public:
-    template <class T>
-    static auto key(T& object) noexcept -> decltype(Access::dynamic_key(object))
+    template <class Archive, typename Pointer, typename key_type>
+    static void save(Archive& archive, Pointer& pointer, key_type id)
     {
-        return Access::dynamic_key(object);
+        save_impl<0, detail::max_template_depth()>(archive, pointer, id);
     }
 
-    template <class T>
-    static constexpr auto key() noexcept -> decltype(Access::static_key<T>())
+    template <class Archive, typename Pointer, typename key_type>
+    static void load(Archive& archive, Pointer& pointer, key_type id)
     {
-        return Access::static_key<T>();
+        load_impl<0, detail::max_template_depth()>(archive, pointer, id);
     }
 
-    template <class Archive, class P,
-              typename T = meta::deref<P>,
-              typename key_type = decltype(Access::static_key<T>())>
-    static void save(Archive& archive, P& pointer, key_type id)
+    template <class Archive, class Pointer>
+    static void save(Archive& archive, Pointer& pointer)
     {
-        save_impl<T, Tn..., T>(archive, pointer, id);
-    }
-
-    template <class Archive, class P,
-              typename T = meta::deref<P>,
-              typename key_type = decltype(Access::static_key<T>())>
-    static void load(Archive& archive, P& pointer, key_type id)
-    {
-        load_impl<T, Tn..., T>(archive, pointer, id);
-    }
-
-    template <class Archive, class P,
-              meta::require<meta::is_polymorphic_pointer<P>()> = 0>
-    static void save(Archive& archive, P& pointer)
-    {
-        if (pointer == nullptr)
-            throw "the write pointer was not allocated.";
-
-        auto id = Access::dynamic_key(*pointer);
-        archive & id;
+        auto id = save_id(archive, pointer);
 
         save(archive, pointer, id);
     }
 
-    template <class Archive, class P,
-              meta::require<meta::is_polymorphic_pointer<P>()> = 0>
-    static void load(Archive& archive, P& pointer)
+    template <class Archive, class Pointer>
+    static void load(Archive& archive, Pointer& pointer)
     {
-        using T = meta::deref<P>;
-        using key_type = decltype(Access::static_key<T>());
-
-        key_type id;
-        archive & id;
+        auto id = load_id(archive, pointer);
 
         load(archive, pointer, id);
     }
 
 private:
-    template <class Derived, class Archive, class Base,
-              meta::require<meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
-    static void save_if_derived_of(Archive& archive, Base& pointer)
-    {
-        auto derived = Access::template runtime_cast<Derived*>(pointer);
-        archive & (*derived); // will never nullptr
-    }
-
-    template <class Derived, class Archive, class Base,
-              meta::require<not meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
-    static void save_if_derived_of(Archive& /*archive*/, Base& /*pointer*/) noexcept {}
-
-    template <class Archive, class Base,
-              typename key_type = decltype(Access::static_key<meta::deref<Base>>())>
+    template <size_type StaticKey, size_type StaticKeyLimit,
+              class Archive, class Base, typename key_type,
+              meta::require<(StaticKey == StaticKeyLimit)> = 0>
     static void save_impl(Archive& archive, Base& pointer, key_type id)
     {
         throw "serializable type was not registered.";
     }
 
-    template <class Derived, class... Derived_n, class Archive, class Base,
-              typename key_type = decltype(Access::static_key<meta::deref<Base>>())>
+    template <size_type StaticKey, size_type StaticKeyLimit,
+              class Archive, class Base, typename key_type,
+              meta::require<(StaticKey < StaticKeyLimit)> = 0>
+    static void save_impl(Archive& archive, Base& pointer, key_type id)
+    {
+        using Derived = typename class_export<StaticKey>::type;
+
+        if (id == StaticKey)
+            return save_if_derived_of<Derived>(archive, pointer);
+
+        save_impl<StaticKey + 1, StaticKeyLimit>(archive, pointer, id);
+    }
+
+    template <size_type StaticKey, size_type StaticKeyLimit,
+              class Archive, class Base, typename key_type,
+              meta::require<(StaticKey == StaticKeyLimit)> = 0>
+    static void load_impl(Archive& archive, Base& pointer, key_type id)
+    {
+        throw "serializable type was not registered.";
+    }
+
+    template <size_type StaticKey, size_type StaticKeyLimit,
+              class Archive, class Base, typename key_type,
+              meta::require<(StaticKey < StaticKeyLimit)> = 0>
+    static void load_impl(Archive& archive, Base& pointer, key_type id)
+    {
+        using Derived = typename class_export<StaticKey>::type;
+
+        if (id == StaticKey)
+            return load_if_derived_of<Derived>(archive, pointer);
+
+        load_impl<StaticKey + 1, StaticKeyLimit>(archive, pointer, id);
+    }
+};
+
+template <class... Tn>
+class InnerRegistry : public detail::RegistryBase
+{
+public:
+    template <class Archive, typename Pointer, typename key_type>
+    static void save(Archive& archive, Pointer& pointer, key_type id)
+    {
+        using T = meta::deref<Pointer>;
+        save_impl<T, Tn..., T>(archive, pointer, id);
+    }
+
+    template <class Archive, typename Pointer, typename key_type>
+    static void load(Archive& archive, Pointer& pointer, key_type id)
+    {
+        using T = meta::deref<Pointer>;
+        load_impl<T, Tn..., T>(archive, pointer, id);
+    }
+
+    template <class Archive, class Pointer>
+    static void save(Archive& archive, Pointer& pointer)
+    {
+        auto id = save_id(archive, pointer);
+
+        save(archive, pointer, id);
+    }
+
+    template <class Archive, class Pointer>
+    static void load(Archive& archive, Pointer& pointer)
+    {
+        auto id = load_id(archive, pointer);
+
+        load(archive, pointer, id);
+    }
+
+private:
+    template <class Archive, class Base, typename key_type>
+    static void save_impl(Archive& archive, Base& pointer, key_type id)
+    {
+        throw "serializable type was not registered.";
+    }
+
+    template <class Derived, class... Derived_n,
+              class Archive, class Base, typename key_type>
     static void save_impl(Archive& archive, Base& pointer, key_type id)
     {
         if (id == key<Derived>())
             return save_if_derived_of<Derived>(archive, pointer);
 
-        return save_impl<Derived_n...>(archive, pointer, id);
+        save_impl<Derived_n...>(archive, pointer, id);
     }
 
-    template <class Derived, class Archive, class Base,
-              typename B = meta::deref<Base>,
-              meta::require<not meta::is_abstract<Derived>() and
-                            meta::is_base_of<B, Derived>()> = 0>
-    static void load_if_derived_of(Archive& archive, Base& pointer)
-    {
-        if (pointer != nullptr)
-            throw "the read pointer must be initialized to nullptr.";
-
-        auto hold = new Derived;
-        pointer = Access::template runtime_cast<B*>(hold);
-
-        auto derived = Access::template runtime_cast<Derived*>(pointer);
-        archive & (*derived); // will never nullptr
-    }
-
-    template <class Derived, class Archive, class Base,
-              typename B = meta::deref<Base>,
-              typename key_type = decltype(Access::static_key<B>()),
-              meta::require<meta::is_abstract<Derived>() or
-                            not meta::is_base_of<B, Derived>()> = 0>
-    static void load_if_derived_of(Archive& /*archive*/, Base& /*pointer*/) noexcept {}
-
-    template <class Archive, class Base,
-              typename key_type = decltype(Access::static_key<meta::deref<Base>>())>
+    template <class Archive, class Base, typename key_type>
     static void load_impl(Archive& archive, Base& pointer, key_type id)
     {
         throw "serializable type was not registered.";
     }
 
-    template <class Derived, class... Derived_n, class Archive, class Base,
-              typename key_type = decltype(Access::static_key<meta::deref<Base>>())>
+    template <class Derived, class... Derived_n,
+              class Archive, class Base, typename key_type>
     static void load_impl(Archive& archive, Base& pointer, key_type id)
     {
         if (id == key<Derived>())
             return load_if_derived_of<Derived>(archive, pointer);
 
-        return load_impl<Derived_n...>(archive, pointer, id);
+        load_impl<Derived_n...>(archive, pointer, id);
     }
 };
 

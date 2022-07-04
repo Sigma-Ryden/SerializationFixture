@@ -52,7 +52,7 @@ public:
 } // namespace utility
 
 template <class OutStream,
-          class Registry = Registry<>,
+          class Registry = ExternRegistry,
           class StreamWrapper = utility::OutStreamWrapper<OutStream>>
 class WriteArchive
 {

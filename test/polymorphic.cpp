@@ -76,7 +76,7 @@ private:
 
 void test_polymorphic()
 {
-    using Registry = sr::Registry<Base<std::string>, Derived>;
+    using Registry = sr::InnerRegistry<Base<std::string>, Derived>;
 
     using WriteArchive = sr::WriteArchive<std::ofstream, Registry>;
     using ReadArchive  = sr::ReadArchive<std::ifstream, Registry>;
@@ -198,7 +198,7 @@ struct F : D
 
 void test_virtual_base()
 {
-    using Registry = sr::Registry<A, B, C, D, F>; // or just specify A and F
+    using Registry = sr::InnerRegistry<A, B, C, D, F>; // or just specify A and F
 
     using WriteArchive = sr::WriteArchive<std::ofstream, Registry>;
     using ReadArchive  = sr::ReadArchive<std::ifstream, Registry>;
@@ -255,6 +255,85 @@ void test_virtual_base()
         delete a;
     }
     //
+}
+//
+namespace some
+{
+
+template <class T>
+struct AAA
+{
+    SERIALIZATION_CLASS_INFO(0)
+
+    int a = 123;
+    ~AAA() = default;
+
+    SERIALIZATION_UNIFIED(ar)
+    {
+        ar & a;
+    }
+};
+
+} // namespace some
+
+//SERIALIZATION_CLASS_TPL_EXPORT(1, some::AAA<int>)
+
+struct BBB : some::AAA<int>
+{
+    SERIALIZATION_CLASS_INFO(3)
+
+    int b = 321;
+
+    SERIALIZATION_UNIFIED(ar)
+    {
+        sr::base<some::AAA<int>>(ar, *this);
+        ar & b;
+    }
+};
+
+SERIALIZATION_CLASS_EXPORT(BBB)
+
+void test_class_export()
+{
+    using Parent = some::AAA<int>;
+    using Child = BBB;
+
+    {
+        std::ofstream file("D:/new.bin");
+        sr::WriteArchive<std::ofstream> ar(file);
+
+        Parent* p = new Child;
+
+        try
+        {
+            ar & p;
+        }
+        catch (const char* e)
+        {
+            std::cout << e << '\n';
+        }
+
+        file.close();
+        delete p;
+    }
+    {
+        std::ifstream file("D:/new.bin");
+        sr::ReadArchive<std::ifstream> ar(file);
+
+        Parent* p = nullptr;
+
+        try
+        {
+            ar & p;
+        }
+        catch (const char* e)
+        {
+            std::cout << e << '\n';
+        }
+
+        file.close();
+        delete p;
+    }
 }
 
 int main()
