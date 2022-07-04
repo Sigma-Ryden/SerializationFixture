@@ -53,7 +53,7 @@ struct check_depth
 {
 private:
     static constexpr bool require = Key < sifar::detail::max_template_depth();
-    static_assert(require, "'Key' should be less than the 'sifar::detail::max_template_depth()'.");
+    static_assert(require, "'Key' should be less than 'sifar::detail::max_template_depth()'.");
 
 public:
     static constexpr std::size_t value = Key;
