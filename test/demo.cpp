@@ -1,37 +1,38 @@
-#include <array> // array
-#include <vector> // vector
-#include <string> // string
-
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Sifar/Core.hpp>
+#include <Sifar/Core.hpp>// WriteArchive, ExternRegistry
 
 #include <Sifar/Support/string.hpp>
 #include <Sifar/Support/array.hpp>
 
-namespace sr = sifar;
+using sifar::WriteArchive;
+using sifar::ExternRegistry;
 
-using namespace sr::library;
+using namespace sifar::library;
 
 // Impl of user wrapper for iostream
-template <typename OutStream>
-class FormatOutStreamWrapper
+class FormatOutStream
 {
 private:
-    OutStream& stream_;
+    std::ostream& stream_;
 
 public:
-    FormatOutStreamWrapper(OutStream& stream) : stream_(stream) {}
+    FormatOutStream(std::ostream& stream) : stream_(stream) {}
 
     template <typename T>
-    FormatOutStreamWrapper& write(const T& data, std::size_t)
+    FormatOutStream& write(const T& data, std::size_t)
     {
         stream_ << data << ' ';
 
         return *this;
     }
 };
+
+using FormatWriteArchive = WriteArchive<std::ostream, ExternRegistry, FormatOutStream>;
+
+enum Axis { X, Y, Z };
+enum class Color { Red, Green, Blue, Alpha };
 
 class B
 {
@@ -93,85 +94,17 @@ public:
     }
 };
 
-class Human
-{
-    SERIALIZATION_ACCESS()
-
-protected:
-    std::string name_;
-    int age_;
-
-public:
-    Human(const std::string& name, int age)
-        : name_(name), age_(age)
-    {
-    }
-
-    const std::string& name() const noexcept { return name_; }
-    int age() const noexcept { return age_; }
-
-private:
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & name_;
-        ar & age_;
-    }
-};
-
-class Boy : public Human
-{
-private:
-    int force_;
-
-public:
-    Boy() : Human("unnamed", 0), force_(0)
-    {
-    }
-
-    Boy(const std::string& name, int age, int force)
-        : Human(name, age), force_(force)
-    {
-    }
-
-    int force() const noexcept { return force_; }
-
-    SERIALIZATION_UNIFIED(ar)
-    {
-        sr::base<Human>(ar, *this);
-
-        ar & force_;
-    }
-};
-
-enum Axis { X, Y, Z };
-enum class Color { Red, Green, Blue, Alpha };
-
-template <typename OutStream>
-using FormatWriteArchive =
-    sr::WriteArchive<OutStream, sr::Registry<>, FormatOutStreamWrapper<OutStream>>;
-
 // FormatWriteArchive overloading operator& for class B
-
-template <typename OutStream>
-auto operator& (FormatWriteArchive<OutStream>& archive, B& t) -> decltype(archive)
+auto operator& (FormatWriteArchive& archive, B& t) -> decltype(archive)
 {
     std::cout << "overloading operator& for B";
 
     return archive;
 }
 
-void test_std_array_serialization()
-{
-    FormatWriteArchive<std::ostream> ar(std::cout);
-
-    std::array<int, 6> std_array { 123, 132, 213, 231, 312, 321 };
-
-    ar & std_array;
-}
-
 void test_common()
 {
-    FormatWriteArchive<std::ostream> ar(std::cout);
+    FormatWriteArchive ar(std::cout);
 
     int number = 123;
     int* pointer = &number;
@@ -186,6 +119,8 @@ void test_common()
     float array[] { 1.1, 2.2 , 3.3 };
     int matrix[4][3] { { }, { 1 }, { 2, 3 }, { 4, 5, 6 } };
 
+    std::array<int, 6> std_array { 123, 132, 213, 231, 312, 321 };
+
     auto axis = Axis::X; // classic C enum
     auto color = Color::Blue; // scoped enum
 
@@ -196,137 +131,21 @@ void test_common()
     ar & array;
     ar & matrix;
     ar & obj;
+
     std::cout << '\n';
 
     ar << axis;
     ar << color;
     ar << bye;
 
-    std::cout << '\n';
-}
-
-void test_object_serialization()
-{
-    {
-        std::ofstream file("D:\\test_object_serialization.bin");
-
-        if (not file.is_open()) return;
-
-        auto ar = sr::WriteArchive<std::ofstream>(file);
-
-        Boy obj("Tom", 21, 9);
-
-        std::string hi = "Hello!";
-        char bye[] = "Good Bye!";
-
-        ar & obj;
-        ar & hi;
-        ar & bye;
-
-        file.close();
-
-        std::cout << "Serialization done.\n";
-    }
-    {
-        std::ifstream file("D:\\test_object_serialization.bin");
-
-        if (not file.is_open()) return;
-
-        auto ar = sr::ReadArchive<std::ifstream>(file);
-
-        Boy obj;
-
-        std::string hi = "Hello!";
-        char bye[10];
-
-        ar & obj;
-        ar & hi;
-        ar & bye;
-
-        file.close();
-
-        std::cout << "Deserialization done.\n";
-
-        std::cout << obj.name() << ' ' << obj.age() << ' ' << obj.force()
-                  << ' ' << hi << ' ' << bye << '\n';
-    }
-}
-
-void print(int** arr, int h, int w)
-{
-    for (int i = 0; i < h; ++i, std::cout << '\n')
-        for (int j = 0; j < w; ++j)
-            std::cout << arr[i][j] << ' ';
+    ar & std_array;
 
     std::cout << '\n';
-}
-
-void test_scope()
-{
-    {
-        std::ofstream file("D:\\test_scope.bin");
-
-        if (not file.is_open()) return;
-
-        auto ar = sr::WriteArchive<std::ofstream>(file);
-
-        int height = 3;
-        unsigned int width = 4;
-
-        int** tensor = new int* [height];
-        for (int i = 0; i < width; ++i)
-            tensor[i] = new int [width] { i, i + 1, i + 2, i + 3 };
-
-        print(tensor, height, width);
-
-        try
-        {
-            span(ar, tensor, height, width);
-        }
-        catch (const char* e)
-        {
-            std::cout << e << '\n';
-            return;
-        }
-        // implicit delete pointer
-    }
-    {
-        std::ifstream file("D:\\test_scope.bin");
-
-        if (not file.is_open()) return;
-
-        auto ar = sr::ReadArchive<std::ifstream>(file);
-
-        int height;
-        int width;
-
-        int** tensor = nullptr;
-
-        try
-        {
-            span(ar, tensor, height, width);
-        }
-        catch (const char* e)
-        {
-            std::cout << e << '\n';
-            return;
-        }
-
-        print(tensor, height, width);
-
-        // implicit delete pointer
-    }
 }
 
 int main()
 {
-    //
     test_common();
-    test_std_array_serialization();
 
-    test_object_serialization();
-
-    test_scope();
-    //
     return 0;
 }

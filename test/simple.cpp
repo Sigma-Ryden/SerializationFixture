@@ -1,13 +1,14 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Sifar/Core.hpp>
+#include <Sifar/Core.hpp> // ReadArchive, WriteArchive
+
 #include <Sifar/Support/string.hpp>
 
 using namespace sifar::library; // support of string
 
-using sifar::WriteArchive;
 using sifar::ReadArchive;
+using sifar::WriteArchive;
 
 class Shape
 {

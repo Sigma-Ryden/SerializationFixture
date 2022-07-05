@@ -1,6 +1,7 @@
 #ifndef SIFAR_DETAIL_META_HPP
 #define SIFAR_DETAIL_META_HPP
 
+#include <cstddef> // size_t
 #include <type_traits>
 // is_enum, is_arithmetic, is_array, is_pointer,
 // enable_if, is_same, true_type, false_type
@@ -136,7 +137,7 @@ struct is_same_all: and_<std::is_same<T, Tn>...> {};
 } // namespace detail
 
 template <std::size_t...>
-struct index_sequence {};
+struct index_sequence {}; // limited by template depth
 
 namespace detail
 {
@@ -154,6 +155,15 @@ struct index_sequence_helper<0, In...>
 
 template <std::size_t N>
 using make_index_sequence = typename detail::index_sequence_helper<N>::type;
+
+constexpr std::size_t max_template_depth() noexcept
+{
+#ifndef SIFAR_MAX_TEMPLATE_DEPTH
+    return 256;
+#else
+    return SIFAR_MAX_TEMPLATE_DEPTH;
+#endif
+}
 
 template <typename T> constexpr bool to_false() noexcept { return false; }
 

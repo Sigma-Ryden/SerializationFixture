@@ -1,10 +1,14 @@
 #include <iostream> // cin, cout
 #include <fstream> // ifstream, ofstream
 
-#include <Sifar/Core.hpp>
+#include <Sifar/Core.hpp> // ReadArchive, WriteArchive
+
 #include <Sifar/Support/string.hpp>
 
 namespace sr = sifar;
+
+using sr::ReadArchive;
+using sr::WriteArchive;
 
 using namespace sr::common; // support of common types
 using namespace sr::tracking; // support of data tracking
@@ -15,11 +19,11 @@ using namespace sr::tracking; // support of data tracking
 void test_tracking()
 {
     {
-        std::ofstream file("D:/tracking.bin", std::ios::binary);
+        std::ofstream file("test_tracking.bin", std::ios::binary);
 
         if (not file.is_open()) return;
 
-        auto ar = sr::WriteArchive<std::ofstream>(file);
+        auto ar = WriteArchive<std::ofstream>(file);
 
         int x = 123;
         int* p1 = &x;
@@ -46,11 +50,11 @@ void test_tracking()
         }
     }
     {
-        std::ifstream file("D:/tracking.bin", std::ios::binary);
+        std::ifstream file("test_tracking.bin", std::ios::binary);
 
         if (not file.is_open()) return;
 
-        auto ar = sr::ReadArchive<std::ifstream>(file);
+        auto ar = ReadArchive<std::ifstream>(file);
 
         int x;
         int* p1 = nullptr;
