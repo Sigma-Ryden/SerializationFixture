@@ -22,7 +22,7 @@ template <std::size_t FnvPrime, std::size_t OffsetBasis>
 std::size_t fnv_1a(const char* text)
 {
     auto hash = OffsetBasis;
-    while(*text != '\0')
+    while (*text != '\0')
     {
         hash ^= *text;
         hash *= FnvPrime;

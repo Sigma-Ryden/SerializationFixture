@@ -15,7 +15,7 @@
 #include <Sifar/Ref.hpp>
 #include <Sifar/Span.hpp>
 
-#include <Sifar/Detail/Tools.hpp>
+#include <Sifar/Utility.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 
@@ -42,12 +42,14 @@ public:
     InStreamWrapper(InStream& stream) : stream_(stream) {}
 
     template <typename T>
-    InStreamWrapper& read(T& data, std::size_t n)
+    InStreamWrapper& read(T* data, std::size_t n)
     {
         stream_.read(utility::byte_cast(data), n);
 
         return *this;
     }
+
+    InStream& get() noexcept { return stream_; }
 };
 
 } // namespace utility
@@ -231,7 +233,7 @@ SERIALIZATION_LOAD_DATA(object, Access::is_save_load_class<T>())
 
 SERIALIZATION_LOAD_DATA(number, meta::is_arithmetic<T>())
 {
-    archive.stream().read(number, sizeof(number));
+    archive.stream().read(&number, sizeof(number));
 
     return archive;
 }

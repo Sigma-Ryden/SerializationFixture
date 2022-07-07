@@ -10,6 +10,8 @@
 
 #include <Sifar/TypeRegistry.hpp>
 
+#include <Sifar/Utility.hpp>
+
 namespace sifar
 {
 
@@ -29,28 +31,35 @@ namespace library
 
 SERIALIZATION_SAVE_DATA(string, meta::is_std_basic_string<T>::value)
 {
-    const auto size = string.size();
+    using char_type = typename T::value_type;
+
+    let::u64 size = string.size();
 
     archive & size;
 
-    // explicit auto declaration of character without &
-    for (auto character : string)
-        archive & character;
+    archive.stream().write
+    (
+        string.data(),
+        string.size() * sizeof(char_type)
+    );
 
     return archive;
 }
 
 SERIALIZATION_LOAD_DATA(string, meta::is_std_basic_string<T>::value)
 {
-    using size_type = typename T::size_type;
+    using char_type = typename T::value_type;
 
-    size_type size;
+    let::u64 size;
     archive & size;
 
     string.resize(size);
 
-    for(auto& character : string)
-        archive & character;
+    archive.stream().read
+    (
+        const_cast<char_type*>(string.data()),
+        string.size() * sizeof(char_type)
+    );
 
     return archive;
 }

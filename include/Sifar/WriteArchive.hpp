@@ -14,7 +14,7 @@
 #include <Sifar/Ref.hpp>
 #include <Sifar/Span.hpp>
 
-#include <Sifar/Detail/Tools.hpp>
+#include <Sifar/Utility.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 
@@ -41,12 +41,14 @@ public:
     OutStreamWrapper(OutStream& stream) : stream_(stream) {}
 
     template <typename T>
-    OutStreamWrapper& write(const T& data, std::size_t n)
+    OutStreamWrapper& write(const T* data, std::size_t n)
     {
         stream_.write(utility::const_byte_cast(data), n);
 
         return *this;
     }
+
+    OutStream& get() noexcept { return stream_; }
 };
 
 } // namespace utility
@@ -218,7 +220,7 @@ SERIALIZATION_SAVE_DATA(object, Access::is_save_load_class<T>())
 
 SERIALIZATION_SAVE_DATA(number, meta::is_arithmetic<T>())
 {
-    archive.stream().write(number, sizeof(number));
+    archive.stream().write(&number, sizeof(number));
 
     return archive;
 }

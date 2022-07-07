@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(include)
 
 set(SIFAR
-    include/Sifar/Detail/Tools.hpp
     include/Sifar/Detail/Pointer.hpp
     include/Sifar/Detail/Meta.hpp
     include/Sifar/Detail/MacroScope.hpp
@@ -21,11 +20,14 @@ set(SIFAR
     include/Sifar/Support/tuple.hpp
     include/Sifar/Support/list.hpp
     include/Sifar/Support/forward_list.hpp
+    include/Sifar/Support/set.hpp
+    include/Sifar/Support/unique_ptr.hpp
 
     include/Sifar/UndefMacro.hpp
     include/Sifar/Hash.hpp
     include/Sifar/Span.hpp
     include/Sifar/Ref.hpp
+    include/Sifar/Utility.hpp
     include/Sifar/RegistryBase.hpp
     include/Sifar/Registry.hpp
     include/Sifar/TypeRegistry.hpp

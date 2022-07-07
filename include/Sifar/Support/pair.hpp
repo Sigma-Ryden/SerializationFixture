@@ -3,7 +3,7 @@
 
 #include <type_traits> // true_type, false_type
 
-#include <tuple> // pair
+#include <utility> // pair
 
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>

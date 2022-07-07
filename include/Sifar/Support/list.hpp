@@ -10,6 +10,8 @@
 
 #include <Sifar/TypeRegistry.hpp>
 
+#include <Sifar/Utility.hpp>
+
 namespace sifar
 {
 
@@ -27,7 +29,7 @@ namespace library
 
 SERIALIZATION_SAVE_DATA(list, meta::is_std_list<T>::value)
 {
-    const auto size = list.size();
+    let::u64 size = list.size();
 
     archive & size;
     for (const auto& item : list)
@@ -38,9 +40,7 @@ SERIALIZATION_SAVE_DATA(list, meta::is_std_list<T>::value)
 
 SERIALIZATION_LOAD_DATA(list, meta::is_std_list<T>::value)
 {
-    using size_type  = typename T::size_type;
-
-    size_type size;
+    let::u64 size;
     archive & size;
 
     list.resize(size);

@@ -1,12 +1,23 @@
-#ifndef SIFAR_DETAIL_TOOLS_HPP
-#define SIFAR_DETAIL_TOOLS_HPP
+#ifndef SIFAR_UTILITY_HPP
+#define SIFAR_UTILITY_HPP
 
-#include <cstddef> // size_t
+#include <cstdint> // int32_t, uint32_t, int64_t, uint64_t
 
 #include <Sifar/Detail/Meta.hpp>
 
 namespace sifar
 {
+
+namespace let
+{
+
+using i32 = std::int32_t;
+using u32 = std::uint32_t;
+
+using i64 = std::int64_t;
+using u64 = std::uint64_t;
+
+} // namespace let
 
 namespace utility
 {
@@ -14,16 +25,14 @@ namespace utility
 template <typename T, std::size_t N>
 constexpr std::size_t size(const T (&array)[N]) noexcept { return N; }
 
-template <typename T>
-constexpr const char* const_byte_cast(T& data) noexcept
+template <typename T> const char* const_byte_cast(T* data) noexcept
 {
-    return reinterpret_cast<const char*>(&data);
+    return reinterpret_cast<const char*>(data);
 }
 
-template <typename T>
-constexpr char* byte_cast(T& data) noexcept
+template <typename T> char* byte_cast(T* data) noexcept
 {
-    return reinterpret_cast<char*>(&data);
+    return reinterpret_cast<char*>(data);
 }
 
 template <class InIt, class OutIt>
@@ -65,4 +74,4 @@ std::size_t size(const CharType* str) noexcept
 
 } // namespace sifar
 
-#endif // SIFAR_DETAIL_TOOLS_HPP
+#endif // SIFAR_UTILITY_HPP

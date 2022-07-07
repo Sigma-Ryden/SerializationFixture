@@ -10,6 +10,8 @@
 
 #include <Sifar/TypeRegistry.hpp>
 
+#include <Sifar/Utility.hpp>
+
 namespace sifar
 {
 
@@ -27,7 +29,7 @@ namespace library
 
 SERIALIZATION_SAVE_DATA(forward_list, meta::is_std_forward_list<T>::value)
 {
-    const auto size = std::distance(forward_list.begin(), forward_list.end());
+    let::u64 size = std::distance(forward_list.begin(), forward_list.end());
 
     archive & size;
     for (const auto& item : forward_list)
@@ -38,9 +40,7 @@ SERIALIZATION_SAVE_DATA(forward_list, meta::is_std_forward_list<T>::value)
 
 SERIALIZATION_LOAD_DATA(forward_list, meta::is_std_forward_list<T>::value)
 {
-    using size_type  = typename T::size_type;
-
-    size_type size;
+    let::u64 size;
     archive & size;
 
     forward_list.resize(size);

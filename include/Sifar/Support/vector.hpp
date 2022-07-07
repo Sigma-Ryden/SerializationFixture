@@ -10,6 +10,8 @@
 
 #include <Sifar/TypeRegistry.hpp>
 
+#include <Sifar/Utility.hpp>
+
 namespace sifar
 {
 
@@ -27,7 +29,7 @@ namespace library
 
 SERIALIZATION_SAVE_DATA(vector, meta::is_std_vector<T>::value)
 {
-    const auto size = vector.size();
+    let::u64 size = vector.size();
 
     archive & size;
     for (const auto& item : vector)
@@ -38,9 +40,7 @@ SERIALIZATION_SAVE_DATA(vector, meta::is_std_vector<T>::value)
 
 SERIALIZATION_LOAD_DATA(vector, meta::is_std_vector<T>::value)
 {
-    using size_type  = typename T::size_type;
-
-    size_type size;
+    let::u64 size;
     archive & size;
 
     vector.resize(size);

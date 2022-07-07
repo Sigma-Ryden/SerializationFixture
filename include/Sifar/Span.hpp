@@ -7,7 +7,7 @@
 #include <Sifar/Ref.hpp>
 
 #include <Sifar/Detail/Pointer.hpp>
-#include <Sifar/Detail/Tools.hpp>
+#include <Sifar/Utility.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 
