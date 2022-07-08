@@ -95,24 +95,24 @@ namespace detail
 {
 
 template <typename, std::size_t N>
-struct remove_pointer_impl;
+struct remove_ptr_n_impl;
 
 template <typename T>
-struct remove_pointer_impl<T*, 1>
+struct remove_ptr_n_impl<T*, 1>
 {
     using type = T;
 };
 
 template <typename T, std::size_t N>
-struct remove_pointer_impl<T*, N>
+struct remove_ptr_n_impl<T*, N>
 {
-    using type = typename remove_pointer_impl<T, N - 1>::type;
+    using type = typename remove_ptr_n_impl<T, N - 1>::type;
 };
 
 } // namespace detail
 
 template <typename T, std::size_t N = 1>
-using remove_pointer = typename detail::remove_pointer_impl<T, N>::type;
+using remove_ptr_n = typename detail::remove_ptr_n_impl<T, N>::type;
 
 namespace detail
 {
@@ -218,12 +218,12 @@ template <typename T> constexpr bool is_pointer() noexcept
     return std::is_pointer<T>::value;
 }
 
-template <typename T> constexpr bool is_abstract_pointer() noexcept
+template <typename T> constexpr bool is_pointer_to_abstract() noexcept
 {
     return is_pointer<T>() and std::is_abstract<meta::deref<T>>::value;
 }
 
-template <typename T> constexpr bool is_polymorphic_pointer() noexcept
+template <typename T> constexpr bool is_pointer_to_polymorphic() noexcept
 {
     return is_pointer<T>() and std::is_polymorphic<meta::deref<T>>::value;
 }
@@ -242,7 +242,7 @@ template <typename T> constexpr bool is_pod_pointer() noexcept
 {
     return is_pointer<T>()
        and not is_void_pointer<T>()
-       and not is_polymorphic_pointer<T>()
+       and not is_pointer_to_polymorphic<T>()
        and not is_function_pointer<T>()
        and not std::is_null_pointer<T>()
        and not std::is_member_pointer<T>::value;

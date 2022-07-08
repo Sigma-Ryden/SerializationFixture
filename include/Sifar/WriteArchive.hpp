@@ -158,6 +158,28 @@ WriteArchive& operator& (WriteArchive& archive, T& unregistered)
 namespace tracking
 {
 
+namespace detail
+{
+
+template <class Archive, typename T, typename key_type,
+          meta::require<meta::is_write_archive<Archive>()
+                        and not Access::is_registered_class<meta::deref<T>>()> = 0>
+void native_save(Archive& archive, T& pointer, key_type track_key)
+{
+    archive & track_key;
+}
+
+template <class Archive, typename T, typename key_type,
+          meta::require<meta::is_write_archive<Archive>()
+                        and Access::is_registered_class<meta::deref<T>>()> = 0>
+void native_save(Archive& archive, T& pointer, key_type track_key)
+{
+    archive & track_key;
+    archive.registry().save_key(archive, pointer); // write class info
+}
+
+} // namespace detail
+
 template <class WriteArchive, typename T,
           meta::require<meta::is_write_archive<WriteArchive>()
                         and not meta::is_pointer<T>()> = 0>
@@ -165,7 +187,7 @@ void track(WriteArchive& archive, T& data)
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
 
-    auto address = std::addressof(data);
+    auto address = utility::pure(std::addressof(data));
 
     auto key = reinterpret_cast<key_type>(address);
 
@@ -188,7 +210,7 @@ void track(WriteArchive& archive, T& pointer)
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
 
-    auto key = reinterpret_cast<key_type>(pointer);
+    auto key = reinterpret_cast<key_type>(utility::pure(pointer));
 
     auto& is_tracking = archive.tracking()[key];
 
@@ -201,7 +223,7 @@ void track(WriteArchive& archive, T& pointer)
     }
     else
     {
-        archive & key;
+        detail::native_save(archive, pointer, key);
     }
 }
 
@@ -301,13 +323,9 @@ SERIALIZATION_SAVE_DATA(pointer, meta::is_pod_pointer<T>())
     return archive;
 }
 
-SERIALIZATION_SAVE_DATA(pointer, meta::is_polymorphic_pointer<T>())
+SERIALIZATION_SAVE_DATA(pointer, meta::is_pointer_to_polymorphic<T>())
 {
-    if (pointer == nullptr)
-        throw "the write pointer was not allocated.";
-
-    auto id = Access::dynamic_key(*pointer);
-    archive & id;
+    auto id = archive.registry().save_key(archive, pointer);
 
     archive.registry().save(archive, pointer, id);
 

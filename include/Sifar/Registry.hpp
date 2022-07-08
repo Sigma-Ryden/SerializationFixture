@@ -67,20 +67,10 @@ public:
         load_impl<0, meta::max_template_depth()>(archive, pointer, id);
     }
 
-    template <class Archive, class Pointer>
-    static void save(Archive& archive, Pointer& pointer)
+    template <typename Pointer, typename key_type>
+    static void assign(Pointer& pointer, void* address, key_type id)
     {
-        auto id = save_id(archive, pointer);
-
-        save(archive, pointer, id);
-    }
-
-    template <class Archive, class Pointer>
-    static void load(Archive& archive, Pointer& pointer)
-    {
-        auto id = load_id(archive, pointer);
-
-        load(archive, pointer, id);
+        assign_impl<0, meta::max_template_depth()>(pointer, address, id);
     }
 
 private:
@@ -125,6 +115,27 @@ private:
 
         load_impl<StaticKey + 1, StaticKeyLimit>(archive, pointer, id);
     }
+
+    template <size_type StaticKey, size_type StaticKeyLimit,
+              typename Pointer, typename key_type,
+              meta::require<(StaticKey == StaticKeyLimit)> = 0>
+    static void assign_impl(Pointer& pointer, void* address, key_type id)
+    {
+        throw "serializable type was not registered.";
+    }
+
+    template <size_type StaticKey, size_type StaticKeyLimit,
+              typename Pointer, typename key_type,
+              meta::require<(StaticKey < StaticKeyLimit)> = 0>
+    static void assign_impl(Pointer& pointer, void* address, key_type id)
+    {
+        using Class = typename class_export<StaticKey>::type;
+
+        if (id == StaticKey)
+            return try_assign<Class>(pointer, address);
+
+        assign_impl<StaticKey + 1, StaticKeyLimit>(pointer, address, id);
+    }
 };
 
 template <class... Tn>
@@ -145,20 +156,11 @@ public:
         load_impl<T, Tn..., T>(archive, pointer, id);
     }
 
-    template <class Archive, class Pointer>
-    static void save(Archive& archive, Pointer& pointer)
+    template <typename Pointer, typename key_type>
+    static void assign(Pointer& pointer, void* address, key_type id)
     {
-        auto id = save_id(archive, pointer);
-
-        save(archive, pointer, id);
-    }
-
-    template <class Archive, class Pointer>
-    static void load(Archive& archive, Pointer& pointer)
-    {
-        auto id = load_id(archive, pointer);
-
-        load(archive, pointer, id);
+        using T = meta::deref<Pointer>;
+        assign_impl<T, Tn..., T>(pointer, address, id);
     }
 
 private:
@@ -192,6 +194,22 @@ private:
             return load_if_derived_of<Derived>(archive, pointer);
 
         load_impl<Derived_n...>(archive, pointer, id);
+    }
+
+    template <typename Pointer, typename key_type>
+    static void assign_impl(Pointer& pointer, void* address, key_type id)
+    {
+        throw "serializable type was not registered.";
+    }
+
+    template <class Class, class... Class_n,
+              typename Pointer, typename key_type>
+    static void assign_impl(Pointer& pointer, void* address, key_type id)
+    {
+        if (id == key<Class>())
+            return try_assign<Class>(pointer, address);
+
+        assign_impl<Class_n...>(pointer, address, id);
     }
 };
 

@@ -39,7 +39,7 @@ set(SIFAR
 )
 
 add_executable(${PROJECT_NAME}
-    test/polymorphic.cpp
+   # test/polymorphic.cpp
    # test/class_export.cpp
    # test/virtual_base.cpp
    # test/demo.cpp
@@ -47,5 +47,6 @@ add_executable(${PROJECT_NAME}
    # test/tracking.cpp
    # test/inheritance.cpp
    # test/multi_array.cpp
+   test/tracking_virtual.cpp
     ${SIFAR}
 )

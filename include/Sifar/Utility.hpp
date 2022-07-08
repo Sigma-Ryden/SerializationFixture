@@ -35,6 +35,19 @@ template <typename T> char* byte_cast(T* data) noexcept
     return reinterpret_cast<char*>(data);
 }
 
+template <typename T, meta::require<meta::is_polymorphic<T>()> = 0>
+void* pure(T* p)
+{
+    //return static_cast<void*>(p);
+    return dynamic_cast<void*>(p);
+}
+
+template <typename T, meta::require<not meta::is_polymorphic<T>()> = 0>
+void* pure(T* p)
+{
+    return static_cast<void*>(p);
+}
+
 template <class InIt, class OutIt>
 OutIt copy(InIt first, InIt last, OutIt dst_first) noexcept
 {

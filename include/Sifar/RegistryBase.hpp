@@ -3,6 +3,8 @@
 
 #include <Sifar/Access.hpp>
 
+#include <Sifar/Utility.hpp>
+
 #include <Sifar/Detail/Meta.hpp>
 
 namespace sifar
@@ -29,33 +31,30 @@ public:
         return Access::static_key<T>();
     }
 
-protected:
-    template <class Archive, class P,
-              meta::require<meta::is_polymorphic_pointer<P>()> = 0>
-    static size_type save_id(Archive& archive, P& pointer)
+    template <class Archive, class Pointer,
+              meta::require<meta::is_pointer_to_polymorphic<Pointer>()> = 0>
+    static size_type save_key(Archive& archive, Pointer& pointer)
     {
         if (pointer == nullptr)
             throw "the write pointer was not allocated.";
 
-        auto id = Access::dynamic_key(*pointer);
+        let::u64 id = Access::dynamic_key(*pointer);
         archive & id;
 
         return id;
     }
 
-    template <class Archive, class P,
-              meta::require<meta::is_polymorphic_pointer<P>()> = 0>
-    static size_type load_id(Archive& archive, P& pointer)
+    template <class Archive, class Pointer,
+              meta::require<meta::is_pointer_to_polymorphic<Pointer>()> = 0>
+    static size_type load_key(Archive& archive, Pointer& /*pointer*/)
     {
-        using T = meta::deref<P>;
-        using key_type = decltype(Access::static_key<T>());
-
-        key_type id;
+        let::u64 id;
         archive & id;
 
         return id;
     }
 
+protected:
     template <class Derived, class Archive, class Base,
               meta::require<not meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
     static void save_if_derived_of(Archive& /*archive*/, Base& /*pointer*/)
@@ -94,6 +93,19 @@ protected:
 
         auto derived = Access::template runtime_cast<Derived*>(pointer);
         archive & (*derived); // will never nullptr
+    }
+
+    template <typename Class, typename Pointer,
+              meta::require<not std::is_convertible<Class*, Pointer>::value> = 0>
+    static void try_assign(Pointer& pointer, void* address) noexcept { /*pass*/ }
+
+    template <typename Class, typename Pointer,
+              meta::require<std::is_convertible<Class*, Pointer>::value> = 0>
+    static void try_assign(Pointer& pointer, void* address)
+    {
+        auto hold = Access::template cast<Class*>(address);
+
+        pointer = Access::template runtime_cast<Pointer>(hold);
     }
 };
 

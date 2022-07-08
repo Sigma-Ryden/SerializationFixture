@@ -36,9 +36,9 @@ SERIALIZATION_SAVE_DATA(unique_ptr, meta::is_std_unique_ptr<T>::value)
 
 SERIALIZATION_LOAD_DATA(unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
-    using pointer = typename T::pointer;
+    using element_type = typename T::element_type;
 
-    pointer data = nullptr;
+    element_type* data = nullptr;
     archive & data;
 
     unique_ptr.reset(data);

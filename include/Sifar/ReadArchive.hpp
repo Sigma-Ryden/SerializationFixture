@@ -166,6 +166,29 @@ ReadArchive& operator& (ReadArchive& archive, T& unregistered)
 namespace tracking
 {
 
+namespace detail
+{
+
+template <class Archive, typename T,
+          meta::require<meta::is_read_archive<Archive>()
+                        and not Access::is_registered_class<meta::deref<T>>()> = 0>
+void native_load(Archive& archive, T& pointer, void* address)
+{
+    pointer = static_cast<T>(address);
+}
+
+template <class Archive, typename T,
+          meta::require<meta::is_read_archive<Archive>()
+                        and Access::is_registered_class<meta::deref<T>>()> = 0>
+void native_load(Archive& archive, T& pointer, void* address)
+{
+    auto id = archive.registry().load_key(archive, pointer);
+
+    archive.registry().assign(pointer, address, id);
+}
+
+} // namespace detail
+
 template <class ReadArchive, typename T,
           meta::require<meta::is_read_archive<ReadArchive>()
                         and not meta::is_pointer<T>()> = 0>
@@ -182,7 +205,7 @@ void track(ReadArchive& archive, T& data)
     if (track_data.is_tracking)
         throw  "the read tracking data is already tracked.";
 #endif
-    auto address = std::addressof(data);
+    auto address = utility::pure(std::addressof(data));
 
     track_data.address = address;
     track_data.is_tracking = true;
@@ -209,12 +232,12 @@ void track(ReadArchive& archive, T& pointer)
     {
         archive & pointer; // call the sifar of not tracking pointer
 
-        track_data.address = pointer;
+        track_data.address = utility::pure(pointer);
         track_data.is_tracking = true;
     }
     else
     {
-        pointer = static_cast<T>(track_data.address);
+        detail::native_load(archive, pointer, track_data.address);
     }
 }
 
@@ -327,13 +350,9 @@ SERIALIZATION_LOAD_DATA(pointer, meta::is_pod_pointer<T>())
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(pointer, meta::is_polymorphic_pointer<T>())
+SERIALIZATION_LOAD_DATA(pointer, meta::is_pointer_to_polymorphic<T>())
 {
-    using value_type = meta::deref<T>;
-    using key_type   = decltype(Access::template static_key<value_type>());
-
-    key_type id;
-    archive & id;
+    auto id = archive.registry().load_key(archive, pointer);
 
     archive.registry().load(archive, pointer, id);
 

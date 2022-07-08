@@ -42,7 +42,7 @@ SERIALIZATION_TYPE_REGISTRY_IF(meta::is_enum<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_array<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_ref<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_pod_pointer<T>())
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_polymorphic_pointer<T>())
+SERIALIZATION_TYPE_REGISTRY_IF(meta::is_pointer_to_polymorphic<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_unsupported<T>())
 
 #endif // SIFAR_TYPE_REGISTRY_HPP

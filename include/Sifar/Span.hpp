@@ -156,7 +156,7 @@ Span<T, 1>::Span(pointer& data, size_type size)
 
 template <typename Pointer, typename D, typename... Dn,
          std::size_t N = sizeof...(Dn) + 1,
-         typename Type = meta::remove_pointer<Pointer, N>,
+         typename Type = meta::remove_ptr_n<Pointer, N>,
          typename Span = utility::Span<Type, N>,
          meta::require<meta::and_<std::is_arithmetic<D>,
                                   std::is_arithmetic<Dn>...>::value> = 0>

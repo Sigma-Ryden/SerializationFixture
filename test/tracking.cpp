@@ -3,15 +3,11 @@
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
-#include <Sifar/Support/string.hpp>
+using sifar::ReadArchive;
+using sifar::WriteArchive;
 
-namespace sr = sifar;
-
-using sr::ReadArchive;
-using sr::WriteArchive;
-
-using namespace sr::common; // support of common types
-using namespace sr::tracking; // support of data tracking
+using namespace sifar::common; // support of common types
+using namespace sifar::tracking; // support of data tracking
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
