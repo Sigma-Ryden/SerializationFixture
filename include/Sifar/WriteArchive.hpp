@@ -155,11 +155,28 @@ WriteArchive& operator& (WriteArchive& archive, T& unregistered)
     return archive;
 }
 
-namespace tracking
-{
-
 namespace detail
 {
+
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and not meta::is_span<T>()> = 0>
+void raw_span(WriteArchive& archive, T& data)
+{
+    archive & data;
+}
+
+// sifar of scoped data with previous dimension initialization
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and meta::is_span<T>()> = 0>
+void raw_span(WriteArchive& archive, T& zip)
+{
+    using size_type = typename T::size_type;
+
+    for (size_type i = 0; i < zip.size(); ++i)
+        raw_span(archive, zip[i]);
+}
 
 template <class Archive, typename T, typename key_type,
           meta::require<meta::is_write_archive<Archive>()
@@ -179,6 +196,9 @@ void native_save(Archive& archive, T& pointer, key_type track_key)
 }
 
 } // namespace detail
+
+namespace tracking
+{
 
 template <class WriteArchive, typename T,
           meta::require<meta::is_write_archive<WriteArchive>()
@@ -261,31 +281,6 @@ SERIALIZATION_SAVE_DATA(array, meta::is_array<T>())
 
     return archive;
 }
-
-namespace detail
-{
-
-template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and not meta::is_span<T>()> = 0>
-void raw_span(WriteArchive& archive, T& data)
-{
-    archive & data;
-}
-
-// sifar of scoped data with previous dimension initialization
-template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and meta::is_span<T>()> = 0>
-void raw_span(WriteArchive& archive, T& zip)
-{
-    using size_type = typename T::size_type;
-
-    for (size_type i = 0; i < zip.size(); ++i)
-        raw_span(archive, zip[i]);
-}
-
-} // namespace detail
 
 template <class WriteArchive, typename T,
           typename D, typename... Dn,

@@ -14,8 +14,7 @@ using sifar::virtual_base;
 struct A
 {
     virtual ~A() {}
-
-    SERIALIZATION_CLASS_INFO(0)
+    SERIALIZATION_POLYMORPHIC_KEY(0)
 
     SERIALIZATION_UNIFIED(ar) {}
 };
@@ -26,7 +25,7 @@ struct A
 // else do something...
 struct B : virtual A
 {
-    SERIALIZATION_CLASS_INFO(1)
+    SERIALIZATION_POLYMORPHIC_KEY(1)
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -36,7 +35,7 @@ struct B : virtual A
 
 struct C :  virtual A
 {
-    SERIALIZATION_CLASS_INFO(2)
+    SERIALIZATION_POLYMORPHIC_KEY(2)
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -46,7 +45,7 @@ struct C :  virtual A
 
 struct D : B, C
 {
-    SERIALIZATION_CLASS_INFO(3)
+    SERIALIZATION_POLYMORPHIC_KEY(3)
 
     SERIALIZATION_UNIFIED(ar)
     {
@@ -58,7 +57,7 @@ struct D : B, C
 
 struct F : D
 {
-    SERIALIZATION_CLASS_INFO(4)
+    SERIALIZATION_POLYMORPHIC_KEY(4)
 
     SERIALIZATION_UNIFIED(ar)
     {

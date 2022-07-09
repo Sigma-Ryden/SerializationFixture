@@ -22,7 +22,7 @@ struct B
     int b = 0;
     virtual ~B() = default;
 
-    SERIALIZATION_CLASS_INFO(0)
+    SERIALIZATION_POLYMORPHIC_KEY(0)
     SERIALIZATION_UNIFIED(ar)
     {
         ar & b;
@@ -32,7 +32,7 @@ struct B
 struct C : virtual B
 {
     int c = 1;
-    SERIALIZATION_CLASS_INFO(1)
+    SERIALIZATION_POLYMORPHIC_KEY(1)
     SERIALIZATION_UNIFIED(ar)
     {
         virtual_base<B>(ar, *this);
@@ -43,7 +43,7 @@ struct C : virtual B
 struct D : virtual B
 {
     int d = 22;
-    SERIALIZATION_CLASS_INFO(2)
+    SERIALIZATION_POLYMORPHIC_KEY(2)
     SERIALIZATION_UNIFIED(ar)
     {
         virtual_base<B>(ar, *this);
@@ -54,7 +54,7 @@ struct D : virtual B
 struct X : C, D
 {
     int x = 333;
-    SERIALIZATION_CLASS_INFO(3)
+    SERIALIZATION_POLYMORPHIC_KEY(3)
     SERIALIZATION_UNIFIED(ar)
     {
         virtual_base<B>(ar, *this);
@@ -65,10 +65,10 @@ struct X : C, D
     }
 };
 
-SERIALIZATION_CLASS_EXPORT(B)
-SERIALIZATION_CLASS_EXPORT(C)
-SERIALIZATION_CLASS_EXPORT(D)
-SERIALIZATION_CLASS_EXPORT(X)
+SERIALIZATION_EXPORT_KEY(B)
+SERIALIZATION_EXPORT_KEY(C)
+SERIALIZATION_EXPORT_KEY(D)
+SERIALIZATION_EXPORT_KEY(X)
 
 void test_tracking_virtual()
 {

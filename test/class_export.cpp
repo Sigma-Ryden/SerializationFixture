@@ -14,7 +14,7 @@ namespace some_namespace
 class Parent
 {
     SERIALIZATION_ACCESS()
-    SERIALIZATION_CLASS_INFO(0)
+    SERIALIZATION_POLYMORPHIC_KEY(0)
 
 private:
     int a;
@@ -35,7 +35,7 @@ private:
 } // namespace some_namespace
 
 // Class export MUST be in the global namespace
-SERIALIZATION_CLASS_EXPORT(some_namespace::Parent)
+SERIALIZATION_EXPORT_KEY(some_namespace::Parent)
 
 template <class T>
 class Child : public some_namespace::Parent
@@ -43,7 +43,7 @@ class Child : public some_namespace::Parent
     SERIALIZATION_ACCESS()
 
     // This is a default value for a class template, and using only for the 'sifar::InnerRegistry'
-    SERIALIZATION_CLASS_INFO(1)
+    SERIALIZATION_POLYMORPHIC_KEY(1)
 
 private:
     int b;
@@ -60,7 +60,7 @@ private:
     }
 };
 
-SERIALIZATION_CLASS_TPL_EXPORT(2, Child<int>)
+SERIALIZATION_EXPORT_TPL_KEY(2, Child<int>)
 
 void test_class_export()
 {

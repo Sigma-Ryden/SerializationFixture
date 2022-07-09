@@ -17,7 +17,7 @@ template <class SomeType>
 class Base
 {
     SERIALIZATION_ACCESS()
-    SERIALIZATION_CLASS_HASH_INFO(Base<SomeType>)
+    SERIALIZATION_POLYMORPHIC_HASH(Base<SomeType>)
 
 protected:
     SomeType data;
@@ -46,13 +46,13 @@ private:
     }
 };
 // partial class info
-SERIALIZATION_CLASS_TPL_HASH_INFO(Base<double>)
-SERIALIZATION_CLASS_TPL_HASH_INFO(Base<std::string>)
+SERIALIZATION_POLYMORPHIC_TPL_HASH(Base<double>)
+SERIALIZATION_POLYMORPHIC_TPL_HASH(Base<std::string>)
 
 class Derived : public Base<std::string>
 {
     SERIALIZATION_ACCESS()
-    SERIALIZATION_CLASS_HASH_INFO(Derived)
+    SERIALIZATION_POLYMORPHIC_HASH(Derived)
 
 private:
     float value;

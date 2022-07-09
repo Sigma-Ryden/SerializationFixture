@@ -163,11 +163,34 @@ ReadArchive& operator& (ReadArchive& archive, T& unregistered)
     return archive;
 }
 
-namespace tracking
-{
-
 namespace detail
 {
+
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and not meta::is_span<T>()> = 0>
+void raw_span(ReadArchive& archive, T& data)
+{
+    archive & data;
+}
+
+// sifar of scoped data with previous dimension initialization
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and meta::is_span<T>()> = 0>
+void raw_span(ReadArchive& archive, T& zip)
+{
+    using size_type        = typename T::size_type;
+    using dereference_type = typename T::dereference_type;
+
+    using pointer          = typename T::pointer;
+
+    pointer ptr = new dereference_type [zip.size()];
+    zip.init(ptr);
+
+    for (size_type i = 0; i < zip.size(); ++i)
+        raw_span(archive, zip[i]);
+}
 
 template <class Archive, typename T,
           meta::require<meta::is_read_archive<Archive>()
@@ -188,6 +211,9 @@ void native_load(Archive& archive, T& pointer, void* address)
 }
 
 } // namespace detail
+
+namespace tracking
+{
 
 template <class ReadArchive, typename T,
           meta::require<meta::is_read_archive<ReadArchive>()
@@ -281,37 +307,6 @@ SERIALIZATION_LOAD_DATA(array, meta::is_array<T>())
 
     return archive;
 }
-
-namespace detail
-{
-
-template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and not meta::is_span<T>()> = 0>
-void raw_span(ReadArchive& archive, T& data)
-{
-    archive & data;
-}
-
-// sifar of scoped data with previous dimension initialization
-template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and meta::is_span<T>()> = 0>
-void raw_span(ReadArchive& archive, T& zip)
-{
-    using size_type        = typename T::size_type;
-    using dereference_type = typename T::dereference_type;
-
-    using pointer          = typename T::pointer;
-
-    pointer ptr = new dereference_type [zip.size()];
-    zip.init(ptr);
-
-    for (size_type i = 0; i < zip.size(); ++i)
-        raw_span(archive, zip[i]);
-}
-
-} // namespace detail
 
 template <class ReadArchive, typename T,
           typename D, typename... Dn,

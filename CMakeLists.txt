@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(include)
 
 set(SIFAR
+    include/Sifar/Detail/Counter.hpp
     include/Sifar/Detail/Pointer.hpp
     include/Sifar/Detail/Meta.hpp
     include/Sifar/Detail/MacroScope.hpp
@@ -39,7 +40,7 @@ set(SIFAR
 )
 
 add_executable(${PROJECT_NAME}
-    test/polymorphic.cpp
+   # test/polymorphic.cpp
    # test/class_export.cpp
    # test/virtual_base.cpp
    # test/demo.cpp
@@ -48,5 +49,6 @@ add_executable(${PROJECT_NAME}
    # test/inheritance.cpp
    # test/multi_array.cpp
    # test/tracking_virtual.cpp
+    test/class_auto_indexing.cpp
     ${SIFAR}
 )

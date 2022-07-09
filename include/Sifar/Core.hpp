@@ -13,6 +13,8 @@
 
 #include <Sifar/Span.hpp>
 
+#include <Sifar/Detail/Counter.hpp>
+
 #define SERIALIZATION_LOAD(archive)                                                                     \
     template <class Archive> void load(Archive& archive)
 

@@ -5,27 +5,43 @@
 
 #include <Sifar/Detail/Meta.hpp>
 
-#define SERIALIZATION_CLASS_INFO(value)                                                                 \
+#define SERIALIZATION_POLYMORPHIC_KEY(value)                                                            \
     static constexpr std::size_t static_key() noexcept { return (value); }                              \
     virtual std::size_t dynamic_key() const noexcept { return static_key(); }
 
-#define SERIALIZATION_CLASS_HASH_INFO(...)                                                              \
-    SERIALIZATION_CLASS_INFO(::sifar::static_hash(#__VA_ARGS__))
+#define SERIALIZATION_POLYMORPHIC_HASH(...)                                                             \
+    SERIALIZATION_POLYMORPHIC_KEY(::sifar::static_hash(#__VA_ARGS__))
 
-#define SERIALIZATION_CLASS_EXPORT(...)                                                                 \
+#define SERIALIZATION_POLYMORPHIC()                                                                     \
+    static constexpr std::size_t static_key() noexcept;                                                 \
+    virtual std::size_t dynamic_key() const noexcept;
+
+#define SERIALIZATION_EXPORT_KEY(...)                                                                   \
     template <> struct sifar::class_export<                                                             \
     ::sifar::meta::check_depth< ::sifar::Access::static_key<__VA_ARGS__>() >::value>                    \
     { using type = __VA_ARGS__; };
 
-#define SERIALIZATION_CLASS_TPL_INFO(value, ...)                                                        \
+#define SERIALIZATION_EXPORT(...)                                                                       \
+    COUNTER_INCREMENT()                                                                                 \
+    constexpr std::size_t __VA_ARGS__::static_key() noexcept { return COUNTER_VALUE(); }                \
+    std::size_t __VA_ARGS__::dynamic_key() const noexcept { return static_key(); }                      \
+    SERIALIZATION_EXPORT_KEY(__VA_ARGS__)
+
+#define SERIALIZATION_POLYMORPHIC_TPL_KEY(value, ...)                                                   \
     template <> constexpr std::size_t __VA_ARGS__::static_key() noexcept { return (value); }
 
-#define SERIALIZATION_CLASS_TPL_HASH_INFO(...)                                                          \
-    SERIALIZATION_CLASS_TPL_INFO(::sifar::static_hash(#__VA_ARGS__), __VA_ARGS__)
+#define SERIALIZATION_POLYMORPHIC_TPL_HASH(...)                                                         \
+    SERIALIZATION_POLYMORPHIC_TPL_KEY(::sifar::static_hash(#__VA_ARGS__), __VA_ARGS__)
 
-#define SERIALIZATION_CLASS_TPL_EXPORT(value, ...)                                                      \
-    SERIALIZATION_CLASS_TPL_INFO(value, __VA_ARGS__)                                                    \
-    SERIALIZATION_CLASS_EXPORT(__VA_ARGS__)
+#define SERIALIZATION_EXPORT_TPL_KEY(value, ...)                                                        \
+    SERIALIZATION_POLYMORPHIC_TPL_KEY(value, __VA_ARGS__)                                               \
+    SERIALIZATION_EXPORT_KEY(__VA_ARGS__)
+
+#define SERIALIZATION_EXPORT_TPL(...)                                                                   \
+    COUNTER_INCREMENT()                                                                                 \
+    template <> constexpr std::size_t __VA_ARGS__::static_key() noexcept { return COUNTER_VALUE(); }    \
+    template <> std::size_t __VA_ARGS__::dynamic_key() const noexcept { return static_key(); }          \
+    SERIALIZATION_EXPORT_KEY(__VA_ARGS__)
 
 namespace sifar
 {

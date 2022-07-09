@@ -14,6 +14,11 @@ namespace sifar
 namespace meta
 {
 
+struct dummy_type {};
+
+template <std::size_t N>
+struct constant_index : std::integral_constant<std::size_t, N> {};
+
 template <bool condition, typename T = void>
 using when = typename std::enable_if<condition, T>::type;
 
