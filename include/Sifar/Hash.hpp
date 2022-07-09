@@ -1,7 +1,9 @@
 #ifndef SIFAR_HASH_HPP
 #define SIFAR_HASH_HPP
 
-#include <cstddef> // size_t
+#include <Sifar/Utility.hpp>
+
+#include <Sifar/Detail/Meta.hpp>
 
 namespace sifar
 {
@@ -9,17 +11,26 @@ namespace sifar
 namespace utility
 {
 
-enum class Word
-{
-    x32,
-    x64
-};
+enum class Word { x32, x64 };
 
 namespace detail
 {
 
-template <std::size_t FnvPrime, std::size_t OffsetBasis>
-std::size_t fnv_1a(const char* text)
+template <Word word> struct word_type_impl;
+
+template <> struct word_type_impl<Word::x32> { using type = let::u32; };
+template <> struct word_type_impl<Word::x64> { using type = let::u64; };
+
+} // namespace detail
+
+template <Word word>
+using WordType = typename detail::word_type_impl<word>::type;
+
+namespace detail
+{
+
+template <let::u64 FnvPrime, let::u64 OffsetBasis>
+let::u64 fnv_1a(const char* text)
 {
     auto hash = OffsetBasis;
     while (*text != '\0')
@@ -33,8 +44,8 @@ std::size_t fnv_1a(const char* text)
     return hash;
 }
 
-template <std::size_t FnvPrime, std::size_t OffsetBasis>
-constexpr std::size_t static_fnv_1a(const char* text, std::size_t hash = OffsetBasis) noexcept
+template <let::u64 FnvPrime, let::u64 OffsetBasis>
+constexpr let::u64 static_fnv_1a(const char* text, let::u64 hash = OffsetBasis) noexcept
 {
     return (*text == '\0')
            ? hash
@@ -51,16 +62,16 @@ struct Hash<Word::x32>
 {
 private:
     // For 32 bit machines:
-    static constexpr std::size_t fnv_prime        = 16777619ull;
-    static constexpr std::size_t fnv_offset_basis = 2166136261ull;
+    static constexpr let::u32 fnv_prime        = 16777619ull;
+    static constexpr let::u32 fnv_offset_basis = 2166136261ull;
 
 public:
-    static std::size_t run(const char* text)
+    static let::u32 run(const char* text)
     {
         return detail::fnv_1a<fnv_prime, fnv_offset_basis>(text);
     }
 
-    static constexpr std::size_t static_run(const char* text) noexcept
+    static constexpr let::u32 static_run(const char* text) noexcept
     {
         return detail::static_fnv_1a<fnv_prime, fnv_offset_basis>(text);
     }
@@ -71,16 +82,16 @@ struct Hash<Word::x64>
 {
 private:
     // For 64 bit machines:
-    static constexpr std::size_t fnv_prime        = 1099511628211ull;
-    static constexpr std::size_t fnv_offset_basis = 14695981039346656037ull;
+    static constexpr let::u64 fnv_prime        = 1099511628211ull;
+    static constexpr let::u64 fnv_offset_basis = 14695981039346656037ull;
 
 public:
-    static std::size_t run(const char* text)
+    static let::u64 run(const char* text)
     {
         return detail::fnv_1a<fnv_prime, fnv_offset_basis>(text);
     }
 
-    static constexpr std::size_t static_run(const char* text) noexcept
+    static constexpr let::u64 static_run(const char* text) noexcept
     {
         return detail::static_fnv_1a<fnv_prime, fnv_offset_basis>(text);
     }
@@ -88,17 +99,26 @@ public:
 
 } // namespace utility
 
+#ifdef SIFAR_BOUNDED_HASH
+#   define SIFAR_PREPARE_HASH(value) ((value) % meta::max_template_depth())
+#else
+#   define SIFAR_PREPARE_HASH(value) (value)
+#endif
+
 template <utility::Word word = utility::Word::x64>
-std::size_t hash(const char* text)
+utility::WordType<word> hash(const char* text)
 {
-    return utility::Hash<word>::run(text);
+    return SIFAR_PREPARE_HASH(utility::Hash<word>::run(text));
 }
 
 template <utility::Word word = utility::Word::x64>
-constexpr std::size_t static_hash(const char* text) noexcept
+constexpr utility::WordType<word> static_hash(const char* text) noexcept
 {
-    return utility::Hash<word>::static_run(text);
+    return SIFAR_PREPARE_HASH(utility::Hash<word>::static_run(text));
 }
+
+// clean up
+#undef SIFAR_PREPARE_HASH
 
 } // namepace sifar
 

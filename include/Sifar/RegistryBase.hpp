@@ -3,8 +3,6 @@
 
 #include <Sifar/Access.hpp>
 
-#include <Sifar/Utility.hpp>
-
 #include <Sifar/Detail/Meta.hpp>
 
 namespace sifar
@@ -38,7 +36,7 @@ public:
         if (pointer == nullptr)
             throw "the write pointer was not allocated.";
 
-        let::u64 id = Access::dynamic_key(*pointer);
+        auto id = Access::dynamic_key(*pointer);
         archive & id;
 
         return id;
@@ -48,7 +46,10 @@ public:
               meta::require<meta::is_pointer_to_polymorphic<Pointer>()> = 0>
     static size_type load_key(Archive& archive, Pointer& /*pointer*/)
     {
-        let::u64 id;
+        using T = meta::deref<Pointer>;
+        using key_type = decltype(Access::template static_key<T>());
+
+        key_type id;
         archive & id;
 
         return id;
