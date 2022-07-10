@@ -35,6 +35,36 @@ struct Template
 
 SERIALIZATION_EXPORT_TPL(Template<int>)
 SERIALIZATION_EXPORT_TPL(Template<char>)
+#include <Sifar/Support/stack.hpp>
+
+using namespace sifar::library;
+#include <algorithm>
+struct A
+{
+    int a_;
+    A() : a_(0) { std::cout << "A()\n"; }
+    A(int a) : a_(a) {std::cout << "A(int)\n"; }
+    A(A&& a) : a_(std::move(a.a_)) {std::cout << "A(A&&)\n"; }
+    A(const A& a) : a_(a.a_) {std::cout << "A(const A&)\n"; }
+
+    ~A() { std::cout << "~A()\n"; }
+};
+
+SERIALIZATION_SAVE_DATA(obj, std::is_same<T, A>::value)
+{
+    archive & obj.a_;
+
+    return archive;
+}
+
+SERIALIZATION_LOAD_DATA(obj, std::is_same<T, A>::value)
+{
+    archive & obj.a_;
+
+    return archive;
+}
+
+SERIALIZATION_TYPE_REGISTRY(A)
 
 int main()
 {

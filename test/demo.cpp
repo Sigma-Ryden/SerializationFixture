@@ -21,9 +21,9 @@ public:
     FormatOutStream(std::ostream& stream) : stream_(stream) {}
 
     template <typename T>
-    FormatOutStream& write(const T& data, std::size_t)
+    FormatOutStream& write(const T* data, std::size_t)
     {
-        stream_ << data << ' ';
+        stream_ << *data << ' ';
 
         return *this;
     }
@@ -112,7 +112,7 @@ void test_common()
     std::string hi = "hello";
     char bye[] = "bye";
 
-    const char* boo = "boo";
+    //const char* boo = "boo"; // will serialize first symbol
 
     A obj(666, 999, 2.71);
 

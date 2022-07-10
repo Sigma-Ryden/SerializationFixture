@@ -36,8 +36,8 @@ SERIALIZATION_SAVE_DATA(set, meta::is_std_set<T>::value or
                              meta::is_std_multiset<T>::value)
 {
     let::u64 size = set.size();
-
     archive & size;
+
     for (const auto& item : set)
         archive & item;
 

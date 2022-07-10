@@ -23,6 +23,10 @@ set(SIFAR
     include/Sifar/Support/forward_list.hpp
     include/Sifar/Support/set.hpp
     include/Sifar/Support/unique_ptr.hpp
+    include/Sifar/Support/map.hpp
+    include/Sifar/Support/deque.hpp
+    include/Sifar/Support/stack.hpp
+    include/Sifar/Support/queue.hpp
 
     include/Sifar/UndefMacro.hpp
     include/Sifar/Hash.hpp
@@ -48,7 +52,7 @@ add_executable(${PROJECT_NAME}
    # test/tracking.cpp
    # test/inheritance.cpp
    # test/multi_array.cpp
-   # test/tracking_virtual.cpp
-    test/class_auto_indexing.cpp
+    test/tracking_virtual.cpp
+   # test/class_auto_indexing.cpp
     ${SIFAR}
 )

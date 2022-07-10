@@ -30,8 +30,8 @@ namespace library
 SERIALIZATION_SAVE_DATA(forward_list, meta::is_std_forward_list<T>::value)
 {
     let::u64 size = std::distance(forward_list.begin(), forward_list.end());
-
     archive & size;
+
     for (const auto& item : forward_list)
         archive & item;
 

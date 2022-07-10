@@ -30,8 +30,8 @@ namespace library
 SERIALIZATION_SAVE_DATA(vector, meta::is_std_vector<T>::value)
 {
     let::u64 size = vector.size();
-
     archive & size;
+
     for (const auto& item : vector)
         archive & item;
 

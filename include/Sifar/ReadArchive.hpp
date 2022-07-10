@@ -155,7 +155,7 @@ ReadArchive& operator& (ReadArchive& archive, T& unregistered)
         "'T' is an unregistered type for the 'sifar::ReadArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
         "'SERIALIZATION_LOAD_DATA(parameter, condition)' "
-        "and then register the type 'T' with the macros "
+        "and then register the type 'T' with the macros: "
         "'SERIALIZATION_TYPE_REGISTRY(name)' or "
         "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'."
     );
@@ -174,7 +174,7 @@ void raw_span(ReadArchive& archive, T& data)
     archive & data;
 }
 
-// sifar of scoped data with previous dimension initialization
+// serialization of scoped data with previous dimension initialization
 template <class ReadArchive, typename T,
           meta::require<meta::is_read_archive<ReadArchive>()
                         and meta::is_span<T>()> = 0>
@@ -256,7 +256,7 @@ void track(ReadArchive& archive, T& pointer)
 
     if (not track_data.is_tracking)
     {
-        archive & pointer; // call the sifar of not tracking pointer
+        archive & pointer; // call the serialization of not tracking pointer
 
         track_data.address = utility::pure(pointer);
         track_data.is_tracking = true;
