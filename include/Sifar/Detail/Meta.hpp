@@ -238,6 +238,11 @@ template <typename T> constexpr bool is_void_pointer() noexcept
     return std::is_same<T, void*>::value;
 }
 
+template <typename T> constexpr bool is_null_pointer() noexcept
+{
+    return std::is_same<T, std::nullptr_t>::value;
+}
+
 template <typename T> constexpr bool is_function_pointer() noexcept
 {
     return detail::is_function_pointer<T>();
@@ -249,7 +254,7 @@ template <typename T> constexpr bool is_pod_pointer() noexcept
        and not is_void_pointer<T>()
        and not is_pointer_to_polymorphic<T>()
        and not is_function_pointer<T>()
-       and not std::is_null_pointer<T>()
+       and not is_null_pointer<T>()
        and not std::is_member_pointer<T>::value;
 }
 
@@ -257,10 +262,10 @@ template <typename T> constexpr bool is_unsupported() noexcept
 {
     return is_void_pointer<T>()
         or is_function_pointer<T>()
-        or std::is_null_pointer<T>::value
+        or is_null_pointer<T>()
         or std::is_function<T>::value
         or std::is_member_function_pointer<T>::value
-        or std::is_member_object_pointer<T>::value;
+        or std::is_member_object_pointer<T>::value;	
 }
 
 } // namespace meta

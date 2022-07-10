@@ -147,7 +147,7 @@ WriteArchive& operator& (WriteArchive& archive, T& unregistered)
         "'T' is an unregistered type for the 'sifar::WriteArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
         "'SERIALIZATION_SAVE_DATA(parameter, condition)' "
-        "and then register the type 'T' with the macros "
+        "and then register the type 'T' with the macros: "
         "'SERIALIZATION_TYPE_REGISTRY(name)' or "
         "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'."
     );
@@ -166,7 +166,7 @@ void raw_span(WriteArchive& archive, T& data)
     archive & data;
 }
 
-// sifar of scoped data with previous dimension initialization
+// serialization of scoped data with previous dimension initialization
 template <class WriteArchive, typename T,
           meta::require<meta::is_write_archive<WriteArchive>()
                         and meta::is_span<T>()> = 0>
@@ -237,7 +237,7 @@ void track(WriteArchive& archive, T& pointer)
     if (not is_tracking)
     {
         archive & key;
-        archive & pointer; // call the sifar of not tracking pointer
+        archive & pointer; // call the serialization of not tracking pointer
 
         is_tracking = true;
     }
