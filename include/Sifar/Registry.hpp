@@ -12,20 +12,10 @@
 #define SERIALIZATION_POLYMORPHIC_HASH(...)                                                             \
     SERIALIZATION_POLYMORPHIC_KEY(::sifar::static_hash(#__VA_ARGS__))
 
-#define SERIALIZATION_POLYMORPHIC()                                                                     \
-    static constexpr std::size_t static_key() noexcept;                                                 \
-    virtual std::size_t dynamic_key() const noexcept;
-
 #define SERIALIZATION_EXPORT_KEY(...)                                                                   \
     template <> struct sifar::class_export<                                                             \
     ::sifar::meta::check_depth< ::sifar::Access::static_key<__VA_ARGS__>() >::value>                    \
     { using type = __VA_ARGS__; };
-
-#define SERIALIZATION_EXPORT(...)                                                                       \
-    COUNTER_INCREMENT()                                                                                 \
-    constexpr std::size_t __VA_ARGS__::static_key() noexcept { return COUNTER_VALUE(); }                \
-    std::size_t __VA_ARGS__::dynamic_key() const noexcept { return static_key(); }                      \
-    SERIALIZATION_EXPORT_KEY(__VA_ARGS__)
 
 #define SERIALIZATION_POLYMORPHIC_TPL_KEY(value, ...)                                                   \
     template <> constexpr std::size_t __VA_ARGS__::static_key() noexcept { return (value); }
@@ -37,11 +27,23 @@
     SERIALIZATION_POLYMORPHIC_TPL_KEY(value, __VA_ARGS__)                                               \
     SERIALIZATION_EXPORT_KEY(__VA_ARGS__)
 
+#ifdef SIFAR_EXPERIMENTAL
+#define SERIALIZATION_POLYMORPHIC()                                                                     \
+    static constexpr std::size_t static_key() noexcept;                                                 \
+    virtual std::size_t dynamic_key() const noexcept;
+
+#define SERIALIZATION_EXPORT(...)                                                                       \
+    COUNTER_INCREMENT()                                                                                 \
+    constexpr std::size_t __VA_ARGS__::static_key() noexcept { return COUNTER_VALUE(); }                \
+    std::size_t __VA_ARGS__::dynamic_key() const noexcept { return static_key(); }                      \
+    SERIALIZATION_EXPORT_KEY(__VA_ARGS__)
+
 #define SERIALIZATION_EXPORT_TPL(...)                                                                   \
     COUNTER_INCREMENT()                                                                                 \
     template <> constexpr std::size_t __VA_ARGS__::static_key() noexcept { return COUNTER_VALUE(); }    \
     template <> std::size_t __VA_ARGS__::dynamic_key() const noexcept { return static_key(); }          \
     SERIALIZATION_EXPORT_KEY(__VA_ARGS__)
+#endif // SIFAR_EXPERIMENTAL
 
 namespace sifar
 {

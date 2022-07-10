@@ -5,6 +5,7 @@
 
 #include <Sifar/Detail/Meta.hpp>
 
+#ifdef SIFAR_EXPERIMENTAL
 #define COUNTER_DETAIL(R, I)                                                                            \
     ::sifar::detail::constexpr_counter(                                                                 \
         ::sifar::meta::constant_index<R>(),                                                             \
@@ -34,5 +35,6 @@
     }}
 
 COUNTER_DEFINE()
+#endif // SIFAR_EXPERIMENTAL
 
 #endif // SIFAR_DETAIL_COUNTER_HPP

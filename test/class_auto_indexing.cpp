@@ -1,6 +1,7 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
+#define SIFAR_EXPERIMENTAL
 #include <Sifar/Core.hpp> // Access
 
 class Class
@@ -40,6 +41,8 @@ int main()
     auto a = sifar::Access::static_key<some::Struct>(); // 2
     auto b = sifar::Access::static_key<Template<char>>(); // 4
     auto c = sifar::Access::static_key<Class>(); // 1
+
+    std::cout << a << ' ' << b << ' ' << c << '\n';
 
     return 0;
 }
