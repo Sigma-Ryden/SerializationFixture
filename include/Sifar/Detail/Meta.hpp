@@ -265,7 +265,7 @@ template <typename T> constexpr bool is_unsupported() noexcept
         or is_null_pointer<T>()
         or std::is_function<T>::value
         or std::is_member_function_pointer<T>::value
-        or std::is_member_object_pointer<T>::value;	
+        or std::is_member_object_pointer<T>::value;
 }
 
 } // namespace meta
