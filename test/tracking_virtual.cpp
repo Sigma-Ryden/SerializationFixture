@@ -73,7 +73,6 @@ SERIALIZATION_EXPORT_KEY(X)
 void test_tracking_virtual()
 {
     using Registry = sifar::InnerRegistry<B, C, D, X>;
-
     {
         std::ofstream file("test_tracking_virtual.bin", std::ios::binary);
 

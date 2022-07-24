@@ -2,6 +2,7 @@
 #define SIFAR_REGISTRY_BASE_HPP
 
 #include <Sifar/Access.hpp>
+#include <Sifar/Utility.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 
@@ -15,6 +16,9 @@ class RegistryBase
 {
 public:
     using size_type = std::size_t;
+
+protected:
+    static constexpr auto key_max_bound = let::u64(-1);
 
 public:
     template <class T>
@@ -56,43 +60,38 @@ public:
     }
 
 protected:
-    template <class Derived, class Archive, class Base,
-              meta::require<not meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
-    static void save_if_derived_of(Archive& /*archive*/, Base& /*pointer*/)
+    template <class Derived, class Archive,
+              meta::require<std::is_same<Derived*, void*>::value> = 0>
+    static void try_save(Archive& /*archive*/, void* /*pointer*/)
     {
         throw "serializable type was not registered.";
     }
 
-    template <class Derived, class Archive, class Base,
-              meta::require<meta::is_base_of<meta::deref<Base>, Derived>()> = 0>
-    static void save_if_derived_of(Archive& archive, Base& pointer)
+    template <class Derived, class Archive,
+              meta::require<not std::is_same<Derived*, void*>::value> = 0>
+    static void try_save(Archive& archive, void* pointer)
     {
-        auto derived = Access::template runtime_cast<Derived*>(pointer);
+        auto derived = Access::template cast<Derived*>(pointer);
         archive & (*derived); // will never nullptr
     }
 
-    template <class Derived, class Archive, class Base,
-              typename B = meta::deref<Base>,
-              meta::require<meta::is_abstract<Derived>() or
-                            not meta::is_base_of<B, Derived>()> = 0>
-    static void load_if_derived_of(Archive& /*archive*/, Base& /*pointer*/)
+    template <class Derived, class Archive,
+              meta::require<std::is_same<Derived*, void*>::value> = 0>
+    static void try_load(Archive& /*archive*/, void*& /*pointer*/)
     {
         throw "serializable type was not registered.";
     }
 
-    template <class Derived, class Archive, class Base,
-              typename B = meta::deref<Base>,
-              meta::require<not meta::is_abstract<Derived>() and
-                            meta::is_base_of<B, Derived>()> = 0>
-    static void load_if_derived_of(Archive& archive, Base& pointer)
+    template <class Derived, class Archive,
+              meta::require<not std::is_same<Derived*, void*>::value> = 0>
+    static void try_load(Archive& archive, void*& pointer)
     {
         if (pointer != nullptr)
             throw "the read pointer must be initialized to nullptr.";
 
-        auto hold = new Derived;
-        pointer = Access::template runtime_cast<B*>(hold);
+        pointer = new Derived;
 
-        auto derived = Access::template runtime_cast<Derived*>(pointer);
+        auto derived = Access::template cast<Derived*>(pointer);
         archive & (*derived); // will never nullptr
     }
 

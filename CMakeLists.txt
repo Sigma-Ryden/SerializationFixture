@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -11,6 +11,7 @@ set(SIFAR
     include/Sifar/Detail/Counter.hpp
     include/Sifar/Detail/Pointer.hpp
     include/Sifar/Detail/Meta.hpp
+    include/Sifar/Detail/Invoker.hpp
     include/Sifar/Detail/MacroScope.hpp
     include/Sifar/Detail/MacroUnscope.hpp
 

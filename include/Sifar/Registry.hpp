@@ -2,7 +2,9 @@
 #define SIFAR_REGISTRY_HPP
 
 #include <Sifar/RegistryBase.hpp>
+#include <Sifar/Utility.hpp>
 
+#include <Sifar/Detail/Invoker.hpp>
 #include <Sifar/Detail/Meta.hpp>
 
 #define SERIALIZATION_POLYMORPHIC_KEY(value)                                                            \
@@ -73,86 +75,87 @@ struct class_export
 class ExternRegistry : public detail::RegistryBase
 {
 public:
-    template <class Archive, typename Pointer, typename key_type>
-    static void save(Archive& archive, Pointer& pointer, key_type id)
+    template <class Archive, typename Pointer,
+              class T = meta::deref<Pointer>,
+              meta::require<Access::is_registered_class<T>()> = 0>
+    static void save(
+        Archive& archive, Pointer& pointer,
+        let::u64 key, let::u64 bound = key_max_bound)
     {
-        save_impl<0, meta::max_template_depth()>(archive, pointer, id);
+        void* pure_pointer = dynamic_cast<void*>(pointer);
+
+        save_impl(archive, pure_pointer, key % bound);
     }
 
-    template <class Archive, typename Pointer, typename key_type>
-    static void load(Archive& archive, Pointer& pointer, key_type id)
+    template <class Archive, typename Pointer,
+              class T = meta::deref<Pointer>,
+              meta::require<Access::is_registered_class<T>()> = 0>
+    static void load(
+        Archive& archive, Pointer& pointer,
+        let::u64 key, let::u64 bound = key_max_bound)
     {
-        load_impl<0, meta::max_template_depth()>(archive, pointer, id);
+        void* pure_pointer = dynamic_cast<void*>(pointer);
+
+        load_impl(archive, pure_pointer, key % bound);
+
+        pointer = static_cast<Pointer>(pure_pointer);
     }
 
-    template <typename Pointer, typename key_type>
-    static void assign(Pointer& pointer, void* address, key_type id)
+    template <typename Pointer,
+              class T = meta::deref<Pointer>,
+              meta::require<Access::is_registered_class<T>()> = 0>
+    static void assign(
+        Pointer& pointer, void* address,
+        let::u64 key, let::u64 bound = key_max_bound)
     {
-        assign_impl<0, meta::max_template_depth()>(pointer, address, id);
+        assign_impl(pointer, address, key % bound);
     }
 
 private:
-    template <size_type StaticKey, size_type StaticKeyLimit,
-              class Archive, class Base, typename key_type,
-              meta::require<(StaticKey == StaticKeyLimit)> = 0>
-    static void save_impl(Archive& archive, Base& pointer, key_type id)
+    template <SIFAR_INVOKE_END(StaticKey), class Archive>
+    static void save_impl(Archive& archive, void* pointer, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
-    template <size_type StaticKey, size_type StaticKeyLimit,
-              class Archive, class Base, typename key_type,
-              meta::require<(StaticKey < StaticKeyLimit)> = 0>
-    static void save_impl(Archive& archive, Base& pointer, key_type id)
+    template <SIFAR_INVOKE_BEGIN(StaticKey), class Archive>
+    static void save_impl(Archive& archive, void* pointer, let::u64 id)
     {
+        SIFAR_INVOKE_BODY(StaticKey, id, save_impl<INVOKE_NEXT>(archive, pointer, id))
+
         using Derived = typename class_export<StaticKey>::type;
 
-        if (id == StaticKey)
-            return save_if_derived_of<Derived>(archive, pointer);
-
-        save_impl<StaticKey + 1, StaticKeyLimit>(archive, pointer, id);
+        try_save<Derived>(archive, pointer);
     }
 
-    template <size_type StaticKey, size_type StaticKeyLimit,
-              class Archive, class Base, typename key_type,
-              meta::require<(StaticKey == StaticKeyLimit)> = 0>
-    static void load_impl(Archive& archive, Base& pointer, key_type id)
+    template <SIFAR_INVOKE_END(StaticKey), class Archive>
+    static void load_impl(Archive& archive, void*& pointer, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
-    template <size_type StaticKey, size_type StaticKeyLimit,
-              class Archive, class Base, typename key_type,
-              meta::require<(StaticKey < StaticKeyLimit)> = 0>
-    static void load_impl(Archive& archive, Base& pointer, key_type id)
+    template <SIFAR_INVOKE_BEGIN(StaticKey), class Archive>
+    static void load_impl(Archive& archive, void*& pointer, let::u64 id)
     {
+        SIFAR_INVOKE_BODY(StaticKey, id, load_impl<INVOKE_NEXT>(archive, pointer, id))
+
         using Derived = typename class_export<StaticKey>::type;
-
-        if (id == StaticKey)
-            return load_if_derived_of<Derived>(archive, pointer);
-
-        load_impl<StaticKey + 1, StaticKeyLimit>(archive, pointer, id);
+        try_load<Derived>(archive, pointer);
     }
 
-    template <size_type StaticKey, size_type StaticKeyLimit,
-              typename Pointer, typename key_type,
-              meta::require<(StaticKey == StaticKeyLimit)> = 0>
-    static void assign_impl(Pointer& pointer, void* address, key_type id)
+    template <SIFAR_INVOKE_END(StaticKey), typename Pointer>
+    static void assign_impl(Pointer& pointer, void* address, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
-    template <size_type StaticKey, size_type StaticKeyLimit,
-              typename Pointer, typename key_type,
-              meta::require<(StaticKey < StaticKeyLimit)> = 0>
-    static void assign_impl(Pointer& pointer, void* address, key_type id)
+    template <SIFAR_INVOKE_BEGIN(StaticKey), typename Pointer>
+    static void assign_impl(Pointer& pointer, void* address, let::u64 id)
     {
+        SIFAR_INVOKE_BODY(StaticKey, id, assign_impl<INVOKE_NEXT>(pointer, address, id))
+
         using Class = typename class_export<StaticKey>::type;
-
-        if (id == StaticKey)
-            return try_assign<Class>(pointer, address);
-
-        assign_impl<StaticKey + 1, StaticKeyLimit>(pointer, address, id);
+        try_assign<Class>(pointer, address);
     }
 };
 
@@ -160,69 +163,84 @@ template <class... Tn>
 class InnerRegistry : public detail::RegistryBase
 {
 public:
-    template <class Archive, typename Pointer, typename key_type>
-    static void save(Archive& archive, Pointer& pointer, key_type id)
+    template <class Archive, typename Pointer,
+              class T = meta::deref<Pointer>,
+              meta::require<Access::is_registered_class<T>()> = 0>
+    static void save(
+        Archive& archive, Pointer& pointer,
+        let::u64 key, let::u64 bound = key_max_bound)
     {
-        using T = meta::deref<Pointer>;
-        save_impl<T, Tn..., T>(archive, pointer, id);
+        void* pure_pointer = dynamic_cast<void*>(pointer);
+
+        save_impl<T, Tn..., T>(archive, pure_pointer, key % bound);
     }
 
-    template <class Archive, typename Pointer, typename key_type>
-    static void load(Archive& archive, Pointer& pointer, key_type id)
+    template <class Archive, typename Pointer,
+              class T = meta::deref<Pointer>,
+              meta::require<Access::is_registered_class<T>()> = 0>
+    static void load(
+        Archive& archive, Pointer& pointer,
+        let::u64 key, let::u64 bound = key_max_bound)
     {
-        using T = meta::deref<Pointer>;
-        load_impl<T, Tn..., T>(archive, pointer, id);
+        void* pure_pointer = dynamic_cast<void*>(pointer);
+
+        load_impl<T, Tn..., T>(archive, pointer, key % bound);
+
+        pointer = static_cast<Pointer>(pure_pointer);
     }
 
-    template <typename Pointer, typename key_type>
-    static void assign(Pointer& pointer, void* address, key_type id)
+    template <typename Pointer,
+              class T = meta::deref<Pointer>,
+              meta::require<Access::is_registered_class<T>()> = 0>
+    static void assign(
+        Pointer& pointer, void* address,
+        let::u64 key, let::u64 bound = key_max_bound)
     {
-        using T = meta::deref<Pointer>;
-        assign_impl<T, Tn..., T>(pointer, address, id);
+        assign_impl<T, Tn..., T>(pointer, address, key % bound);
     }
 
 private:
-    template <class Archive, class Base, typename key_type>
-    static void save_impl(Archive& archive, Base& pointer, key_type id)
+    template <class Archive>
+    static void save_impl(Archive& archive, void* pointer, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
     template <class Derived, class... Derived_n,
-              class Archive, class Base, typename key_type>
-    static void save_impl(Archive& archive, Base& pointer, key_type id)
+              class Archive>
+    static void save_impl(Archive& archive, void* pointer, let::u64 id)
     {
         if (id == key<Derived>())
-            return save_if_derived_of<Derived>(archive, pointer);
+            return try_save<Derived>(archive, pointer);
 
         save_impl<Derived_n...>(archive, pointer, id);
     }
 
-    template <class Archive, class Base, typename key_type>
-    static void load_impl(Archive& archive, Base& pointer, key_type id)
+    template <class Archive>
+    static void load_impl(Archive& archive, void*& pointer, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
     template <class Derived, class... Derived_n,
-              class Archive, class Base, typename key_type>
-    static void load_impl(Archive& archive, Base& pointer, key_type id)
+              class Archive>
+    static void load_impl(Archive& archive, void*& pointer, let::u64 id)
     {
         if (id == key<Derived>())
-            return load_if_derived_of<Derived>(archive, pointer);
+            return try_load<Derived>(archive, pointer);
 
         load_impl<Derived_n...>(archive, pointer, id);
     }
 
-    template <typename Pointer, typename key_type>
-    static void assign_impl(Pointer& pointer, void* address, key_type id)
+    template <typename Pointer>
+    static void assign_impl(Pointer& pointer, void* address, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
     template <class Class, class... Class_n,
-              typename Pointer, typename key_type>
-    static void assign_impl(Pointer& pointer, void* address, key_type id)
+              typename Pointer>
+    static void assign_impl(Pointer& pointer, void* address, let::u64 id)
     {
         if (id == key<Class>())
             return try_assign<Class>(pointer, address);

@@ -54,7 +54,7 @@ void test_tracking()
 
         int x;
         int* p1 = nullptr;
-        int* p2 = nullptr; // track function will throw exception if pointer == nullptr
+        int* p2 = nullptr; // track function will throw exception if pointer != nullptr
 
         try
         {
