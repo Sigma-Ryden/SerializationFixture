@@ -184,7 +184,7 @@ public:
     {
         void* pure_pointer = dynamic_cast<void*>(pointer);
 
-        load_impl<T, Tn..., T>(archive, pointer, key % bound);
+        load_impl<T, Tn..., T>(archive, pure_pointer, key % bound);
 
         pointer = static_cast<Pointer>(pure_pointer);
     }
