@@ -35,10 +35,10 @@ struct Template
 
 SERIALIZATION_EXPORT_TPL(Template<int>)
 SERIALIZATION_EXPORT_TPL(Template<char>)
-#include <Sifar/Support/stack.hpp>
 
-using namespace sifar::library;
-#include <algorithm>
+
+
+
 struct A
 {
     int a_;
