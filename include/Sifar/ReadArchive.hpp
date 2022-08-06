@@ -227,10 +227,9 @@ void track(ReadArchive& archive, T& data)
 
     auto& track_data = archive.tracking()[key];
 
-#ifdef SIFAR_DEBUG
     if (track_data.is_tracking)
         throw  "the read tracking data is already tracked.";
-#endif
+
     auto address = utility::pure(std::addressof(data));
 
     track_data.address = address;
@@ -326,7 +325,22 @@ void span(ReadArchive& archive, T& pointer, D& d, Dn&... dn)
 
 SERIALIZATION_LOAD_DATA(ref, meta::is_ref<T>())
 {
-    archive & ref.get();
+    using key_type   = typename ReadArchive::TrackingTable::key_type;
+    using value_type = typename T::type;
+    
+    key_type key;
+    archive & key;
+    
+    auto& track_data = archive.tracking()[key];
+    
+    if (not track_data.is_tracking)
+        throw "the read reference must be tracked before.";
+
+    value_type* pointer = nullptr;
+    
+    detail::native_load(archive, pointer, track_data.address);
+
+    ref.set(*pointer); // pointer will never nullptr
 
     return archive;
 }

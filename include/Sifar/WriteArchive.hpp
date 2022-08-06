@@ -302,8 +302,10 @@ SERIALIZATION_SAVE_DATA(ref, meta::is_ref<T>())
 {
     if (ref.is_null())
         throw "the write reference cannot be null.";
-
-    archive & ref.get();
+        
+    auto address = std::addressof(ref.data());
+    
+    tracking::track(archive, address); // allowed to write non tracked ref
 
     return archive;
 }
