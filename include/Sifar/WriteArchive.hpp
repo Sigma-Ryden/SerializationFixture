@@ -213,10 +213,9 @@ void track(WriteArchive& archive, T& data)
 
     auto& is_tracking = archive.tracking()[key];
 
-#ifdef SIFAR_DEBUG
     if (is_tracking)
         throw "the write tracking data is already tracked.";
-#endif
+
     is_tracking = true;
 
     archive & key;
