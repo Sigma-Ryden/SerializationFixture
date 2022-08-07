@@ -103,11 +103,11 @@ template <typename Base, class Archive, typename Derived,
 void base(Archive& archive, Derived& derived) noexcept;
 
 template <typename Base, class Archive, typename Derived,
-    meta::require<meta::is_base_of<Base, Derived>()> = 0>
+          meta::require<meta::is_base_of<Base, Derived>()> = 0>
 void virtual_base(Archive& archive, Derived& derived) noexcept
 {
     if (Access::dynamic_key(derived) == Access::template static_key<Derived>())
-       base<Base>(archive, derived);
+        base<Base>(archive, derived);
 
 #ifdef SIFAR_DEBUG
     else throw "the srializable object must serialize the virtual base object.";
