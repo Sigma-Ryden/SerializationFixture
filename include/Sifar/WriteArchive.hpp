@@ -299,13 +299,20 @@ void span(WriteArchive& archive, T& pointer, D& d, Dn&... dn)
 
 SERIALIZATION_SAVE_DATA(ref, meta::is_ref<T>())
 {
-    if (ref.is_null())
-        throw "the write reference cannot be null.";
-        
-    auto address = std::addressof(ref.data());
+    using key_type = typename WriteArchive::TrackingTable::key_type;
     
-    tracking::track(archive, address); // allowed to write non tracked ref
+    auto pointer = std::addressof(ref.get());
+    auto address = utility::pure(pointer);
+    
+    auto key = reinterpret_cast<key_type>(address);
 
+    auto& is_tracking = archive.tracking()[key];
+
+    if (not is_tracking)
+        throw "the write reference must be tracked before.";
+
+    detail::native_save(archive, pointer, key); 
+    
     return archive;
 }
 

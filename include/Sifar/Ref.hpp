@@ -33,7 +33,7 @@ public:
     operator T&() const noexcept { return get(); }
 
     T& get() const noexcept { return *data_; }
-    void set(T& data) noexcept { return data_ = std::addressof(data); }
+    void set(T& data) noexcept { data_ = std::addressof(data); }
 };
 
 } // namespace utility
