@@ -53,7 +53,8 @@ add_executable(${PROJECT_NAME}
    # test/tracking.cpp
    # test/inheritance.cpp
    # test/multi_array.cpp
-    test/tracking_virtual.cpp
+   # test/tracking_virtual.cpp
+    test/ref_tracking.cpp
    # test/class_auto_indexing.cpp
     ${SIFAR}
 )
