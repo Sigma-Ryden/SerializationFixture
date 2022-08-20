@@ -94,7 +94,7 @@ public:
         Archive& archive, Pointer& pointer,
         let::u64 key, let::u64 bound = key_max_bound)
     {
-        void* pure_pointer = dynamic_cast<void*>(pointer);
+        void* pure_pointer = nullptr;
 
         load_impl(archive, pure_pointer, key % bound);
 
@@ -182,7 +182,7 @@ public:
         Archive& archive, Pointer& pointer,
         let::u64 key, let::u64 bound = key_max_bound)
     {
-        void* pure_pointer = dynamic_cast<void*>(pointer);
+        void* pure_pointer = nullptr;
 
         load_impl<T, Tn..., T>(archive, pure_pointer, key % bound);
 

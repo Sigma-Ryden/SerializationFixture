@@ -103,9 +103,7 @@ protected:
               meta::require<std::is_convertible<Class*, Pointer>::value> = 0>
     static void try_assign(Pointer& pointer, void* address)
     {
-        auto hold = Access::template cast<Class*>(address);
-
-        pointer = Access::template runtime_cast<Pointer>(hold);
+        pointer = Access::template cast<Class*>(address);
     }
 };
 
