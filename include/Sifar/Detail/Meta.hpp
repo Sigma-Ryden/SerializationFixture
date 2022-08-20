@@ -76,7 +76,7 @@ namespace detail
 {
 
 template <typename From, typename To, typename = void>
-struct can_static_cast: std::false_type {};
+struct can_static_cast : std::false_type {};
 
 template <typename From, typename To>
 struct can_static_cast<From, To,
@@ -136,8 +136,11 @@ template <> struct is_character_impl<char32_t> : std::true_type {};
 template <typename T>
 struct is_character : is_character_impl<typename std::remove_cv<T>::type> {};
 
-template <class T, class... Tn>
-struct is_same_all: and_<std::is_same<T, Tn>...> {};
+template <typename T, typename... Tn>
+struct is_same_all : and_<std::is_same<T, Tn>...> {};
+
+template <typename T>
+struct is_same_all<T> : std::true_type {};
 
 } // namespace detail
 
@@ -148,7 +151,7 @@ namespace detail
 {
 
 template <std::size_t I, std::size_t... In>
-struct index_sequence_helper : public index_sequence_helper<I - 1, I - 1, In...> {};
+struct index_sequence_helper : index_sequence_helper<I - 1, I - 1, In...> {};
 
 template <std::size_t... In>
 struct index_sequence_helper<0, In...>
@@ -168,6 +171,24 @@ constexpr std::size_t max_template_depth() noexcept
 #else
     return SIFAR_MAX_TEMPLATE_DEPTH;
 #endif
+}
+
+namespace detail
+{
+
+template <typename T> auto is_returnable_impl(int) noexcept -> decltype
+(
+    (void) static_cast<T(*)()>(nullptr),
+    std::true_type{}
+);
+
+template <typename> std::false_type is_returnable_impl(...);
+
+} // namespace detail
+
+template <typename T> constexpr bool is_returnable() noexcept
+{
+    return decltype(detail::is_returnable_impl<T>(0))::value;
 }
 
 template <typename T> constexpr bool to_false() noexcept { return false; }
@@ -196,6 +217,11 @@ template <typename T> constexpr bool is_polymorphic() noexcept
 template <typename T, typename... Tn> constexpr bool is_same_all() noexcept
 {
     return detail::is_same_all<T, Tn...>::value;
+}
+
+template <typename T> constexpr bool is_void() noexcept
+{
+    return std::is_same<T, void>::value;
 }
 
 template <typename T> constexpr bool is_character() noexcept

@@ -61,14 +61,14 @@ public:
 
 protected:
     template <class Derived, class Archive,
-              meta::require<std::is_same<Derived*, void*>::value> = 0>
+              meta::require<meta::is_void_pointer<Derived*>()> = 0>
     static void try_save(Archive& /*archive*/, void* /*pointer*/)
     {
         throw "serializable type was not registered.";
     }
 
     template <class Derived, class Archive,
-              meta::require<not std::is_same<Derived*, void*>::value> = 0>
+              meta::require<not meta::is_void_pointer<Derived*>()> = 0>
     static void try_save(Archive& archive, void* pointer)
     {
         auto derived = Access::template cast<Derived*>(pointer);
@@ -76,14 +76,14 @@ protected:
     }
 
     template <class Derived, class Archive,
-              meta::require<std::is_same<Derived*, void*>::value> = 0>
+              meta::require<meta::is_void_pointer<Derived*>()> = 0>
     static void try_load(Archive& /*archive*/, void*& /*pointer*/)
     {
         throw "serializable type was not registered.";
     }
 
     template <class Derived, class Archive,
-              meta::require<not std::is_same<Derived*, void*>::value> = 0>
+              meta::require<not meta::is_void_pointer<Derived*>()> = 0>
     static void try_load(Archive& archive, void*& pointer)
     {
         if (pointer != nullptr)
@@ -96,11 +96,11 @@ protected:
     }
 
     template <typename Class, typename Pointer,
-              meta::require<not std::is_convertible<Class*, Pointer>::value> = 0>
+              meta::require<not Access::is_convertible<Class*, Pointer>()> = 0>
     static void try_assign(Pointer& pointer, void* address) noexcept { /*pass*/ }
 
     template <typename Class, typename Pointer,
-              meta::require<std::is_convertible<Class*, Pointer>::value> = 0>
+              meta::require<Access::is_convertible<Class*, Pointer>()> = 0>
     static void try_assign(Pointer& pointer, void* address)
     {
         pointer = Access::template cast<Class*>(address);

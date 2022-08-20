@@ -7,7 +7,7 @@
 #include <Sifar/Detail/MacroScope.hpp>
 
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class sifar::Access;
+    friend class ::sifar::Access;
 
 namespace sifar
 {
@@ -21,12 +21,9 @@ class RegistryBase;
 
 class Access
 {
-    friend class detail::RegistryBase; // Access to `cast` and `runtime_cast`
+    friend class ::sifar::detail::RegistryBase; // Access to `cast` and `runtime_cast`
 
 private:
-    // Special type for has_function_tpl_helper meta
-    struct dummy_type;
-
     SIFAR_HAS_FUNCTION_TPL_HELPER(save);
     SIFAR_HAS_FUNCTION_TPL_HELPER(load);
 
@@ -44,6 +41,22 @@ public:
     static constexpr bool is_registered_class() noexcept
     {
         return has_static_key<T>::value and has_dynamic_key<T>::value;
+    }
+
+private:
+    template <class, class> static std::false_type try_cast(...);
+    template <class From, class To> static auto try_cast(int) -> decltype
+    (
+        (void) std::declval<void(&)(To)>()(std::declval<From>()),
+        std::true_type{}
+    );
+
+public:
+    template <class From, class To>
+    static constexpr bool is_convertible() noexcept
+    {
+        return (meta::is_returnable<To>() and decltype(try_cast<From, To>(0))::value)
+            or (meta::is_same_all<void, From, To>());
     }
 
 public:
