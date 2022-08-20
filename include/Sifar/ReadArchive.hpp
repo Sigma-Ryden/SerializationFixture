@@ -90,6 +90,26 @@ public:
     auto operator() () -> ReadArchive& { return *this; }
 };
 
+template <class Registry = ExternRegistry, class InStream>
+ReadArchive<InStream, Registry> reader(InStream& stream)
+{
+    return { stream };
+}
+
+template <class Registry,
+          template <class, typename...> class StreamWrapper,
+          class InStream>
+ReadArchive<InStream, Registry, StreamWrapper<InStream>> reader(InStream& stream)
+{
+    return { stream };
+}
+
+template <class Registry, class StreamWrapper, class InStream>
+ReadArchive<InStream, Registry, StreamWrapper> reader(InStream& stream)
+{
+    return { stream };
+}
+
 namespace meta
 {
 

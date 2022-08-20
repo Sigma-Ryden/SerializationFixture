@@ -5,8 +5,8 @@
 
 #include <Sifar/Support/string.hpp>
 
-using sifar::ReadArchive;
-using sifar::WriteArchive;
+using sifar::reader;
+using sifar::writer;
 
 using sifar::base;
 
@@ -69,7 +69,7 @@ void test_object_serialization()
 
         if (not file.is_open()) return;
 
-        auto ar = WriteArchive<std::ofstream>(file);
+        auto ar = writer(file);
 
         Boy obj("Tom", 21, 9);
 
@@ -89,7 +89,7 @@ void test_object_serialization()
 
         if (not file.is_open()) return;
 
-        auto ar = ReadArchive<std::ifstream>(file);
+        auto ar = reader(file);
 
         Boy obj;
 

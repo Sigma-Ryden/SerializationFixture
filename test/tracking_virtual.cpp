@@ -3,8 +3,8 @@
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
-using sifar::ReadArchive;
-using sifar::WriteArchive;
+using sifar::reader;
+using sifar::writer;
 
 using sifar::base;
 using sifar::virtual_base;
@@ -78,7 +78,7 @@ void test_tracking_virtual()
 
         if (not file.is_open()) return;
 
-        auto ar = WriteArchive<std::ofstream, Registry>(file);
+        auto ar = writer<Registry>(file);
 
         X* x = new X;
         D* d = x;
@@ -116,7 +116,7 @@ void test_tracking_virtual()
 
         if (not file.is_open()) return;
 
-        auto ar = ReadArchive<std::ifstream>(file);
+        auto ar = reader(file);
 
         X* x = nullptr;
         D* d = nullptr;

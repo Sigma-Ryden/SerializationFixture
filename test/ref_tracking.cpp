@@ -3,11 +3,13 @@
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
-using sifar::ReadArchive;
-using sifar::WriteArchive;
+using sifar::writer;
+using sifar::reader;
 
 using sifar::base;
 using sifar::virtual_base;
+
+using sifar::ref;
 
 using sifar::utility::pure;
 
@@ -16,6 +18,9 @@ using namespace sifar::tracking; // support of data tracking
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
+
+#define println_ref(ref) \
+    std::cout << (#ref) << " : " << (&ref.get()) << '\n'
 
 struct B
 {
@@ -70,40 +75,39 @@ SERIALIZATION_EXPORT_KEY(C)
 SERIALIZATION_EXPORT_KEY(D)
 SERIALIZATION_EXPORT_KEY(X)
 
-#define _(xx) &xx.get()
+#define r(ref) &ref.get()
 
 void test_ref_tracking()
 {
-    using sifar::utility::Ref;
     {
         std::ofstream file("test_tracking_virtual.bin", std::ios::binary);
-
         if (not file.is_open()) return;
 
-        auto ar = WriteArchive<std::ofstream>(file);
+        auto ar = writer(file);
 
         X x;
-    
-        Ref<D> d = x;
-        Ref<C> c = x;
-        Ref<B> b = x;
+        auto d = ref<D>(x);
+        auto c = ref<C>(x);
+        auto b = ref<B>(x);
 
         println(&x);
-        println(_(d));
-        println(_(c));
-        println(_(b));
+        println(r(d));
+        println(r(c));
+        println(r(b));
 
         std::cout << '\n';
 
         println(pure(&x));
-        println(pure(_(d)));
-        println(pure(_(c)));
-        println(pure(_(b)));
+        println(pure(r(d)));
+        println(pure(r(c)));
+        println(pure(r(b)));
 
         try
         {
             track(ar, x);
-            ar(d, c, b);
+            ar & d;
+            ar & c;
+            ar & b;
         }
         catch (const char* e)
         {
@@ -114,21 +118,21 @@ void test_ref_tracking()
     std::cout << "---\n";
     {
         std::ifstream file("test_tracking_virtual.bin", std::ios::binary);
-
         if (not file.is_open()) return;
 
-        auto ar = ReadArchive<std::ifstream>(file);
+        auto ar = reader(file);
 
         X x;
-    
-        Ref<D> d;
-        Ref<C> c;
-        Ref<B> b;
+        auto d = ref<D>();
+        auto c = ref<C>();
+        auto b = ref<B>();
 
         try
         {
             track(ar, x);
-            ar(d, c, b);
+            ar & d;
+            ar & c;
+            ar & b;
         }
         catch (const char* e)
         {
@@ -137,16 +141,16 @@ void test_ref_tracking()
         }
 
         println(&x);
-        println(_(d));
-        println(_(c));
-        println(_(b));
+        println(r(d));
+        println(r(c));
+        println(r(b));
 
         std::cout << '\n';
 
         println(pure(&x));
-        println(pure(_(d)));
-        println(pure(_(c)));
-        println(pure(_(b)));
+        println(pure(r(d)));
+        println(pure(r(c)));
+        println(pure(r(b)));
     }
 }
 

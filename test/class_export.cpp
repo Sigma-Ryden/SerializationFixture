@@ -3,8 +3,8 @@
 
 #include <Sifar/Core.hpp> // ReadAchive, WriteArchive
 
-using sifar::ReadArchive;
-using sifar::WriteArchive;
+using sifar::reader;
+using sifar::writer;
 
 using sifar::base;
 
@@ -71,7 +71,7 @@ void test_class_export()
         std::ofstream file("test_class_export.bin", std::ios::binary);
         if (not file.is_open()) return;
 
-        WriteArchive<std::ofstream> ar(file);
+        auto ar = writer(file);
 
         Parent* p = new Child(123, 321);
 
@@ -91,7 +91,7 @@ void test_class_export()
         std::ifstream file("test_class_export.bin", std::ios::binary);
         if (not file.is_open()) return;
 
-        ReadArchive<std::ifstream> ar(file);
+        auto ar = reader(file);
 
         Parent* p = nullptr;
 

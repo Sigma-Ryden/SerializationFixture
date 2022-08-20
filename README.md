@@ -44,6 +44,8 @@ using namespace sifar::library; // support of string
 ```
 And let's equip our simple class with serialization support:
 ```C++
+#include <iostream> // cout
+
 class Shape
 {
     SERIALIZATION_ACCESS()
@@ -53,15 +55,15 @@ private:
     float x_, y_;
 
 public:
-    Shape() : name_("UNNAMED"), x_(0), y_(0) {}
+    Shape() : name_("Unknown"), x_(), y_() {}
 
-    Shape(const std::string& name, float x,  float y)
+    Shape(const char* name, float x, float y)
         : name_(name), x_(x), y_(y) {}
 
     void print() const
     {
-        std::cout << name_ << " shape is lacated at: ("
-                  << x_ << ", " << y_ << ")\n";
+        std::cout << name_ << " shape is lacated at: "
+                  << x_ << "; " << y_ << std::endl;
     }
 
 private:
@@ -84,18 +86,14 @@ This macro allows you to split into two separate macros: ```SERIALIZATION_SAVE()
 Sinse we are going to use hard drive storage, let's include standard file stream:
 ```C++
 #include <fstream> // ifstream, ofstream
-#include <iostream> // cout
 ```
 ```C++
 void save(Shape& shape)
 {
-    using sifar::WriteArchive;
-
     std::ofstream file("example.bin", std::ios::binary);
-
     if (not file.is_open()) return;
 
-    WriteArchive<std::ofstream> ar(file);
+    auto ar = sifar::writer(file);
 
     ar & shape;
 
@@ -105,13 +103,10 @@ void save(Shape& shape)
 ```C++
 void load(Shape& shape)
 {
-    using sifar::ReadArchive;
-    
     std::ifstream file("example.bin", std::ios::binary);
-
     if (not file.is_open()) return;
 
-    ReadArchive<std::ifstream> ar(file);
+    auto ar = sifar::reader(file);
 
     ar & shape;
 
@@ -124,7 +119,7 @@ int main()
 {
     // Saving of Shape object
     {
-        Shape shape("Square", 0.1234f, 5.6789f);
+        Shape shape("Square", 0.25f, 2.5f);
         save(shape);
     }
     // Loading of Shape object
@@ -142,8 +137,8 @@ int main()
 ```
 ### Output:
 ```console
-UNNAMED shape is lacated at: (0, 0)
-Square shape is lacated at: (0.1234, 5.6789)
+Unknown shape is lacated at: (0, 0)
+Square shape is lacated at: (0.25, 2.5)
 ```
 #### Notes:
 In this case the ```load``` and ```save``` functions are just a division of the code into blocks.

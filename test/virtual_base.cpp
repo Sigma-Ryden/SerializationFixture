@@ -3,8 +3,8 @@
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive, InnerRegistry
 
-using sifar::ReadArchive;
-using sifar::WriteArchive;
+using sifar::reader;
+using sifar::writer;
 
 using sifar::InnerRegistry;
 
@@ -69,16 +69,13 @@ void test_virtual_base()
 {
     // You also can use the 'SERIALIZATION_CLASS_EXPORT' for the 'sifar::ExternRegistry'
     using Registry = InnerRegistry<A, B, C, D, F>; // or just export A and F
-
-    using WriteArchive = WriteArchive<std::ofstream, Registry>;
-    using ReadArchive  = ReadArchive<std::ifstream, Registry>;
     //
     {
         std::ofstream file("test_virtual_base.bin", std::ios::binary);
 
         if (not file.is_open()) return;
 
-        WriteArchive ar(file);
+        auto ar = writer<Registry>(file);
 
         A* a = new F;
         std::cout << a->dynamic_key() << '\n';
@@ -106,7 +103,7 @@ void test_virtual_base()
 
         if (not file.is_open()) return;
 
-        ReadArchive ar(file);
+        auto ar = reader<Registry>(file);
 
         try
         {

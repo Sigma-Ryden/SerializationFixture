@@ -3,8 +3,8 @@
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
-using sifar::ReadArchive;
-using sifar::WriteArchive;
+using sifar::reader;
+using sifar::writer;
 
 void print(int** arr, int h, int w)
 {
@@ -22,7 +22,7 @@ void test_scope()
 
         if (not file.is_open()) return;
 
-        auto ar = WriteArchive<std::ofstream>(file);
+        auto ar = writer(file);
 
         int height = 3;
         unsigned int width = 4;
@@ -49,7 +49,7 @@ void test_scope()
 
         if (not file.is_open()) return;
 
-        auto ar = ReadArchive<std::ifstream>(file);
+        auto ar = reader(file);
 
         int height;
         int width;

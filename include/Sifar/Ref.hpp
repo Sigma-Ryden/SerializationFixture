@@ -21,8 +21,8 @@ public:
     using type = T;
 
     // DONT use dereferencing of null data before rebining
-    Ref() : data_(nullptr) {}
-    Ref(T& data) : data_(std::addressof(data)) {}
+    Ref() noexcept : data_(nullptr) {}
+    Ref(T& data) noexcept : data_(std::addressof(data)) {}
 
     // rebinding data
     Ref(const Ref&) = default;
@@ -37,6 +37,15 @@ public:
 };
 
 } // namespace utility
+
+template <typename T>
+utility::Ref<T> ref() noexcept { return {}; }
+
+template <typename T>
+utility::Ref<T> ref(T& data) noexcept { return { data }; }
+
+template <typename To, typename From>
+utility::Ref<To> ref(From& data) noexcept { return { data }; }
 
 namespace meta
 {

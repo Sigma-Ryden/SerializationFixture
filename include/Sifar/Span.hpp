@@ -155,11 +155,11 @@ Span<T, 1>::Span(pointer& data, size_type size)
 } // namespace utility
 
 template <typename Pointer, typename D, typename... Dn,
-         std::size_t N = sizeof...(Dn) + 1,
-         typename Type = meta::remove_ptr_n<Pointer, N>,
-         typename Span = utility::Span<Type, N>,
-         meta::require<meta::and_<std::is_arithmetic<D>,
-                                  std::is_arithmetic<Dn>...>::value> = 0>
+          std::size_t N = sizeof...(Dn) + 1,
+          typename Type = meta::remove_ptr_n<Pointer, N>,
+          typename Span = utility::Span<Type, N>,
+          meta::require<meta::and_<std::is_arithmetic<D>,
+                                   std::is_arithmetic<Dn>...>::value> = 0>
 Span zip(Pointer& data, D d, Dn... dn)
 {
     using size_type = typename Span::size_type;

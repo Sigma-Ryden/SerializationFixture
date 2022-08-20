@@ -5,8 +5,8 @@
 
 #include <Sifar/Support/string.hpp>
 
-using sifar::ReadArchive;
-using sifar::WriteArchive;
+using sifar::reader;
+using sifar::writer;
 
 using sifar::InnerRegistry;
 
@@ -81,9 +81,6 @@ void test_polymorphic()
 {
     using Registry = InnerRegistry<Base<std::string>, Derived>;
 
-    using WriteArchive = WriteArchive<std::ofstream, Registry>;
-    using ReadArchive  = ReadArchive<std::ifstream, Registry>;
-
     using Parent = Base<std::string>;
     using Child  = Derived;
 
@@ -97,7 +94,7 @@ void test_polymorphic()
 
         if (not file.is_open()) return;
 
-        WriteArchive ar(file);
+        auto ar = writer<Registry>(file);
 
         Parent* b = new Parent("Hello!");
         Parent* d = new Child("Bye!", 3.1415926);
@@ -123,7 +120,7 @@ void test_polymorphic()
 
         if (not file.is_open()) return;
 
-        ReadArchive ar(file);
+        auto ar = reader<Registry>(file);
 
         Parent* b = nullptr;
         Parent* d = nullptr;

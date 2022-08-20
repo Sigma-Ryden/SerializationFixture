@@ -38,7 +38,6 @@ template <typename T> char* byte_cast(T* data) noexcept
 template <typename T, meta::require<meta::is_polymorphic<T>()> = 0>
 void* pure(T* p)
 {
-    //return static_cast<void*>(p);
     return dynamic_cast<void*>(p);
 }
 

@@ -82,6 +82,26 @@ public:
     auto operator() () -> WriteArchive& { return *this; }
 };
 
+template <class Registry = ExternRegistry, class OutStream>
+WriteArchive<OutStream, Registry> writer(OutStream& stream)
+{
+    return { stream };
+}
+
+template <class Registry,
+          template <class, typename...> class StreamWrapper,
+          class OutStream>
+WriteArchive<OutStream, Registry, StreamWrapper<OutStream>> writer(OutStream& stream)
+{
+    return { stream };
+}
+
+template <class Registry, class StreamWrapper, class OutStream>
+WriteArchive<OutStream, Registry, StreamWrapper> writer(OutStream& stream)
+{
+    return { stream };
+}
+
 namespace meta
 {
 

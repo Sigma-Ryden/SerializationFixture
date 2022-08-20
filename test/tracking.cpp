@@ -3,8 +3,8 @@
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
-using sifar::ReadArchive;
-using sifar::WriteArchive;
+using sifar::reader;
+using sifar::writer;
 
 using namespace sifar::common; // support of common types
 using namespace sifar::tracking; // support of data tracking
@@ -19,7 +19,7 @@ void test_tracking()
 
         if (not file.is_open()) return;
 
-        auto ar = WriteArchive<std::ofstream>(file);
+        auto ar = writer(file);
 
         int x = 123;
         int* p1 = &x;
@@ -50,7 +50,7 @@ void test_tracking()
 
         if (not file.is_open()) return;
 
-        auto ar = ReadArchive<std::ifstream>(file);
+        auto ar = reader(file);
 
         int x;
         int* p1 = nullptr;
