@@ -6,6 +6,8 @@
 using sifar::reader;
 using sifar::writer;
 
+using namespace sifar::common;
+
 void print(int** arr, int h, int w)
 {
     for (int i = 0; i < h; ++i, std::cout << '\n')
@@ -35,7 +37,7 @@ void test_scope()
 
         try
         {
-            span(ar, tensor, height, width);
+            ar & span(tensor, height, width);
         }
         catch (const char* e)
         {
@@ -58,7 +60,7 @@ void test_scope()
 
         try
         {
-            span(ar, tensor, height, width);
+            ar & span(tensor, height, width);
         }
         catch (const char* e)
         {

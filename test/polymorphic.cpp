@@ -68,7 +68,7 @@ public:
 private:
     SERIALIZATION_UNIFIED(ar)
     {
-        sifar::base<Base>(ar, *this);
+        sifar::base<Base>(ar, this);
 
         ar & value;
     }

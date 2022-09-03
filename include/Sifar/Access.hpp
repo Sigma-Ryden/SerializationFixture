@@ -2,6 +2,9 @@
 #ifndef SIFAR_ACCESS_HPP
 #define SIFAR_ACCESS_HPP
 
+#include <memory> // addresspf
+
+#include <Sifar/ApplyFunctor.hpp>
 #include <Sifar/Detail/Meta.hpp>
 
 #include <Sifar/Detail/MacroScope.hpp>
@@ -104,28 +107,58 @@ private:
 public: // not necessary, friend search applied via ADL or external declaration
     template <typename Base, class Archive, typename Derived,
               meta::require<meta::is_base_of<Base, Derived>()> = 0>
-    friend void base(Archive& archive, Derived& derived) noexcept
+    friend void base(Archive& archive, Derived* pointer) noexcept
     {
-        archive & Access::template cast<Base&>(derived);
+        archive & Access::template cast<Base&>(*pointer);
     }
 };
 
 // Declaration friend function template for the Access class
 template <typename Base, class Archive, typename Derived,
           meta::require<meta::is_base_of<Base, Derived>()>>
-void base(Archive& archive, Derived& derived) noexcept;
+void base(Archive& archive, Derived* derived) noexcept;
 
 template <typename Base, class Archive, typename Derived,
           meta::require<meta::is_base_of<Base, Derived>()> = 0>
-void virtual_base(Archive& archive, Derived& derived) noexcept
+void virtual_base(Archive& archive, Derived* pointer) noexcept
 {
-    if (Access::dynamic_key(derived) == Access::template static_key<Derived>())
-        base<Base>(archive, derived);
+    if (Access::dynamic_key(*pointer) == Access::template static_key<Derived>())
+        base<Base>(archive, pointer);
 
 #ifdef SIFAR_DEBUG
     else throw "the srializable object must serialize the virtual base object.";
 #endif
 }
+
+namespace apply
+{
+
+#define FUNCTOR_GENERIC(class_name, function_name)                                                      \
+template <typename Base, typename Derived>                                                              \
+class class_name : public ApplyFunctor {                                                                \
+private:                                                                                                \
+    Derived& derived_;                                                                                  \
+public:                                                                                                 \
+    class_name(Derived& derived) : derived_(derived) {}                                                 \
+    template <typename Archive, meta::require<meta::is_archive<Archive>()> = 0>                         \
+    void operator() (Archive& archive) {                                                                \
+        function_name<Base>(archive, std::addressof(derived_));                                         \
+    }                                                                                                   \
+};
+
+FUNCTOR_GENERIC(BaseFunctor, base)
+FUNCTOR_GENERIC(VirtualBaseFunctor, virtual_base)
+
+// clean up
+#undef FUNCTOR_GENERIC
+
+} // namespace apply
+
+template <typename Base, typename Derived>
+apply::BaseFunctor<Base, Derived> base(Derived* pointer) { return { *pointer }; }
+
+template <typename Base, typename Derived>
+apply::VirtualBaseFunctor<Base, Derived> virtual_base(Derived* pointer) { return { *pointer }; }
 
 } // namespace sifar
 

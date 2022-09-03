@@ -3,11 +3,14 @@
 
 #include <cstddef> // size_t
 #include <initializer_list> // initializer_list
+#include <tuple> // tuple
 
 #include <Sifar/Ref.hpp>
 
-#include <Sifar/Detail/Pointer.hpp>
 #include <Sifar/Utility.hpp>
+#include <Sifar/ApplyFunctor.hpp>
+
+#include <Sifar/Detail/Pointer.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 
@@ -158,8 +161,9 @@ template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
           typename Type = meta::remove_ptr_n<Pointer, N>,
           typename Span = utility::Span<Type, N>,
-          meta::require<meta::and_<std::is_arithmetic<D>,
-                                   std::is_arithmetic<Dn>...>::value> = 0>
+          meta::require<meta::is_pointer<Pointer>() and
+                        meta::all<std::is_arithmetic<D>,
+                                  std::is_arithmetic<Dn>...>()> = 0>
 Span zip(Pointer& data, D d, Dn... dn)
 {
     using size_type = typename Span::size_type;
@@ -173,9 +177,7 @@ namespace meta
 namespace detail
 {
 
-template <typename>
-struct is_span : std::false_type {};
-
+template <typename> struct is_span : std::false_type {};
 template <typename T, std::size_t N>
 struct is_span<sifar::utility::Span<T, N>> : std::true_type {};
 
@@ -187,6 +189,144 @@ template <class T> constexpr bool is_span() noexcept
 }
 
 } // namespace meta
+
+namespace detail
+{
+
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and not meta::is_span<T>()> = 0>
+void raw_span(WriteArchive& archive, T& data)
+{
+    archive & data;
+}
+
+// serialization of scoped data with previous dimension initialization
+template <class WriteArchive, typename T,
+          meta::require<meta::is_write_archive<WriteArchive>()
+                        and meta::is_span<T>()> = 0>
+void raw_span(WriteArchive& archive, T& zip)
+{
+    using size_type = typename T::size_type;
+
+    for (size_type i = 0; i < zip.size(); ++i)
+        raw_span(archive, zip[i]);
+}
+
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and not meta::is_span<T>()> = 0>
+void raw_span(ReadArchive& archive, T& data)
+{
+    archive & data;
+}
+
+// serialization of scoped data with previous dimension initialization
+template <class ReadArchive, typename T,
+          meta::require<meta::is_read_archive<ReadArchive>()
+                        and meta::is_span<T>()> = 0>
+void raw_span(ReadArchive& archive, T& zip)
+{
+    using size_type        = typename T::size_type;
+    using dereference_type = typename T::dereference_type;
+
+    using pointer          = typename T::pointer;
+
+    pointer ptr = new dereference_type [zip.size()];
+    zip.init(ptr);
+
+    for (size_type i = 0; i < zip.size(); ++i)
+        raw_span(archive, zip[i]);
+}
+
+} // namespace detail
+
+// inline namespace common also used in namespace library
+inline namespace common
+{
+
+template <class WriteArchive, typename T,
+          typename D, typename... Dn,
+          meta::require<meta::is_write_archive<WriteArchive>() and
+                        meta::is_pointer<T>() and
+                        meta::all<std::is_arithmetic<D>,
+                                  std::is_arithmetic<Dn>...>()> = 0>
+void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
+{
+    if (pointer == nullptr)
+        throw "the write span data must be allocated.";
+
+    archive(dimension, dimension_n...);
+
+    auto span_data = zip(pointer, dimension, dimension_n...);
+    detail::raw_span(archive, span_data);
+}
+
+template <class ReadArchive, typename T,
+          typename D, typename... Dn,
+          meta::require<meta::is_read_archive<ReadArchive>() and
+                        meta::is_pointer<T>() and
+                        meta::all<std::is_arithmetic<D>,
+                                  std::is_arithmetic<Dn>...>()> = 0>
+void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
+{
+    if (pointer != nullptr)
+        throw "the read span data must be initialized to nullptr.";
+
+    archive(dimension, dimension_n...);
+
+    auto span_data = zip(pointer, dimension, dimension_n...);
+    detail::raw_span(archive, span_data);
+}
+
+} // inline namespace common
+
+namespace apply
+{
+
+template <typename T, typename D, typename... Dn>
+class SpanFunctor : public ApplyFunctor
+{
+private:
+    using Pack = std::tuple<T&, D&, Dn&...>;
+
+    Pack pack_;
+
+public:
+    SpanFunctor(T& pointer, D& dimension, Dn&... dimension_n) noexcept
+        : pack_(pointer, dimension, dimension_n...) {}
+
+    template <typename Archive,
+              meta::require<meta::is_archive<Archive>()> = 0>
+    void operator() (Archive& archive)
+    {
+        invoke(archive, meta::make_index_sequence<std::tuple_size<Pack>::value>{});
+    }
+
+private:
+    template <typename Archive, std::size_t... I>
+    void invoke(Archive& archive, meta::index_sequence<I...>)
+    {
+        span(archive, std::get<I>(pack_)...);
+    }
+};
+
+} // namespace apply
+
+// inline namespace common also used in namespace library
+inline namespace common
+{
+
+template <typename T, typename D, typename... Dn,
+          meta::require<meta::is_pointer<T>() and
+                        meta::all<std::is_arithmetic<D>,
+                                  std::is_arithmetic<Dn>...>()> = 0>
+apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n)
+{
+    return { pointer, dimension, dimension_n... };
+}
+
+} // inline namespace common
 
 } // namespace sifar
 

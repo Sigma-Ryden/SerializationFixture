@@ -11,7 +11,12 @@
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>
 
+#include <Sifar/DataTrack.hpp>
+
+#include <Sifar/ApplyFunctor.hpp>
+
 #include <Sifar/Span.hpp>
+#include <Sifar/Ref.hpp>
 
 #include <Sifar/Detail/Counter.hpp>
 

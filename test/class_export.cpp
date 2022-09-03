@@ -55,7 +55,7 @@ public:
 private:
     SERIALIZATION_UNIFIED(ar)
     {
-        base<some_namespace::Parent>(ar, *this);
+        base<some_namespace::Parent>(ar, this);
         ar & b;
     }
 };

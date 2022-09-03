@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -33,13 +33,17 @@ set(SIFAR
     include/Sifar/Hash.hpp
     include/Sifar/Span.hpp
     include/Sifar/Ref.hpp
+    include/Sifar/DataTrack.hpp
     include/Sifar/Utility.hpp
+    include/Sifar/ApplyFunctor.hpp
     include/Sifar/RegistryBase.hpp
+    include/Sifar/NativeSaveLoad.hpp
     include/Sifar/Registry.hpp
     include/Sifar/TypeRegistry.hpp
     include/Sifar/Access.hpp
     include/Sifar/ReadArchive.hpp
     include/Sifar/WriteArchive.hpp
+    include/Sifar/SerializatonBase.hpp
 
     include/Sifar/Core.hpp
 )
@@ -53,8 +57,8 @@ add_executable(${PROJECT_NAME}
    # test/tracking.cpp
    # test/inheritance.cpp
    # test/multi_array.cpp
-   # test/tracking_virtual.cpp
-    test/ref_tracking.cpp
+    test/tracking_virtual.cpp
+   # test/ref_tracking.cpp
    # test/class_auto_indexing.cpp
     ${SIFAR}
 )

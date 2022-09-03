@@ -6,13 +6,11 @@
 #include <unordered_map> // unordered_map
 #include <memory> // addressof
 
+#include <Sifar/SerializatonBase.hpp>
+
 #include <Sifar/Access.hpp>
 #include <Sifar/TypeRegistry.hpp>
-
-#include <Sifar//Registry.hpp>
-
-#include <Sifar/Ref.hpp>
-#include <Sifar/Span.hpp>
+#include <Sifar/Registry.hpp>
 
 #include <Sifar/Utility.hpp>
 
@@ -102,26 +100,6 @@ WriteArchive<OutStream, Registry, StreamWrapper> writer(OutStream& stream)
     return { stream };
 }
 
-namespace meta
-{
-
-namespace detail
-{
-
-template <typename> struct is_write_archive : std::false_type {};
-
-template <class OutStream, class Registry, class StreamWrapper>
-struct is_write_archive<WriteArchive<OutStream, Registry, StreamWrapper>> : std::true_type {};
-
-} // namespace detail
-
-template <class T> constexpr bool is_write_archive()
-{
-    return detail::is_write_archive<T>::value;
-}
-
-} // namespace meta
-
 template <class OutStream, class Registry, class StreamWrapper>
 WriteArchive<OutStream, Registry, StreamWrapper>::WriteArchive(OutStream& stream)
     : archive_(stream), track_table_(), registry_()
@@ -152,8 +130,7 @@ template <class WriteArchive, typename T,
 WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "'T' is an unsupported type for the 'sifar::WriteArchive'."
-    );
+        "'T' is an unsupported type for the 'sifar::WriteArchive'.");
 
     return archive;
 }
@@ -169,104 +146,10 @@ WriteArchive& operator& (WriteArchive& archive, T& unregistered)
         "'SERIALIZATION_SAVE_DATA(parameter, condition)' "
         "and then register the type 'T' with the macros: "
         "'SERIALIZATION_TYPE_REGISTRY(name)' or "
-        "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'."
-    );
+        "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'.");
 
     return archive;
 }
-
-namespace detail
-{
-
-template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and not meta::is_span<T>()> = 0>
-void raw_span(WriteArchive& archive, T& data)
-{
-    archive & data;
-}
-
-// serialization of scoped data with previous dimension initialization
-template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and meta::is_span<T>()> = 0>
-void raw_span(WriteArchive& archive, T& zip)
-{
-    using size_type = typename T::size_type;
-
-    for (size_type i = 0; i < zip.size(); ++i)
-        raw_span(archive, zip[i]);
-}
-
-template <class Archive, typename T, typename key_type,
-          meta::require<meta::is_write_archive<Archive>()
-                        and not Access::is_registered_class<meta::deref<T>>()> = 0>
-void native_save(Archive& archive, T& pointer, key_type track_key)
-{
-    archive & track_key;
-}
-
-template <class Archive, typename T, typename key_type,
-          meta::require<meta::is_write_archive<Archive>()
-                        and Access::is_registered_class<meta::deref<T>>()> = 0>
-void native_save(Archive& archive, T& pointer, key_type track_key)
-{
-    archive & track_key;
-    archive.registry().save_key(archive, pointer); // write class info
-}
-
-} // namespace detail
-
-namespace tracking
-{
-
-template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and not meta::is_pointer<T>()> = 0>
-void track(WriteArchive& archive, T& data)
-{
-    using key_type = typename WriteArchive::TrackingTable::key_type;
-
-    auto address = utility::pure(std::addressof(data));
-
-    auto key = reinterpret_cast<key_type>(address);
-
-    auto& is_tracking = archive.tracking()[key];
-
-    if (is_tracking)
-        throw "the write tracking data is already tracked.";
-
-    is_tracking = true;
-
-    archive & key;
-    archive & data;
-}
-
-template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and meta::is_pointer<T>()> = 0>
-void track(WriteArchive& archive, T& pointer)
-{
-    using key_type = typename WriteArchive::TrackingTable::key_type;
-
-    auto key = reinterpret_cast<key_type>(utility::pure(pointer));
-
-    auto& is_tracking = archive.tracking()[key];
-
-    if (not is_tracking)
-    {
-        archive & key;
-        archive & pointer; // call the serialization of not tracking pointer
-
-        is_tracking = true;
-    }
-    else
-    {
-        detail::native_save(archive, pointer, key);
-    }
-}
-
-} // namespace tracking
 
 // inline namespace common also used in namespace library
 inline namespace common
@@ -298,41 +181,6 @@ SERIALIZATION_SAVE_DATA(array, meta::is_array<T>())
     for (auto& item : array)
         archive & item;
 
-    return archive;
-}
-
-template <class WriteArchive, typename T,
-          typename D, typename... Dn,
-          meta::require<meta::is_write_archive<WriteArchive>() and
-                        meta::and_<std::is_arithmetic<D>,
-                                   std::is_arithmetic<Dn>...>::value> = 0>
-void span(WriteArchive& archive, T& pointer, D& d, Dn&... dn)
-{
-    if (pointer == nullptr)
-        throw "the write span data must be allocated.";
-
-    archive(d, dn...);
-
-    auto span_data = zip(pointer, d, dn...);
-    detail::raw_span(archive, span_data);
-}
-
-SERIALIZATION_SAVE_DATA(ref, meta::is_ref<T>())
-{
-    using key_type = typename WriteArchive::TrackingTable::key_type;
-    
-    auto pointer = std::addressof(ref.get());
-    auto address = utility::pure(pointer);
-    
-    auto key = reinterpret_cast<key_type>(address);
-
-    auto& is_tracking = archive.tracking()[key];
-
-    if (not is_tracking)
-        throw "the write reference must be tracked before.";
-
-    detail::native_save(archive, pointer, key); 
-    
     return archive;
 }
 

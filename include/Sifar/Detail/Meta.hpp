@@ -6,6 +6,8 @@
 // is_enum, is_arithmetic, is_array, is_pointer,
 // enable_if, is_same, true_type, false_type
 
+#include <Sifar/SerializatonBase.hpp>
+
 #include <Sifar/Detail/MacroScope.hpp>
 
 namespace sifar
@@ -66,11 +68,32 @@ using if_ = typename std::conditional<condition, if_true, if_false>::type;
 template <typename T>
 using decay = typename std::decay<T>::type;
 
+namespace detail
+{
+
 template <class...> struct and_ : std::true_type {};
 template <class B1> struct and_<B1> : B1 {};
 template <class B1, class... Bn>
 struct and_<B1, Bn...>
     : if_<bool(B1::value), and_<Bn...>, B1> {};
+
+template <class...> struct or_ : std::false_type {};
+template <class B1> struct or_<B1> : B1 {};
+template <class B1, class... Bn>
+struct or_<B1, Bn...>
+    : if_<bool(B1::value), B1, or_<Bn...>> {};
+
+} // namespace detaiil
+
+template <typename... Bn> constexpr bool all() noexcept
+{
+    return detail::and_<Bn...>::value;
+}
+
+template <typename... Bn> constexpr bool one() noexcept
+{
+    return detail::or_<Bn...>::value;
+}
 
 namespace detail
 {
@@ -171,6 +194,41 @@ constexpr std::size_t max_template_depth() noexcept
 #else
     return SIFAR_MAX_TEMPLATE_DEPTH;
 #endif
+}
+
+namespace detail
+{
+
+template <typename> struct is_read_archive : std::false_type {};
+
+template <class InStream, class Registry, class StreamWrapper>
+struct is_read_archive<ReadArchive<InStream, Registry, StreamWrapper>> : std::true_type {};
+
+} // namespace detail
+
+template <class T> constexpr bool is_read_archive()
+{
+    return detail::is_read_archive<T>::value;
+}
+
+namespace detail
+{
+
+template <typename> struct is_write_archive : std::false_type {};
+
+template <class OutStream, class Registry, class StreamWrapper>
+struct is_write_archive<WriteArchive<OutStream, Registry, StreamWrapper>> : std::true_type {};
+
+} // namespace detail
+
+template <class T> constexpr bool is_write_archive()
+{
+    return detail::is_write_archive<T>::value;
+}
+
+template <class T> constexpr bool is_archive()
+{
+    return is_read_archive<T>() or is_write_archive<T>();
 }
 
 namespace detail

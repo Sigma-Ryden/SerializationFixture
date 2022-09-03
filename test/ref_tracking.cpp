@@ -40,7 +40,7 @@ struct C : virtual B
     SERIALIZATION_POLYMORPHIC_KEY(1)
     SERIALIZATION_UNIFIED(ar)
     {
-        virtual_base<B>(ar, *this);
+        ar & virtual_base<B>(this);
         ar & c;
     }
 };
@@ -51,7 +51,7 @@ struct D : virtual B
     SERIALIZATION_POLYMORPHIC_KEY(2)
     SERIALIZATION_UNIFIED(ar)
     {
-        virtual_base<B>(ar, *this);
+        ar & virtual_base<B>(this);
         ar & d;
     }
 };
@@ -62,9 +62,9 @@ struct X : C, D
     SERIALIZATION_POLYMORPHIC_KEY(3)
     SERIALIZATION_UNIFIED(ar)
     {
-        virtual_base<B>(ar, *this);
-        base<C>(ar, *this);
-        base<D>(ar, *this);
+        ar & virtual_base<B>(this);
+        ar & base<C>(this);
+        ar & base<D>(this);
 
         ar & x;
     }
@@ -104,7 +104,7 @@ void test_ref_tracking()
 
         try
         {
-            track(ar, x);
+            ar & track(x);
             ar & d;
             ar & c;
             ar & b;
@@ -129,7 +129,7 @@ void test_ref_tracking()
 
         try
         {
-            track(ar, x);
+            ar & track(x);
             ar & d;
             ar & c;
             ar & b;
@@ -157,7 +157,6 @@ void test_ref_tracking()
 int main()
 {
     test_ref_tracking();
-    
     
     return 0;
 }

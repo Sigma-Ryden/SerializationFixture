@@ -56,7 +56,7 @@ public:
 
     SERIALIZATION_UNIFIED(ar)
     {
-        base<Human>(ar, *this);
+        base<Human>(ar, this);
 
         ar & force_;
     }

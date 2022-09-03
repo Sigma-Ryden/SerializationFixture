@@ -2,7 +2,6 @@
 #define SIFAR_TYPE_REGISTRY_HPP
 
 #include <Sifar/Access.hpp>
-#include <Sifar/Ref.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 
@@ -40,7 +39,6 @@ SERIALIZATION_TYPE_REGISTRY_IF(Access::is_save_load_class<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_arithmetic<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_enum<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_array<T>())
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_ref<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_pod_pointer<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_pointer_to_polymorphic<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_unsupported<T>())

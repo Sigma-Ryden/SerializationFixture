@@ -36,9 +36,6 @@ struct Template
 SERIALIZATION_EXPORT_TPL(Template<int>)
 SERIALIZATION_EXPORT_TPL(Template<char>)
 
-
-
-
 struct A
 {
     int a_;

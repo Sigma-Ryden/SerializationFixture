@@ -4,16 +4,13 @@
 #include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
-
 #include <memory> // addressof
+
+#include <Sifar/SerializatonBase.hpp>
 
 #include <Sifar/Access.hpp>
 #include <Sifar/TypeRegistry.hpp>
-
 #include <Sifar/Registry.hpp>
-
-#include <Sifar/Ref.hpp>
-#include <Sifar/Span.hpp>
 
 #include <Sifar/Utility.hpp>
 
@@ -110,26 +107,6 @@ ReadArchive<InStream, Registry, StreamWrapper> reader(InStream& stream)
     return { stream };
 }
 
-namespace meta
-{
-
-namespace detail
-{
-
-template <typename> struct is_read_archive : std::false_type {};
-
-template <class InStream, class Registry, class StreamWrapper>
-struct is_read_archive<ReadArchive<InStream, Registry, StreamWrapper>> : std::true_type {};
-
-} // namespace detail
-
-template <class T> constexpr bool is_read_archive()
-{
-    return detail::is_read_archive<T>::value;
-}
-
-} // namespace meta
-
 template <class InStream, class Registry, class StreamWrapper>
 ReadArchive<InStream, Registry, StreamWrapper>::ReadArchive(InStream& stream)
     : archive_(stream), track_table_(), registry_()
@@ -160,8 +137,7 @@ template <class ReadArchive, typename T,
 ReadArchive& operator& (ReadArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "'T' is an unsupported type for the 'sifar::ReadArchive'."
-    );
+        "'T' is an unsupported type for the 'sifar::ReadArchive'.");
 
     return archive;
 }
@@ -177,116 +153,10 @@ ReadArchive& operator& (ReadArchive& archive, T& unregistered)
         "'SERIALIZATION_LOAD_DATA(parameter, condition)' "
         "and then register the type 'T' with the macros: "
         "'SERIALIZATION_TYPE_REGISTRY(name)' or "
-        "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'."
-    );
+        "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'.");
 
     return archive;
 }
-
-namespace detail
-{
-
-template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and not meta::is_span<T>()> = 0>
-void raw_span(ReadArchive& archive, T& data)
-{
-    archive & data;
-}
-
-// serialization of scoped data with previous dimension initialization
-template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and meta::is_span<T>()> = 0>
-void raw_span(ReadArchive& archive, T& zip)
-{
-    using size_type        = typename T::size_type;
-    using dereference_type = typename T::dereference_type;
-
-    using pointer          = typename T::pointer;
-
-    pointer ptr = new dereference_type [zip.size()];
-    zip.init(ptr);
-
-    for (size_type i = 0; i < zip.size(); ++i)
-        raw_span(archive, zip[i]);
-}
-
-template <class Archive, typename T,
-          meta::require<meta::is_read_archive<Archive>()
-                        and not Access::is_registered_class<meta::deref<T>>()> = 0>
-void native_load(Archive& archive, T& pointer, void* address)
-{
-    pointer = static_cast<T>(address);
-}
-
-template <class Archive, typename T,
-          meta::require<meta::is_read_archive<Archive>()
-                        and Access::is_registered_class<meta::deref<T>>()> = 0>
-void native_load(Archive& archive, T& pointer, void* address)
-{
-    auto id = archive.registry().load_key(archive, pointer);
-
-    archive.registry().assign(pointer, address, id);
-}
-
-} // namespace detail
-
-namespace tracking
-{
-
-template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and not meta::is_pointer<T>()> = 0>
-void track(ReadArchive& archive, T& data)
-{
-    using key_type = typename ReadArchive::TrackingTable::key_type;
-
-    key_type key;
-    archive & key;
-
-    auto& track_data = archive.tracking()[key];
-
-    if (track_data.is_tracking)
-        throw  "the read tracking data is already tracked.";
-
-    auto address = utility::pure(std::addressof(data));
-
-    track_data.address = address;
-    track_data.is_tracking = true;
-
-    archive & data;
-}
-
-template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and meta::is_pointer<T>()> = 0>
-void track(ReadArchive& archive, T& pointer)
-{
-    using key_type = typename ReadArchive::TrackingTable::key_type;
-
-    if (pointer != nullptr)
-        throw "the read tracking pointer must be initialized to nullptr.";
-
-    key_type key;
-    archive & key;
-
-    auto& track_data = archive.tracking()[key];
-
-    if (not track_data.is_tracking)
-    {
-        archive & pointer; // call the serialization of not tracking pointer
-
-        track_data.address = utility::pure(pointer);
-        track_data.is_tracking = true;
-    }
-    else
-    {
-        detail::native_load(archive, pointer, track_data.address);
-    }
-}
-
-} // namespace tracking
 
 // inline namespace common also used in namespace library
 inline namespace common
@@ -323,44 +193,6 @@ SERIALIZATION_LOAD_DATA(array, meta::is_array<T>())
 {
     for (auto& item : array)
         archive & item;
-
-    return archive;
-}
-
-template <class ReadArchive, typename T,
-          typename D, typename... Dn,
-          meta::require<meta::is_read_archive<ReadArchive>() and
-                        meta::and_<std::is_arithmetic<D>,
-                                   std::is_arithmetic<Dn>...>::value> = 0>
-void span(ReadArchive& archive, T& pointer, D& d, Dn&... dn)
-{
-    if (pointer != nullptr)
-        throw "the read span data must be initialized to nullptr.";
-
-    archive(d, dn...);
-
-    auto span_data = zip(pointer, d, dn...);
-    detail::raw_span(archive, span_data);
-}
-
-SERIALIZATION_LOAD_DATA(ref, meta::is_ref<T>())
-{
-    using key_type   = typename ReadArchive::TrackingTable::key_type;
-    using value_type = typename T::type;
-    
-    key_type key;
-    archive & key;
-    
-    auto& track_data = archive.tracking()[key];
-    
-    if (not track_data.is_tracking)
-        throw "the read reference must be tracked before.";
-
-    value_type* pointer = nullptr;
-    
-    detail::native_load(archive, pointer, track_data.address);
-
-    ref.set(*pointer); // pointer will never nullptr
 
     return archive;
 }

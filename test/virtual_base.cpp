@@ -29,7 +29,7 @@ struct B : virtual A
 
     SERIALIZATION_UNIFIED(ar)
     {
-        virtual_base<A>(ar, *this); // works even for non-virtual base, but maybe ambiguous
+        virtual_base<A>(ar, this); // works even for non-virtual base, but maybe ambiguous
     }
 };
 
@@ -39,7 +39,7 @@ struct C :  virtual A
 
     SERIALIZATION_UNIFIED(ar)
     {
-        virtual_base<A>(ar, *this);
+        virtual_base<A>(ar, this);
     }
 };
 
@@ -49,9 +49,9 @@ struct D : B, C
 
     SERIALIZATION_UNIFIED(ar)
     {
-        base<A>(ar, *this);
-        base<B>(ar, *this);
-        base<C>(ar, *this);
+        base<A>(ar, this);
+        base<B>(ar, this);
+        base<C>(ar, this);
     }
 };
 
@@ -61,7 +61,7 @@ struct F : D
 
     SERIALIZATION_UNIFIED(ar)
     {
-        base<D>(ar, *this);
+        base<D>(ar, this);
     }
 };
 
