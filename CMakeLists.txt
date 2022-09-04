@@ -43,6 +43,7 @@ set(SIFAR
     include/Sifar/Access.hpp
     include/Sifar/ReadArchive.hpp
     include/Sifar/WriteArchive.hpp
+    include/Sifar/UnifiedData.hpp
     include/Sifar/SerializatonBase.hpp
 
     include/Sifar/Core.hpp

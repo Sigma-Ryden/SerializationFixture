@@ -132,8 +132,8 @@ auto ReadArchive<InStream, Registry, StreamWrapper>::operator() (
 }
 
 template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and meta::is_unsupported<T>()> = 0>
+          meta::require<meta::is_read_archive<ReadArchive>() and
+                        meta::is_unsupported<T>()> = 0>
 ReadArchive& operator& (ReadArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),

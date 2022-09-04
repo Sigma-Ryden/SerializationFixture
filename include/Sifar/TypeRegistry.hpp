@@ -35,7 +35,6 @@ template <typename T> constexpr bool is_registered() noexcept
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(Access::is_save_load_class<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_arithmetic<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_enum<T>())
 SERIALIZATION_TYPE_REGISTRY_IF(meta::is_array<T>())

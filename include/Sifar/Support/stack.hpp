@@ -7,6 +7,7 @@
 
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>
+#include <Sifar/UnifiedData.hpp>
 
 #include <Sifar/TypeRegistry.hpp>
 
@@ -45,14 +46,7 @@ Container& underlying(std::stack<Type, Container>& stack)
 namespace library
 {
 
-SERIALIZATION_SAVE_DATA(stack, meta::is_std_stack<T>::value)
-{
-    archive & detail::underlying(stack);
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(stack, meta::is_std_stack<T>::value)
+SERIALIZATION_UNIFIED_DATA(stack, meta::is_std_stack<T>::value)
 {
     archive & detail::underlying(stack);
 

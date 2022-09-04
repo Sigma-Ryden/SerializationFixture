@@ -7,6 +7,7 @@
 
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>
+#include <Sifar/UnifiedData.hpp>
 
 #include <Sifar/TypeRegistry.hpp>
 
@@ -25,14 +26,7 @@ struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
 namespace library
 {
 
-SERIALIZATION_SAVE_DATA(pair, meta::is_std_pair<T>::value)
-{
-    archive & pair.first & pair.second;
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(pair, meta::is_std_pair<T>::value)
+SERIALIZATION_UNIFIED_DATA(pair, meta::is_std_pair<T>::value)
 {
     archive & pair.first & pair.second;
 

@@ -7,6 +7,7 @@
 
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>
+#include <Sifar/UnifiedData.hpp>
 
 #include <Sifar/TypeRegistry.hpp>
 
@@ -46,14 +47,7 @@ void expand(Archive& archive, T& tuple)
     detail::expand_impl(archive, tuple, meta::make_index_sequence<N>{});
 }
 
-SERIALIZATION_SAVE_DATA(tuple, meta::is_std_tuple<T>::value)
-{
-    expand(archive, tuple);
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(tuple, meta::is_std_tuple<T>::value)
+SERIALIZATION_UNIFIED_DATA(tuple, meta::is_std_tuple<T>::value)
 {
     expand(archive, tuple);
 

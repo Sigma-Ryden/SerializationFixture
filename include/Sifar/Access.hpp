@@ -133,7 +133,7 @@ void virtual_base(Archive& archive, Derived* pointer) noexcept
 namespace apply
 {
 
-#define FUNCTOR_GENERIC(class_name, function_name)                                                      \
+#define SIFAR_FUNCTOR_GENERIC(class_name, function_name)                                                \
 template <typename Base, typename Derived>                                                              \
 class class_name : public ApplyFunctor {                                                                \
 private:                                                                                                \
@@ -146,21 +146,25 @@ public:                                                                         
     }                                                                                                   \
 };
 
-FUNCTOR_GENERIC(BaseFunctor, base)
-FUNCTOR_GENERIC(VirtualBaseFunctor, virtual_base)
+SIFAR_FUNCTOR_GENERIC(BaseFunctor, base)
+SIFAR_FUNCTOR_GENERIC(VirtualBaseFunctor, virtual_base)
 
 // clean up
-#undef FUNCTOR_GENERIC
+#undef SIFAR_FUNCTOR_GENERIC
 
 } // namespace apply
 
-template <typename Base, typename Derived>
+template <typename Base, typename Derived,
+          meta::require<meta::is_base_of<Base, Derived>()> = 0>
 apply::BaseFunctor<Base, Derived> base(Derived* pointer) { return { *pointer }; }
 
-template <typename Base, typename Derived>
+template <typename Base, typename Derived,
+          meta::require<meta::is_base_of<Base, Derived>()> = 0>
 apply::VirtualBaseFunctor<Base, Derived> virtual_base(Derived* pointer) { return { *pointer }; }
 
 } // namespace sifar
+
+SERIALIZATION_TYPE_REGISTRY_IF(Access::is_save_load_class<T>())
 
 #include <Sifar/Detail/MacroUnscope.hpp>
 

@@ -46,10 +46,7 @@ template <typename T, typename = void>
 struct deref_impl { using type = T; };
 
 template <>
-struct deref_impl<void*>
-{
-    using type = void;
-};
+struct deref_impl<void*> { using type = void; };
 
 template <typename T>
 struct deref_impl<T, void_t<decltype(*std::declval<T>())>>
@@ -206,7 +203,7 @@ struct is_read_archive<ReadArchive<InStream, Registry, StreamWrapper>> : std::tr
 
 } // namespace detail
 
-template <class T> constexpr bool is_read_archive()
+template <class T> constexpr bool is_read_archive() noexcept
 {
     return detail::is_read_archive<T>::value;
 }
@@ -221,12 +218,12 @@ struct is_write_archive<WriteArchive<OutStream, Registry, StreamWrapper>> : std:
 
 } // namespace detail
 
-template <class T> constexpr bool is_write_archive()
+template <class T> constexpr bool is_write_archive() noexcept
 {
     return detail::is_write_archive<T>::value;
 }
 
-template <class T> constexpr bool is_archive()
+template <class T> constexpr bool is_archive() noexcept
 {
     return is_read_archive<T>() or is_write_archive<T>();
 }

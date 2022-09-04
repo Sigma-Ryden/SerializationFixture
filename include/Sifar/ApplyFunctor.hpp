@@ -3,6 +3,8 @@
 
 #include <Sifar/Detail/Meta.hpp>
 
+#include <Sifar/TypeRegistry.hpp>
+
 namespace sifar
 {
 
@@ -24,8 +26,10 @@ template <typename T> constexpr bool is_apply_functor() noexcept
 } // namespace meta
 
 template <typename Archive, typename T,
+          typename U = meta::decay<T>, // T can be lvalue
           meta::require<meta::is_archive<Archive>() and
-                        meta::is_apply_functor<T>()> = 0>
+                        meta::is_registered<U>() and
+                        meta::is_apply_functor<U>()> = 0>
 Archive& operator& (Archive& archive, T&& apply_functor)
 {
     apply_functor(archive);
@@ -34,5 +38,7 @@ Archive& operator& (Archive& archive, T&& apply_functor)
 }
 
 } // namespace sifar
+
+SERIALIZATION_TYPE_REGISTRY_IF(meta::is_apply_functor<T>())
 
 #endif // SIFAR_APPLY_FUNCTOR_HPP

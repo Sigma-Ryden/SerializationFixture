@@ -7,6 +7,7 @@
 
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>
+#include <Sifar/UnifiedData.hpp>
 
 #include <Sifar/TypeRegistry.hpp>
 
@@ -25,15 +26,7 @@ struct is_std_array<std::array<T, N>> : std::true_type {};
 namespace library
 {
 
-SERIALIZATION_SAVE_DATA(array, meta::is_std_array<T>::value)
-{
-    for (const auto& item : array)
-        archive & item;
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(array, meta::is_std_array<T>::value)
+SERIALIZATION_UNIFIED_DATA(array, meta::is_std_array<T>::value)
 {
     for (auto& item : array)
         archive & item;

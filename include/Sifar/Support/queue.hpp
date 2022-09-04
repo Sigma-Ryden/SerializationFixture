@@ -7,6 +7,7 @@
 
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>
+#include <Sifar/UnifiedData.hpp>
 
 #include <Sifar/TypeRegistry.hpp>
 
@@ -45,14 +46,7 @@ Container& underlying(std::queue<Type, Container>& queue)
 namespace library
 {
 
-SERIALIZATION_SAVE_DATA(queue, meta::is_std_queue<T>::value)
-{
-    archive & detail::underlying(queue);
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(queue, meta::is_std_queue<T>::value)
+SERIALIZATION_UNIFIED_DATA(queue, meta::is_std_queue<T>::value)
 {
     archive & detail::underlying(queue);
 

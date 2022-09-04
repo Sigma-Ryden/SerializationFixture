@@ -127,7 +127,7 @@ auto WriteArchive<OutStream, Registry, StreamWrapper>::operator() (
 template <class WriteArchive, typename T,
           meta::require<meta::is_write_archive<WriteArchive>()
                         and meta::is_unsupported<T>()> = 0>
-WriteArchive& operator& (WriteArchive& archive, T& unsupported)
+WriteArchive& operator& (WriteArchive& archive, T&& unsupported)
 {
     static_assert(meta::to_false<T>(),
         "'T' is an unsupported type for the 'sifar::WriteArchive'.");
@@ -138,7 +138,7 @@ WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 template <class WriteArchive, typename T,
           meta::require<meta::is_write_archive<WriteArchive>()
                         and not meta::is_registered<T>()> = 0>
-WriteArchive& operator& (WriteArchive& archive, T& unregistered)
+WriteArchive& operator& (WriteArchive& archive, T&& unregistered)
 {
     static_assert(meta::to_false<T>(),
         "'T' is an unregistered type for the 'sifar::WriteArchive'. "
@@ -178,7 +178,7 @@ SERIALIZATION_SAVE_DATA(enumerator, meta::is_enum<T>())
 
 SERIALIZATION_SAVE_DATA(array, meta::is_array<T>())
 {
-    for (auto& item : array)
+    for (const auto& item : array)
         archive & item;
 
     return archive;
