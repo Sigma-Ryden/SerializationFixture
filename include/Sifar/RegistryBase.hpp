@@ -60,38 +60,42 @@ public:
     }
 
 protected:
-    template <class Derived, class Archive,
-              meta::require<meta::is_void_pointer<Derived*>()> = 0>
-    static void try_save(Archive& /*archive*/, void* /*pointer*/)
+    template <class Derived, class Archive, typename Base,
+              meta::require<not meta::is_base_of<meta::deref<Base>, Derived>()
+              /*meta::is_void_pointer<Derived*>()*/> = 0>
+    static void try_save(Archive& /*archive*/, Base& /*pointer*/)
     {
         throw "serializable type was not registered.";
     }
 
-    template <class Derived, class Archive,
-              meta::require<not meta::is_void_pointer<Derived*>()> = 0>
-    static void try_save(Archive& archive, void* pointer)
+    template <class Derived, class Archive, typename Base,
+              meta::require<meta::is_base_of<meta::deref<Base>, Derived>()
+              /*not meta::is_void_pointer<Derived*>()*/> = 0>
+    static void try_save(Archive& archive, Base& pointer)
     {
-        auto derived = Access::template cast<Derived*>(pointer);
+        auto derived = Access::template runtime_cast<Derived*>(pointer);
         archive & (*derived); // will never nullptr
     }
 
-    template <class Derived, class Archive,
-              meta::require<meta::is_void_pointer<Derived*>()> = 0>
-    static void try_load(Archive& /*archive*/, void*& /*pointer*/)
+    template <class Derived, class Archive, typename Base,
+              meta::require<not meta::is_base_of<meta::deref<Base>, Derived>()
+              /*meta::is_void_pointer<Derived*>()*/> = 0>
+    static void try_load(Archive& /*archive*/, Base& /*pointer*/)
     {
         throw "serializable type was not registered.";
     }
 
-    template <class Derived, class Archive,
-              meta::require<not meta::is_void_pointer<Derived*>()> = 0>
-    static void try_load(Archive& archive, void*& pointer)
+    template <class Derived, class Archive, typename Base,
+              meta::require<meta::is_base_of<meta::deref<Base>, Derived>()
+              /*not meta::is_void_pointer<Derived*>()*/> = 0>
+    static void try_load(Archive& archive, Base& pointer)
     {
         if (pointer != nullptr)
             throw "the read pointer must be initialized to nullptr.";
 
-        pointer = new Derived;
+        auto derived = new Derived;
 
-        auto derived = Access::template cast<Derived*>(pointer);
+        pointer = Access::template cast<Base>(derived);
         archive & (*derived); // will never nullptr
     }
 

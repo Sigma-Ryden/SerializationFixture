@@ -82,9 +82,9 @@ public:
         Archive& archive, Pointer& pointer,
         let::u64 key, let::u64 bound = key_max_bound)
     {
-        void* pure_pointer = dynamic_cast<void*>(pointer);
+        //void* pure_pointer = dynamic_cast<void*>(pointer);
 
-        save_impl(archive, pure_pointer, key % bound);
+        save_impl(archive, /*pure_*/pointer, key % bound);
     }
 
     template <class Archive, typename Pointer,
@@ -94,11 +94,11 @@ public:
         Archive& archive, Pointer& pointer,
         let::u64 key, let::u64 bound = key_max_bound)
     {
-        void* pure_pointer = nullptr;
+        //void* pure_pointer = nullptr;
 
-        load_impl(archive, pure_pointer, key % bound);
+        load_impl(archive, /*pure_*/pointer, key % bound);
 
-        pointer = static_cast<Pointer>(pure_pointer);
+        //pointer = static_cast<Pointer>(pure_pointer);
     }
 
     template <typename Pointer,
@@ -112,14 +112,14 @@ public:
     }
 
 private:
-    template <SIFAR_INVOKE_END(StaticKey), class Archive>
-    static void save_impl(Archive& archive, void* pointer, let::u64 id)
+    template <SIFAR_INVOKE_END(StaticKey), class Archive, typename Pointer>
+    static void save_impl(Archive& archive, Pointer& pointer, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
-    template <SIFAR_INVOKE_BEGIN(StaticKey), class Archive>
-    static void save_impl(Archive& archive, void* pointer, let::u64 id)
+    template <SIFAR_INVOKE_BEGIN(StaticKey), class Archive, typename Pointer>
+    static void save_impl(Archive& archive, Pointer& pointer, let::u64 id)
     {
         SIFAR_INVOKE_BODY(StaticKey, id, save_impl<INVOKE_NEXT>(archive, pointer, id))
 
@@ -128,14 +128,14 @@ private:
         try_save<Derived>(archive, pointer);
     }
 
-    template <SIFAR_INVOKE_END(StaticKey), class Archive>
-    static void load_impl(Archive& archive, void*& pointer, let::u64 id)
+    template <SIFAR_INVOKE_END(StaticKey), class Archive, typename Pointer>
+    static void load_impl(Archive& archive, Pointer& pointer, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
-    template <SIFAR_INVOKE_BEGIN(StaticKey), class Archive>
-    static void load_impl(Archive& archive, void*& pointer, let::u64 id)
+    template <SIFAR_INVOKE_BEGIN(StaticKey), class Archive, typename Pointer>
+    static void load_impl(Archive& archive, Pointer& pointer, let::u64 id)
     {
         SIFAR_INVOKE_BODY(StaticKey, id, load_impl<INVOKE_NEXT>(archive, pointer, id))
 
@@ -170,9 +170,9 @@ public:
         Archive& archive, Pointer& pointer,
         let::u64 key, let::u64 bound = key_max_bound)
     {
-        void* pure_pointer = dynamic_cast<void*>(pointer);
+        //void* pure_pointer = dynamic_cast<void*>(pointer);
 
-        save_impl<T, Tn..., T>(archive, pure_pointer, key % bound);
+        save_impl<T, Tn..., T>(archive, /*pure_*/pointer, key % bound);
     }
 
     template <class Archive, typename Pointer,
@@ -182,11 +182,11 @@ public:
         Archive& archive, Pointer& pointer,
         let::u64 key, let::u64 bound = key_max_bound)
     {
-        void* pure_pointer = nullptr;
+        //void* pure_pointer = nullptr;
 
-        load_impl<T, Tn..., T>(archive, pure_pointer, key % bound);
+        load_impl<T, Tn..., T>(archive, /*pure_*/pointer, key % bound);
 
-        pointer = static_cast<Pointer>(pure_pointer);
+        //pointer = static_cast<Pointer>(pure_pointer);
     }
 
     template <typename Pointer,
@@ -200,15 +200,15 @@ public:
     }
 
 private:
-    template <class Archive>
-    static void save_impl(Archive& archive, void* pointer, let::u64 id)
+    template <class Archive, typename Pointer>
+    static void save_impl(Archive& archive, Pointer& pointer, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
     template <class Derived, class... Derived_n,
-              class Archive>
-    static void save_impl(Archive& archive, void* pointer, let::u64 id)
+              class Archive, typename Pointer>
+    static void save_impl(Archive& archive, Pointer& pointer, let::u64 id)
     {
         if (id == key<Derived>())
             return try_save<Derived>(archive, pointer);
@@ -216,15 +216,15 @@ private:
         save_impl<Derived_n...>(archive, pointer, id);
     }
 
-    template <class Archive>
-    static void load_impl(Archive& archive, void*& pointer, let::u64 id)
+    template <class Archive, typename Pointer>
+    static void load_impl(Archive& archive, Pointer& pointer, let::u64 id)
     {
         throw "serializable type was not registered.";
     }
 
     template <class Derived, class... Derived_n,
-              class Archive>
-    static void load_impl(Archive& archive, void*& pointer, let::u64 id)
+              class Archive, typename Pointer>
+    static void load_impl(Archive& archive, Pointer& pointer, let::u64 id)
     {
         if (id == key<Derived>())
             return try_load<Derived>(archive, pointer);
