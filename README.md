@@ -7,8 +7,8 @@ The library has a small code base, but enough to use it.
 Use macros for code generation or read the documentation and write your own code.
 There are 2 main serialization classes under your control: `WriteArchive` and `ReadArchive`.
 Both classes can be equipped with additional helper classes via template parameters if needed.
-The type registrar will allow you to properly serialize and deserialize polymorphic and abstract types.
 A wrapper for streams will help you flexibly configure the process of writing and reading data.
+The type registrar will allow you to properly serialize and deserialize polymorphic and abstract types.
 
 Is a header-only library implemented purely in C++11.
 
@@ -48,7 +48,7 @@ And let's equip our simple class with serialization support:
 
 class Shape
 {
-    SERIALIZATION_ACCESS()
+    SERIALIZABLE()
 
 private:
     std::string name_;
@@ -65,20 +65,18 @@ public:
         std::cout << name_ << " shape is lacated at: "
                   << x_ << "; " << y_ << std::endl;
     }
-
-private:
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & name_;
-        ar & x_;
-        ar & y_;
-    }
 };
+
+SERIALIZATION_SAVE_LOAD(Shape)
+{
+    archive & self.name_
+            & self.x_
+            & self.y_;
+}
 ```
 Explaining of using macros above:
-- ```SERIALIZATION_ACCESS()``` - Provide us with secure saving and loading of objects.
-You can omit this macro if the serialization functions are public.
-- ```SERIALIZATION_UNIFIED()``` - Generate save/load serialization functions for given class.
+- ```SERIALIZABLE()``` - Provide us with secure saving and loading of objects.
+- ```SERIALIZATION_SAVE_LOAD()``` - Generate save/load serialization functions for given class.
 This macro allows you to split into two separate macros: ```SERIALIZATION_SAVE()``` and ```SERIALIZATION_LOAD()``` if needed.
 
 ### Using of serialization library:
