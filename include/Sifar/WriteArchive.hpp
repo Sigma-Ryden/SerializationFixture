@@ -6,7 +6,9 @@
 #include <unordered_map> // unordered_map
 #include <memory> // addressof
 
-#include <Sifar/SerializatonBase.hpp>
+#include <iosfwd> // ofstream
+
+#include <Sifar/ArchiveBase.hpp>
 
 #include <Sifar/Access.hpp>
 #include <Sifar/TypeRegistry.hpp>
@@ -18,15 +20,15 @@
 
 #define SERIALIZATION_SAVE_DATA(parameter, ...)                                                         \
     template <class WriteArchive, typename T,                                                           \
-              ::sifar::meta::require<::sifar::meta::is_write_archive<WriteArchive>() and                \
-                                     ::sifar::meta::is_registered<T>() and                              \
-                                     (bool)(__VA_ARGS__)> = 0>                                          \
+              SIFAR_REQUIRE(::sifar::meta::is_write_archive<WriteArchive>() and                         \
+                            ::sifar::meta::is_registered<T>() and                                       \
+                            (bool)(__VA_ARGS__))>                                                       \
     WriteArchive& operator& (WriteArchive& archive, T& parameter)
 
 namespace sifar
 {
 
-namespace utility
+namespace wrapper
 {
 
 template <typename OutStream>
@@ -49,13 +51,15 @@ public:
     OutStream& get() noexcept { return stream_; }
 };
 
-} // namespace utility
+} // namespace wrap
 
 template <class OutStream,
-          class Registry = ExternRegistry,
-          class StreamWrapper = utility::OutStreamWrapper<OutStream>>
-class WriteArchive
+          class StreamWrapper = wrapper::OutStreamWrapper<OutStream>,
+          class Registry = dynamic::ExternRegistry>
+class WriteArchive : public core::ArchiveBase
 {
+    _SERIALIZATION_ARCHIVE()
+
 public:
     using TrackingTable = std::unordered_map<std::uintptr_t, bool>;
 
@@ -77,46 +81,48 @@ public:
     template <typename T, typename... Tn>
     auto operator() (T& data, Tn&... data_n) -> WriteArchive&;
 
-    auto operator() () -> WriteArchive& { return *this; }
+    auto operator() () noexcept -> WriteArchive& { return *this; }
 };
 
-template <class Registry = ExternRegistry, class OutStream>
-WriteArchive<OutStream, Registry> writer(OutStream& stream)
+template <class OutStream>
+WriteArchive<OutStream> writer(OutStream& stream)
 {
     return { stream };
 }
 
-template <class Registry,
-          template <class, typename...> class StreamWrapper,
+template <template <class, typename...> class StreamWrapper,
+          class Registry = dynamic::ExternRegistry,
           class OutStream>
-WriteArchive<OutStream, Registry, StreamWrapper<OutStream>> writer(OutStream& stream)
+WriteArchive<OutStream, StreamWrapper<OutStream>, Registry> writer(OutStream& stream)
 {
     return { stream };
 }
 
-template <class Registry, class StreamWrapper, class OutStream>
-WriteArchive<OutStream, Registry, StreamWrapper> writer(OutStream& stream)
+template <class StreamWrapper,
+          class Registry = dynamic::ExternRegistry,
+          class OutStream>
+WriteArchive<OutStream, StreamWrapper, Registry> writer(OutStream& stream)
 {
     return { stream };
 }
 
-template <class OutStream, class Registry, class StreamWrapper>
-WriteArchive<OutStream, Registry, StreamWrapper>::WriteArchive(OutStream& stream)
-    : archive_(stream), track_table_(), registry_()
+template <class OutStream, class StreamWrapper, class Registry>
+WriteArchive<OutStream, StreamWrapper, Registry>::WriteArchive(OutStream& stream)
+    : archive_{stream}, track_table_(), registry_()
 {
 }
 
-template <class OutStream, class Registry, class StreamWrapper>
+template <class OutStream, class StreamWrapper, class Registry>
 template <typename T>
-auto WriteArchive<OutStream, Registry, StreamWrapper>::operator<< (
+auto WriteArchive<OutStream, StreamWrapper, Registry>::operator<< (
     T& data) -> WriteArchive&
 {
     return (*this) & data;
 }
 
-template <class OutStream, class Registry, class StreamWrapper>
+template <class OutStream, class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto WriteArchive<OutStream, Registry, StreamWrapper>::operator() (
+auto WriteArchive<OutStream, StreamWrapper, Registry>::operator() (
     T& data, Tn&... data_n) -> WriteArchive&
 {
     (*this) & data;
@@ -155,7 +161,7 @@ WriteArchive& operator& (WriteArchive& archive, T&& unregistered)
 inline namespace common
 {
 
-SERIALIZATION_SAVE_DATA(object, Access::is_save_load_class<T>())
+SERIALIZATION_SAVE_DATA(object, Access::is_save_class<T>())
 {
     Access::save(archive, object);
 
@@ -171,7 +177,8 @@ SERIALIZATION_SAVE_DATA(number, meta::is_arithmetic<T>())
 
 SERIALIZATION_SAVE_DATA(enumerator, meta::is_enum<T>())
 {
-    auto value = static_cast<typename std::underlying_type<T>::type>(enumerator);
+    using underlying_type = typename std::underlying_type<T>::type;
+    auto value = static_cast<underlying_type>(enumerator);
 
     return archive & value;
 }
@@ -184,21 +191,22 @@ SERIALIZATION_SAVE_DATA(array, meta::is_array<T>())
     return archive;
 }
 
-SERIALIZATION_SAVE_DATA(pointer, meta::is_pod_pointer<T>())
+SERIALIZATION_SAVE_DATA(pod_pointer, meta::is_pod_pointer<T>())
 {
-    if (pointer == nullptr)
+    if (pod_pointer == nullptr)
         throw "the write pointer must be allocated.";
 
-    archive & (*pointer);
+    archive & (*pod_pointer);
 
     return archive;
 }
 
 SERIALIZATION_SAVE_DATA(pointer, meta::is_pointer_to_polymorphic<T>())
 {
-    auto id = archive.registry().save_key(archive, pointer);
+    auto& registry = archive.registry();
 
-    archive.registry().save(archive, pointer, id);
+    auto id = registry.save_key(archive, pointer);
+    registry.save(archive, pointer, id);
 
     return archive;
 }

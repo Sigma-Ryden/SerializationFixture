@@ -16,65 +16,60 @@ using sifar::utility::pure;
 using namespace sifar::common; // support of common types
 using namespace sifar::tracking; // support of data tracking
 
-#define println(...) \
-    std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
+#define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
-#define println_ref(ref) \
-    std::cout << (#ref) << " : " << (&ref.get()) << '\n'
-
-struct B
+// Needed for clonable and serializable of derived object
+struct B : POLYMORPHIC_IMPORT()
 {
-    int b = 0;
-    virtual ~B() = default;
+    POLYMORPHIC()
 
-    SERIALIZATION_POLYMORPHIC_KEY(0)
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & b;
-    }
+    int b = 0;
 };
+SERIALIZATION_POLYMORPHIC(B)
+{
+    archive & self.b;
+}
 
 struct C : virtual B
 {
+    POLYMORPHIC()
+
     int c = 1;
-    SERIALIZATION_POLYMORPHIC_KEY(1)
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & virtual_base<B>(this);
-        ar & c;
-    }
 };
+
+SERIALIZATION_POLYMORPHIC(C)
+{
+    archive & virtual_base<B>(self)
+            & self.c;
+}
 
 struct D : virtual B
 {
+    POLYMORPHIC()
+
     int d = 22;
-    SERIALIZATION_POLYMORPHIC_KEY(2)
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & virtual_base<B>(this);
-        ar & d;
-    }
 };
+
+SERIALIZATION_POLYMORPHIC(D)
+{
+    archive & virtual_base<B>(self) // expand to => virtual_base<B>
+            & self.d;
+}
 
 struct X : C, D
 {
-    int x = 333;
-    SERIALIZATION_POLYMORPHIC_KEY(3)
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & virtual_base<B>(this);
-        ar & base<C>(this);
-        ar & base<D>(this);
+    POLYMORPHIC()
 
-        ar & x;
-    }
+    int x = 333;
 };
 
-SERIALIZATION_EXPORT_KEY(B)
-SERIALIZATION_EXPORT_KEY(C)
-SERIALIZATION_EXPORT_KEY(D)
-SERIALIZATION_EXPORT_KEY(X)
-
+SERIALIZATION_POLYMORPHIC(X)
+{
+    archive & virtual_base<B>(self)
+            & base<C>(self)
+            & base<D>(self)
+            & self.x;
+}
 #define r(ref) &ref.get()
 
 void test_ref_tracking()

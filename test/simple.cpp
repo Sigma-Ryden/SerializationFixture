@@ -8,7 +8,7 @@ using namespace sifar::library; // support of string
 
 class Shape
 {
-    SERIALIZATION_ACCESS()
+    SERIALIZABLE()
 
 private:
     std::string name_;
@@ -25,15 +25,14 @@ public:
         std::cout << name_ << " shape is lacated at: "
                   << x_ << "; " << y_ << std::endl;
     }
-
-private:
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & name_;
-        ar & x_;
-        ar & y_;
-    }
 };
+
+SERIALIZATION_SAVE_LOAD(Shape)
+{
+    archive & self.name_
+            & self.x_
+            & self.y_;
+}
 
 void save(Shape& shape)
 {

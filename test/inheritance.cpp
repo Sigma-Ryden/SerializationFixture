@@ -14,7 +14,7 @@ using namespace sifar::library;
 
 class Human
 {
-    SERIALIZATION_ACCESS()
+    SERIALIZABLE()
 
 protected:
     std::string name_;
@@ -28,17 +28,18 @@ public:
 
     const std::string& name() const noexcept { return name_; }
     int age() const noexcept { return age_; }
-
-private:
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & name_;
-        ar & age_;
-    }
 };
+
+SERIALIZATION_SAVE_LOAD(Human)
+{
+    archive & self.name_
+            & self.age_;
+}
 
 class Boy : public Human
 {
+    SERIALIZABLE()
+
 private:
     int force_;
 
@@ -53,14 +54,14 @@ public:
     }
 
     int force() const noexcept { return force_; }
-
-    SERIALIZATION_UNIFIED(ar)
-    {
-        base<Human>(ar, this);
-
-        ar & force_;
-    }
 };
+
+// Macro same as SERIALIZATION_SAVE_LOAD
+SERIALIZATION(Boy)
+{
+    archive & base<Human>(self)
+            & self.force_;
+}
 
 void test_object_serialization()
 {
@@ -103,9 +104,10 @@ void test_object_serialization()
         file.close();
 
         std::cout << "Deserialization done.\n";
-
+        //
         std::cout << obj.name() << ' ' << obj.age() << ' ' << obj.force()
                   << ' ' << hi << ' ' << bye << '\n';
+        //
     }
 }
 

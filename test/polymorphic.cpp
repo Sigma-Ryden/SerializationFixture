@@ -8,16 +8,15 @@
 using sifar::reader;
 using sifar::writer;
 
-using sifar::InnerRegistry;
+using sifar::base;
 
 using namespace sifar::library; // support of std library
 using namespace sifar::tracking; // support of data tracking
 
 template <class SomeType>
-class Base
+class Base : POLYMORPHIC_IMPORT()
 {
-    SERIALIZATION_ACCESS()
-    SERIALIZATION_POLYMORPHIC_HASH(Base<SomeType>)
+    POLYMORPHIC_TEMPLATE(Base)
 
 protected:
     SomeType data;
@@ -25,34 +24,40 @@ protected:
 public:
     virtual ~Base() = default;
 
-    Base(const SomeType& data = "") : data(data) {}
+    Base(const SomeType& data = SomeType{}) : data(data) {}
 
     virtual void show()
     {
         std::cout << data << '\n';
     }
-
-private:
-    SERIALIZATION_SAVE(ar)
-    {
-        std::cout << "Save Base class\n";
-        ar & data;
-    }
-
-    SERIALIZATION_LOAD(ar)
-    {
-        std::cout << "Load Base class\n";
-        ar & data;
-    }
 };
-// partial class info
-SERIALIZATION_POLYMORPHIC_TPL_HASH(Base<double>)
-SERIALIZATION_POLYMORPHIC_TPL_HASH(Base<std::string>)
+template <typename>
+struct is_base : std::false_type {};
+
+template <typename T>
+struct is_base<Base<T>> : std::true_type {};
+
+SERIALIZATION_SAVE(Base<std::string>)
+{
+    std::cout << "Save Base<std::string> class\n";
+    archive & self.data;
+}
+
+SERIALIZATION_CONDITIONAL_SAVE(is_base<T>::value)
+{
+    std::cout << "Load Base class\n";
+    archive & self.data;
+}
+
+SERIALIZATION_CONDITIONAL_LOAD(is_base<T>::value)
+{
+    std::cout << "Load Base class\n";
+    archive & self.data;
+}
 
 class Derived : public Base<std::string>
 {
-    SERIALIZATION_ACCESS()
-    SERIALIZATION_POLYMORPHIC_HASH(Derived)
+    POLYMORPHIC()
 
 private:
     float value;
@@ -60,33 +65,40 @@ private:
 public:
     Derived(std::string data = "", float c = 0.) : Base(data), value(c) {}
 
-    virtual void show()
+    virtual void show() override
     {
         std::cout << data << ' ' << value << '\n';
     }
 
 private:
-    SERIALIZATION_UNIFIED(ar)
-    {
-        sifar::base<Base>(ar, this);
-
-        ar & value;
-    }
 };
+
+SERIALIZATION_SAVE_LOAD(Derived)
+{
+    std::cout << "Save Load Derived class\n";
+    archive & base<Base<std::string>>(self);
+    archive & self.value;
+}
+
+POLYMORPHIC_TEMPLATE_EXPORT(Base<std::string>)
+POLYMORPHIC_TEMPLATE_EXPORT(Base<double>)
+
+POLYMORPHIC_EXPORT(Derived)
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
 
 void test_polymorphic()
 {
-    using Registry = InnerRegistry<Base<std::string>, Derived>;
+    using Registry = sifar::dynamic::ExternRegistry;
 
     using Parent = Base<std::string>;
     using Child  = Derived;
 
     {
-        println(Registry::key<Base<char>>()); // <-- default
+        println(Registry::key<Base<char>>()); // <-- default value
         println(Registry::key<Base<std::string>>()); // <-- specialization
+        println(Registry::key<Base<double>>()); // <-- specialization
     }
     //
     {
@@ -94,7 +106,7 @@ void test_polymorphic()
 
         if (not file.is_open()) return;
 
-        auto ar = writer<Registry>(file);
+        auto ar = writer(file);
 
         Parent* b = new Parent("Hello!");
         Parent* d = new Child("Bye!", 3.1415926);
@@ -120,7 +132,7 @@ void test_polymorphic()
 
         if (not file.is_open()) return;
 
-        auto ar = reader<Registry>(file);
+        auto ar = reader(file);
 
         Parent* b = nullptr;
         Parent* d = nullptr;

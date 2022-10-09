@@ -6,18 +6,17 @@
 using sifar::reader;
 using sifar::writer;
 
-using sifar::InnerRegistry;
-
 using sifar::base;
 using sifar::virtual_base;
 
-struct A
+struct A : POLYMORPHIC_IMPORT()
 {
-    virtual ~A() {}
-    SERIALIZATION_POLYMORPHIC_KEY(0)
+    POLYMORPHIC()
 
-    SERIALIZATION_UNIFIED(ar) {}
+    virtual ~A() {}
 };
+
+SERIALIZATION_POLYMORPHIC(A) {}
 
 // virtual_base serialization proccess:
 // if this->virtual_id != this->static_id
@@ -25,60 +24,55 @@ struct A
 // else do something...
 struct B : virtual A
 {
-    SERIALIZATION_POLYMORPHIC_KEY(1)
-
-    SERIALIZATION_UNIFIED(ar)
-    {
-        virtual_base<A>(ar, this); // works even for non-virtual base, but maybe ambiguous
-    }
+    POLYMORPHIC()
 };
+SERIALIZATION_POLYMORPHIC(B)
+{
+    virtual_base<A>(archive, self); // works even for non-virtual base, but maybe ambiguous
+}
 
 struct C :  virtual A
 {
-    SERIALIZATION_POLYMORPHIC_KEY(2)
-
-    SERIALIZATION_UNIFIED(ar)
-    {
-        virtual_base<A>(ar, this);
-    }
+    POLYMORPHIC()
 };
+SERIALIZATION_POLYMORPHIC(C)
+{
+    virtual_base<A>(archive, self);
+}
 
 struct D : B, C
 {
-    SERIALIZATION_POLYMORPHIC_KEY(3)
-
-    SERIALIZATION_UNIFIED(ar)
-    {
-        base<A>(ar, this);
-        base<B>(ar, this);
-        base<C>(ar, this);
-    }
+    POLYMORPHIC()
 };
+SERIALIZATION_POLYMORPHIC(D)
+{
+    base<A>(archive, self);
+    base<B>(archive, self);
+    base<C>(archive, self);
+}
 
 struct F : D
 {
-    SERIALIZATION_POLYMORPHIC_KEY(4)
-
-    SERIALIZATION_UNIFIED(ar)
-    {
-        base<D>(ar, this);
-    }
+    POLYMORPHIC()
 };
+
+SERIALIZATION_POLYMORPHIC(F)
+{
+    base<D>(archive, self);
+}
 
 void test_virtual_base()
 {
-    // You also can use the 'SERIALIZATION_CLASS_EXPORT' for the 'sifar::ExternRegistry'
-    using Registry = InnerRegistry<A, B, C, D, F>; // or just export A and F
-    //
     {
         std::ofstream file("test_virtual_base.bin", std::ios::binary);
 
         if (not file.is_open()) return;
 
-        auto ar = writer<Registry>(file);
+        auto ar = writer(file);
 
         A* a = new F;
-        std::cout << a->dynamic_key() << '\n';
+        std::cout << sifar::Access::dynamic_key(*a) << '\n';
+        constexpr auto xxx = sizeof(A);
 
         try
         {
@@ -103,7 +97,7 @@ void test_virtual_base()
 
         if (not file.is_open()) return;
 
-        auto ar = reader<Registry>(file);
+        auto ar = reader(file);
 
         try
         {
@@ -115,7 +109,7 @@ void test_virtual_base()
             return;
         }
 
-        std::cout << a->dynamic_key() << '\n';
+        std::cout << sifar::Access::dynamic_key(*a) << '\n';
 
         file.close();
 

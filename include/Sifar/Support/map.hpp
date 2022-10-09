@@ -71,7 +71,7 @@ SERIALIZATION_LOAD_DATA(map, meta::is_std_map<T>::value or
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_map<T>::value)
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_multimap<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_map<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_multimap<T>::value)
 
 #endif // SIFAR_SUPPORT_MAP_HPP

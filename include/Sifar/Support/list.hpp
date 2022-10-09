@@ -55,6 +55,6 @@ SERIALIZATION_LOAD_DATA(list, meta::is_std_list<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_list<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_list<T>::value)
 
 #endif // SIFAR_SUPPORT_LIST_HPP

@@ -4,6 +4,13 @@
 namespace sifar
 {
 
+namespace core
+{
+
+class ArchiveBase;
+
+} // namespace core
+
 template <class InStream, class Registry, class StreamWrapper>
 class ReadArchive;
 

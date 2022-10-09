@@ -2,18 +2,15 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
 
 set(SIFAR
-    include/Sifar/Detail/Counter.hpp
-    include/Sifar/Detail/Pointer.hpp
     include/Sifar/Detail/Meta.hpp
-    include/Sifar/Detail/Invoker.hpp
-    include/Sifar/Detail/MacroScope.hpp
-    include/Sifar/Detail/MacroUnscope.hpp
+    include/Sifar/Detail/MetaMacro.hpp
+    include/Sifar/Detail/UndefAllMacro.hpp
 
     include/Sifar/Support/vector.hpp
     include/Sifar/Support/array.hpp
@@ -29,10 +26,10 @@ set(SIFAR
     include/Sifar/Support/stack.hpp
     include/Sifar/Support/queue.hpp
 
-    include/Sifar/UndefMacro.hpp
     include/Sifar/Hash.hpp
     include/Sifar/Span.hpp
     include/Sifar/Ref.hpp
+    include/Sifar/FactoryTable.hpp
     include/Sifar/DataTrack.hpp
     include/Sifar/Utility.hpp
     include/Sifar/ApplyFunctor.hpp
@@ -40,7 +37,12 @@ set(SIFAR
     include/Sifar/NativeSaveLoad.hpp
     include/Sifar/Registry.hpp
     include/Sifar/TypeRegistry.hpp
+    include/Sifar/ArchiveTrait.hpp
+    include/Sifar/PolymorphicArchive.hpp
     include/Sifar/Access.hpp
+    include/Sifar/Serializable.hpp
+    include/Sifar/Polymorphic.hpp
+    include/Sifar/ArchiveBase.hpp
     include/Sifar/ReadArchive.hpp
     include/Sifar/WriteArchive.hpp
     include/Sifar/UnifiedData.hpp
@@ -50,16 +52,14 @@ set(SIFAR
 )
 
 add_executable(${PROJECT_NAME}
-   # test/polymorphic.cpp
-   # test/class_export.cpp
+    test/polymorphic.cpp
    # test/virtual_base.cpp
    # test/demo.cpp
    # test/simple.cpp
    # test/tracking.cpp
    # test/inheritance.cpp
    # test/multi_array.cpp
-    test/tracking_virtual.cpp
+   # test/tracking_virtual.cpp
    # test/ref_tracking.cpp
-   # test/class_auto_indexing.cpp
     ${SIFAR}
 )

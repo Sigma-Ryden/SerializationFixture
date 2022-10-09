@@ -35,7 +35,11 @@ Container& underlying(std::stack<Type, Container>& stack)
 {
     struct stack_inner : public Base
     {
-        static Container& underlying(Base& base) { return base.*(&stack_inner::c); }
+        static Container& underlying(Base& base)
+        {
+            auto underlying_container = &stack_inner::c;
+            return base.*underlying_container;
+        }
     };
 
     return stack_inner::underlying(stack);
@@ -46,7 +50,7 @@ Container& underlying(std::stack<Type, Container>& stack)
 namespace library
 {
 
-SERIALIZATION_UNIFIED_DATA(stack, meta::is_std_stack<T>::value)
+SERIALIZATION_SAVE_LOAD_DATA(stack, meta::is_std_stack<T>::value)
 {
     archive & detail::underlying(stack);
 
@@ -57,6 +61,6 @@ SERIALIZATION_UNIFIED_DATA(stack, meta::is_std_stack<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_stack<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_stack<T>::value)
 
 #endif // SIFAR_SUPPORT_STACK_HPP

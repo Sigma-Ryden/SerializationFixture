@@ -26,7 +26,7 @@ struct is_std_array<std::array<T, N>> : std::true_type {};
 namespace library
 {
 
-SERIALIZATION_UNIFIED_DATA(array, meta::is_std_array<T>::value)
+SERIALIZATION_SAVE_LOAD_DATA(array, meta::is_std_array<T>::value)
 {
     for (auto& item : array)
         archive & item;
@@ -38,6 +38,6 @@ SERIALIZATION_UNIFIED_DATA(array, meta::is_std_array<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_array<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_array<T>::value)
 
 #endif // SIFAR_SUPPORT_ARRAY_HPP

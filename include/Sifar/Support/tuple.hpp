@@ -47,7 +47,7 @@ void expand(Archive& archive, T& tuple)
     detail::expand_impl(archive, tuple, meta::make_index_sequence<N>{});
 }
 
-SERIALIZATION_UNIFIED_DATA(tuple, meta::is_std_tuple<T>::value)
+SERIALIZATION_SAVE_LOAD_DATA(tuple, meta::is_std_tuple<T>::value)
 {
     expand(archive, tuple);
 
@@ -58,6 +58,6 @@ SERIALIZATION_UNIFIED_DATA(tuple, meta::is_std_tuple<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_tuple<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_tuple<T>::value)
 
 #endif // SIFAR_SUPPORT_TUPLE_HPP

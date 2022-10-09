@@ -26,6 +26,11 @@ template <> struct word_type_impl<Word::x64> { using type = let::u64; };
 template <Word word>
 using WordType = typename detail::word_type_impl<word>::type;
 
+template <typename T> struct WordTrait { static constexpr auto value = Word::x64; };
+
+template <> struct WordTrait<let::u32> { static constexpr auto value = Word::x32; };
+template <> struct WordTrait<let::u64> { static constexpr auto value = Word::x64; };
+
 namespace detail
 {
 
@@ -99,26 +104,23 @@ public:
 
 } // namespace utility
 
-#ifdef SIFAR_BOUNDED_HASH
-#   define SIFAR_PREPARE_HASH(value) ((value) % meta::max_template_depth())
-#else
-#   define SIFAR_PREPARE_HASH(value) (value)
-#endif
-
-template <utility::Word word = utility::Word::x64>
-utility::WordType<word> hash(const char* text)
+template <typename key_type = let::u64>
+key_type hash(const char* text)
 {
-    return SIFAR_PREPARE_HASH(utility::Hash<word>::run(text));
+    using utility::Hash;
+    using utility::WordTrait;
+
+    return Hash<WordTrait<key_type>::value>::run(text);
 }
 
-template <utility::Word word = utility::Word::x64>
-constexpr utility::WordType<word> static_hash(const char* text) noexcept
+template <typename key_type = let::u64>
+constexpr key_type static_hash(const char* text) noexcept
 {
-    return SIFAR_PREPARE_HASH(utility::Hash<word>::static_run(text));
-}
+    using utility::Hash;
+    using utility::WordTrait;
 
-// clean up
-#undef SIFAR_PREPARE_HASH
+    return Hash<WordTrait<key_type>::value>::static_run(text);
+}
 
 } // namepace sifar
 

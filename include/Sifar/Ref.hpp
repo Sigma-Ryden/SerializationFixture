@@ -119,6 +119,6 @@ SERIALIZATION_LOAD_DATA(ref, meta::is_ref<T>())
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_ref<T>())
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_ref<T>())
 
 #endif // SIFAR_REF_HPP

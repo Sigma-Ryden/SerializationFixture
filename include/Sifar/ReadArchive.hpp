@@ -6,7 +6,7 @@
 #include <unordered_map> // unordered_map
 #include <memory> // addressof
 
-#include <Sifar/SerializatonBase.hpp>
+#include <Sifar/ArchiveBase.hpp>
 
 #include <Sifar/Access.hpp>
 #include <Sifar/TypeRegistry.hpp>
@@ -15,18 +15,19 @@
 #include <Sifar/Utility.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
+#include <Sifar/Detail/MetaMacro.hpp>
 
 #define SERIALIZATION_LOAD_DATA(parameter, ...)                                                         \
     template <class ReadArchive, typename T,                                                            \
-              ::sifar::meta::require<::sifar::meta::is_read_archive<ReadArchive>() and                  \
-                                     ::sifar::meta::is_registered<T>() and                              \
-                                     (bool)(__VA_ARGS__)> = 0>                                          \
+              SIFAR_REQUIRE(::sifar::meta::is_read_archive<ReadArchive>() and                           \
+                            ::sifar::meta::is_registered<T>() and                                       \
+                            (bool)(__VA_ARGS__))>                                                       \
     ReadArchive& operator& (ReadArchive& archive, T& parameter)
 
 namespace sifar
 {
 
-namespace utility
+namespace wrapper
 {
 
 template <typename InStream>
@@ -49,13 +50,15 @@ public:
     InStream& get() noexcept { return stream_; }
 };
 
-} // namespace utility
+} // namespace wrapper
 
 template <class InStream,
-          class Registry = ExternRegistry,
-          class StreamWrapper = utility::InStreamWrapper<InStream>>
-class ReadArchive
+          class StreamWrapper = wrapper::InStreamWrapper<InStream>,
+          class Registry = dynamic::ExternRegistry>
+class ReadArchive : public core::ArchiveBase
 {
+    _SERIALIZATION_ARCHIVE()
+
 private:
     struct TrackingData
     {
@@ -87,43 +90,45 @@ public:
     auto operator() () -> ReadArchive& { return *this; }
 };
 
-template <class Registry = ExternRegistry, class InStream>
-ReadArchive<InStream, Registry> reader(InStream& stream)
+template <class InStream>
+ReadArchive<InStream> reader(InStream& stream)
 {
     return { stream };
 }
 
-template <class Registry,
-          template <class, typename...> class StreamWrapper,
+template <template <class, typename...> class StreamWrapper,
+          class Registry = dynamic::ExternRegistry,
           class InStream>
-ReadArchive<InStream, Registry, StreamWrapper<InStream>> reader(InStream& stream)
+ReadArchive<InStream, StreamWrapper<InStream>, Registry> reader(InStream& stream)
 {
     return { stream };
 }
 
-template <class Registry, class StreamWrapper, class InStream>
-ReadArchive<InStream, Registry, StreamWrapper> reader(InStream& stream)
+template <class StreamWrapper,
+          class Registry = dynamic::ExternRegistry,
+          class InStream>
+ReadArchive<InStream, StreamWrapper, Registry> reader(InStream& stream)
 {
     return { stream };
 }
 
-template <class InStream, class Registry, class StreamWrapper>
-ReadArchive<InStream, Registry, StreamWrapper>::ReadArchive(InStream& stream)
-    : archive_(stream), track_table_(), registry_()
+template <class InStream, class StreamWrapper, class Registry>
+ReadArchive<InStream, StreamWrapper, Registry>::ReadArchive(InStream& stream)
+    : archive_{stream}, track_table_(), registry_()
 {
 }
 
-template <class InStream, class Registry, class StreamWrapper>
+template <class InStream, class StreamWrapper, class Registry>
 template <typename T>
-auto ReadArchive<InStream, Registry, StreamWrapper>::operator>> (
+auto ReadArchive<InStream, StreamWrapper, Registry>::operator>> (
     T& data) -> ReadArchive&
 {
     return (*this) & data;
 }
 
-template <class InStream, class Registry, class StreamWrapper>
+template <class InStream, class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto ReadArchive<InStream, Registry, StreamWrapper>::operator() (
+auto ReadArchive<InStream, StreamWrapper, Registry>::operator() (
     T& data, Tn&... data_n) -> ReadArchive&
 {
     (*this) & data;
@@ -132,8 +137,8 @@ auto ReadArchive<InStream, Registry, StreamWrapper>::operator() (
 }
 
 template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and meta::is_unsupported<T>()> = 0>
+          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
+                        and meta::is_unsupported<T>())>
 ReadArchive& operator& (ReadArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
@@ -143,8 +148,8 @@ ReadArchive& operator& (ReadArchive& archive, T& unsupported)
 }
 
 template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and not meta::is_registered<T>()> = 0>
+          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
+                        and not meta::is_registered<T>())>
 ReadArchive& operator& (ReadArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
@@ -162,7 +167,7 @@ ReadArchive& operator& (ReadArchive& archive, T& unregistered)
 inline namespace common
 {
 
-SERIALIZATION_LOAD_DATA(object, Access::is_save_load_class<T>())
+SERIALIZATION_LOAD_DATA(object, Access::is_load_class<T>())
 {
     Access::load(archive, object);
 
@@ -197,25 +202,26 @@ SERIALIZATION_LOAD_DATA(array, meta::is_array<T>())
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(pointer, meta::is_pod_pointer<T>())
+SERIALIZATION_LOAD_DATA(pod_pointer, meta::is_pod_pointer<T>())
 {
-    using value_type = meta::deref<T>;
+    using value_type = meta::dereference<T>;
 
-    if (pointer != nullptr)
+    if (pod_pointer != nullptr)
         throw "the read pointer must be initialized to nullptr.";
 
-    pointer = new value_type;
+    pod_pointer = new value_type;
 
-    archive & (*pointer);
+    archive & (*pod_pointer);
 
     return archive;
 }
 
 SERIALIZATION_LOAD_DATA(pointer, meta::is_pointer_to_polymorphic<T>())
 {
-    auto id = archive.registry().load_key(archive, pointer);
+    auto& registry = archive.registry();
 
-    archive.registry().load(archive, pointer, id);
+    auto id = registry.load_key(archive, pointer);
+    registry.load(archive, pointer, id);
 
     return archive;
 }

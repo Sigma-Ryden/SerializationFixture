@@ -9,6 +9,7 @@
 #include <Sifar/ApplyFunctor.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
+#include <Sifar/Detail/MetaMacro.hpp>
 
 namespace sifar
 {
@@ -17,8 +18,8 @@ namespace tracking
 {
 
 template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and not meta::is_pointer<T>()> = 0>
+          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
+                        and not meta::is_pointer<T>())>
 void track(ReadArchive& archive, T& data)
 {
     using key_type = typename ReadArchive::TrackingTable::key_type;
@@ -40,8 +41,8 @@ void track(ReadArchive& archive, T& data)
 }
 
 template <class ReadArchive, typename T,
-          meta::require<meta::is_read_archive<ReadArchive>()
-                        and meta::is_pointer<T>()> = 0>
+          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
+                        and meta::is_pointer<T>())>
 void track(ReadArchive& archive, T& pointer)
 {
     using key_type = typename ReadArchive::TrackingTable::key_type;
@@ -68,8 +69,8 @@ void track(ReadArchive& archive, T& pointer)
 }
 
 template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and not meta::is_pointer<T>()> = 0>
+          SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>()
+                        and not meta::is_pointer<T>())>
 void track(WriteArchive& archive, T& data)
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
@@ -90,8 +91,8 @@ void track(WriteArchive& archive, T& data)
 }
 
 template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and meta::is_pointer<T>()> = 0>
+          SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>()
+                        and meta::is_pointer<T>())>
 void track(WriteArchive& archive, T& pointer)
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
@@ -128,7 +129,7 @@ public:
     TrackFunctor(T& parameter) noexcept : parameter_(parameter) {}
 
     template <typename Archive,
-              meta::require<meta::is_archive<Archive>()> = 0>
+              SIFAR_REQUIRE(meta::is_archive<Archive>())>
     void operator() (Archive& archive)
     {
         ::sifar::tracking::track(archive, parameter_);

@@ -1,4 +1,4 @@
-#include <iostream> // cin, cout
+#include <iostream> // cout
 #include <fstream> // ifstream, ofstream
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
@@ -6,78 +6,76 @@
 using sifar::reader;
 using sifar::writer;
 
-using sifar::base;
 using sifar::virtual_base;
+using sifar::hierarchy;
+using sifar::native_base;
 
 using sifar::utility::pure;
 
 using namespace sifar::common; // support of common types
 using namespace sifar::tracking; // support of data tracking
 
-#define println(...) \
-    std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
+#define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
-struct B
+// Needed for clonable and serializable of derived object
+struct B : POLYMORPHIC_IMPORT()
 {
-    int b = 0;
-    virtual ~B() = default;
+    POLYMORPHIC()
 
-    SERIALIZATION_POLYMORPHIC_KEY(0)
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & b;
-    }
+    int b = 0;
 };
+SERIALIZATION_POLYMORPHIC(B)
+{
+    archive & self.b;
+}
 
 struct C : virtual B
 {
+    SERIALIZABLE_POLYMORPHIC()
+
     int c = 1;
-    SERIALIZATION_POLYMORPHIC_KEY(1)
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & virtual_base<B>(this);
-        ar & c;
-    }
 };
+POLYMORPHIC_EXPORT(C)
+SERIALIZATION_SAVE_LOAD(C)
+{
+    archive & virtual_base<B>(self)
+            & self.c;
+}
 
 struct D : virtual B
 {
+    POLYMORPHIC() // same as SERIALIZABLE_POLYMORPHIC()
+
     int d = 22;
-    SERIALIZATION_POLYMORPHIC_KEY(2)
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & virtual_base<B>(this)
-           & d;
-    }
 };
+
+SERIALIZATION_POLYMORPHIC(D) // same as: POLYMORPHIC_EXPORT(D) SERIALIZATION_SAVE_LOAD(D) {...}
+{
+    archive & native_base<B>(self) // expand to => virtual_base<B>
+            & self.d;
+}
 
 struct X : C, D
 {
+    POLYMORPHIC()
+
     int x = 333;
-    SERIALIZATION_POLYMORPHIC_KEY(3)
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & virtual_base<B>(this)
-           & base<C>(this)
-           & base<D>(this)
-           & x;
-    }
 };
 
-SERIALIZATION_EXPORT_KEY(B)
-SERIALIZATION_EXPORT_KEY(C)
-SERIALIZATION_EXPORT_KEY(D)
-SERIALIZATION_EXPORT_KEY(X)
+SERIALIZATION_POLYMORPHIC(X)
+{
+    archive & hierarchy<B, C, D>(self) // expand to => virtual_base<B>, base<C>, base<D>
+            & self.x;
+}
 
 void test_tracking_virtual()
 {
-    using Registry = sifar::InnerRegistry<B, C, D, X>;
     {
         std::ofstream file("test_tracking_virtual.bin", std::ios::binary);
 
         if (not file.is_open()) return;
 
-        auto ar = writer<Registry>(file);
+        auto ar = writer(file);
 
         X* x = new X;
         D* d = x;
@@ -97,11 +95,11 @@ void test_tracking_virtual()
         println(pure(b));
 
         try
-        {
-            ar & track(x)
-               & track(d)
+        { // special shuffle
+            ar & track(d)
+               & track(b)
                & track(c)
-               & track(b);
+               & track(x);
         }
         catch (const char* e)
         {
@@ -123,10 +121,10 @@ void test_tracking_virtual()
         B* b = nullptr;
 
         try
-        {
-            ar & track(x)
+        { // special shuffle
+            ar & track(c)
                & track(d)
-               & track(c)
+               & track(x)
                & track(b);
         }
         catch (const char* e)

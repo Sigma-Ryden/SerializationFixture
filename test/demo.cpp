@@ -7,7 +7,6 @@
 #include <Sifar/Support/array.hpp>
 
 using sifar::WriteArchive;
-using sifar::ExternRegistry;
 
 using namespace sifar::library;
 
@@ -29,15 +28,17 @@ public:
     }
 };
 
-using FormatWriteArchive = WriteArchive<std::ostream, ExternRegistry, FormatOutStream>;
+using FormatWriteArchive = WriteArchive<std::ostream, FormatOutStream>;
 
 enum Axis { X, Y, Z };
 enum class Color { Red, Green, Blue, Alpha };
 
 class B
 {
-    // is the same: friend class serialization::Access
-    SERIALIZATION_ACCESS()
+    // is the same:
+    // friend class sifar_serializable;
+    // friend class sifar::Access;
+    SERIALIZABLE()
 
 private:
     float pi_;
@@ -51,18 +52,6 @@ public:
 
     ~B() { delete data_; }
 
-private:
-    SERIALIZATION_SAVE(ar)
-    {
-        ar & pi_ & data_;
-    }
-
-    SERIALIZATION_LOAD(ar)
-    {
-        ar & pi_;
-        ar & data_;
-    }
-
 public:
     friend std::ostream& operator<< (std::ostream& out, const B& obj)
     {
@@ -70,10 +59,20 @@ public:
     }
 };
 
+SERIALIZATION_SAVE(B)
+{
+    archive & self.pi_ & self.data_;
+}
+
+SERIALIZATION_LOAD(B)
+{
+    archive & self.pi_;
+    archive & self.data_;
+}
+
 class A
 {
-    // not required for public save/load function
-    //SERIALIZATION_ACCESS()
+    SERIALIZABLE()
 
 private:
     int x, y;
@@ -83,28 +82,28 @@ public:
     A(int x = 0, int y = 0, float value = 0.f) : x(x), y(y), b(value) {}
 
 public:
-    SERIALIZATION_UNIFIED(ar)
-    {
-        ar & x & y & b;
-    }
-
     friend std::ostream& operator<< (std::ostream& out, const A& obj)
     {
         return out << obj.x << ' ' << obj.y << ' ' << obj.b;
     }
 };
 
+SERIALIZATION_SAVE_LOAD(A)
+{
+    archive & self.x & self.y & self.b;
+}
+
 // FormatWriteArchive overloading operator& for class B
-auto operator& (FormatWriteArchive& archive, B& t) -> decltype(archive)
+auto operator& (FormatWriteArchive& ar, B& b) -> decltype(ar)
 {
     std::cout << "overloading operator& for B";
 
-    return archive;
+    return ar;
 }
 
 void test_common()
 {
-    FormatWriteArchive ar(std::cout);
+    auto ar = sifar::writer<FormatOutStream>(std::cout);
 
     int number = 123;
     int* pointer = &number;

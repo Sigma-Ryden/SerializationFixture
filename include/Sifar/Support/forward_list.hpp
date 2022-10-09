@@ -55,6 +55,6 @@ SERIALIZATION_LOAD_DATA(forward_list, meta::is_std_forward_list<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_forward_list<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_forward_list<T>::value)
 
 #endif // SIFAR_SUPPORT_FORWARD_LIST_HPP

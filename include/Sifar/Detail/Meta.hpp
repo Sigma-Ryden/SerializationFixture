@@ -8,8 +8,6 @@
 
 #include <Sifar/SerializatonBase.hpp>
 
-#include <Sifar/Detail/MacroScope.hpp>
-
 namespace sifar
 {
 
@@ -57,7 +55,7 @@ struct deref_impl<T, void_t<decltype(*std::declval<T>())>>
 } // namespace detail
 
 template <typename It>
-using deref = typename detail::deref_impl<It>::type;
+using dereference = typename detail::deref_impl<It>::type;
 
 template <bool condition, typename if_true, typename if_false>
 using if_ = typename std::conditional<condition, if_true, if_false>::type;
@@ -96,11 +94,11 @@ namespace detail
 {
 
 template <typename From, typename To, typename = void>
-struct can_static_cast : std::false_type {};
+struct can_static_cast_impl : std::false_type {};
 
 template <typename From, typename To>
-struct can_static_cast<From, To,
-    void_t<decltype( static_cast<To>(std::declval<From>()) )>>
+struct can_static_cast_impl<From, To,
+    void_t<decltype( static_cast<To*>(std::declval<From*>()) )>>
 : std::true_type {};
 
 } // namespace detail
@@ -138,6 +136,26 @@ struct remove_ptr_n_impl<T*, N>
 
 template <typename T, std::size_t N = 1>
 using remove_ptr_n = typename detail::remove_ptr_n_impl<T, N>::type;
+
+namespace detail
+{
+
+template <typename T, std::size_t N>
+struct pointer_impl
+{
+    using type = typename pointer_impl<T, N - 1>::type*;
+};
+
+template <typename T>
+struct pointer_impl<T, 0>
+{
+    using type = T;
+};
+
+} // namespace detail
+
+template <typename T, std::size_t N>
+using pointer = typename detail::pointer_impl<T, N>::type;
 
 namespace detail
 {
@@ -246,7 +264,13 @@ template <typename T> constexpr bool is_returnable() noexcept
     return decltype(detail::is_returnable_impl<T>(0))::value;
 }
 
-template <typename T> constexpr bool to_false() noexcept { return false; }
+template <typename... Tn> constexpr bool to_false() noexcept { return false; }
+
+
+template <typename From, typename To> constexpr bool can_static_cast() noexcept
+{
+    return detail::can_static_cast_impl<From, To>::value;
+}
 
 template <class Base, class Derived> constexpr bool is_base_of() noexcept
 {
@@ -255,8 +279,13 @@ template <class Base, class Derived> constexpr bool is_base_of() noexcept
 
 template <class Base, class Derived> constexpr bool is_virtual_base_of() noexcept
 {
-    return is_base_of<Base, Derived>()
-       and not detail::can_static_cast<Base*, Derived*>::value;
+    return not can_static_cast<Base, Derived>()
+           and is_base_of<Base, Derived>();
+}
+
+template <class Derived, class Base, class... Base_n> constexpr bool is_derived_of() noexcept
+{
+    return meta::all<std::is_base_of<Base, Derived>, std::is_base_of<Base_n, Derived>...>();
 }
 
 template <typename T> constexpr bool is_abstract() noexcept
@@ -306,12 +335,12 @@ template <typename T> constexpr bool is_pointer() noexcept
 
 template <typename T> constexpr bool is_pointer_to_abstract() noexcept
 {
-    return is_pointer<T>() and std::is_abstract<meta::deref<T>>::value;
+    return is_pointer<T>() and std::is_abstract<meta::dereference<T>>::value;
 }
 
 template <typename T> constexpr bool is_pointer_to_polymorphic() noexcept
 {
-    return is_pointer<T>() and std::is_polymorphic<meta::deref<T>>::value;
+    return is_pointer<T>() and std::is_polymorphic<meta::dereference<T>>::value;
 }
 
 template <typename T> constexpr bool is_void_pointer() noexcept
@@ -352,7 +381,5 @@ template <typename T> constexpr bool is_unsupported() noexcept
 } // namespace meta
 
 } // namespace sifar
-
-#include <Sifar/Detail/MacroUnscope.hpp>
 
 #endif // SIFAR_DETAIL_META_HPP

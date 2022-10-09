@@ -35,7 +35,11 @@ Container& underlying(std::queue<Type, Container>& queue)
 {
     struct queue_inner : public Base
     {
-        static Container& underlying(Base& base) { return base.*(&queue_inner::c); }
+        static Container& underlying(Base& base)
+        {
+            auto underlying_container = &queue_inner::c;
+            return base.*underlying_container;
+        }
     };
 
     return queue_inner::underlying(queue);
@@ -46,7 +50,7 @@ Container& underlying(std::queue<Type, Container>& queue)
 namespace library
 {
 
-SERIALIZATION_UNIFIED_DATA(queue, meta::is_std_queue<T>::value)
+SERIALIZATION_SAVE_LOAD_DATA(queue, meta::is_std_queue<T>::value)
 {
     archive & detail::underlying(queue);
 
@@ -57,6 +61,6 @@ SERIALIZATION_UNIFIED_DATA(queue, meta::is_std_queue<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_queue<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_queue<T>::value)
 
 #endif // SIFAR_SUPPORT_QUEUE_HPP

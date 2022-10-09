@@ -70,7 +70,7 @@ SERIALIZATION_LOAD_DATA(set, meta::is_std_set<T>::value or
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_set<T>::value)
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_multiset<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_set<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_multiset<T>::value)
 
 #endif // SIFAR_SUPPORT_SET_HPP

@@ -4,16 +4,51 @@
 
 #include <memory> // addresspf
 
+#include <Sifar/Serializable.hpp>
+
 #include <Sifar/ApplyFunctor.hpp>
+
 #include <Sifar/Detail/Meta.hpp>
+#include <Sifar/Detail/MetaMacro.hpp>
 
-#include <Sifar/Detail/MacroScope.hpp>
-
-#define SERIALIZATION_ACCESS(...)                                                                       \
+#define SERIALIZABLE(...)                                                                               \
+    friend class ::SifarSerializable;                                                                   \
     friend class ::sifar::Access;
+
+#define _SIFAR_HAS_FUNCTION_HELPER(name)                                                                \
+    template <typename C, typename = void>                                                              \
+    struct has_##name : std::false_type {};								\
+    template <typename C>                                                                               \
+    struct has_##name<C, ::sifar::meta::void_t<decltype(&C::name)>>                                     \
+        : std::true_type {}
+
+#define _SIFAR_APPLY_FUNCTOR_GENERIC(class_name, function_name)                                         \
+    template <typename Derived, typename Base>                                                          \
+    class class_name : public ApplyFunctor {                                                            \
+    private:                                                                                            \
+        Derived& object_;                                                                               \
+    public:                                                                                             \
+        class_name(Derived& object) : object_(object) {}                                                \
+        template <typename Archive, SIFAR_REQUIRE(meta::is_archive<Archive>())>                         \
+        void operator() (Archive& archive)                                                              \
+        { function_name<Base>(archive, object_); }                                                      \
+    };
+
+#define _SIFAR_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(class_name, function_name)                        \
+    template <typename Base, typename Derived,                                                          \
+              SIFAR_REQUIRE(meta::is_base_of<Base, Derived>())>                                         \
+    apply::class_name<Derived, Base> function_name(Derived& object)                                     \
+    { return { object }; }                                                                              \
 
 namespace sifar
 {
+
+namespace core
+{
+
+class ArchiveBase;
+
+} // namespace core
 
 namespace detail
 {
@@ -24,20 +59,47 @@ class RegistryBase;
 
 class Access
 {
-    friend class ::sifar::detail::RegistryBase; // Access to `cast` and `runtime_cast`
+    using Serializable = SifarSerializable;
 
 private:
-    SIFAR_HAS_FUNCTION_TPL_HELPER(save);
-    SIFAR_HAS_FUNCTION_TPL_HELPER(load);
+    _SIFAR_HAS_FUNCTION_HELPER(save);
+    _SIFAR_HAS_FUNCTION_HELPER(load);
 
-    SIFAR_HAS_FUNCTION_HELPER(static_key);
-    SIFAR_HAS_FUNCTION_HELPER(dynamic_key);
+    _SIFAR_HAS_FUNCTION_HELPER(static_key);
+    _SIFAR_HAS_FUNCTION_HELPER(dynamic_key);
 
 public:
     template <class T>
+    static constexpr bool is_save_class() noexcept
+    {
+        return meta::is_same_all<typename Serializable::Save<T>::type, T>();
+    }
+
+    template <class T>
+    static constexpr bool is_load_class() noexcept
+    {
+        return meta::is_same_all<typename Serializable::Load<T>::type, T>();
+    }
+
+    template <class T>
     static constexpr bool is_save_load_class() noexcept
     {
-        return has_save<T>::value and has_load<T>::value;
+        using save_type = typename Serializable::Save<T>::type;
+        using load_type = typename Serializable::Load<T>::type;
+
+        return meta::is_same_all<save_type, load_type, T>();
+    }
+
+    template <class T>
+    static constexpr bool is_dynamic_save_class() noexcept
+    {
+        return has_save<T>::value;
+    }
+
+    template <class T>
+    static constexpr bool is_dynamic_load_class() noexcept
+    {
+        return has_load<T>::value;
     }
 
     template <class T>
@@ -64,28 +126,62 @@ public:
 
 public:
     template <class Archive, class T,
-              meta::require<is_save_load_class<T>()> = 0>
+              SIFAR_REQUIRE(not meta::is_write_archive<Archive>() or
+                            not is_save_class<T>())>
     static void save(Archive& archive, T& object)
     {
-        object.save(archive);
+        throw "The 'T' type cannot be saved.";
     }
 
     template <class Archive, class T,
-              meta::require<is_save_load_class<T>()> = 0>
+              SIFAR_REQUIRE(meta::is_write_archive<Archive>() and
+                            is_save_class<T>())>
+    static void save(Archive& archive, T& object)
+    {
+        Serializable::Save<T>::invoke(archive, object);
+    }
+
+    template <class Archive, class T,
+              SIFAR_REQUIRE(not meta::is_read_archive<Archive>() or
+                            not is_load_class<T>())>
     static void load(Archive& archive, T& object)
     {
-        object.load(archive);
+        throw "The 'T' type cannot be loaded.";
+    }
+
+    template <class Archive, class T,
+              SIFAR_REQUIRE(meta::is_read_archive<Archive>() and
+                            is_load_class<T>())>
+    static void load(Archive& archive, T& object)
+    {
+        Serializable::Load<T>::invoke(archive, object);
+    }
+
+    template <typename Pointer, typename T = meta::dereference<Pointer>,
+              SIFAR_REQUIRE(is_dynamic_save_class<T>() and
+                            is_save_class<T>())>
+    static void dynamic_save(core::ArchiveBase& archive, Pointer& object)
+    {
+        object->save(archive);
+    }
+
+    template <typename Pointer, typename T = meta::dereference<Pointer>,
+              SIFAR_REQUIRE(is_dynamic_load_class<T>() and
+                            is_load_class<T>())>
+    static void dynamic_load(core::ArchiveBase& archive, Pointer& object)
+    {
+        object->load(archive);
     }
 
     template <class T,
-              meta::require<is_registered_class<T>()> = 0>
+              SIFAR_REQUIRE(is_registered_class<T>())>
     static auto dynamic_key(T& object) noexcept -> decltype(object.dynamic_key())
     {
         return object.dynamic_key();
     }
 
     template <class T,
-              meta::require<is_registered_class<T>()> = 0>
+              SIFAR_REQUIRE(is_registered_class<T>())>
     static constexpr auto static_key() noexcept -> decltype(T::static_key())
     {
         return T::static_key();
@@ -106,66 +202,108 @@ private:
 
 public: // not necessary, friend search applied via ADL or external declaration
     template <typename Base, class Archive, typename Derived,
-              meta::require<meta::is_base_of<Base, Derived>()> = 0>
-    friend void base(Archive& archive, Derived* pointer) noexcept
+              meta::require<meta::is_archive<Archive>() and
+                            meta::is_base_of<Base, Derived>()> = 0>
+    friend void base(Archive& archive, Derived& object) noexcept
     {
-        archive & Access::template cast<Base&>(*pointer);
+        archive & Access::template cast<Base&>(object);
     }
 };
 
 // Declaration friend function template for the Access class
 template <typename Base, class Archive, typename Derived,
-          meta::require<meta::is_base_of<Base, Derived>()>>
-void base(Archive& archive, Derived* derived) noexcept;
+          meta::require<meta::is_archive<Archive>() and
+                        meta::is_base_of<Base, Derived>()>>
+void base(Archive& archive, Derived& object) noexcept;
 
 template <typename Base, class Archive, typename Derived,
-          meta::require<meta::is_base_of<Base, Derived>()> = 0>
-void virtual_base(Archive& archive, Derived* pointer) noexcept
+          SIFAR_REQUIRE(meta::is_base_of<Base, Derived>())>
+void virtual_base(Archive& archive, Derived& object) noexcept
 {
-    if (Access::dynamic_key(*pointer) == Access::template static_key<Derived>())
-        base<Base>(archive, pointer);
+    if (Access::dynamic_key(object) == Access::template static_key<Derived>())
+        base<Base>(archive, object);
 
 #ifdef SIFAR_DEBUG
     else throw "the srializable object must serialize the virtual base object.";
 #endif
 }
 
+template <class Base, class Archive, class Derived,
+          SIFAR_REQUIRE(meta::can_static_cast<Base, Derived>() and
+                        meta::is_base_of<Base, Derived>())>
+void native_base(Archive& archive, Derived& object_with_base)
+{
+    base<Base>(archive, object_with_base);
+}
+
+template <class Base, class Archive, class Derived,
+          SIFAR_REQUIRE(not meta::can_static_cast<Base, Derived>() and
+                        meta::is_base_of<Base, Derived>())>
+void native_base(Archive& archive, Derived& object_with_virtual_base)
+{
+    virtual_base<Base>(archive, object_with_virtual_base);
+}
+
 namespace apply
 {
 
-#define SIFAR_FUNCTOR_GENERIC(class_name, function_name)                                                \
-template <typename Base, typename Derived>                                                              \
-class class_name : public ApplyFunctor {                                                                \
-private:                                                                                                \
-    Derived& derived_;                                                                                  \
-public:                                                                                                 \
-    class_name(Derived& derived) : derived_(derived) {}                                                 \
-    template <typename Archive, meta::require<meta::is_archive<Archive>()> = 0>                         \
-    void operator() (Archive& archive) {                                                                \
-        function_name<Base>(archive, std::addressof(derived_));                                         \
-    }                                                                                                   \
-};
-
-SIFAR_FUNCTOR_GENERIC(BaseFunctor, base)
-SIFAR_FUNCTOR_GENERIC(VirtualBaseFunctor, virtual_base)
-
-// clean up
-#undef SIFAR_FUNCTOR_GENERIC
+_SIFAR_APPLY_FUNCTOR_GENERIC(BaseFunctor, base)
+_SIFAR_APPLY_FUNCTOR_GENERIC(VirtualBaseFunctor, virtual_base)
+_SIFAR_APPLY_FUNCTOR_GENERIC(NativeBaseFunctor, native_base)
 
 } // namespace apply
 
-template <typename Base, typename Derived,
-          meta::require<meta::is_base_of<Base, Derived>()> = 0>
-apply::BaseFunctor<Base, Derived> base(Derived* pointer) { return { *pointer }; }
+_SIFAR_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(BaseFunctor, base)
+_SIFAR_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(VirtualBaseFunctor, virtual_base)
+_SIFAR_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(NativeBaseFunctor, native_base)
 
-template <typename Base, typename Derived,
-          meta::require<meta::is_base_of<Base, Derived>()> = 0>
-apply::VirtualBaseFunctor<Base, Derived> virtual_base(Derived* pointer) { return { *pointer }; }
+// Variadic native_base function
+template <class Archive, class Derived>
+void hierarchy(Archive& archive, Derived& object) { /*pass*/ }
+
+template <class Base, class... Base_n, class Archive, class Derived,
+          SIFAR_REQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
+void hierarchy(Archive& archive, Derived& object)
+{
+    native_base<Base>(archive, object);
+    hierarchy<Base_n...>(archive, object);
+}
+
+namespace apply
+{
+
+template <typename Derived, typename Base, typename... Base_n>
+class HierarchyFunctor : public ApplyFunctor
+{
+private:
+    Derived& object_;
+
+public:
+    HierarchyFunctor(Derived& object) : object_(object) {}
+
+    template <typename Archive, SIFAR_REQUIRE(meta::is_archive<Archive>())>
+    void operator() (Archive& archive)
+    {
+        hierarchy<Base, Base_n...>(archive, object_);
+    }
+};
+
+} // namespace apply
+
+template <class Base, class... Base_n, class Derived,
+          SIFAR_REQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
+apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
+{
+    return { object };
+}
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(Access::is_save_load_class<T>())
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(Access::is_save_class<T>() or Access::is_load_class<T>())
 
-#include <Sifar/Detail/MacroUnscope.hpp>
+// clean up
+#undef _SIFAR_HAS_FUNCTION_HELPER
+#undef _SIFAR_APPLY_FUNCTOR_GENERIC
+#undef _SIFAR_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC
 
 #endif // SIFAR_ACCESS_HPP

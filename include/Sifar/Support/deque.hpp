@@ -53,6 +53,6 @@ SERIALIZATION_LOAD_DATA(deque, meta::is_std_deque<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_deque<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_deque<T>::value)
 
 #endif // SIFAR_SUPPORT_DEQUE_HPP

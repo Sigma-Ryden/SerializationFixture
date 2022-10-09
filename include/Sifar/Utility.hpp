@@ -4,12 +4,19 @@
 #include <cstdint> // int32_t, uint32_t, int64_t, uint64_t
 
 #include <Sifar/Detail/Meta.hpp>
+#include <Sifar/Detail/MetaMacro.hpp>
+
+#define _NULL_CHARACTER_FUNCTION_GENERIC(char_type, char_value)                                         \
+    template <typename T, SIFAR_REQUIRE(std::is_same<meta::remove_cv<T>, char_type>::value)>            \
+    inline constexpr char_type null_character() noexcept { return char_value; }
 
 namespace sifar
 {
 
 namespace let
 {
+using i8 = std::int8_t;
+using u8 = std::uint8_t;
 
 using i32 = std::int32_t;
 using u32 = std::uint32_t;
@@ -35,16 +42,16 @@ template <typename T> char* byte_cast(T* data) noexcept
     return reinterpret_cast<char*>(data);
 }
 
-template <typename T, meta::require<meta::is_polymorphic<T>()> = 0>
-void* pure(T* p)
+template <typename T, SIFAR_REQUIRE(not meta::is_polymorphic<T>())>
+void* pure(T* pointer)
 {
-    return dynamic_cast<void*>(p);
+    return static_cast<void*>(pointer);
 }
 
-template <typename T, meta::require<not meta::is_polymorphic<T>()> = 0>
-void* pure(T* p)
+template <typename T, SIFAR_REQUIRE(meta::is_polymorphic<T>())>
+void* pure(T* pointer_to_polymorphic)
 {
-    return static_cast<void*>(p);
+    return dynamic_cast<void*>(pointer_to_polymorphic);
 }
 
 template <class InIt, class OutIt>
@@ -61,19 +68,12 @@ OutIt copy(InIt first, InIt last, OutIt dst_first) noexcept
     return dst_first;
 }
 
-template <typename T, meta::require<std::is_same<meta::remove_cv<T>, char>::value> = 0>
-inline constexpr char null_character() noexcept { return '\0'; }
+_NULL_CHARACTER_FUNCTION_GENERIC(char, '\0')
+_NULL_CHARACTER_FUNCTION_GENERIC(wchar_t, L'\0')
+_NULL_CHARACTER_FUNCTION_GENERIC(char16_t, u'\0')
+_NULL_CHARACTER_FUNCTION_GENERIC(char32_t, U'\0')
 
-template <typename T, meta::require<std::is_same<meta::remove_cv<T>, wchar_t>::value> = 0>
-inline constexpr wchar_t null_character() noexcept { return L'\0'; }
-
-template <typename T, meta::require<std::is_same<meta::remove_cv<T>, char16_t>::value> = 0>
-inline constexpr char16_t null_character() noexcept { return u'\0'; }
-
-template <typename T, meta::require<std::is_same<meta::remove_cv<T>, char32_t>::value> = 0>
-inline constexpr char32_t null_character() noexcept { return U'\0'; }
-
-template <typename CharType, meta::require<meta::is_character<CharType>()> = 0>
+template <typename CharType, SIFAR_REQUIRE(meta::is_character<CharType>())>
 std::size_t size(const CharType* str) noexcept
 {
     std::size_t count = 0;
@@ -85,5 +85,8 @@ std::size_t size(const CharType* str) noexcept
 } // namespace utility
 
 } // namespace sifar
+
+// clean up
+#undef _NULL_CHARACTER_FUNCTION_GENERIC
 
 #endif // SIFAR_UTILITY_HPP

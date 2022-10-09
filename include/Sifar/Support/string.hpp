@@ -68,6 +68,6 @@ SERIALIZATION_LOAD_DATA(string, meta::is_std_basic_string<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_TYPE_REGISTRY_IF(meta::is_std_basic_string<T>::value)
+SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_basic_string<T>::value)
 
 #endif // SIFAR_SUPPORT_STRING_HPP
