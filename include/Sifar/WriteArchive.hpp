@@ -58,7 +58,7 @@ template <class OutStream,
           class Registry = dynamic::ExternRegistry>
 class WriteArchive : public core::ArchiveBase
 {
-    _SERIALIZATION_ARCHIVE(WriteArchive)
+    SERIALIZATION_ARCHIVE(WriteArchive)
 
 public:
     using TrackingTable = std::unordered_map<std::uintptr_t, bool>;

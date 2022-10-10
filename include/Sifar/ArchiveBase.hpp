@@ -5,7 +5,7 @@
 
 #include <Sifar/Utility.hpp>
 
-#define _SERIALIZATION_ARCHIVE(...)                                                                     \
+#define SERIALIZATION_ARCHIVE(...)                                                                      \
     public:                                                                                             \
     virtual auto trait() const noexcept -> key_type override                                            \
     { return ::sifar::core::ArchiveTraitKey<__VA_ARGS__>::key; }

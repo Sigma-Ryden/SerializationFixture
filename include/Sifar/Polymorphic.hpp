@@ -56,7 +56,7 @@
     _FACTORY_TABLE_UPDATER_TEMPLATE_IMPLEMENTATION(__VA_ARGS__)                                         \
     _DYNAMIC_SAVE_LOAD_TEMPLATE_IMPLEMENTATION(__VA_ARGS__)
 
-// Special serialization case
+// Special serialization case (export only for translation unit scope)
 #define SERIALIZATION_POLYMORPHIC(...)                                                                  \
     POLYMORPHIC_EXPORT(__VA_ARGS__)                                                                     \
     SERIALIZATION_SAVE_LOAD(__VA_ARGS__)
