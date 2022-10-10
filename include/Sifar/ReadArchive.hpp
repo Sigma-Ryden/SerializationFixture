@@ -57,7 +57,7 @@ template <class InStream,
           class Registry = dynamic::ExternRegistry>
 class ReadArchive : public core::ArchiveBase
 {
-    _SERIALIZATION_ARCHIVE()
+    _SERIALIZATION_ARCHIVE(ReadArchive)
 
 private:
     struct TrackingData

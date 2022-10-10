@@ -31,8 +31,7 @@
 #include <Sifar/Ref.hpp>
 
 #define SERIALIZATION_ARCHIVE_EXPORT(archive_key, archive_type, ...)                                    \
-    _SERIALIZATION_ARCHIVE_EXPORT_DYNAMIC_TRAIT(archive_key, archive_type, __VA_ARGS__)                 \
-    _SERIALIZATION_ARCHIVE_EXPORT_STATIC_TRAIT(archive_key, archive_type, __VA_ARGS__)                  \
+    _SERIALIZATION_ARCHIVE_EXPORT_TRAIT_KEY(archive_key, archive_type, __VA_ARGS__)                     \
     _SERIALIZATION_ARCHIVE_EXPORT_TYPE_TRAIT(archive_type, __VA_ARGS__)
 
 SERIALIZATION_ARCHIVE_EXPORT(0, ReadArchive, std::ifstream)

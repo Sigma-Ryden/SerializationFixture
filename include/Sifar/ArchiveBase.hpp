@@ -8,15 +8,9 @@
 #define _SERIALIZATION_ARCHIVE(...)                                                                     \
     public:                                                                                             \
     virtual auto trait() const noexcept -> key_type override                                            \
-    { return ::sifar::core::ArchiveCore::max_key; }
+    { return ::sifar::core::ArchiveTraitKey<__VA_ARGS__>::key; }
 
-#define _SERIALIZATION_ARCHIVE_EXPORT_DYNAMIC_TRAIT(archive_key, archive_type, ...)                     \
-    namespace sifar {                                                                                   \
-        template <> auto archive_type<__VA_ARGS__>::trait() const noexcept -> key_type                  \
-        { return archive_key; }                                                                         \
-    }
-
-#define _SERIALIZATION_ARCHIVE_EXPORT_STATIC_TRAIT(archive_key, archive_type, ...)                      \
+#define _SERIALIZATION_ARCHIVE_EXPORT_TRAIT_KEY(archive_key, archive_type, ...)                         \
     namespace sifar { namespace core {                                                                  \
         template <> struct ArchiveTraitKey<archive_type<__VA_ARGS__>>                                   \
         { static constexpr let::u8 key = archive_key; };                                                \
