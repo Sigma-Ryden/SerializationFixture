@@ -87,21 +87,7 @@ POLYMORPHIC_EXPORT(Derived)
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
-//
-#include <Sifar/ClassA.hpp>
-#include <Sifar/ClassB.hpp>
-int main()
-{
-    {
-        std::ofstream file;
-        auto ar = writer(file);
-        ClassA a;
-        ClassB b;
-        ar & a & b;
-    }
-}
-//
-/*
+
 void test_polymorphic()
 {
     using Registry = sifar::dynamic::ExternRegistry;
@@ -173,4 +159,3 @@ int main()
 
     return 0;
 }
-*/
