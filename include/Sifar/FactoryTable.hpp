@@ -6,6 +6,7 @@
 #include <unordered_map> // unordered_map
 
 #include <Sifar/Utility.hpp>
+#include <Sifar/Hash.hpp>
 
 #define _FACTORY_TABLE_UPDATER_DECLARATION(...)                                                         \
     static ::sifar::dynamic::FactoryTabelUpdater updater;
@@ -34,7 +35,7 @@
 #define _CLONEABLE_TEMPLATE_DECLARATION(...)                                                            \
     _CLONEABLE_DECLARATION_WITHOUT_KEY()                                                                \
     static constexpr key_type static_key() noexcept                                                     \
-    { return ::sifar::static_hash<key_type>(#__VA_ARGS__); }                                            \
+    { return SIFAR_STATIC_HASH(#__VA_ARGS__); }                                                         \
     virtual key_type dynamic_key() const noexcept override                                              \
     { return static_key(); }                                                                            \
     public:
@@ -45,7 +46,7 @@
     prefix auto __VA_ARGS__::cast(void* address) const -> clone_type*                                   \
     { return static_cast<__VA_ARGS__*>(address); }                                                      \
     prefix constexpr auto __VA_ARGS__::static_key() noexcept -> key_type                                \
-    { return ::sifar::static_hash<key_type>(#__VA_ARGS__); }                                            \
+    { return SIFAR_STATIC_HASH(#__VA_ARGS__); }                                                         \
     prefix auto __VA_ARGS__::dynamic_key() const noexcept -> key_type                                   \
     { return static_key(); }                                                                            \
 

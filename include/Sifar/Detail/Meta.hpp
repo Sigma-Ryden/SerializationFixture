@@ -285,7 +285,8 @@ template <class Base, class Derived> constexpr bool is_virtual_base_of() noexcep
 
 template <class Derived, class Base, class... Base_n> constexpr bool is_derived_of() noexcept
 {
-    return meta::all<std::is_base_of<Base, Derived>, std::is_base_of<Base_n, Derived>...>();
+    return meta::all<std::is_base_of<Base, Derived>,
+                     std::is_base_of<Base_n, Derived>...>();
 }
 
 template <typename T> constexpr bool is_abstract() noexcept

@@ -48,8 +48,11 @@ public:
 template <typename T>
 utility::Ref<T> ref() noexcept { return {}; }
 
-template <typename To, typename From = To>
+template <typename To, typename From>
 utility::Ref<To> ref(From& data) noexcept { return { data }; }
+
+template <typename T>
+utility::Ref<T> ref(T& data) noexcept { return { data }; }
 
 namespace meta
 {

@@ -5,6 +5,10 @@
 
 #include <Sifar/Detail/Meta.hpp>
 
+#ifndef SIFAR_STATIC_HASH
+    #define SIFAR_STATIC_HASH(string) ::sifar::static_hash<key_type>((string))
+#endif
+
 namespace sifar
 {
 

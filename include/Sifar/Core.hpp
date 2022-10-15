@@ -1,7 +1,7 @@
 #ifndef SIFAR_CORE_HPP
 #define SIFAR_CORE_HPP
 
-#ifndef SIFAR_MACRO_DISABLE
+#ifndef SIFAR_SMART_DISABLE
     #define SIFAR_SMART // Use additional macro defs
 #endif // SIFAR_MACRO_DISABLE
 
