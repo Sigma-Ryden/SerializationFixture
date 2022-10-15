@@ -94,7 +94,7 @@ void test_object_serialization()
 
         Boy obj;
 
-        std::string hi = "Hello!";
+        std::string hi;
         char bye[10];
 
         ar & obj;
