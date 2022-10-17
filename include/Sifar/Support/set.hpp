@@ -29,7 +29,7 @@ struct is_std_multiset<std::multiset<Key, Compare, Alloc>> : std::true_type {};
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_DATA(set, meta::is_std_set<T>::value or
@@ -66,7 +66,7 @@ SERIALIZATION_LOAD_DATA(set, meta::is_std_set<T>::value or
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

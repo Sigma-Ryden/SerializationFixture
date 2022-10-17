@@ -25,7 +25,7 @@ struct is_std_array<std::array<T, N>> : std::true_type {};
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_LOAD_DATA(array, meta::is_std_array<T>::value)
@@ -34,7 +34,7 @@ SERIALIZATION_SAVE_LOAD_DATA(array, meta::is_std_array<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

@@ -34,7 +34,7 @@ void expand_impl(Archive& archive, Tuple& tuple, meta::index_sequence<I...>)
 
 } // namespace detail
 
-namespace library
+inline namespace library
 {
 
 template <class Archive, class T,
@@ -53,7 +53,7 @@ SERIALIZATION_SAVE_LOAD_DATA(tuple, meta::is_std_tuple<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

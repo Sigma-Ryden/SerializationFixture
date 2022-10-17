@@ -23,7 +23,7 @@ struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_LOAD_DATA(pair, meta::is_std_pair<T>::value)
@@ -33,7 +33,7 @@ SERIALIZATION_SAVE_LOAD_DATA(pair, meta::is_std_pair<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

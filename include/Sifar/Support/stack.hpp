@@ -47,7 +47,7 @@ Container& underlying(std::stack<Type, Container>& stack)
 
 } // namespace detail
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_LOAD_DATA(stack, meta::is_std_stack<T>::value)
@@ -57,7 +57,7 @@ SERIALIZATION_SAVE_LOAD_DATA(stack, meta::is_std_stack<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

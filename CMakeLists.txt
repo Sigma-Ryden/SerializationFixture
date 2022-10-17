@@ -14,7 +14,7 @@ set(SIFAR
 
     include/Sifar/Support/vector.hpp
     include/Sifar/Support/array.hpp
-	include/Sifar/Support/string.hpp
+    include/Sifar/Support/string.hpp
     include/Sifar/Support/pair.hpp
     include/Sifar/Support/tuple.hpp
     include/Sifar/Support/list.hpp
@@ -54,7 +54,7 @@ set(SIFAR
 )
 
 add_executable(${PROJECT_NAME}
-	test/polymorphic.cpp
+   test/polymorphic.cpp
    # test/virtual_base.cpp
    # test/demo.cpp
    # test/simple.cpp

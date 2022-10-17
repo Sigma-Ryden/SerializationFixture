@@ -15,7 +15,7 @@
     friend class ::SifarSerializable;                                                                   \
     friend class ::sifar::Access;
 
-#define _SIFAR_HAS_FUNCTION_HELPER(name)                                                                \
+#define _SIFAR_HAS_PROPERTY_HELPER(name)                                                                \
     template <typename C, typename = void>                                                              \
     struct has_##name : std::false_type {};								\
     template <typename C>                                                                               \
@@ -62,32 +62,31 @@ class Access
     using Serializable = SifarSerializable;
 
 private:
-    _SIFAR_HAS_FUNCTION_HELPER(save);
-    _SIFAR_HAS_FUNCTION_HELPER(load);
+    _SIFAR_HAS_PROPERTY_HELPER(save);
+    _SIFAR_HAS_PROPERTY_HELPER(load);
 
-    _SIFAR_HAS_FUNCTION_HELPER(static_key);
-    _SIFAR_HAS_FUNCTION_HELPER(dynamic_key);
+    _SIFAR_HAS_PROPERTY_HELPER(static_key);
+    _SIFAR_HAS_PROPERTY_HELPER(dynamic_key);
+
+    _SIFAR_HAS_PROPERTY_HELPER(pure);
 
 public:
     template <class T>
     static constexpr bool is_save_class() noexcept
     {
-        return meta::is_same_all<typename Serializable::Save<T>::type, T>();
+        return not has_pure<Serializable::Save<T>>::value;
     }
 
     template <class T>
     static constexpr bool is_load_class() noexcept
     {
-        return meta::is_same_all<typename Serializable::Load<T>::type, T>();
+        return not has_pure<Serializable::Load<T>>::value;
     }
 
     template <class T>
     static constexpr bool is_save_load_class() noexcept
     {
-        using save_type = typename Serializable::Save<T>::type;
-        using load_type = typename Serializable::Load<T>::type;
-
-        return meta::is_same_all<save_type, load_type, T>();
+        return is_save_class<T>() and is_load_class<T>();
     }
 
     template <class T>
@@ -302,7 +301,7 @@ apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
 SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(Access::is_save_class<T>() or Access::is_load_class<T>())
 
 // clean up
-#undef _SIFAR_HAS_FUNCTION_HELPER
+#undef _SIFAR_HAS_PROPERTY_HELPER
 #undef _SIFAR_APPLY_FUNCTOR_GENERIC
 #undef _SIFAR_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC
 

@@ -47,7 +47,7 @@ Container& underlying(std::queue<Type, Container>& queue)
 
 } // namespace detail
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_LOAD_DATA(queue, meta::is_std_queue<T>::value)
@@ -57,7 +57,7 @@ SERIALIZATION_SAVE_LOAD_DATA(queue, meta::is_std_queue<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

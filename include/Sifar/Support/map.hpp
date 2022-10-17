@@ -30,7 +30,7 @@ struct is_std_multimap<std::multimap<Key, Type, Compare, Alloc>> : std::true_typ
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_DATA(map, meta::is_std_map<T>::value or
@@ -67,7 +67,7 @@ SERIALIZATION_LOAD_DATA(map, meta::is_std_map<T>::value or
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

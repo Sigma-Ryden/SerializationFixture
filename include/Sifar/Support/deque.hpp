@@ -22,7 +22,7 @@ struct is_std_deque<std::deque<T, Alloc>> : std::true_type {};
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_DATA(deque, meta::is_std_deque<T>::value)
@@ -49,7 +49,7 @@ SERIALIZATION_LOAD_DATA(deque, meta::is_std_deque<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

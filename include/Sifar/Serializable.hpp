@@ -7,27 +7,25 @@
 #define _SERIALIZATION_DECLARATION_IF(serialization_type, ...)                                          \
     template <typename T>                                                                               \
     struct SifarSerializable::serialization_type<T, SIFAR_WHEN(__VA_ARGS__)> {                          \
-        using type = T;                                                                                 \
-        template <class Archive> static void call(Archive& archive, type& self);                        \
+        template <class Archive> static void call(Archive& archive, T& self);                           \
     };
 
 #define _SERIALIZATION_DECLARATION(serialization_type, ...)                                             \
     template <>                                                                                         \
     struct SifarSerializable::serialization_type<__VA_ARGS__, void> {                                   \
-        using type = __VA_ARGS__;                                                                       \
-        template <class Archive> static void call(Archive& archive, type& self);                        \
+        template <class Archive> static void call(Archive& archive, __VA_ARGS__& self);                 \
     };
 
 #define _SERIALIZATION_IMPLEMENTATION_IF(serialization_type, ...)                                       \
     template <typename T>                                                                               \
     template <class Archive>                                                                            \
     void SifarSerializable::serialization_type<T, SIFAR_WHEN(__VA_ARGS__)>::call(                       \
-        Archive& archive, type& self)
+        Archive& archive, T& self)
 
 #define _SERIALIZATION_IMPLEMENTATION(serialization_type, ...)                                          \
     template <class Archive>                                                                            \
     void SifarSerializable::serialization_type<__VA_ARGS__, void>::call(                                \
-        Archive& archive, type& self)
+        Archive& archive, __VA_ARGS__& self)
 
 #define SERIALIZATION_CONDITIONAL_SAVE(...)                                                             \
     _SERIALIZATION_DECLARATION_IF(Save, __VA_ARGS__)                                                    \
@@ -69,10 +67,10 @@ class SifarSerializable
 {
 public:
     template <typename T, typename enable = void>
-    struct Save { using type = void; };
+    struct Save { static constexpr bool pure = true; };
 
     template <typename T, typename enable = void>
-    struct Load { using type = void; };
+    struct Load { static constexpr bool pure = true; };
 };
 
 #endif // SIFAR_SERIALIZABLE_HPP

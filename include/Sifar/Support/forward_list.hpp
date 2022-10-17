@@ -24,7 +24,7 @@ struct is_std_forward_list<std::forward_list<T, Alloc>> : std::true_type {};
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_DATA(forward_list, meta::is_std_forward_list<T>::value)
@@ -51,7 +51,7 @@ SERIALIZATION_LOAD_DATA(forward_list, meta::is_std_forward_list<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

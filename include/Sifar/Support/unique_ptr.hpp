@@ -22,7 +22,7 @@ struct is_std_unique_ptr<std::unique_ptr<T, Deleter>> : std::true_type {};
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_DATA(unique_ptr, meta::is_std_unique_ptr<T>::value)
@@ -46,7 +46,7 @@ SERIALIZATION_LOAD_DATA(unique_ptr, meta::is_std_unique_ptr<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

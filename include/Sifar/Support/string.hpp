@@ -27,7 +27,7 @@ struct is_std_basic_string<std::basic_string<Char, Traits, Alloc>> : std::true_t
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_DATA(string, meta::is_std_basic_string<T>::value)
@@ -55,7 +55,7 @@ SERIALIZATION_LOAD_DATA(string, meta::is_std_basic_string<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 

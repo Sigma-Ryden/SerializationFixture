@@ -26,7 +26,7 @@ struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
 
 } // namespace meta
 
-namespace library
+inline namespace library
 {
 
 SERIALIZATION_SAVE_DATA(vector, meta::is_std_vector<T>::value)
@@ -50,7 +50,7 @@ SERIALIZATION_LOAD_DATA(vector, meta::is_std_vector<T>::value)
     return archive;
 }
 
-} // namespace library
+} // inline namespace library
 
 } // namespace sifar
 
