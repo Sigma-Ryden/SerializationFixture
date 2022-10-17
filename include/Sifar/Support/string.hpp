@@ -7,6 +7,7 @@
 
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>
+#include <Sifar/Compress.hpp>
 
 #include <Sifar/TypeRegistry.hpp>
 
@@ -34,14 +35,9 @@ SERIALIZATION_SAVE_DATA(string, meta::is_std_basic_string<T>::value)
     using char_type = typename T::value_type;
 
     let::u64 size = string.size();
-
     archive & size;
 
-    archive.stream().write
-    (
-        string.data(),
-        string.size() * sizeof(char_type)
-    );
+    compress::zip(archive, string);
 
     return archive;
 }
@@ -54,12 +50,7 @@ SERIALIZATION_LOAD_DATA(string, meta::is_std_basic_string<T>::value)
     archive & size;
 
     string.resize(size);
-
-    archive.stream().read
-    (
-        const_cast<char_type*>(string.data()),
-        string.size() * sizeof(char_type)
-    );
+    compress::zip(archive, string);
 
     return archive;
 }

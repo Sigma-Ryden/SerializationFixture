@@ -14,7 +14,7 @@ set(SIFAR
 
     include/Sifar/Support/vector.hpp
     include/Sifar/Support/array.hpp
-    include/Sifar/Support/string.hpp
+	include/Sifar/Support/string.hpp
     include/Sifar/Support/pair.hpp
     include/Sifar/Support/tuple.hpp
     include/Sifar/Support/list.hpp
@@ -30,7 +30,9 @@ set(SIFAR
     include/Sifar/Span.hpp
     include/Sifar/Ref.hpp
     include/Sifar/FactoryTable.hpp
-    include/Sifar/DataTrack.hpp
+	include/Sifar/DataTrack.hpp
+	include/Sifar/Compress.hpp
+	include/Sifar/Common.hpp
     include/Sifar/Utility.hpp
     include/Sifar/ApplyFunctor.hpp
     include/Sifar/RegistryBase.hpp
@@ -52,7 +54,7 @@ set(SIFAR
 )
 
 add_executable(${PROJECT_NAME}
-    test/polymorphic.cpp
+	test/polymorphic.cpp
    # test/virtual_base.cpp
    # test/demo.cpp
    # test/simple.cpp

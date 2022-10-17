@@ -40,11 +40,9 @@ public:
     InStreamWrapper(InStream& stream) : stream_(stream) {}
 
     template <typename T>
-    InStreamWrapper& read(T* data, std::size_t n)
+    void call(T* data, std::size_t memory_size)
     {
-        stream_.read(utility::byte_cast(data), n);
-
-        return *this;
+        stream_.read(utility::byte_cast(data), memory_size);
     }
 
     InStream& get() noexcept { return stream_; }
@@ -162,71 +160,6 @@ ReadArchive& operator& (ReadArchive& archive, T& unregistered)
 
     return archive;
 }
-
-// inline namespace common also used in namespace library
-inline namespace common
-{
-
-SERIALIZATION_LOAD_DATA(object, Access::is_load_class<T>())
-{
-    Access::load(archive, object);
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(number, meta::is_arithmetic<T>())
-{
-    archive.stream().read(&number, sizeof(number));
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(enumerator, meta::is_enum<T>())
-{
-    using underlying_type = typename std::underlying_type<T>::type;
-
-    underlying_type buff = 0;
-
-    archive & buff;
-
-    enumerator = static_cast<T>(buff);
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(array, meta::is_array<T>())
-{
-    for (auto& item : array)
-        archive & item;
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(pod_pointer, meta::is_pod_pointer<T>())
-{
-    using value_type = meta::dereference<T>;
-
-    if (pod_pointer != nullptr)
-        throw "the read pointer must be initialized to nullptr.";
-
-    pod_pointer = new value_type;
-
-    archive & (*pod_pointer);
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(pointer, meta::is_pointer_to_polymorphic<T>())
-{
-    auto& registry = archive.registry();
-
-    auto id = registry.load_key(archive, pointer);
-    registry.load(archive, pointer, id);
-
-    return archive;
-}
-
-} // inline namespace common
 
 } // namespace sifar
 

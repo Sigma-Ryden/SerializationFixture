@@ -40,11 +40,9 @@ public:
     OutStreamWrapper(OutStream& stream) : stream_(stream) {}
 
     template <typename T>
-    OutStreamWrapper& write(const T* data, std::size_t n)
+    void call(const T* data, std::size_t memory_size)
     {
-        stream_.write(utility::const_byte_cast(data), n);
-
-        return *this;
+        stream_.write(utility::const_byte_cast(data), memory_size);
     }
 
     OutStream& get() noexcept { return stream_; }
@@ -155,62 +153,6 @@ WriteArchive& operator& (WriteArchive& archive, T& unregistered)
 
     return archive;
 }
-
-// inline namespace common also used in namespace library
-inline namespace common
-{
-
-SERIALIZATION_SAVE_DATA(object, Access::is_save_class<T>())
-{
-    Access::save(archive, object);
-
-    return archive;
-}
-
-SERIALIZATION_SAVE_DATA(number, meta::is_arithmetic<T>())
-{
-    archive.stream().write(&number, sizeof(number));
-
-    return archive;
-}
-
-SERIALIZATION_SAVE_DATA(enumerator, meta::is_enum<T>())
-{
-    using underlying_type = typename std::underlying_type<T>::type;
-    auto value = static_cast<underlying_type>(enumerator);
-
-    return archive & value;
-}
-
-SERIALIZATION_SAVE_DATA(array, meta::is_array<T>())
-{
-    for (const auto& item : array)
-        archive & item;
-
-    return archive;
-}
-
-SERIALIZATION_SAVE_DATA(pod_pointer, meta::is_pod_pointer<T>())
-{
-    if (pod_pointer == nullptr)
-        throw "the write pointer must be allocated.";
-
-    archive & (*pod_pointer);
-
-    return archive;
-}
-
-SERIALIZATION_SAVE_DATA(pointer, meta::is_pointer_to_polymorphic<T>())
-{
-    auto& registry = archive.registry();
-
-    auto id = registry.save_key(archive, pointer);
-    registry.save(archive, pointer, id);
-
-    return archive;
-}
-
-} // inline namespace common
 
 } // namespace sifar
 

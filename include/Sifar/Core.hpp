@@ -22,11 +22,11 @@
 #include <Sifar/ReadArchive.hpp>
 
 #include <Sifar/ApplyFunctor.hpp>
-
 #include <Sifar/DataTrack.hpp>
 
 #include <Sifar/Hash.hpp>
 
+#include <Sifar/Common.hpp>
 #include <Sifar/Span.hpp>
 #include <Sifar/Ref.hpp>
 

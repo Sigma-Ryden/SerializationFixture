@@ -26,7 +26,7 @@ template <bool condition>
 using require = when<condition, int>;
 
 template <typename... Args>
-using void_t = void;
+using to_void = void;
 
 template <typename T>
 using remove_ptr = typename std::remove_pointer<T>::type;
@@ -47,7 +47,7 @@ template <>
 struct deref_impl<void*> { using type = void; };
 
 template <typename T>
-struct deref_impl<T, void_t<decltype(*std::declval<T>())>>
+struct deref_impl<T, to_void<decltype(*std::declval<T>())>>
 {
     using type = remove_ref<decltype(*std::declval<T>())>;
 };
@@ -98,7 +98,7 @@ struct can_static_cast_impl : std::false_type {};
 
 template <typename From, typename To>
 struct can_static_cast_impl<From, To,
-    void_t<decltype( static_cast<To*>(std::declval<From*>()) )>>
+    to_void<decltype( static_cast<To*>(std::declval<From*>()) )>>
 : std::true_type {};
 
 } // namespace detail
@@ -214,6 +214,69 @@ constexpr std::size_t max_template_depth() noexcept
 namespace detail
 {
 
+template <class T, typename enable = meta::to_void<>>
+struct object_value_type_impl
+{
+    using type = dummy_type;
+};
+
+template <class T>
+struct object_value_type_impl<T, meta::to_void<typename T::value_type>>
+{
+    using type = typename T::value_type;
+};
+
+template <typename T>
+struct array_value_type_impl
+{
+    using type = dummy_type;
+};
+
+template <typename T>
+struct array_value_type_impl<T[]>
+{
+    using type = T;
+};
+
+template <typename T, std::size_t N>
+struct array_value_type_impl<T[N]>
+{
+    using type = T;
+};
+
+template <typename T, typename enable = void>
+struct value_type_impl
+{
+    using type = dummy_type;
+};
+
+template <typename T>
+struct value_type_impl<T, when<std::is_class<T>::value>>
+{
+    using type = typename object_value_type_impl<T>::type;
+};
+
+template <typename T>
+struct value_type_impl<T, when<std::is_array<T>::value>>
+{
+    using type = typename array_value_type_impl<T>::type;
+};
+
+} // namespace detail
+
+template <typename T>
+using value_type = typename detail::value_type_impl<T>::type;
+
+template <typename T> constexpr std::size_t pointer_count() noexcept
+{
+    return std::is_pointer<T>::value
+         ? 1 + pointer_count<meta::remove_ptr<T>>()
+         : 0;
+}
+
+namespace detail
+{
+
 template <typename> struct is_read_archive : std::false_type {};
 
 template <class InStream, class Registry, class StreamWrapper>
@@ -266,6 +329,15 @@ template <typename T> constexpr bool is_returnable() noexcept
 
 template <typename... Tn> constexpr bool to_false() noexcept { return false; }
 
+template <class T> constexpr bool is_class() noexcept
+{
+    return std::is_class<T>::value;
+}
+
+template <class T> constexpr bool is_compressible() noexcept
+{
+    return std::is_arithmetic<value_type<T>>::value;
+}
 
 template <typename From, typename To> constexpr bool can_static_cast() noexcept
 {

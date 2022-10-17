@@ -108,7 +108,6 @@ Span<T, N>::Span(pointer& data, Dimension dim)
     : data_(data)
     , dim_()
     , child_scope_(data[0], dim + 1)
-
 {
     for (size_type i = 0; i < N; ++i)
         dim_[i] = dim;
@@ -155,20 +154,6 @@ Span<T, 1>::Span(pointer& data, size_type size)
 
 } // namespace utility
 
-template <typename Pointer, typename D, typename... Dn,
-          std::size_t N = sizeof...(Dn) + 1,
-          typename Type = meta::remove_ptr_n<Pointer, N>,
-          typename Span = utility::Span<Type, N>,
-          SIFAR_REQUIRE(meta::is_pointer<Pointer>() and
-                        meta::all<std::is_arithmetic<D>,
-                                  std::is_arithmetic<Dn>...>())>
-Span zip(Pointer& data, D d, Dn... dn)
-{
-    using size_type = typename Span::size_type;
-
-    return Span(data, static_cast<size_type>(d), static_cast<size_type>(dn)...);
-}
-
 namespace meta
 {
 
@@ -186,7 +171,32 @@ template <class T> constexpr bool is_span() noexcept
     return detail::is_span<T>::value;
 }
 
+template <typename Pointer, typename D, typename... Dn,
+          std::size_t DimentionSize = sizeof...(Dn) + 1>
+constexpr bool is_span_set() noexcept
+{
+    return meta::pointer_count<Pointer>() >= DimentionSize
+       and meta::all<std::is_arithmetic<D>,
+                     std::is_arithmetic<Dn>...>();
+}
+
 } // namespace meta
+
+namespace utility
+{
+
+template <typename Pointer, typename D, typename... Dn,
+          std::size_t N = sizeof...(Dn) + 1,
+          typename Type = meta::remove_ptr_n<Pointer, N>,
+          typename Span = utility::Span<Type, N>,
+          SIFAR_REQUIRE(meta::is_span_set<Pointer, D, Dn...>())>
+Span make_span(Pointer& data, D d, Dn... dn)
+{
+    using size_type = typename Span::size_type;
+    return { data, static_cast<size_type>(d), static_cast<size_type>(dn)... };
+}
+
+} // namespace utility
 
 namespace detail
 {
@@ -203,12 +213,12 @@ void raw_span(WriteArchive& archive, T& data)
 template <class WriteArchive, typename T,
           SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>()
                         and meta::is_span<T>())>
-void raw_span(WriteArchive& archive, T& zip)
+void raw_span(WriteArchive& archive, T& array)
 {
     using size_type = typename T::size_type;
 
-    for (size_type i = 0; i < zip.size(); ++i)
-        raw_span(archive, zip[i]);
+    for (size_type i = 0; i < array.size(); ++i)
+        raw_span(archive, array[i]);
 }
 
 template <class ReadArchive, typename T,
@@ -223,18 +233,18 @@ void raw_span(ReadArchive& archive, T& data)
 template <class ReadArchive, typename T,
           SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
                         and meta::is_span<T>())>
-void raw_span(ReadArchive& archive, T& zip)
+void raw_span(ReadArchive& archive, T& array)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
 
     using pointer          = typename T::pointer;
 
-    pointer ptr = new dereference_type [zip.size()];
-    zip.init(ptr);
+    pointer ptr = new dereference_type [array.size()];
+    array.init(ptr);
 
-    for (size_type i = 0; i < zip.size(); ++i)
-        raw_span(archive, zip[i]);
+    for (size_type i = 0; i < array.size(); ++i)
+        raw_span(archive, array[i]);
 }
 
 } // namespace detail
@@ -246,9 +256,7 @@ inline namespace common
 template <class WriteArchive, typename T,
           typename D, typename... Dn,
           SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>() and
-                        meta::is_pointer<T>() and
-                        meta::all<std::is_arithmetic<D>,
-                                  std::is_arithmetic<Dn>...>())>
+                        meta::is_span_set<T, D, Dn...>())>
 void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (pointer == nullptr)
@@ -256,16 +264,14 @@ void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 
     archive(dimension, dimension_n...);
 
-    auto span_data = zip(pointer, dimension, dimension_n...);
+    auto span_data = utility::make_span(pointer, dimension, dimension_n...);
     detail::raw_span(archive, span_data);
 }
 
 template <class ReadArchive, typename T,
           typename D, typename... Dn,
           SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>() and
-                        meta::is_pointer<T>() and
-                        meta::all<std::is_arithmetic<D>,
-                                  std::is_arithmetic<Dn>...>())>
+                        meta::is_span_set<T, D, Dn...>())>
 void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (pointer != nullptr)
@@ -273,7 +279,7 @@ void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 
     archive(dimension, dimension_n...);
 
-    auto span_data = zip(pointer, dimension, dimension_n...);
+    auto span_data = utility::make_span(pointer, dimension, dimension_n...);
     detail::raw_span(archive, span_data);
 }
 
@@ -316,9 +322,7 @@ inline namespace common
 {
 
 template <typename T, typename D, typename... Dn,
-          SIFAR_REQUIRE(meta::is_pointer<T>() and
-                        meta::all<std::is_arithmetic<D>,
-                                  std::is_arithmetic<Dn>...>())>
+          SIFAR_REQUIRE(meta::is_span_set<T, D, Dn...>())>
 apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n)
 {
     return { pointer, dimension, dimension_n... };

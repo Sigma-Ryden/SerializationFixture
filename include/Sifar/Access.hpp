@@ -19,7 +19,7 @@
     template <typename C, typename = void>                                                              \
     struct has_##name : std::false_type {};								\
     template <typename C>                                                                               \
-    struct has_##name<C, ::sifar::meta::void_t<decltype(&C::name)>>                                     \
+    struct has_##name<C, ::sifar::meta::to_void<decltype(&C::name)>>                                    \
         : std::true_type {}
 
 #define _SIFAR_APPLY_FUNCTOR_GENERIC(class_name, function_name)                                         \
@@ -138,7 +138,7 @@ public:
                             is_save_class<T>())>
     static void save(Archive& archive, T& object)
     {
-        Serializable::Save<T>::invoke(archive, object);
+        Serializable::Save<T>::call(archive, object);
     }
 
     template <class Archive, class T,
@@ -154,7 +154,7 @@ public:
                             is_load_class<T>())>
     static void load(Archive& archive, T& object)
     {
-        Serializable::Load<T>::invoke(archive, object);
+        Serializable::Load<T>::call(archive, object);
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,

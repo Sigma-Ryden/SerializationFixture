@@ -9,6 +9,8 @@
 #include <Sifar/ReadArchive.hpp>
 #include <Sifar/UnifiedData.hpp>
 
+#include <Sifar/Compress.hpp>
+
 #include <Sifar/TypeRegistry.hpp>
 
 namespace sifar
@@ -28,9 +30,7 @@ namespace library
 
 SERIALIZATION_SAVE_LOAD_DATA(array, meta::is_std_array<T>::value)
 {
-    for (auto& item : array)
-        archive & item;
-
+    compress::zip(archive, array);
     return archive;
 }
 

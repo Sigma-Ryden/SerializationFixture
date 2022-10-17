@@ -37,7 +37,7 @@ void test_scope()
 
         try
         {
-            ar & span(tensor, height, width);
+            ar & span(tensor, height, width); // or just using: span(ar, tensor, height, width);
         }
         catch (const char* e)
         {

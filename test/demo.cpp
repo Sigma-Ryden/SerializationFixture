@@ -20,11 +20,16 @@ public:
     FormatOutStream(std::ostream& stream) : stream_(stream) {}
 
     template <typename T>
-    FormatOutStream& write(const T* data, std::size_t)
+    void call(const T* data, std::size_t memory_size)
     {
-        stream_ << *data << ' ';
+        const std::size_t size = memory_size / sizeof(T);
+        for (std::size_t i = 0; i < size; ++i)
+            stream_ << data[i] << ' ';
+    }
 
-        return *this;
+    void call(const char* data, std::size_t)
+    {
+        stream_ << data << ' ';
     }
 };
 

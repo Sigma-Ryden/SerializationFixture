@@ -8,6 +8,8 @@
 #include <Sifar/WriteArchive.hpp>
 #include <Sifar/ReadArchive.hpp>
 
+#include <Sifar/Compress.hpp>
+
 #include <Sifar/TypeRegistry.hpp>
 
 #include <Sifar/Utility.hpp>
@@ -32,8 +34,7 @@ SERIALIZATION_SAVE_DATA(vector, meta::is_std_vector<T>::value)
     let::u64 size = vector.size();
     archive & size;
 
-    for (const auto& item : vector)
-        archive & item;
+    compress::zip(archive, vector);
 
     return archive;
 }
@@ -44,9 +45,7 @@ SERIALIZATION_LOAD_DATA(vector, meta::is_std_vector<T>::value)
     archive & size;
 
     vector.resize(size);
-
-    for (auto& item : vector)
-        archive & item;
+    compress::zip(archive, vector);
 
     return archive;
 }

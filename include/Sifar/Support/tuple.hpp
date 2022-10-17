@@ -23,9 +23,6 @@ struct is_std_tuple<std::tuple<Tn...>> : std::true_type {};
 
 } // namespace meta
 
-namespace library
-{
-
 namespace detail
 {
 
@@ -37,10 +34,12 @@ void expand_impl(Archive& archive, Tuple& tuple, meta::index_sequence<I...>)
 
 } // namespace detail
 
+namespace library
+{
+
 template <class Archive, class T,
-          meta::require<meta::is_read_archive<Archive>() or
-                        meta::is_write_archive<Archive>()> = 0,
-          meta::require<meta::is_std_tuple<T>::value> = 0>
+          SIFAR_REQUIRE(meta::is_archive<Archive>() and
+                        meta::is_std_tuple<T>::value)>
 void expand(Archive& archive, T& tuple)
 {
     constexpr auto N = std::tuple_size<T>::value;

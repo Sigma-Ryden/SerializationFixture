@@ -72,7 +72,6 @@ void test_virtual_base()
 
         A* a = new F;
         std::cout << sifar::Access::dynamic_key(*a) << '\n';
-        constexpr auto xxx = sizeof(A);
 
         try
         {
