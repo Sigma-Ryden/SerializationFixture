@@ -7,7 +7,7 @@
 #include <Sifar/Detail/MetaMacro.hpp>
 
 #define _NULL_CHARACTER_FUNCTION_GENERIC(char_type, char_value)                                         \
-    template <typename T, SIFAR_REQUIRE(std::is_same<meta::remove_cv<T>, char_type>::value)>            \
+    template <typename T, SIREQUIRE(std::is_same<meta::remove_cv<T>, char_type>::value)>                \
     inline constexpr char_type null_character() noexcept { return char_value; }
 
 namespace sifar
@@ -42,13 +42,13 @@ template <typename T> char* byte_cast(T* data) noexcept
     return reinterpret_cast<char*>(data);
 }
 
-template <typename T, SIFAR_REQUIRE(not meta::is_polymorphic<T>())>
+template <typename T, SIREQUIRE(not meta::is_polymorphic<T>())>
 void* pure(T* pointer)
 {
     return static_cast<void*>(pointer);
 }
 
-template <typename T, SIFAR_REQUIRE(meta::is_polymorphic<T>())>
+template <typename T, SIREQUIRE(meta::is_polymorphic<T>())>
 void* pure(T* pointer_to_polymorphic)
 {
     return dynamic_cast<void*>(pointer_to_polymorphic);
@@ -73,7 +73,7 @@ _NULL_CHARACTER_FUNCTION_GENERIC(wchar_t, L'\0')
 _NULL_CHARACTER_FUNCTION_GENERIC(char16_t, u'\0')
 _NULL_CHARACTER_FUNCTION_GENERIC(char32_t, U'\0')
 
-template <typename CharType, SIFAR_REQUIRE(meta::is_character<CharType>())>
+template <typename CharType, SIREQUIRE(meta::is_character<CharType>())>
 std::size_t size(const CharType* str) noexcept
 {
     std::size_t count = 0;

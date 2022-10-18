@@ -189,7 +189,7 @@ template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
           typename Type = meta::remove_ptr_n<Pointer, N>,
           typename Span = utility::Span<Type, N>,
-          SIFAR_REQUIRE(meta::is_span_set<Pointer, D, Dn...>())>
+          SIREQUIRE(meta::is_span_set<Pointer, D, Dn...>())>
 Span make_span(Pointer& data, D d, Dn... dn)
 {
     using size_type = typename Span::size_type;
@@ -202,8 +202,8 @@ namespace detail
 {
 
 template <class WriteArchive, typename T,
-          SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>()
-                        and not meta::is_span<T>())>
+          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+                    and not meta::is_span<T>())>
 void raw_span(WriteArchive& archive, T& data)
 {
     archive & data;
@@ -211,8 +211,8 @@ void raw_span(WriteArchive& archive, T& data)
 
 // serialization of scoped data with previous dimension initialization
 template <class WriteArchive, typename T,
-          SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>()
-                        and meta::is_span<T>())>
+          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+                    and meta::is_span<T>())>
 void raw_span(WriteArchive& archive, T& array)
 {
     using size_type = typename T::size_type;
@@ -222,8 +222,8 @@ void raw_span(WriteArchive& archive, T& array)
 }
 
 template <class ReadArchive, typename T,
-          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
-                        and not meta::is_span<T>())>
+          SIREQUIRE(meta::is_read_archive<ReadArchive>()
+                    and not meta::is_span<T>())>
 void raw_span(ReadArchive& archive, T& data)
 {
     archive & data;
@@ -231,8 +231,8 @@ void raw_span(ReadArchive& archive, T& data)
 
 // serialization of scoped data with previous dimension initialization
 template <class ReadArchive, typename T,
-          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
-                        and meta::is_span<T>())>
+          SIREQUIRE(meta::is_read_archive<ReadArchive>()
+                    and meta::is_span<T>())>
 void raw_span(ReadArchive& archive, T& array)
 {
     using size_type        = typename T::size_type;
@@ -255,8 +255,8 @@ inline namespace common
 
 template <class WriteArchive, typename T,
           typename D, typename... Dn,
-          SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>() and
-                        meta::is_span_set<T, D, Dn...>())>
+          SIREQUIRE(meta::is_write_archive<WriteArchive>() and
+                    meta::is_span_set<T, D, Dn...>())>
 void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (pointer == nullptr)
@@ -270,8 +270,8 @@ void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 
 template <class ReadArchive, typename T,
           typename D, typename... Dn,
-          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>() and
-                        meta::is_span_set<T, D, Dn...>())>
+          SIREQUIRE(meta::is_read_archive<ReadArchive>() and
+                    meta::is_span_set<T, D, Dn...>())>
 void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (pointer != nullptr)
@@ -301,7 +301,7 @@ public:
         : pack_(pointer, dimension, dimension_n...) {}
 
     template <typename Archive,
-              SIFAR_REQUIRE(meta::is_archive<Archive>())>
+              SIREQUIRE(meta::is_archive<Archive>())>
     void operator() (Archive& archive)
     {
         invoke(archive, meta::make_index_sequence<std::tuple_size<Pack>::value>{});
@@ -322,7 +322,7 @@ inline namespace common
 {
 
 template <typename T, typename D, typename... Dn,
-          SIFAR_REQUIRE(meta::is_span_set<T, D, Dn...>())>
+          SIREQUIRE(meta::is_span_set<T, D, Dn...>())>
 apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n)
 {
     return { pointer, dimension, dimension_n... };

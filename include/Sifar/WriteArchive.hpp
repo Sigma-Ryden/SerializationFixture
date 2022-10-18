@@ -19,9 +19,9 @@
 
 #define SERIALIZATION_SAVE_DATA(parameter, ...)                                                         \
     template <class WriteArchive, typename T,                                                           \
-              SIFAR_REQUIRE(::sifar::meta::is_write_archive<WriteArchive>() and                         \
-                            ::sifar::meta::is_registered<T>() and                                       \
-                            (bool)(__VA_ARGS__))>                                                       \
+              SIREQUIRE(::sifar::meta::is_write_archive<WriteArchive>() and                             \
+                        ::sifar::meta::is_registered<T>() and                                           \
+                        (bool)(__VA_ARGS__))>                                                           \
     WriteArchive& operator& (WriteArchive& archive, T& parameter)
 
 namespace sifar
@@ -128,8 +128,8 @@ auto WriteArchive<OutStream, StreamWrapper, Registry>::operator() (
 }
 
 template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and meta::is_unsupported<T>()> = 0>
+          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+                    and meta::is_unsupported<T>())>
 WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
@@ -139,8 +139,8 @@ WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 }
 
 template <class WriteArchive, typename T,
-          meta::require<meta::is_write_archive<WriteArchive>()
-                        and not meta::is_registered<T>()> = 0>
+          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+                    and not meta::is_registered<T>())>
 WriteArchive& operator& (WriteArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),

@@ -26,12 +26,12 @@ public:
 public:
     template <class T> static void save(Archive& archive, T& object)
     {
-        save_impl(archive, object);
+        call<core::WriteArchiveTrait>(archive, object);
     }
 
     template <class T> static void load(Archive& archive, T& object)
     {
-       load_impl(archive, object);
+        call<core::ReadArchiveTrait>(archive, object);
     }
 
 private:
@@ -41,68 +41,52 @@ private:
     }
 
 private:
-    template <key_type Key, class T, SIFAR_REQUIRE(Key == max_key)>
-    static void save_impl(Archive& archive, T& object)
+    template <template <key_type> class ArchiveTrait,
+              key_type Key, class T, SIREQUIRE(Key == max_key)>
+    static void call(Archive& archive, T& object)
     {
-        throw "The write archive has invalid type key.";
+        throw "The read/write archive has invalid type key.";
     }
 
-    template <key_type Key = 0, class T, SIFAR_REQUIRE(Key < max_key)>
-    static void save_impl(Archive& archive, T& object)
+    template <template <key_type> class ArchiveTrait,
+              key_type Key = 0, class T, SIREQUIRE(Key < max_key)>
+    static void call(Archive& archive, T& object)
     {
-        using DerivedArchive = typename core::WriteArchiveTrait<Key>::type;
+        using DerivedArchive = typename ArchiveTrait<Key>::type;
 
         if (core::ArchiveTraitKey<DerivedArchive>::key == archive.trait())
-            return try_save<DerivedArchive>(archive, object);
+            return try_call<DerivedArchive>(archive, object);
 
-        save_impl<Key + 1>(archive, object);
+        call<ArchiveTrait, Key + 1>(archive, object);
     }
 
-    template <key_type Key, class T, SIFAR_REQUIRE(Key == max_key)>
-    static void load_impl(Archive& archive, T& object)
+    template <class DerivedArchive, class T,
+              SIREQUIRE(not is_valid_archive<DerivedArchive>())>
+    static void try_call(Archive& archive, T& object) { /*pass*/ }
+
+    template <class DerivedArchive, class T,
+              SIREQUIRE(is_valid_archive<DerivedArchive>())>
+    static void try_call(Archive& archive, T& object)
     {
-        throw "The read archive has invalid type key.";
+        auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
+        if (derived_archive == nullptr)
+            throw "The read/write archive was not registered.";
+
+        proccess(*derived_archive, object);
     }
 
-    template <key_type Key = 0, class T, SIFAR_REQUIRE(Key < max_key)>
-    static void load_impl(Archive& archive, T& object)
+    template <class DerivedArchive, class T,
+              SIREQUIRE(meta::is_write_archive<DerivedArchive>())>
+    static void proccess(DerivedArchive& archive, T& object)
     {
-        using DerivedArchive = typename core::ReadArchiveTrait<Key>::type;
-
-        if (core::ArchiveTraitKey<DerivedArchive>::key == archive.trait())
-            return try_load<DerivedArchive>(archive, object);
-
-        load_impl<Key + 1>(archive, object);
+        Access::save(archive, object);
     }
 
-    template <class WriteArchive, class T,
-              SIFAR_REQUIRE(not is_valid_archive<WriteArchive>())>
-    static void try_save(Archive& archive, T& object) { /*pass*/ }
-
-    template <class WriteArchive, class T,
-              SIFAR_REQUIRE(is_valid_archive<WriteArchive>())>
-    static void try_save(Archive& archive, T& object)
+    template <class DerivedArchive, class T,
+              SIREQUIRE(meta::is_read_archive<DerivedArchive>())>
+    static void proccess(DerivedArchive& archive, T& object)
     {
-        auto write_archive = dynamic_cast<WriteArchive*>(&archive);
-        if (write_archive == nullptr)
-            throw "The write archive was not registered.";
-
-        Access::save(*write_archive, object);
-    }
-
-    template <class ReadArchive, class T,
-              SIFAR_REQUIRE(not is_valid_archive<ReadArchive>())>
-    static void try_load(Archive& archive, T& object) { /*pass*/ }
-
-    template <class ReadArchive, class T,
-              SIFAR_REQUIRE(is_valid_archive<ReadArchive>())>
-    static void try_load(Archive& archive, T& object)
-    {
-        auto read_archive = dynamic_cast<ReadArchive*>(&archive);
-        if (read_archive == nullptr)
-            throw "The read archive was not registered.";
-
-        Access::load(*read_archive, object);
+        Access::load(archive, object);
     }
 };
 

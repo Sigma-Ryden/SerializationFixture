@@ -32,7 +32,7 @@ public:
     }
 
     template <class Archive, class Pointer,
-              SIFAR_REQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
+              SIREQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
     static key_type save_key(Archive& archive, Pointer& pointer)
     {
         if (pointer == nullptr)
@@ -45,7 +45,7 @@ public:
     }
 
     template <class Archive, class Pointer,
-              SIFAR_REQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
+              SIREQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
     static key_type load_key(Archive& archive, Pointer& pointer)
     {
         if (pointer != nullptr)

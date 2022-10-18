@@ -18,8 +18,8 @@ namespace tracking
 {
 
 template <class ReadArchive, typename T,
-          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
-                        and not meta::is_pointer<T>())>
+          SIREQUIRE(meta::is_read_archive<ReadArchive>()
+                    and not meta::is_pointer<T>())>
 void track(ReadArchive& archive, T& data)
 {
     using key_type = typename ReadArchive::TrackingTable::key_type;
@@ -41,8 +41,8 @@ void track(ReadArchive& archive, T& data)
 }
 
 template <class ReadArchive, typename T,
-          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
-                        and meta::is_pointer<T>())>
+          SIREQUIRE(meta::is_read_archive<ReadArchive>()
+                    and meta::is_pointer<T>())>
 void track(ReadArchive& archive, T& pointer)
 {
     using key_type = typename ReadArchive::TrackingTable::key_type;
@@ -69,8 +69,8 @@ void track(ReadArchive& archive, T& pointer)
 }
 
 template <class WriteArchive, typename T,
-          SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>()
-                        and not meta::is_pointer<T>())>
+          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+                    and not meta::is_pointer<T>())>
 void track(WriteArchive& archive, T& data)
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
@@ -91,8 +91,8 @@ void track(WriteArchive& archive, T& data)
 }
 
 template <class WriteArchive, typename T,
-          SIFAR_REQUIRE(meta::is_write_archive<WriteArchive>()
-                        and meta::is_pointer<T>())>
+          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+                    and meta::is_pointer<T>())>
 void track(WriteArchive& archive, T& pointer)
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
@@ -128,8 +128,7 @@ private:
 public:
     TrackFunctor(T& parameter) noexcept : parameter_(parameter) {}
 
-    template <typename Archive,
-              SIFAR_REQUIRE(meta::is_archive<Archive>())>
+    template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>
     void operator() (Archive& archive)
     {
         ::sifar::tracking::track(archive, parameter_);

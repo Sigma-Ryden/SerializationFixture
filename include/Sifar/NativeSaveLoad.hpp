@@ -14,8 +14,8 @@ namespace detail
 
 template <class Archive, typename T, typename key_type,
           typename U = meta::dereference<T>,
-          SIFAR_REQUIRE(meta::is_write_archive<Archive>()
-                        and not Access::is_registered_class<U>())>
+          SIREQUIRE(meta::is_write_archive<Archive>()
+                    and not Access::is_registered_class<U>())>
 void native_save(Archive& archive, T& pointer, key_type track_key)
 {
     archive & track_key;
@@ -23,8 +23,8 @@ void native_save(Archive& archive, T& pointer, key_type track_key)
 
 template <class Archive, typename T, typename key_type,
           typename U = meta::dereference<T>,
-          SIFAR_REQUIRE(meta::is_write_archive<Archive>()
-                        and Access::is_registered_class<U>())>
+          SIREQUIRE(meta::is_write_archive<Archive>()
+                    and Access::is_registered_class<U>())>
 void native_save(Archive& archive, T& pointer, key_type track_key)
 {
     archive & track_key;
@@ -33,8 +33,8 @@ void native_save(Archive& archive, T& pointer, key_type track_key)
 
 template <class Archive, typename T,
           typename U = meta::dereference<T>,
-          SIFAR_REQUIRE(meta::is_read_archive<Archive>()
-                        and not Access::is_registered_class<U>())>
+          SIREQUIRE(meta::is_read_archive<Archive>()
+                    and not Access::is_registered_class<U>())>
 void native_load(Archive& archive, T& pointer, void* address)
 {
     pointer = static_cast<T>(address);
@@ -42,8 +42,8 @@ void native_load(Archive& archive, T& pointer, void* address)
 
 template <class Archive, typename T,
           typename U = meta::dereference<T>,
-          SIFAR_REQUIRE(meta::is_read_archive<Archive>()
-                        and Access::is_registered_class<U>())>
+          SIREQUIRE(meta::is_read_archive<Archive>()
+                    and Access::is_registered_class<U>())>
 void native_load(Archive& archive, T& pointer, void* address)
 {
     auto& registry = archive.registry();

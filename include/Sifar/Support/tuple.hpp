@@ -38,8 +38,8 @@ inline namespace library
 {
 
 template <class Archive, class T,
-          SIFAR_REQUIRE(meta::is_archive<Archive>() and
-                        meta::is_std_tuple<T>::value)>
+          SIREQUIRE(meta::is_archive<Archive>() and
+                    meta::is_std_tuple<T>::value)>
 void expand(Archive& archive, T& tuple)
 {
     constexpr auto N = std::tuple_size<T>::value;

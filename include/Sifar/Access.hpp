@@ -27,14 +27,14 @@
         Derived& object_;                                                                               \
     public:                                                                                             \
         class_name(Derived& object) : object_(object) {}                                                \
-        template <typename Archive, SIFAR_REQUIRE(meta::is_archive<Archive>())>                         \
+        template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>                             \
         void operator() (Archive& archive)                                                              \
         { function_name<Base>(archive, object_); }                                                      \
     };
 
 #define _SIFAR_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(class_name, function_name)                        \
     template <typename Base, typename Derived,                                                          \
-              SIFAR_REQUIRE(meta::is_base_of<Base, Derived>())>                                         \
+              SIREQUIRE(meta::is_base_of<Base, Derived>())>                                             \
     apply::class_name<Derived, Base> function_name(Derived& object)                                     \
     { return { object }; }                                                                              \
 
@@ -116,62 +116,60 @@ public:
 
 public:
     template <class Archive, class T,
-              SIFAR_REQUIRE(not meta::is_write_archive<Archive>() or
-                            not is_save_class<T>())>
+              SIREQUIRE(not meta::is_write_archive<Archive>() or
+                        not is_save_class<T>())>
     static void save(Archive& archive, T& object)
     {
         throw "The 'T' type cannot be saved.";
     }
 
     template <class Archive, class T,
-              SIFAR_REQUIRE(meta::is_write_archive<Archive>() and
-                            is_save_class<T>())>
+              SIREQUIRE(meta::is_write_archive<Archive>() and
+                        is_save_class<T>())>
     static void save(Archive& archive, T& object)
     {
         Serializable::Save<T>::call(archive, object);
     }
 
     template <class Archive, class T,
-              SIFAR_REQUIRE(not meta::is_read_archive<Archive>() or
-                            not is_load_class<T>())>
+              SIREQUIRE(not meta::is_read_archive<Archive>() or
+                        not is_load_class<T>())>
     static void load(Archive& archive, T& object)
     {
         throw "The 'T' type cannot be loaded.";
     }
 
     template <class Archive, class T,
-              SIFAR_REQUIRE(meta::is_read_archive<Archive>() and
-                            is_load_class<T>())>
+              SIREQUIRE(meta::is_read_archive<Archive>() and
+                        is_load_class<T>())>
     static void load(Archive& archive, T& object)
     {
         Serializable::Load<T>::call(archive, object);
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIFAR_REQUIRE(is_dynamic_save_class<T>() and
-                            is_save_class<T>())>
+              SIREQUIRE(is_dynamic_save_class<T>() and
+                        is_save_class<T>())>
     static void dynamic_save(core::ArchiveBase& archive, Pointer& object)
     {
         object->save(archive);
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIFAR_REQUIRE(is_dynamic_load_class<T>() and
-                            is_load_class<T>())>
+              SIREQUIRE(is_dynamic_load_class<T>() and
+                        is_load_class<T>())>
     static void dynamic_load(core::ArchiveBase& archive, Pointer& object)
     {
         object->load(archive);
     }
 
-    template <class T,
-              SIFAR_REQUIRE(is_registered_class<T>())>
+    template <class T, SIREQUIRE(is_registered_class<T>())>
     static auto dynamic_key(T& object) noexcept -> decltype(object.dynamic_key())
     {
         return object.dynamic_key();
     }
 
-    template <class T,
-              SIFAR_REQUIRE(is_registered_class<T>())>
+    template <class T, SIREQUIRE(is_registered_class<T>())>
     static constexpr auto static_key() noexcept -> decltype(T::static_key())
     {
         return T::static_key();
@@ -207,7 +205,7 @@ template <typename Base, class Archive, typename Derived,
 void base(Archive& archive, Derived& object) noexcept;
 
 template <typename Base, class Archive, typename Derived,
-          SIFAR_REQUIRE(meta::is_base_of<Base, Derived>())>
+          SIREQUIRE(meta::is_base_of<Base, Derived>())>
 void virtual_base(Archive& archive, Derived& object) noexcept
 {
     if (Access::dynamic_key(object) == Access::template static_key<Derived>())
@@ -219,16 +217,16 @@ void virtual_base(Archive& archive, Derived& object) noexcept
 }
 
 template <class Base, class Archive, class Derived,
-          SIFAR_REQUIRE(meta::can_static_cast<Base, Derived>() and
-                        meta::is_base_of<Base, Derived>())>
+          SIREQUIRE(meta::can_static_cast<Base, Derived>() and
+                    meta::is_base_of<Base, Derived>())>
 void native_base(Archive& archive, Derived& object_with_base)
 {
     base<Base>(archive, object_with_base);
 }
 
 template <class Base, class Archive, class Derived,
-          SIFAR_REQUIRE(not meta::can_static_cast<Base, Derived>() and
-                        meta::is_base_of<Base, Derived>())>
+          SIREQUIRE(not meta::can_static_cast<Base, Derived>() and
+                    meta::is_base_of<Base, Derived>())>
 void native_base(Archive& archive, Derived& object_with_virtual_base)
 {
     virtual_base<Base>(archive, object_with_virtual_base);
@@ -252,7 +250,7 @@ template <class Archive, class Derived>
 void hierarchy(Archive& archive, Derived& object) { /*pass*/ }
 
 template <class Base, class... Base_n, class Archive, class Derived,
-          SIFAR_REQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
+          SIREQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
 void hierarchy(Archive& archive, Derived& object)
 {
     native_base<Base>(archive, object);
@@ -271,7 +269,7 @@ private:
 public:
     HierarchyFunctor(Derived& object) : object_(object) {}
 
-    template <typename Archive, SIFAR_REQUIRE(meta::is_archive<Archive>())>
+    template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>
     void operator() (Archive& archive)
     {
         hierarchy<Base, Base_n...>(archive, object_);
@@ -281,7 +279,7 @@ public:
 } // namespace apply
 
 template <class Base, class... Base_n, class Derived,
-          SIFAR_REQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
+          SIREQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
 apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
 {
     return { object };

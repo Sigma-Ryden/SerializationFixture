@@ -21,7 +21,7 @@ class ExternRegistry : public RegistryBase
 {
 public:
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIFAR_REQUIRE(Access::is_registered_class<T>())>
+              SIREQUIRE(Access::is_registered_class<T>())>
     static void save(core::ArchiveBase& archive, Pointer& pointer, key_type key)
     {
         if (pointer == nullptr)
@@ -31,7 +31,7 @@ public:
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIFAR_REQUIRE(Access::is_registered_class<T>())>
+              SIREQUIRE(Access::is_registered_class<T>())>
     static void load(core::ArchiveBase& archive, Pointer& pointer, key_type key)
     {
         if (pointer != nullptr)
@@ -44,7 +44,7 @@ public:
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIFAR_REQUIRE(Access::is_registered_class<T>())>
+              SIREQUIRE(Access::is_registered_class<T>())>
     static void assign(Pointer& pointer, void* address, key_type key)
     {
         if (pointer != nullptr)

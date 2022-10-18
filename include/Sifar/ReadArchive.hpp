@@ -19,9 +19,9 @@
 
 #define SERIALIZATION_LOAD_DATA(parameter, ...)                                                         \
     template <class ReadArchive, typename T,                                                            \
-              SIFAR_REQUIRE(::sifar::meta::is_read_archive<ReadArchive>() and                           \
-                            ::sifar::meta::is_registered<T>() and                                       \
-                            (bool)(__VA_ARGS__))>                                                       \
+              SIREQUIRE(::sifar::meta::is_read_archive<ReadArchive>() and                               \
+                        ::sifar::meta::is_registered<T>() and                                           \
+                        (bool)(__VA_ARGS__))>                                                           \
     ReadArchive& operator& (ReadArchive& archive, T& parameter)
 
 namespace sifar
@@ -135,8 +135,8 @@ auto ReadArchive<InStream, StreamWrapper, Registry>::operator() (
 }
 
 template <class ReadArchive, typename T,
-          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
-                        and meta::is_unsupported<T>())>
+          SIREQUIRE(meta::is_read_archive<ReadArchive>()
+                    and meta::is_unsupported<T>())>
 ReadArchive& operator& (ReadArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
@@ -146,8 +146,8 @@ ReadArchive& operator& (ReadArchive& archive, T& unsupported)
 }
 
 template <class ReadArchive, typename T,
-          SIFAR_REQUIRE(meta::is_read_archive<ReadArchive>()
-                        and not meta::is_registered<T>())>
+          SIREQUIRE(meta::is_read_archive<ReadArchive>()
+                    and not meta::is_registered<T>())>
 ReadArchive& operator& (ReadArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),

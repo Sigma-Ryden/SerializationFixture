@@ -60,5 +60,5 @@
 #undef SIFAR_STATIC_HASH
 #undef SIFAR_SMART
 
-#undef SIFAR_REQUIRE
-#undef SIFAR_WHEN
+#undef SIREQUIRE
+#undef SIWHEN

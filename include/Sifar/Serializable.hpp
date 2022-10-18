@@ -6,7 +6,7 @@
 
 #define _SERIALIZATION_DECLARATION_IF(serialization_type, ...)                                          \
     template <typename T>                                                                               \
-    struct SifarSerializable::serialization_type<T, SIFAR_WHEN(__VA_ARGS__)> {                          \
+    struct SifarSerializable::serialization_type<T, SIWHEN(__VA_ARGS__)> {                              \
         template <class Archive> static void call(Archive& archive, T& self);                           \
     };
 
@@ -19,7 +19,7 @@
 #define _SERIALIZATION_IMPLEMENTATION_IF(serialization_type, ...)                                       \
     template <typename T>                                                                               \
     template <class Archive>                                                                            \
-    void SifarSerializable::serialization_type<T, SIFAR_WHEN(__VA_ARGS__)>::call(                       \
+    void SifarSerializable::serialization_type<T, SIWHEN(__VA_ARGS__)>::call(                           \
         Archive& archive, T& self)
 
 #define _SERIALIZATION_IMPLEMENTATION(serialization_type, ...)                                          \
@@ -39,7 +39,7 @@
     _SERIALIZATION_DECLARATION_IF(Save, __VA_ARGS__)                                                    \
     _SERIALIZATION_DECLARATION_IF(Load, __VA_ARGS__)                                                    \
     _SERIALIZATION_IMPLEMENTATION_IF(Load, __VA_ARGS__)                                                 \
-    { ::SifarSerializable::Save<T, SIFAR_WHEN(__VA_ARGS__)>::call(archive, self); }                     \
+    { ::SifarSerializable::Save<T, SIWHEN(__VA_ARGS__)>::call(archive, self); }                         \
     _SERIALIZATION_IMPLEMENTATION_IF(Save, __VA_ARGS__)
 
 #define SERIALIZATION_SAVE(...)                                                                         \

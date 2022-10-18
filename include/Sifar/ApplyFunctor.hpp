@@ -28,9 +28,9 @@ template <typename T> constexpr bool is_apply_functor() noexcept
 
 template <typename Archive, typename T,
           typename U = meta::decay<T>, // T can be lvalue
-          SIFAR_REQUIRE(meta::is_archive<Archive>() and
-                        meta::is_registered<U>() and
-                        meta::is_apply_functor<U>())>
+          SIREQUIRE(meta::is_archive<Archive>() and
+                    meta::is_registered<U>() and
+                    meta::is_apply_functor<U>())>
 Archive& operator& (Archive& archive, T&& apply_functor)
 {
     apply_functor(archive);

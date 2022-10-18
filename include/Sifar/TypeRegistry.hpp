@@ -10,7 +10,7 @@
     namespace sifar {                                                                                   \
     template <typename T>                                                                               \
     struct TypeRegistry<T,                                                                              \
-        SIFAR_WHEN(__VA_ARGS__)> : std::true_type {};                                                   \
+        SIWHEN(__VA_ARGS__)> : std::true_type {};                                                       \
     }
 
 #define SERIALIZATION_TYPE_REGISTRY(name)                                                               \
