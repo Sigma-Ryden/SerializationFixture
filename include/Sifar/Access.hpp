@@ -48,13 +48,6 @@ class ArchiveBase;
 
 } // namespace core
 
-namespace detail
-{
-
-class RegistryBase;
-
-} // namespace detail
-
 class Access
 {
     using Serializable = SifarSerializable;
