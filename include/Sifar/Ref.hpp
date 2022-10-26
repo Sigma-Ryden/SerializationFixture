@@ -81,6 +81,9 @@ SERIALIZATION_SAVE_DATA(ref, meta::is_ref<T>())
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
 
+    if (not ref.is_null())
+        throw "the write reference must be initialized.";
+
     auto pointer = std::addressof(ref.get());
     auto address = utility::pure(pointer);
 

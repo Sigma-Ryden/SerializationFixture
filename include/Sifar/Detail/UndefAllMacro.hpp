@@ -62,3 +62,4 @@
 
 #undef SIREQUIRE
 #undef SIWHEN
+#undef SIWITH

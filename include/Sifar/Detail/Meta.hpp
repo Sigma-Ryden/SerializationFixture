@@ -441,6 +441,11 @@ template <typename T> constexpr bool is_pod_pointer() noexcept
        and not std::is_member_pointer<T>::value;
 }
 
+template <typename T> constexpr bool is_serializable_pointer() noexcept
+{
+    return is_pod_pointer<T>() or is_pointer_to_polymorphic<T>();
+}
+
 template <typename T> constexpr bool is_unsupported() noexcept
 {
     return is_void_pointer<T>()
