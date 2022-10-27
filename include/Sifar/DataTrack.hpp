@@ -96,6 +96,9 @@ template <class WriteArchive, typename T,
 void track(WriteArchive& archive, T& pointer)
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
+    
+    if (pod_pointer == nullptr)
+        throw "the write pointer must be allocated.";
 
     auto key = reinterpret_cast<key_type>(utility::pure(pointer));
 
