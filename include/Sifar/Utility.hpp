@@ -32,24 +32,26 @@ namespace utility
 template <typename T, std::size_t N>
 constexpr std::size_t size(const T (&array)[N]) noexcept { return N; }
 
-template <typename T> const char* const_byte_cast(T* data) noexcept
+template <typename T>
+inline const char* const_byte_cast(T* data) noexcept
 {
     return reinterpret_cast<const char*>(data);
 }
 
-template <typename T> char* byte_cast(T* data) noexcept
+template <typename T>
+inline char* byte_cast(T* data) noexcept
 {
     return reinterpret_cast<char*>(data);
 }
 
 template <typename T, SIREQUIRE(not meta::is_polymorphic<T>())>
-void* pure(T* pointer)
+inline void* pure(T* pointer)
 {
     return static_cast<void*>(pointer);
 }
 
 template <typename T, SIREQUIRE(meta::is_polymorphic<T>())>
-void* pure(T* pointer_to_polymorphic)
+inline void* pure(T* pointer_to_polymorphic)
 {
     return dynamic_cast<void*>(pointer_to_polymorphic);
 }
