@@ -40,7 +40,7 @@ set(SIFAR
     include/Sifar/Registry.hpp
     include/Sifar/TypeRegistry.hpp
     include/Sifar/ArchiveTrait.hpp
-	include/Sifar/SoftSerialization.hpp
+	include/Sifar/Strict.hpp
     include/Sifar/PolymorphicArchive.hpp
     include/Sifar/Access.hpp
     include/Sifar/Serializable.hpp

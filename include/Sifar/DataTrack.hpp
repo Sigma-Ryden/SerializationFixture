@@ -8,6 +8,8 @@
 #include <Sifar/Utility.hpp>
 #include <Sifar/ApplyFunctor.hpp>
 
+#include <Sifar/Strict.hpp>
+
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
@@ -48,7 +50,10 @@ void track(ReadArchive& archive, T& pointer)
     using key_type = typename ReadArchive::TrackingTable::key_type;
 
     if (pointer != nullptr)
-        throw "the read tracking pointer must be initialized to nullptr.";
+        throw "the read track pointer must be initialized to nullptr.";
+
+    auto success = detail::is_refer(archive, pointer); // serialize refer info
+    if (not success) return;
 
     key_type key;
     archive & key;
@@ -57,7 +62,7 @@ void track(ReadArchive& archive, T& pointer)
 
     if (not track_data.is_tracking)
     {
-        archive & pointer; // call the serialization of not tracking pointer
+        strict(archive, pointer); // call the strict serialization of not tracking pointer
 
         track_data.address = utility::pure(pointer);
         track_data.is_tracking = true;
@@ -96,9 +101,9 @@ template <class WriteArchive, typename T,
 void track(WriteArchive& archive, T& pointer)
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
-    
-    if (pod_pointer == nullptr)
-        throw "the write pointer must be allocated.";
+
+    auto success = detail::is_refer(archive, pointer); // serialize refer info
+    if (not success) return;
 
     auto key = reinterpret_cast<key_type>(utility::pure(pointer));
 
@@ -107,7 +112,7 @@ void track(WriteArchive& archive, T& pointer)
     if (not is_tracking)
     {
         archive & key;
-        archive & pointer; // call the serialization of not tracking pointer
+        strict(archive, pointer); // call the strict serialization of not tracking pointer
 
         is_tracking = true;
     }

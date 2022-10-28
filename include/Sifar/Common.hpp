@@ -6,6 +6,7 @@
 
 #include <Sifar/UnifiedData.hpp>
 
+#include <Sifar/Strict.hpp>
 #include <Sifar/Compress.hpp>
 
 namespace sifar
@@ -64,46 +65,10 @@ SERIALIZATION_SAVE_LOAD_DATA(array, meta::is_array<T>())
     return archive;
 }
 
-SERIALIZATION_SAVE_DATA(pod_pointer, meta::is_pod_pointer<T>())
+SERIALIZATION_SAVE_LOAD_DATA(pointer, meta::is_serializable_pointer<T>())
 {
-    if (pod_pointer == nullptr)
-        throw "the write pointer must be allocated.";
-
-    archive & (*pod_pointer);
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(pod_pointer, meta::is_pod_pointer<T>())
-{
-    using value_type = meta::dereference<T>;
-
-    if (pod_pointer != nullptr)
-        throw "the read pointer must be initialized to nullptr.";
-
-    pod_pointer = new value_type;
-
-    archive & (*pod_pointer);
-
-    return archive;
-}
-
-SERIALIZATION_SAVE_DATA(pointer, meta::is_pointer_to_polymorphic<T>())
-{
-    auto& registry = archive.registry();
-
-    auto id = registry.save_key(archive, pointer);
-    registry.save(archive, pointer, id);
-
-    return archive;
-}
-
-SERIALIZATION_LOAD_DATA(pointer, meta::is_pointer_to_polymorphic<T>())
-{
-    auto& registry = archive.registry();
-
-    auto id = registry.load_key(archive, pointer);
-    registry.load(archive, pointer, id);
+    auto success = detail::is_refer(archive, pointer); // read/write refer info
+    if (success) strict(archive, pointer);
 
     return archive;
 }
