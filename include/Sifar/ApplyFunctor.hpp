@@ -40,6 +40,6 @@ Archive& operator& (Archive& archive, T&& apply_functor)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_apply_functor<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_apply_functor<T>())
 
 #endif // SIFAR_APPLY_FUNCTOR_HPP

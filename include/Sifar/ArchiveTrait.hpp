@@ -7,7 +7,7 @@
 
 #include <Sifar/Utility.hpp>
 
-#define _SERIALIZATION_ARCHIVE_EXPORT_TYPE_TRAIT(archive_type, ...)                                     \
+#define _EXPORT_SERIALIZATION_ARCHIVE_TYPE_TRAIT(archive_type, ...)                                     \
     namespace sifar { namespace core {                                                                  \
         template <> struct archive_type##Trait<ArchiveTraitKey<archive_type<__VA_ARGS__>>::key>         \
         { using type = archive_type<__VA_ARGS__>; };                                                    \

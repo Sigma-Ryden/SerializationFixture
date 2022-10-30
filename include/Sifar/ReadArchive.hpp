@@ -17,12 +17,18 @@
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
-#define SERIALIZATION_LOAD_DATA(parameter, ...)                                                         \
+#define CONDITIONAL_LOAD_SERIALIZABLE_TYPE(parameter, ...)                                              \
     template <class ReadArchive, typename T,                                                            \
               SIREQUIRE(::sifar::meta::is_read_archive<ReadArchive>() and                               \
                         ::sifar::meta::is_registered<T>() and                                           \
                         (bool)(__VA_ARGS__))>                                                           \
     ReadArchive& operator& (ReadArchive& archive, T& parameter)
+
+#define LOAD_SERIALIZABLE_TYPE(parameter, ...)                                                          \
+    template <class ReadArchive,                                                                        \
+              SIREQUIRE(::sifar::meta::is_read_archive<WriteArchive>() and                              \
+                        ::sifar::meta::is_registered<__VA_ARGS__>())>                                   \
+    ReadArchive& operator& (ReadArchive& archive, __VA_ARGS__& parameter)
 
 namespace sifar
 {

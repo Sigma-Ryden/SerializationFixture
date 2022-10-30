@@ -25,7 +25,7 @@ struct is_std_unique_ptr<std::unique_ptr<T, Deleter>> : std::true_type {};
 inline namespace library
 {
 
-SERIALIZATION_SAVE_DATA(unique_ptr, meta::is_std_unique_ptr<T>::value)
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     auto data = unique_ptr.get();
 
@@ -34,7 +34,7 @@ SERIALIZATION_SAVE_DATA(unique_ptr, meta::is_std_unique_ptr<T>::value)
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(unique_ptr, meta::is_std_unique_ptr<T>::value)
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     using element_type = typename T::element_type;
 
@@ -50,6 +50,6 @@ SERIALIZATION_LOAD_DATA(unique_ptr, meta::is_std_unique_ptr<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_unique_ptr<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_unique_ptr<T>::value)
 
 #endif // SIFAR_SUPPORT_UNIQUE_PTR_HPP

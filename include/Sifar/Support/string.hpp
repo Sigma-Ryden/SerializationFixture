@@ -30,7 +30,7 @@ struct is_std_basic_string<std::basic_string<Char, Traits, Alloc>> : std::true_t
 inline namespace library
 {
 
-SERIALIZATION_SAVE_DATA(string, meta::is_std_basic_string<T>::value)
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(string, meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
@@ -42,7 +42,7 @@ SERIALIZATION_SAVE_DATA(string, meta::is_std_basic_string<T>::value)
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(string, meta::is_std_basic_string<T>::value)
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(string, meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
@@ -59,6 +59,6 @@ SERIALIZATION_LOAD_DATA(string, meta::is_std_basic_string<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_basic_string<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_basic_string<T>::value)
 
 #endif // SIFAR_SUPPORT_STRING_HPP

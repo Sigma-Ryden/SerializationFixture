@@ -18,7 +18,7 @@ using namespace sifar::tracking; // support of data tracking
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
 // Needed for clonable and serializable of derived object
-struct B : POLYMORPHIC_IMPORT()
+struct B : IMPORT_POLYMORPHIC() // same as IMPORT_SERIALIZABLE_POLYMORPHIC
 {
     POLYMORPHIC()
 
@@ -35,8 +35,8 @@ struct C : virtual B
 
     int c = 1;
 };
-POLYMORPHIC_EXPORT(C)
-SERIALIZATION_SAVE_LOAD(C)
+EXPORT_SERIALIZABLE_POLYMORPHIC(C)
+SAVE_LOAD_SERIALIZABLE(C)
 {
     archive & virtual_base<B>(self)
             & self.c;
@@ -49,7 +49,7 @@ struct D : virtual B
     int d = 22;
 };
 
-SERIALIZATION_POLYMORPHIC(D) // same as: POLYMORPHIC_EXPORT(D) SERIALIZATION_SAVE_LOAD(D) {...}
+SERIALIZATION_POLYMORPHIC(D) // same as: EXPORT_POLYMORPHIC(D) SAVE_LOAD_SERIALIZABLE(D) {...}
 {
     archive & native_base<B>(self) // expand to => virtual_base<B>
             & self.d;

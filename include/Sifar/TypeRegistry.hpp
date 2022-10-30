@@ -6,17 +6,20 @@
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
-#define SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(...)                                                    \
+#define CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(...)                                                     \
     namespace sifar {                                                                                   \
-    template <typename T>                                                                               \
-    struct TypeRegistry<T,                                                                              \
-        SIWHEN(__VA_ARGS__)> : std::true_type {};                                                       \
+        template <typename T> struct TypeRegistry<T, SIWHEN(__VA_ARGS__)> : std::true_type {};          \
     }
 
-#define SERIALIZATION_TYPE_REGISTRY(name)                                                               \
+#define REGISTRY_SERIALIZABLE_TYPE(...)                                                                 \
     namespace sifar {                                                                                   \
-        template <> struct TypeRegistry<name, void> : std::true_type {};                                \
+        template <> struct TypeRegistry<__VA_ARGS__, void> : std::true_type {};                         \
     }
+
+#ifdef SIFAR_SMART
+    #define CONDITIONAL_REGISTRY_TYPE(...) CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(__VA_ARGS__)
+    #define REGISTRY_TYPE(...) REGISTRY_SERIALIZABLE_TYPE(__VA_ARGS__)
+#endif // SIFAR_SMART
 
 namespace sifar
 {
@@ -36,11 +39,11 @@ template <typename T> constexpr bool is_registered() noexcept
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_arithmetic<T>())
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_enum<T>())
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_array<T>())
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_pod_pointer<T>())
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_pointer_to_polymorphic<T>())
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_unsupported<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_arithmetic<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_enum<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_array<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_pod_pointer<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_pointer_to_polymorphic<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_unsupported<T>())
 
 #endif // SIFAR_TYPE_REGISTRY_HPP

@@ -16,28 +16,28 @@ namespace sifar
 inline namespace common
 {
 
-SERIALIZATION_SAVE_DATA(object, Access::is_save_class<T>())
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(object, Access::is_save_class<T>())
 {
     Access::save(archive, object);
 
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(object, Access::is_load_class<T>())
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(object, Access::is_load_class<T>())
 {
     Access::load(archive, object);
 
     return archive;
 }
 
-SERIALIZATION_SAVE_LOAD_DATA(number, meta::is_arithmetic<T>())
+CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(number, meta::is_arithmetic<T>())
 {
     archive.stream().call(&number, sizeof(number));
 
     return archive;
 }
 
-SERIALIZATION_SAVE_DATA(enumerator, meta::is_enum<T>())
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(enumerator, meta::is_enum<T>())
 {
     using underlying_type = typename std::underlying_type<T>::type;
     auto value = static_cast<underlying_type>(enumerator);
@@ -45,7 +45,7 @@ SERIALIZATION_SAVE_DATA(enumerator, meta::is_enum<T>())
     return archive & value;
 }
 
-SERIALIZATION_LOAD_DATA(enumerator, meta::is_enum<T>())
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(enumerator, meta::is_enum<T>())
 {
     using underlying_type = typename std::underlying_type<T>::type;
 
@@ -58,14 +58,14 @@ SERIALIZATION_LOAD_DATA(enumerator, meta::is_enum<T>())
     return archive;
 }
 
-SERIALIZATION_SAVE_LOAD_DATA(array, meta::is_array<T>())
+CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(array, meta::is_array<T>())
 {
     compress::zip(archive, array);
 
     return archive;
 }
 
-SERIALIZATION_SAVE_LOAD_DATA(pointer, meta::is_serializable_pointer<T>())
+CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(pointer, meta::is_serializable_pointer<T>())
 {
     auto success = detail::is_refer(archive, pointer); // read/write refer info
     if (success) strict(archive, pointer);

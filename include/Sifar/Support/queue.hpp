@@ -50,7 +50,7 @@ Container& underlying(std::queue<Type, Container>& queue)
 inline namespace library
 {
 
-SERIALIZATION_SAVE_LOAD_DATA(queue, meta::is_std_queue<T>::value)
+CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(queue, meta::is_std_queue<T>::value)
 {
     archive & detail::underlying(queue);
 
@@ -61,6 +61,6 @@ SERIALIZATION_SAVE_LOAD_DATA(queue, meta::is_std_queue<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_queue<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_queue<T>::value)
 
 #endif // SIFAR_SUPPORT_QUEUE_HPP

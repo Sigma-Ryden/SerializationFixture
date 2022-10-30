@@ -8,7 +8,7 @@
 
 #define _NULL_CHARACTER_FUNCTION_GENERIC(char_type, char_value)                                         \
     template <typename T, SIREQUIRE(std::is_same<meta::remove_cv<T>, char_type>::value)>                \
-    inline constexpr char_type null_character() noexcept { return char_value; }
+    constexpr char_type null_character() noexcept { return char_value; }
 
 namespace sifar
 {

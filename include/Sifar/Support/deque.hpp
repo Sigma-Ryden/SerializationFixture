@@ -25,7 +25,7 @@ struct is_std_deque<std::deque<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-SERIALIZATION_SAVE_DATA(deque, meta::is_std_deque<T>::value)
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(deque, meta::is_std_deque<T>::value)
 {
     let::u64 size = deque.size();
     archive & size;
@@ -36,7 +36,7 @@ SERIALIZATION_SAVE_DATA(deque, meta::is_std_deque<T>::value)
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(deque, meta::is_std_deque<T>::value)
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(deque, meta::is_std_deque<T>::value)
 {
     let::u64 size;
     archive & size;
@@ -53,6 +53,6 @@ SERIALIZATION_LOAD_DATA(deque, meta::is_std_deque<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_deque<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_deque<T>::value)
 
 #endif // SIFAR_SUPPORT_DEQUE_HPP

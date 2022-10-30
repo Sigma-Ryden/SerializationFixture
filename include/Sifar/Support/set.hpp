@@ -27,13 +27,17 @@ template <typename> struct is_std_multiset : std::false_type {};
 template <typename Key, typename Compare, typename Alloc>
 struct is_std_multiset<std::multiset<Key, Compare, Alloc>> : std::true_type {};
 
+template <class T> constexpr bool is_std_anyset() noexcept
+{
+    return is_std_set<T>::value or is_std_multiset<T>::value;
+}
+
 } // namespace meta
 
 inline namespace library
 {
 
-SERIALIZATION_SAVE_DATA(set, meta::is_std_set<T>::value or
-                             meta::is_std_multiset<T>::value)
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(set, meta::is_std_anyset<T>())
 {
     let::u64 size = set.size();
     archive & size;
@@ -44,8 +48,7 @@ SERIALIZATION_SAVE_DATA(set, meta::is_std_set<T>::value or
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(set, meta::is_std_set<T>::value or
-                             meta::is_std_multiset<T>::value)
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(set, meta::is_std_anyset<T>())
 {
     using value_type = typename T::value_type;
 
@@ -70,7 +73,7 @@ SERIALIZATION_LOAD_DATA(set, meta::is_std_set<T>::value or
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_set<T>::value)
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_multiset<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_set<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_multiset<T>::value)
 
 #endif // SIFAR_SUPPORT_SET_HPP

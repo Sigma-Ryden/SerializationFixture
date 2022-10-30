@@ -9,7 +9,7 @@ using sifar::writer;
 using sifar::base;
 using sifar::virtual_base;
 
-struct A : POLYMORPHIC_IMPORT()
+struct A : IMPORT_POLYMORPHIC()
 {
     POLYMORPHIC()
 

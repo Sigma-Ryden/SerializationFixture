@@ -27,7 +27,7 @@ struct is_std_forward_list<std::forward_list<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-SERIALIZATION_SAVE_DATA(forward_list, meta::is_std_forward_list<T>::value)
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(forward_list, meta::is_std_forward_list<T>::value)
 {
     let::u64 size = std::distance(forward_list.begin(), forward_list.end());
     archive & size;
@@ -38,7 +38,7 @@ SERIALIZATION_SAVE_DATA(forward_list, meta::is_std_forward_list<T>::value)
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(forward_list, meta::is_std_forward_list<T>::value)
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(forward_list, meta::is_std_forward_list<T>::value)
 {
     let::u64 size;
     archive & size;
@@ -55,6 +55,6 @@ SERIALIZATION_LOAD_DATA(forward_list, meta::is_std_forward_list<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_forward_list<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_forward_list<T>::value)
 
 #endif // SIFAR_SUPPORT_FORWARD_LIST_HPP

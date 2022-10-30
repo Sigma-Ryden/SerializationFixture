@@ -77,7 +77,7 @@ template <class T> constexpr bool is_ref() noexcept
 inline namespace common
 {
 
-SERIALIZATION_SAVE_DATA(ref, meta::is_ref<T>())
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
 {
     using key_type = typename WriteArchive::TrackingTable::key_type;
 
@@ -99,7 +99,7 @@ SERIALIZATION_SAVE_DATA(ref, meta::is_ref<T>())
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(ref, meta::is_ref<T>())
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
 {
     using key_type   = typename ReadArchive::TrackingTable::key_type;
     using value_type = typename T::type;
@@ -128,6 +128,6 @@ SERIALIZATION_LOAD_DATA(ref, meta::is_ref<T>())
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_ref<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_ref<T>())
 
 #endif // SIFAR_REF_HPP

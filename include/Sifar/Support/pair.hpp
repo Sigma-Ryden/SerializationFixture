@@ -26,7 +26,7 @@ struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
 inline namespace library
 {
 
-SERIALIZATION_SAVE_LOAD_DATA(pair, meta::is_std_pair<T>::value)
+CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(pair, meta::is_std_pair<T>::value)
 {
     archive & pair.first & pair.second;
 
@@ -37,6 +37,6 @@ SERIALIZATION_SAVE_LOAD_DATA(pair, meta::is_std_pair<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_pair<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_pair<T>::value)
 
 #endif // SIFAR_SUPPORT_PAIR_HPP

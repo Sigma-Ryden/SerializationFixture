@@ -17,12 +17,18 @@
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
-#define SERIALIZATION_SAVE_DATA(parameter, ...)                                                         \
+#define CONDITIONAL_SAVE_SERIALIZABLE_TYPE(parameter, ...)                                              \
     template <class WriteArchive, typename T,                                                           \
               SIREQUIRE(::sifar::meta::is_write_archive<WriteArchive>() and                             \
                         ::sifar::meta::is_registered<T>() and                                           \
                         (bool)(__VA_ARGS__))>                                                           \
     WriteArchive& operator& (WriteArchive& archive, T& parameter)
+
+#define SAVE_SERIALIZABLE_TYPE(parameter, ...)                                                          \
+    template <class WriteArchive,                                                                       \
+              SIREQUIRE(::sifar::meta::is_write_archive<WriteArchive>() and                             \
+                        ::sifar::meta::is_registered<__VA_ARGS__>())>                                   \
+    WriteArchive& operator& (WriteArchive& archive, __VA_ARGS__& parameter)
 
 namespace sifar
 {

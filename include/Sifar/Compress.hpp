@@ -12,12 +12,22 @@
 namespace sifar
 {
 
+namespace meta
+{
+
+template <typename T> constexpr bool is_container() noexcept
+{
+    return meta::is_class<T>() or meta::is_array<T>(); // will rewrite
+}
+
+} // namespace meta
+
 namespace compress
 {
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_archive<Archive>() and
-                    meta::is_class<T>() and meta::is_compressible<T>())>
+          SIREQUIRE(meta::is_archive<Archive>() and meta::is_class<T>() and
+                    meta::is_compressible<T>())>
 void fast(Archive& archive, T& object)
 {
     using item_type = meta::value_type<T>;
@@ -29,8 +39,8 @@ void fast(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_archive<Archive>() and
-                    meta::is_array<T>() and meta::is_compressible<T>())>
+          SIREQUIRE(meta::is_archive<Archive>() and meta::is_array<T>() and
+                    meta::is_compressible<T>())>
 void fast(Archive& archive, T& array)
 {
     archive.stream().call
@@ -41,7 +51,7 @@ void fast(Archive& archive, T& array)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_archive<Archive>())>
+          SIREQUIRE(meta::is_archive<Archive>() and meta::is_container<T>())>
 void slow(Archive& archive, T& data)
 {
     for (auto& item : data)
@@ -49,8 +59,7 @@ void slow(Archive& archive, T& data)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_archive<Archive>() and
-                   (meta::is_class<T>() or meta::is_array<T>()) and
+          SIREQUIRE(meta::is_archive<Archive>() and meta::is_container<T>() and
                     meta::is_compressible<T>())>
 void zip(Archive& archive, T& data)
 {
@@ -58,9 +67,8 @@ void zip(Archive& archive, T& data)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_archive<Archive>() and
-                   (meta::is_class<T>() or meta::is_array<T>()) and not
-                    meta::is_compressible<T>())>
+          SIREQUIRE(meta::is_archive<Archive>() and meta::is_container<T>() and
+                    not meta::is_compressible<T>())>
 void zip(Archive& archive, T& data)
 {
     slow(archive, data);

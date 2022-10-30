@@ -27,7 +27,7 @@ public:
     }
 };
 
-SERIALIZATION_SAVE_LOAD(Shape)
+SAVE_LOAD_SERIALIZABLE(Shape)
 {
     archive & self.name_
             & self.x_

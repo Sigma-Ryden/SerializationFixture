@@ -5,6 +5,6 @@
 
 #define SIWHEN(...) ::sifar::meta::when<(bool)(__VA_ARGS__)>
 
-#define SIWITH(...) ::sifar::meta::is_same_all<T, __VA_ARGS__>()
+#define SIWITH(...) std::is_same<T, __VA_ARGS__>::value
 
 #endif // SIFAR_META_MACRO_HPP

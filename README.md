@@ -67,7 +67,7 @@ public:
     }
 };
 
-SERIALIZATION_SAVE_LOAD(Shape)
+SAVE_LOAD_SERIALIZABLE(Shape)
 {
     archive & self.name_
             & self.x_
@@ -76,8 +76,8 @@ SERIALIZATION_SAVE_LOAD(Shape)
 ```
 Explaining of using macros above:
 - ```SERIALIZABLE()``` - Provide us with secure saving and loading of objects.
-- ```SERIALIZATION_SAVE_LOAD()``` - Generate save/load serialization functions for given class.
-This macro allows you to split into two separate macros: ```SERIALIZATION_SAVE()``` and ```SERIALIZATION_LOAD()``` if needed.
+- ```SAVE_LOAD_SERIALIZABLE()``` - Generate save/load serialization functions for given class.
+This macro allows you to split into two separate macros: ```SAVE_SERIALIZABLE()``` and ```LOAD_SERIALIZABLE()``` if needed.
 
 ### Using of serialization library:
 

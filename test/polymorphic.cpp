@@ -14,7 +14,7 @@ using namespace sifar::library; // support of std library
 using namespace sifar::tracking; // support of data tracking
 
 template <class SomeType>
-class Base : POLYMORPHIC_IMPORT()
+class Base : IMPORT_POLYMORPHIC()
 {
     POLYMORPHIC_TEMPLATE(Base)
 
@@ -37,19 +37,19 @@ struct is_base : std::false_type {};
 template <typename T>
 struct is_base<Base<T>> : std::true_type {};
 
-SERIALIZATION_SAVE(Base<std::string>)
+SAVE_SERIALIZABLE(Base<std::string>)
 {
     std::cout << "Save Base<std::string> class\n";
     archive & self.data;
 }
 
-SERIALIZATION_CONDITIONAL_SAVE(is_base<T>::value)
+CONDITIONAL_SAVE_SERIALIZABLE(is_base<T>::value)
 {
     std::cout << "Load Base class\n";
     archive & self.data;
 }
 
-SERIALIZATION_CONDITIONAL_LOAD(is_base<T>::value)
+CONDITIONAL_LOAD_SERIALIZABLE(is_base<T>::value)
 {
     std::cout << "Load Base class\n";
     archive & self.data;
@@ -73,17 +73,17 @@ public:
 private:
 };
 
-SERIALIZATION_SAVE_LOAD(Derived)
+SAVE_LOAD_SERIALIZABLE(Derived)
 {
     std::cout << "Save Load Derived class\n";
     archive & base<Base<std::string>>(self);
     archive & self.value;
 }
 
-POLYMORPHIC_TEMPLATE_EXPORT(Base<std::string>)
-POLYMORPHIC_TEMPLATE_EXPORT(Base<double>)
+EXPORT_POLYMORPHIC_TEMPLATE(Base<std::string>)
+EXPORT_POLYMORPHIC_TEMPLATE(Base<double>)
 
-POLYMORPHIC_EXPORT(Derived)
+EXPORT_POLYMORPHIC(Derived)
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'

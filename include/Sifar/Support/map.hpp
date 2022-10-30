@@ -28,13 +28,17 @@ template <typename> struct is_std_multimap : std::false_type {};
 template <typename Key, typename Type, typename Compare, typename Alloc>
 struct is_std_multimap<std::multimap<Key, Type, Compare, Alloc>> : std::true_type {};
 
+template <class T> constexpr bool is_std_anymap() noexcept
+{
+    return is_std_map<T>::value or is_std_multimap<T>::value;
+}
+
 } // namespace meta
 
 inline namespace library
 {
 
-SERIALIZATION_SAVE_DATA(map, meta::is_std_map<T>::value or
-                             meta::is_std_multimap<T>::value)
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(map, meta::is_std_anymap<T>())
 {
     let::u64 size = map.size();
     archive & size;
@@ -45,8 +49,7 @@ SERIALIZATION_SAVE_DATA(map, meta::is_std_map<T>::value or
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(map, meta::is_std_map<T>::value or
-                             meta::is_std_multimap<T>::value)
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(map, meta::is_std_anymap<T>())
 {
     using value_type = typename T::value_type;
 
@@ -71,7 +74,7 @@ SERIALIZATION_LOAD_DATA(map, meta::is_std_map<T>::value or
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_map<T>::value)
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_multimap<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_map<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_multimap<T>::value)
 
 #endif // SIFAR_SUPPORT_MAP_HPP

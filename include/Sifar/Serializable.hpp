@@ -7,13 +7,15 @@
 #define _SERIALIZATION_DECLARATION_IF(serialization_type, ...)                                          \
     template <typename T>                                                                               \
     struct SifarSerializable::serialization_type<T, SIWHEN(__VA_ARGS__)> {                              \
-        template <class Archive> static void call(Archive& archive, T& self);                           \
+        template <class Archive>                                                                        \
+        static void call(Archive& archive, T& self);                                                    \
     };
 
 #define _SERIALIZATION_DECLARATION(serialization_type, ...)                                             \
     template <>                                                                                         \
     struct SifarSerializable::serialization_type<__VA_ARGS__, void> {                                   \
-        template <class Archive> static void call(Archive& archive, __VA_ARGS__& self);                 \
+        template <class Archive>                                                                        \
+        static void call(Archive& archive, __VA_ARGS__& self);                                          \
     };
 
 #define _SERIALIZATION_IMPLEMENTATION_IF(serialization_type, ...)                                       \
@@ -27,30 +29,30 @@
     void SifarSerializable::serialization_type<__VA_ARGS__, void>::call(                                \
         Archive& archive, __VA_ARGS__& self)
 
-#define SERIALIZATION_CONDITIONAL_SAVE(...)                                                             \
+#define CONDITIONAL_SAVE_SERIALIZABLE(...)                                                              \
     _SERIALIZATION_DECLARATION_IF(Save, __VA_ARGS__)                                                    \
     _SERIALIZATION_IMPLEMENTATION_IF(Save, __VA_ARGS__)
 
-#define SERIALIZATION_CONDITIONAL_LOAD(...)                                                             \
+#define CONDITIONAL_LOAD_SERIALIZABLE(...)                                                              \
     _SERIALIZATION_DECLARATION_IF(Load, __VA_ARGS__)                                                    \
     _SERIALIZATION_IMPLEMENTATION_IF(Load, __VA_ARGS__)
 
-#define SERIALIZATION_CONDITIONAL_SAVE_LOAD(...)                                                        \
+#define CONDITIONAL_SAVE_LOAD_SERIALIZABLE(...)                                                         \
     _SERIALIZATION_DECLARATION_IF(Save, __VA_ARGS__)                                                    \
     _SERIALIZATION_DECLARATION_IF(Load, __VA_ARGS__)                                                    \
     _SERIALIZATION_IMPLEMENTATION_IF(Load, __VA_ARGS__)                                                 \
     { ::SifarSerializable::Save<T, SIWHEN(__VA_ARGS__)>::call(archive, self); }                         \
     _SERIALIZATION_IMPLEMENTATION_IF(Save, __VA_ARGS__)
 
-#define SERIALIZATION_SAVE(...)                                                                         \
+#define SAVE_SERIALIZABLE(...)                                                                          \
     _SERIALIZATION_DECLARATION(Save, __VA_ARGS__)                                                       \
     _SERIALIZATION_IMPLEMENTATION(Save, __VA_ARGS__)
 
-#define SERIALIZATION_LOAD(...)                                                                         \
+#define LOAD_SERIALIZABLE(...)                                                                          \
     _SERIALIZATION_DECLARATION(Load, __VA_ARGS__)                                                       \
     _SERIALIZATION_IMPLEMENTATION(Load, __VA_ARGS__)
 
-#define SERIALIZATION_SAVE_LOAD(...)                                                                    \
+#define SAVE_LOAD_SERIALIZABLE(...)                                                                     \
     _SERIALIZATION_DECLARATION(Save, __VA_ARGS__)                                                       \
     _SERIALIZATION_DECLARATION(Load, __VA_ARGS__)                                                       \
     _SERIALIZATION_IMPLEMENTATION(Load, __VA_ARGS__)                                                    \
@@ -59,8 +61,8 @@
 
 #ifdef SIFAR_SMART
     // Additional macro defs
-    #define SERIALIZATION_CONDITIONAL(...) SERIALIZATION_CONDITIONAL_SAVE_LOAD(__VA_ARGS__)
-    #define SERIALIZATION(...) SERIALIZATION_SAVE_LOAD(__VA_ARGS__)
+    #define CONDITIONAL_SERIALIZATION(...) CONDITIONAL_SAVE_LOAD_SERIALIZABLE(__VA_ARGS__)
+    #define SERIALIZATION(...) SAVE_LOAD_SERIALIZABLE(__VA_ARGS__)
 #endif // SIFAR_SMART
 
 class SifarSerializable

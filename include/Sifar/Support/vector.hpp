@@ -29,7 +29,7 @@ struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-SERIALIZATION_SAVE_DATA(vector, meta::is_std_vector<T>::value)
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(vector, meta::is_std_vector<T>::value)
 {
     let::u64 size = vector.size();
     archive & size;
@@ -39,7 +39,7 @@ SERIALIZATION_SAVE_DATA(vector, meta::is_std_vector<T>::value)
     return archive;
 }
 
-SERIALIZATION_LOAD_DATA(vector, meta::is_std_vector<T>::value)
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(vector, meta::is_std_vector<T>::value)
 {
     let::u64 size;
     archive & size;
@@ -54,6 +54,6 @@ SERIALIZATION_LOAD_DATA(vector, meta::is_std_vector<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_vector<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_vector<T>::value)
 
 #endif // SIFAR_SUPPORT_VECTOR_HPP

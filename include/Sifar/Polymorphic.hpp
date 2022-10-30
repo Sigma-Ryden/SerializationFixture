@@ -31,8 +31,8 @@
     _DYNAMIC_SAVE_LOAD_IMPLEMENTATION_WITH(template <>, __VA_ARGS__)
 
 // Public macro defs
-#define POLYMORPHIC_IMPORT(...)                                                                         \
-    public virtual ::sifar::dynamic::Polymorphic
+#define IMPORT_SERIALIZABLE_POLYMORPHIC(...)                                                            \
+    public ::sifar::dynamic::Polymorphic
 
 #define SERIALIZABLE_POLYMORPHIC(...)                                                                   \
     SERIALIZABLE()                                                                                      \
@@ -46,25 +46,29 @@
     _FACTORY_TABLE_UPDATER_DECLARATION()                                                                \
     _DYNAMIC_SAVE_LOAD_DECLARATION()
 
-#define POLYMORPHIC_EXPORT(...)                                                                         \
+#define EXPORT_SERIALIZABLE_POLYMORPHIC(...)                                                            \
     _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
     _FACTORY_TABLE_UPDATER_IMPLEMENTATION(__VA_ARGS__)                                                  \
     _DYNAMIC_SAVE_LOAD_IMPLEMENTATION(__VA_ARGS__)
 
-#define POLYMORPHIC_TEMPLATE_EXPORT(...)                                                                \
+#define EXPORT_SERIALIZABLE_POLYMORPHIC_TEMPLATE(...)                                                   \
     _CLONEABLE_TEMPLATE_IMPLEMENTATION(__VA_ARGS__)                                                     \
     _FACTORY_TABLE_UPDATER_TEMPLATE_IMPLEMENTATION(__VA_ARGS__)                                         \
     _DYNAMIC_SAVE_LOAD_TEMPLATE_IMPLEMENTATION(__VA_ARGS__)
 
 // Special serialization case (export only for translation unit scope)
-#define SERIALIZATION_POLYMORPHIC(...)                                                                  \
-    POLYMORPHIC_EXPORT(__VA_ARGS__)                                                                     \
-    SERIALIZATION_SAVE_LOAD(__VA_ARGS__)
+#define SAVE_LOAD_SERIALIZABLE_POLYMORPHIC(...)                                                         \
+    EXPORT_SERIALIZABLE_POLYMORPHIC(__VA_ARGS__)                                                        \
+    SAVE_LOAD_SERIALIZABLE(__VA_ARGS__)
 
 #ifdef SIFAR_SMART
     // Additional macro defs
     #define POLYMORPHIC(...) SERIALIZABLE_POLYMORPHIC(__VA_ARGS__)
     #define POLYMORPHIC_TEMPLATE(...) SERIALIZABLE_POLYMORPHIC_TEMPLATE(__VA_ARGS__)
+    #define EXPORT_POLYMORPHIC(...) EXPORT_SERIALIZABLE_POLYMORPHIC(__VA_ARGS__)
+    #define EXPORT_POLYMORPHIC_TEMPLATE(...) EXPORT_SERIALIZABLE_POLYMORPHIC_TEMPLATE(__VA_ARGS__)
+    #define IMPORT_POLYMORPHIC(...) IMPORT_SERIALIZABLE_POLYMORPHIC(__VA_ARGS__)
+    #define SERIALIZATION_POLYMORPHIC(...) SAVE_LOAD_SERIALIZABLE_POLYMORPHIC(__VA_ARGS__)
 #endif
 
 namespace sifar

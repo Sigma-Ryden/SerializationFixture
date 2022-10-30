@@ -10,7 +10,7 @@
     virtual auto trait() const noexcept -> key_type override                                            \
     { return ::sifar::core::ArchiveTraitKey<__VA_ARGS__>::key; }
 
-#define _SERIALIZATION_ARCHIVE_EXPORT_TRAIT_KEY(archive_key, archive_type, ...)                         \
+#define _EXPORT_SERIALIZATION_ARCHIVE_TRAIT_KEY(archive_key, archive_type, ...)                         \
     namespace sifar { namespace core {                                                                  \
         template <> struct ArchiveTraitKey<archive_type<__VA_ARGS__>>                                   \
         { static constexpr let::u8 key = archive_key; };                                                \

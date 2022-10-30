@@ -50,7 +50,7 @@ Container& underlying(std::stack<Type, Container>& stack)
 inline namespace library
 {
 
-SERIALIZATION_SAVE_LOAD_DATA(stack, meta::is_std_stack<T>::value)
+CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(stack, meta::is_std_stack<T>::value)
 {
     archive & detail::underlying(stack);
 
@@ -61,6 +61,6 @@ SERIALIZATION_SAVE_LOAD_DATA(stack, meta::is_std_stack<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_stack<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_stack<T>::value)
 
 #endif // SIFAR_SUPPORT_STACK_HPP

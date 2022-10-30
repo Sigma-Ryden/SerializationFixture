@@ -28,7 +28,7 @@ struct is_std_array<std::array<T, N>> : std::true_type {};
 inline namespace library
 {
 
-SERIALIZATION_SAVE_LOAD_DATA(array, meta::is_std_array<T>::value)
+CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(array, meta::is_std_array<T>::value)
 {
     compress::zip(archive, array);
     return archive;
@@ -38,6 +38,6 @@ SERIALIZATION_SAVE_LOAD_DATA(array, meta::is_std_array<T>::value)
 
 } // namespace sifar
 
-SERIALIZATION_CONDITIONAL_TYPE_REGISTRY(meta::is_std_array<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_array<T>::value)
 
 #endif // SIFAR_SUPPORT_ARRAY_HPP
