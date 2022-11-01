@@ -41,7 +41,7 @@ enum class Color { Red, Green, Blue, Alpha };
 class B
 {
     // is the same:
-    // friend class sifar_serializable;
+    // friend class SifarSerializable;
     // friend class sifar::Access;
     SERIALIZABLE()
 

@@ -24,14 +24,14 @@ public:
     static constexpr key_type max_key = core::ArchiveCore::max_key;
 
 public:
-    template <class T> static void save(Archive& archive, T& object)
+    template <class T> static void save(Archive& archive, T& data)
     {
-        call<core::WriteArchiveTrait>(archive, object);
+        call<core::WriteArchiveTrait>(archive, data);
     }
 
-    template <class T> static void load(Archive& archive, T& object)
+    template <class T> static void load(Archive& archive, T& data)
     {
-        call<core::ReadArchiveTrait>(archive, object);
+        call<core::ReadArchiveTrait>(archive, data);
     }
 
 private:
@@ -43,50 +43,61 @@ private:
 private:
     template <template <key_type> class ArchiveTrait,
               key_type Key, class T, SIREQUIRE(Key == max_key)>
-    static void call(Archive& archive, T& object)
+    static void call(Archive& archive, T& data)
     {
         throw "The read/write archive has invalid type key.";
     }
 
     template <template <key_type> class ArchiveTrait,
               key_type Key = 0, class T, SIREQUIRE(Key < max_key)>
-    static void call(Archive& archive, T& object)
+    static void call(Archive& archive, T& data)
     {
         using DerivedArchive = typename ArchiveTrait<Key>::type;
 
         if (core::ArchiveTraitKey<DerivedArchive>::key == archive.trait())
-            return try_call<DerivedArchive>(archive, object);
+            return try_call<DerivedArchive>(archive, data);
 
-        call<ArchiveTrait, Key + 1>(archive, object);
+        call<ArchiveTrait, Key + 1>(archive, data);
     }
 
     template <class DerivedArchive, class T,
               SIREQUIRE(not is_valid_archive<DerivedArchive>())>
-    static void try_call(Archive& archive, T& object) { /*pass*/ }
+    static void try_call(Archive& archive, T& data) { /*pass*/ }
 
     template <class DerivedArchive, class T,
               SIREQUIRE(is_valid_archive<DerivedArchive>())>
-    static void try_call(Archive& archive, T& object)
+    static void try_call(Archive& archive, T& data)
     {
         auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
         if (derived_archive == nullptr)
             throw "The read/write archive was not registered.";
 
-        proccess(*derived_archive, object);
+        proccess(*derived_archive, data);
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(meta::is_write_archive<DerivedArchive>())>
+              SIREQUIRE(meta::is_write_archive<DerivedArchive>() and
+                        Access::is_save_class<T>())>
     static void proccess(DerivedArchive& archive, T& object)
     {
         Access::save(archive, object);
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(meta::is_read_archive<DerivedArchive>())>
+              SIREQUIRE(meta::is_read_archive<DerivedArchive>() and
+                        Access::is_load_class<T>())>
     static void proccess(DerivedArchive& archive, T& object)
     {
         Access::load(archive, object);
+    }
+
+    template <class DerivedArchive, class T,
+              SIREQUIRE(meta::is_archive<DerivedArchive>() and
+                        meta::is_registered<T>() and
+                        not Access::is_save_load_class<T>())>
+    static void proccess(DerivedArchive& archive, T& data)
+    {
+        archive & data;
     }
 };
 

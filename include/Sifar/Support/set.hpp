@@ -4,6 +4,8 @@
 #include <type_traits> // true_type, false_type
 
 #include <set> // set, multiset
+#include <unordered_set> // unordered_set, unordered_multiset
+
 #include <utility> // move
 
 #include <Sifar/WriteArchive.hpp>
@@ -13,23 +15,28 @@
 
 #include <Sifar/Utility.hpp>
 
+#define _IS_STD_SET_TYPE_META_GENERIC(set_type)                                                         \
+    template <typename> struct is_std_##set_type : std::false_type {};                                  \
+    template <typename Key, typename Compare, typename Alloc>                                           \
+    struct is_std_##set_type<std::set_type<Key, Compare, Alloc>> : std::true_type {};
+
 namespace sifar
 {
 
 namespace meta
 {
 
-template <typename> struct is_std_set : std::false_type {};
-template <typename Key, typename Compare, typename Alloc>
-struct is_std_set<std::set<Key, Compare, Alloc>> : std::true_type {};
+_IS_STD_SET_TYPE_META_GENERIC(set)
+_IS_STD_SET_TYPE_META_GENERIC(unordered_set)
+_IS_STD_SET_TYPE_META_GENERIC(multiset)
+_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
 
-template <typename> struct is_std_multiset : std::false_type {};
-template <typename Key, typename Compare, typename Alloc>
-struct is_std_multiset<std::multiset<Key, Compare, Alloc>> : std::true_type {};
-
-template <class T> constexpr bool is_std_anyset() noexcept
+template <class T> constexpr bool is_std_any_set() noexcept
 {
-    return is_std_set<T>::value or is_std_multiset<T>::value;
+    return is_std_set<T>::value
+        or is_std_unordered_set<T>::value
+        or is_std_multiset<T>::value
+        or is_std_unordered_multiset<T>::value;
 }
 
 } // namespace meta
@@ -37,7 +44,7 @@ template <class T> constexpr bool is_std_anyset() noexcept
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(set, meta::is_std_anyset<T>())
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(set, meta::is_std_any_set<T>())
 {
     let::u64 size = set.size();
     archive & size;
@@ -48,7 +55,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(set, meta::is_std_anyset<T>())
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(set, meta::is_std_anyset<T>())
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(set, meta::is_std_any_set<T>())
 {
     using value_type = typename T::value_type;
 
@@ -73,7 +80,9 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(set, meta::is_std_anyset<T>())
 
 } // namespace sifar
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_set<T>::value)
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_multiset<T>::value)
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_any_set<T>())
+
+// clean up
+#undef _IS_STD_SET_TYPE_META_GENERIC
 
 #endif // SIFAR_SUPPORT_SET_HPP

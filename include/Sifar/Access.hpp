@@ -15,7 +15,7 @@
 
 #define _SIFAR_HAS_PROPERTY_HELPER(name)                                                                \
     template <typename C, typename = void>                                                              \
-    struct has_##name : std::false_type {};								                                \
+    struct has_##name : std::false_type {};                                                             \
     template <typename C>                                                                               \
     struct has_##name<C, ::sifar::meta::to_void<decltype(&C::name)>>                                    \
         : std::true_type {}
