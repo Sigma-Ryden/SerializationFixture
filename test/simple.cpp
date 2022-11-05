@@ -12,7 +12,8 @@ class Shape
 
 private:
     std::string name_;
-    float x_, y_;
+    float x_;
+    float y_;
 
 public:
     Shape() : name_("Unknown"), x_(), y_() {}
@@ -20,11 +21,9 @@ public:
     Shape(const char* name, float x, float y)
         : name_(name), x_(x), y_(y) {}
 
-    void print() const
-    {
-        std::cout << name_ << " shape is lacated at: "
-                  << x_ << "; " << y_ << std::endl;
-    }
+    const std::string& name() const { return name_; }
+    float x() const { return x_; }
+    float y() const { return y_; }
 };
 
 SAVE_LOAD_SERIALIZABLE(Shape)
@@ -52,11 +51,16 @@ void load(Shape& shape)
     if (not file.is_open()) return;
 
     auto ar = sifar::reader(file);
-
     ar & shape;
 
     file.close();
 }
+
+void info(const Shape& shape)
+{
+    std::cout << shape.name() << " shape is lacated at: "
+              << shape.x() << "; " << shape.y() << std::endl;
+};
 
 int main()
 {
@@ -68,11 +72,11 @@ int main()
     // Loading of Shape object
     {
         Shape shape;
-        shape.print();
+        info(shape); // before load
 
         load(shape);
 
-        shape.print();
+        info(shape); // after load
     }
 
     return 0;

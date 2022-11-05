@@ -15,7 +15,7 @@
 
 #include <Sifar/Utility.hpp>
 
-#define _IS_STD_SET_TYPE_META_GENERIC(set_type)                                                         \
+#define _SIFAR_IS_STD_MAP_TYPE_META_GENERIC(set_type)                                                   \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
     template <typename Key, typename Compare, typename Alloc>                                           \
     struct is_std_##set_type<std::set_type<Key, Compare, Alloc>> : std::true_type {};
@@ -26,10 +26,10 @@ namespace sifar
 namespace meta
 {
 
-_IS_STD_SET_TYPE_META_GENERIC(set)
-_IS_STD_SET_TYPE_META_GENERIC(unordered_set)
-_IS_STD_SET_TYPE_META_GENERIC(multiset)
-_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
+_SIFAR_IS_STD_MAP_TYPE_META_GENERIC(set)
+_SIFAR_IS_STD_MAP_TYPE_META_GENERIC(unordered_set)
+_SIFAR_IS_STD_MAP_TYPE_META_GENERIC(multiset)
+_SIFAR_IS_STD_MAP_TYPE_META_GENERIC(unordered_multiset)
 
 template <class T> constexpr bool is_std_any_set() noexcept
 {
@@ -83,6 +83,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(set, meta::is_std_any_set<T>())
 CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_any_set<T>())
 
 // clean up
-#undef _IS_STD_SET_TYPE_META_GENERIC
+#undef _SIFAR_IS_STD_MAP_TYPE_META_GENERIC
 
 #endif // SIFAR_SUPPORT_SET_HPP

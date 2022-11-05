@@ -9,15 +9,30 @@
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
+#define _SIFAR_HAS_FUNCTION_HELPER(name)                                                                \
+    template <typename T, typename enable = void>                                                       \
+    struct has_##name##_function : std::false_type {};                                                  \
+    template <typename T>                                                                               \
+    struct has_##name##_function<T, to_void<decltype(std::declval<T>().name())>>                        \
+        : std::true_type {};
+
 namespace sifar
 {
 
 namespace meta
 {
 
+_SIFAR_HAS_FUNCTION_HELPER(data)
+_SIFAR_HAS_FUNCTION_HELPER(size)
+
+template <typename T> constexpr bool is_container_class() noexcept
+{
+    return has_data_function<T>::value and has_size_function<T>::value;
+}
+
 template <typename T> constexpr bool is_container() noexcept
 {
-    return meta::is_class<T>() or meta::is_array<T>(); // will rewrite
+    return is_container_class<T>() or is_array<T>();
 }
 
 } // namespace meta
@@ -77,5 +92,8 @@ void zip(Archive& archive, T& data)
 } // namespace compress
 
 } // namespace sifar
+
+// clean up
+#undef _SIFAR_HAS_FUNCTION_HELPER
 
 #endif // SIFAR_COMPRESS_HPP

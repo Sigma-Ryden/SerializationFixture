@@ -433,12 +433,12 @@ template <typename T> constexpr bool is_function_pointer() noexcept
 
 template <typename T> constexpr bool is_pod_pointer() noexcept
 {
-    return is_pointer<T>()
-       and not is_void_pointer<T>()
-       and not is_pointer_to_polymorphic<T>()
-       and not is_function_pointer<T>()
-       and not is_null_pointer<T>()
-       and not std::is_member_pointer<T>::value;
+    return is_pointer<T>() and
+       not is_void_pointer<T>() and
+       not is_pointer_to_polymorphic<T>() and
+       not is_function_pointer<T>() and
+       not is_null_pointer<T>() and
+       not std::is_member_pointer<T>::value;
 }
 
 template <typename T> constexpr bool is_serializable_pointer() noexcept

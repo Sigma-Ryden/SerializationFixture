@@ -18,7 +18,7 @@
 
 #include <Sifar/Utility.hpp>
 
-#define _IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                         \
+#define _SIFAR_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                   \
     template <typename> struct is_std_##map_type : std::false_type {};                                  \
     template <typename Key, typename Type, typename Compare, typename Alloc>                            \
     struct is_std_##map_type<std::map_type<Key, Type, Compare, Alloc>> : std::true_type {};
@@ -29,10 +29,10 @@ namespace sifar
 namespace meta
 {
 
-_IS_STD_MAP_TYPE_META_GENERIC(map)
-_IS_STD_MAP_TYPE_META_GENERIC(unordered_map)
-_IS_STD_MAP_TYPE_META_GENERIC(multimap)
-_IS_STD_MAP_TYPE_META_GENERIC(unordered_multimap)
+_SIFAR_IS_STD_MAP_TYPE_META_GENERIC(map)
+_SIFAR_IS_STD_MAP_TYPE_META_GENERIC(unordered_map)
+_SIFAR_IS_STD_MAP_TYPE_META_GENERIC(multimap)
+_SIFAR_IS_STD_MAP_TYPE_META_GENERIC(unordered_multimap)
 
 template <class T> constexpr bool is_std_any_map() noexcept
 {
@@ -87,6 +87,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(map, meta::is_std_any_map<T>())
 CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_any_map<T>())
 
 //clear
-#undef _IS_STD_MAP_TYPE_META_GENERIC
+#undef _SIFAR_IS_STD_MAP_TYPE_META_GENERIC
 
 #endif // SIFAR_SUPPORT_MAP_HPP

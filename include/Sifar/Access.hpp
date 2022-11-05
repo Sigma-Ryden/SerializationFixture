@@ -18,7 +18,7 @@
     struct has_##name : std::false_type {};                                                             \
     template <typename C>                                                                               \
     struct has_##name<C, ::sifar::meta::to_void<decltype(&C::name)>>                                    \
-        : std::true_type {}
+        : std::true_type {};
 
 #define _SIFAR_APPLY_FUNCTOR_GENERIC(class_name, function_name)                                         \
     template <typename Derived, typename Base>                                                          \
@@ -53,13 +53,13 @@ class Access
     using Serializable = SifarSerializable;
 
 private:
-    _SIFAR_HAS_PROPERTY_HELPER(save);
-    _SIFAR_HAS_PROPERTY_HELPER(load);
+    _SIFAR_HAS_PROPERTY_HELPER(save)
+    _SIFAR_HAS_PROPERTY_HELPER(load)
 
-    _SIFAR_HAS_PROPERTY_HELPER(static_key);
-    _SIFAR_HAS_PROPERTY_HELPER(dynamic_key);
+    _SIFAR_HAS_PROPERTY_HELPER(static_key)
+    _SIFAR_HAS_PROPERTY_HELPER(dynamic_key)
 
-    _SIFAR_HAS_PROPERTY_HELPER(pure);
+    _SIFAR_HAS_PROPERTY_HELPER(pure)
 
 public:
     template <class T>
