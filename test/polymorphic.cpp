@@ -59,9 +59,9 @@ class Derived : public Base<std::string>
 {
     POLYMORPHIC()
 
-public:
+private:
     float value;
-    using r = void;
+
 public:
     Derived(std::string data = "", float c = 0.) : Base(data), value(c) {}
 
