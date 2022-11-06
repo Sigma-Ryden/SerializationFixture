@@ -1,8 +1,6 @@
 #ifndef SIFAR_TYPE_REGISTRY_HPP
 #define SIFAR_TYPE_REGISTRY_HPP
 
-#include <Sifar/Access.hpp>
-
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 

@@ -18,11 +18,12 @@
     virtual void load(Archive& archive) override;                                                       \
     public:
 
+#define _POLYMORPHIC_ARCHIVE_CALL(function_name)                                                        \
+    { ::sifar::dynamic::PolymorphicArchive::function_name(archive, *this); }
+
 #define _DYNAMIC_SAVE_LOAD_IMPLEMENTATION_WITH(prefix, ...)                                             \
-    prefix void __VA_ARGS__::save(Archive& archive)                                                     \
-    { ::sifar::dynamic::PolymorphicArchive::save(archive, *this); }                                     \
-    prefix void __VA_ARGS__::load(Archive& archive)                                                     \
-    { ::sifar::dynamic::PolymorphicArchive::load(archive, *this); }
+    prefix void __VA_ARGS__::save(Archive& archive) _POLYMORPHIC_ARCHIVE_CALL(save)                     \
+    prefix void __VA_ARGS__::load(Archive& archive) _POLYMORPHIC_ARCHIVE_CALL(load)
 
 #define _DYNAMIC_SAVE_LOAD_IMPLEMENTATION(...)                                                          \
     _DYNAMIC_SAVE_LOAD_IMPLEMENTATION_WITH(, __VA_ARGS__)

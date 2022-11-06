@@ -1,3 +1,4 @@
+#include "Sifar/ReadArchive.hpp"
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
@@ -37,7 +38,7 @@ struct is_base : std::false_type {};
 template <typename T>
 struct is_base<Base<T>> : std::true_type {};
 
-SAVE_SERIALIZABLE(Base<std::string>)
+SAVE_LOAD_SERIALIZABLE(Base<std::string>)
 {
     std::cout << "Save Base<std::string> class\n";
     archive & self.data;

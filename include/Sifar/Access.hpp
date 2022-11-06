@@ -210,10 +210,6 @@ void virtual_base(Archive& archive, Derived& object) noexcept
 {
     if (Access::dynamic_key(object) == Access::template static_key<Derived>())
         base<Base>(archive, object);
-
-#ifdef SIFAR_DEBUG
-    else throw "the srializable object must serialize the virtual base object.";
-#endif
 }
 
 template <class Base, class Archive, class Derived,

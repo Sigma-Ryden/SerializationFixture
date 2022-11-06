@@ -9,6 +9,7 @@
 #include <Sifar/Hash.hpp>
 
 #define _FACTORY_TABLE_UPDATER_DECLARATION(...)                                                         \
+    private:                                                                                            \
     static ::sifar::dynamic::FactoryTabelUpdater updater;
 
 #define _FACTORY_TABLE_UPDATER_IMPLEMENTATION_WITH(prefix, ...)                                         \

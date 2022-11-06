@@ -37,11 +37,14 @@
     _SERIALIZATION_DECLARATION_IF(Load, __VA_ARGS__)                                                    \
     _SERIALIZATION_IMPLEMENTATION_IF(Load, __VA_ARGS__)
 
+#define _SERIALIZATION_CALL(serialization_type, ...)                                                    \
+    { ::SifarSerializable::serialization_type<__VA_ARGS__>::call(archive, self); }
+
 #define CONDITIONAL_SAVE_LOAD_SERIALIZABLE(...)                                                         \
     _SERIALIZATION_DECLARATION_IF(Save, __VA_ARGS__)                                                    \
     _SERIALIZATION_DECLARATION_IF(Load, __VA_ARGS__)                                                    \
     _SERIALIZATION_IMPLEMENTATION_IF(Load, __VA_ARGS__)                                                 \
-    { ::SifarSerializable::Save<T, SIWHEN(__VA_ARGS__)>::call(archive, self); }                         \
+    _SERIALIZATION_CALL(Save, T, SIWHEN(__VA_ARGS__))                                                   \
     _SERIALIZATION_IMPLEMENTATION_IF(Save, __VA_ARGS__)
 
 #define SAVE_SERIALIZABLE(...)                                                                          \
@@ -56,7 +59,7 @@
     _SERIALIZATION_DECLARATION(Save, __VA_ARGS__)                                                       \
     _SERIALIZATION_DECLARATION(Load, __VA_ARGS__)                                                       \
     _SERIALIZATION_IMPLEMENTATION(Load, __VA_ARGS__)                                                    \
-    { ::SifarSerializable::Save<__VA_ARGS__, void>::call(archive, self); }                              \
+    _SERIALIZATION_CALL(Save, __VA_ARGS__, void)                                                        \
     _SERIALIZATION_IMPLEMENTATION(Save, __VA_ARGS__)
 
 #ifdef SIFAR_SMART
