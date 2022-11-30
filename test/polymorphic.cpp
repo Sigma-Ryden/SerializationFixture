@@ -15,9 +15,9 @@ using namespace sifar::library; // support of std library
 using namespace sifar::tracking; // support of data tracking
 
 template <class SomeType>
-class Base : IMPORT_POLYMORPHIC()
+class Base : POLYMORPHIC_OBJECT()
 {
-    POLYMORPHIC_TEMPLATE(Base)
+    POLYMORPHIC(Base)
 
 protected:
     SomeType data;
@@ -56,9 +56,12 @@ CONDITIONAL_LOAD_SERIALIZABLE(is_base<T>::value)
     archive & self.data;
 }
 
+namespace internal // example namespace
+{
+
 class Derived : public Base<std::string>
 {
-    POLYMORPHIC()
+    POLYMORPHIC(internal::Derived)
 
 private:
     float value;
@@ -72,17 +75,17 @@ public:
     }
 };
 
-SAVE_LOAD_SERIALIZABLE(Derived)
+} // namespace internal
+
+SAVE_LOAD_SERIALIZABLE(internal::Derived)
 {
     std::cout << "Save Load Derived class\n";
     archive & base<Base<std::string>>(self);
     archive & self.value;
 }
 
-EXPORT_POLYMORPHIC_TEMPLATE(Base<std::string>)
-EXPORT_POLYMORPHIC_TEMPLATE(Base<double>)
-
-EXPORT_POLYMORPHIC(Derived)
+POLYMORPHIC_TEMPLATE_SPECIALIZATION(Base<std::string>)
+POLYMORPHIC_TEMPLATE(Base<double>) // smae as POLYMORPHIC_TEMPLATE_SPECIALIZATION
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
@@ -92,7 +95,7 @@ void test_polymorphic()
     using Registry = sifar::dynamic::ExternRegistry;
 
     using Parent = Base<std::string>;
-    using Child  = Derived;
+    using Child  = internal::Derived;
     {
         println(Registry::key<Base<char>>()); // <-- default value
         println(Registry::key<Base<std::string>>()); // <-- specialization

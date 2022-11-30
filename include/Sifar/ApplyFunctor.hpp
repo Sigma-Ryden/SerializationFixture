@@ -34,7 +34,6 @@ template <typename Archive, typename T,
 Archive& operator& (Archive& archive, T&& apply_functor)
 {
     apply_functor(archive);
-
     return archive;
 }
 

@@ -11,7 +11,7 @@ using sifar::virtual_base;
 
 using sifar::ref;
 
-using sifar::utility::pure;
+using sifar::memory::pure;
 
 using namespace sifar::common; // support of common types
 using namespace sifar::tracking; // support of data tracking
@@ -19,25 +19,25 @@ using namespace sifar::tracking; // support of data tracking
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
 // Needed for clonable and serializable of derived object
-struct B : IMPORT_POLYMORPHIC()
+struct B : POLYMORPHIC_OBJECT()
 {
-    POLYMORPHIC()
+    POLYMORPHIC(B)
 
     int b = 0;
 };
-SERIALIZATION_POLYMORPHIC(B)
+SAVE_LOAD_SERIALIZABLE(B)
 {
     archive & self.b;
 }
 
 struct C : virtual B
 {
-    POLYMORPHIC()
+    POLYMORPHIC(C)
 
     int c = 1;
 };
 
-SERIALIZATION_POLYMORPHIC(C)
+SAVE_LOAD_SERIALIZABLE(C)
 {
     archive & virtual_base<B>(self)
             & self.c;
@@ -45,12 +45,12 @@ SERIALIZATION_POLYMORPHIC(C)
 
 struct D : virtual B
 {
-    POLYMORPHIC()
+    POLYMORPHIC(D)
 
     int d = 22;
 };
 
-SERIALIZATION_POLYMORPHIC(D)
+SAVE_LOAD_SERIALIZABLE(D)
 {
     archive & virtual_base<B>(self) // expand to => virtual_base<B>
             & self.d;
@@ -58,12 +58,12 @@ SERIALIZATION_POLYMORPHIC(D)
 
 struct X : C, D
 {
-    POLYMORPHIC()
+    POLYMORPHIC(X)
 
     int x = 333;
 };
 
-SERIALIZATION_POLYMORPHIC(X)
+SAVE_LOAD_SERIALIZABLE(X)
 {
     archive & virtual_base<B>(self)
             & base<C>(self)

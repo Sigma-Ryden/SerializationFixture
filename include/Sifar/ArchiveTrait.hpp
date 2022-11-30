@@ -13,6 +13,12 @@
         { using type = archive_type<__VA_ARGS__>; };                                                    \
     }}
 
+#define _EXPORT_SERIALIZATION_ARCHIVE_TRAIT_KEY(archive_key, archive_type, ...)                         \
+    namespace sifar { namespace core {                                                                  \
+        template <> struct ArchiveTraitKey<archive_type<__VA_ARGS__>>                                   \
+        { static constexpr let::u8 key = archive_key; };                                                \
+    }}
+
 namespace sifar
 {
 

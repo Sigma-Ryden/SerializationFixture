@@ -65,7 +65,7 @@ CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(array, meta::is_array<T>())
     return archive;
 }
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(pointer, meta::is_serializable_pointer<T>())
+CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(pointer, meta::is_serializable_raw_pointer<T>())
 {
     auto success = detail::is_refer(archive, pointer); // read/write refer info
     if (success) strict(archive, pointer);

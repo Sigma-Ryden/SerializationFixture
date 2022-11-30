@@ -1,61 +1,46 @@
 #ifndef SIFAR_FACTORY_TABLE_HPP
 #define SIFAR_FACTORY_TABLE_HPP
 
+#include <cassert> // assert
 #include <cstddef> // size_t
 
+#include <memory> // shared_ptr
 #include <unordered_map> // unordered_map
 
+#include <Sifar/Access.hpp>
 #include <Sifar/Utility.hpp>
-#include <Sifar/Hash.hpp>
+#include <Sifar/Memory.hpp>
 
-#define _FACTORY_TABLE_UPDATER_DECLARATION(...)                                                         \
+#define _CLONEABLE_KEY_CALL(...)                                                                        \
+    { return SIFAR_STATIC_HASH(#__VA_ARGS__); }
+
+#define _CLONEABLE_KEY_IMPLEMENTATION(...)                                                              \
     private:                                                                                            \
-    static ::sifar::dynamic::FactoryTabelUpdater updater;
+    static constexpr key_type static_key() noexcept _CLONEABLE_KEY_CALL(__VA_ARGS__)                    \
+    virtual key_type dynamic_key() const noexcept override { return static_key(); }
 
-#define _FACTORY_TABLE_UPDATER_IMPLEMENTATION_WITH(prefix, ...)                                         \
-    prefix ::sifar::dynamic::FactoryTabelUpdater __VA_ARGS__::updater                                   \
-    ( new __VA_ARGS__, __VA_ARGS__::static_key() );
+#define _CLONEABLE_TEMPLATE_KEY_IMPLEMENTATION(...)                                                     \
+    template <> constexpr auto __VA_ARGS__::static_key() noexcept -> key_type                           \
+    _CLONEABLE_KEY_CALL(__VA_ARGS__)
 
-#define _FACTORY_TABLE_UPDATER_IMPLEMENTATION(...)                                                      \
-    _FACTORY_TABLE_UPDATER_IMPLEMENTATION_WITH(, __VA_ARGS__)
-
-#define _FACTORY_TABLE_UPDATER_TEMPLATE_IMPLEMENTATION(...)                                             \
-     _FACTORY_TABLE_UPDATER_IMPLEMENTATION_WITH(template <>, __VA_ARGS__)
-
-#define _CLONEABLE_DECLARATION_WITHOUT_KEY(...)                                                         \
+#define _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION(...)                                                    \
     private:                                                                                            \
-    virtual clone_type* clone() const override;                                                         \
-    virtual clone_type* cast(void* address) const override;
-
-#define _CLONEABLE_DECLARATION(...)                                                                     \
-    _CLONEABLE_DECLARATION_WITHOUT_KEY()                                                                \
-    static constexpr key_type static_key() noexcept;                                                    \
-    virtual key_type dynamic_key() const noexcept override;                                             \
-    public:
-
-#define _CLONEABLE_TEMPLATE_DECLARATION(...)                                                            \
-    _CLONEABLE_DECLARATION_WITHOUT_KEY()                                                                \
-    static constexpr key_type static_key() noexcept                                                     \
-    { return SIFAR_STATIC_HASH(#__VA_ARGS__); }                                                         \
-    virtual key_type dynamic_key() const noexcept override                                              \
-    { return static_key(); }                                                                            \
-    public:
-
-#define _CLONEABLE_IMPLEMENTATION_WITH(prefix, ...)                                                     \
-    prefix auto __VA_ARGS__::clone() const -> clone_type*                                               \
-    { return new __VA_ARGS__; }                                                                         \
-    prefix auto __VA_ARGS__::cast(void* address) const -> clone_type*                                   \
-    { return static_cast<__VA_ARGS__*>(address); }                                                      \
-    prefix constexpr auto __VA_ARGS__::static_key() noexcept -> key_type                                \
-    { return SIFAR_STATIC_HASH(#__VA_ARGS__); }                                                         \
-    prefix auto __VA_ARGS__::dynamic_key() const noexcept -> key_type                                   \
-    { return static_key(); }                                                                            \
+    ::sifar::dynamic::FactoryTableUpdater<__VA_ARGS__> factory_table_updater_;                          \
 
 #define _CLONEABLE_IMPLEMENTATION(...)                                                                  \
-    _CLONEABLE_IMPLEMENTATION_WITH(, __VA_ARGS__)
+    private:                                                                                            \
+    virtual shared_ptr<clone_type> clone_shared() const override                                        \
+    { return std::make_shared<__VA_ARGS__>(); }                                                         \
+    virtual shared_ptr<clone_type> cast_shared(shared_ptr<void> address) const override                 \
+    { return ::sifar::memory::static_pointer_cast<__VA_ARGS__>(address); }                              \
+    virtual raw_ptr<clone_type> clone() const override { return new __VA_ARGS__; }                      \
+    virtual raw_ptr<clone_type> cast(raw_ptr<void> address) const override                              \
+    { return ::sifar::memory::static_pointer_cast<__VA_ARGS__>(address); };                             \
 
-#define _CLONEABLE_TEMPLATE_IMPLEMENTATION(...)                                                         \
-    _CLONEABLE_IMPLEMENTATION_WITH(template <>, __VA_ARGS__)
+#define CLONEABLE_BODY(...)                                                                             \
+    _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION(__VA_ARGS__)                                                \
+    _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
+    _CLONEABLE_KEY_IMPLEMENTATION(__VA_ARGS__)
 
 namespace sifar
 {
@@ -81,14 +66,23 @@ public:
     using key_type   = FactoryTableCore::key_type;
     using clone_type = FactoryTableCore::clone_type;
 
+    template <typename T>
+    using shared_ptr = memory::shared_ptr<T>;
+
+    template <typename T>
+    using raw_ptr    = memory::raw_ptr<T>;
+
 public:
     virtual ~Cloneable() = default;
 
 private:
     virtual key_type dynamic_key() const noexcept = 0;
 
-    virtual clone_type* clone() const = 0;
-    virtual clone_type* cast(void* address) const = 0;
+    virtual shared_ptr<clone_type> clone_shared() const = 0;
+    virtual shared_ptr<clone_type> cast_shared(shared_ptr<void> address) const = 0;
+
+    virtual raw_ptr<clone_type> clone() const = 0;
+    virtual raw_ptr<clone_type> cast(raw_ptr<void> address) const = 0;
 };
 
 class FactoryTable
@@ -125,35 +119,64 @@ public:
         if (not has_factory(key)) factory_[key] = clone;
     }
 
-    clone_type* clone(key_type key)
+    template <typename PointerWrapper,
+              SIREQUIRE(meta::is_memory_shared<PointerWrapper>())>
+    memory::shared_ptr<clone_type> clone(key_type key)
     {
-        auto has_clone = has_factory(key);
-        return has_clone ? factory_[key]->clone() : nullptr;
+        return has_factory(key) ? factory_[key]->clone_shared() : nullptr;
     }
 
-    clone_type* cast(void* address, key_type key)
+    template <typename PointerWrapper,
+              SIREQUIRE(meta::is_memory_raw<PointerWrapper>())>
+    memory::raw_ptr<clone_type> clone(key_type key)
     {
-        auto has_clone = has_factory(key);
-        return has_clone ? factory_[key]->cast(address) : nullptr;
+        return has_factory(key) ? factory_[key]->clone() : nullptr;
     }
 
-private:
-    bool has_factory(key_type key)
+    memory::shared_ptr<clone_type> cast(memory::shared_ptr<void> address, key_type key)
+    {
+        return has_factory(key) ? factory_[key]->cast_shared(address) : nullptr;
+    }
+
+    memory::raw_ptr<clone_type> cast(memory::raw_ptr<void> address, key_type key)
+    {
+        return has_factory(key) ? factory_[key]->cast(address) : nullptr;
+    }
+
+public:
+    bool has_factory(key_type key) const noexcept
     {
         return factory_.find(key) != factory_.end();
     }
 };
 
-struct FactoryTabelUpdater
+template <class T>
+class FactoryTableUpdater
 {
-    using key_type   = FactoryTableCore::key_type;
-    using clone_type = FactoryTableCore::clone_type;
+private:
+    static bool lock_;
 
-    FactoryTabelUpdater(clone_type* clone, key_type key)
+public:
+    FactoryTableUpdater()
     {
-        FactoryTable::instance().update(clone, key);
+        if (lock_) return;
+
+        lock_ = true; // lock before creating clone instance to prevent recursive call
+
+    #ifdef SIFAR_DEBUG
+        if (FactoryTable::instance().has_factory(key))
+            throw "FactoryTable must contain polymorphic clone with unique key.");
+    #endif // SIFAR_DEBUG
+
+        auto clone_instance = new T;
+        auto key = Access::template static_key<T>();
+
+        FactoryTable::instance().update(clone_instance, key);
     }
 };
+
+template <class T>
+bool FactoryTableUpdater<T>::lock_ = false;
 
 } // namespace dynamic
 

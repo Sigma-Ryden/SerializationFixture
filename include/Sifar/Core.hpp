@@ -5,7 +5,7 @@
     #define SIFAR_SMART // Use additional macro defs
 #endif // SIFAR_MACRO_DISABLE
 
-#include <iosfwd> // ifstream, ofstream
+#include <fstream> // ifstream, ofstream
 
 #include <Sifar/Access.hpp>
 #include <Sifar/Serializable.hpp>

@@ -2,9 +2,12 @@
 #define SIFAR_DETAIL_META_HPP
 
 #include <cstddef> // size_t
+
 #include <type_traits>
 // is_enum, is_arithmetic, is_array, is_pointer,
 // enable_if, is_same, true_type, false_type
+
+#include <memory> // shared_ptr
 
 #include <Sifar/SerializatonBase.hpp>
 
@@ -13,6 +16,10 @@ namespace sifar
 
 namespace meta
 {
+
+struct shared_type {};
+struct raw_type {};
+struct common_type {};
 
 struct dummy_type {};
 
@@ -45,6 +52,12 @@ struct deref_impl { using type = T; };
 
 template <>
 struct deref_impl<void*> { using type = void; };
+
+template <typename T>
+struct deref_impl<std::unique_ptr<T>> { using type = T; };
+
+template <typename T>
+struct deref_impl<std::shared_ptr<T>> { using type = T; };
 
 template <typename T>
 struct deref_impl<T, to_void<decltype(*std::declval<T>())>>
@@ -156,6 +169,10 @@ struct pointer_impl<T, 0>
 
 template <typename T, std::size_t N>
 using pointer = typename detail::pointer_impl<T, N>::type;
+
+template <typename> struct is_std_shared_ptr : std::false_type {};
+template <typename T>
+struct is_std_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
 namespace detail
 {
@@ -401,9 +418,19 @@ template <typename T> constexpr bool is_array() noexcept
     return std::is_array<T>::value;
 }
 
-template <typename T> constexpr bool is_pointer() noexcept
+template <typename T> constexpr bool is_shared_pointer() noexcept
+{
+    return is_std_shared_ptr<T>::value;
+}
+
+template <typename T> constexpr bool is_raw_pointer() noexcept
 {
     return std::is_pointer<T>::value;
+}
+
+template <typename T> constexpr bool is_pointer() noexcept
+{
+    return is_raw_pointer<T>() or is_shared_pointer<T>();
 }
 
 template <typename T> constexpr bool is_pointer_to_abstract() noexcept
@@ -418,7 +445,7 @@ template <typename T> constexpr bool is_pointer_to_polymorphic() noexcept
 
 template <typename T> constexpr bool is_void_pointer() noexcept
 {
-    return std::is_same<T, void*>::value;
+    return is_pointer<T>() and is_void<dereference<T>>();
 }
 
 template <typename T> constexpr bool is_null_pointer() noexcept
@@ -444,6 +471,16 @@ template <typename T> constexpr bool is_pod_pointer() noexcept
 template <typename T> constexpr bool is_serializable_pointer() noexcept
 {
     return is_pod_pointer<T>() or is_pointer_to_polymorphic<T>();
+}
+
+template <typename T> constexpr bool is_serializable_raw_pointer() noexcept
+{
+    return is_raw_pointer<T>() and is_serializable_pointer<T>();
+}
+
+template <typename T> constexpr bool is_serializable_shared_pointer() noexcept
+{
+    return is_shared_pointer<T>() and is_serializable_pointer<T>();
 }
 
 template <typename T> constexpr bool is_unsupported() noexcept

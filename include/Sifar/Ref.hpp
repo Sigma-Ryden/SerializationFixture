@@ -79,13 +79,13 @@ inline namespace common
 
 CONDITIONAL_SAVE_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
 {
-    using key_type = typename WriteArchive::TrackingTable::key_type;
+    using key_type = typename WriteArchive::TrackingKeyType;
 
     if (ref.is_null())
         throw "the write reference must be initialized.";
 
     auto pointer = std::addressof(ref.get());
-    auto address = utility::pure(pointer);
+    auto address = memory::pure(pointer);
 
     auto key = reinterpret_cast<key_type>(address);
 
@@ -101,8 +101,10 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
 
 CONDITIONAL_LOAD_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
 {
-    using key_type   = typename ReadArchive::TrackingTable::key_type;
+    using key_type   = typename ReadArchive::TrackingKeyType;
     using value_type = typename T::type;
+
+    using track_type = tracking::Raw;
 
     if (not ref.is_null())
         throw "the read reference must be null.";
@@ -110,7 +112,7 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
     key_type key;
     archive & key;
 
-    auto& track_data = archive.tracking()[key];
+    auto& track_data = archive.template tracking<track_type>()[key];
 
     if (not track_data.is_tracking)
         throw "the read reference must be tracked before.";

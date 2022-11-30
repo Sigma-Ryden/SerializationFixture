@@ -21,6 +21,7 @@ set(SIFAR
     include/Sifar/Support/forward_list.hpp
     include/Sifar/Support/set.hpp
     include/Sifar/Support/unique_ptr.hpp
+	include/Sifar/Support/shared_ptr.hpp
     include/Sifar/Support/map.hpp
     include/Sifar/Support/deque.hpp
     include/Sifar/Support/stack.hpp
@@ -50,13 +51,15 @@ set(SIFAR
     include/Sifar/WriteArchive.hpp
     include/Sifar/UnifiedData.hpp
     include/Sifar/SerializatonBase.hpp
+	include/Sifar/Memory.hpp
+	include/Sifar/DataTrackBase.hpp
 
     include/Sifar/Core.hpp
 )
 
 add_executable(${PROJECT_NAME}
-	test/polymorphic.cpp
-	# test/virtual_base.cpp
+	# test/polymorphic.cpp
+	test/virtual_base.cpp
 	# test/demo.cpp
 	# test/simple.cpp
 	# test/tracking.cpp
@@ -64,5 +67,6 @@ add_executable(${PROJECT_NAME}
 	# test/multi_array.cpp
 	# test/tracking_virtual.cpp
 	# test/ref_tracking.cpp
-    ${SIFAR}
+	# test/tracking_shared_ptr.cpp
+	${SIFAR}
 )

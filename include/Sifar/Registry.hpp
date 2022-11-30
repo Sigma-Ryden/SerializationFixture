@@ -4,7 +4,7 @@
 #include <Sifar/Access.hpp>
 #include <Sifar/FactoryTable.hpp>
 
-#include <Sifar/Utility.hpp>
+#include <Sifar/Memory.hpp>
 
 #include <Sifar/RegistryBase.hpp>
 
@@ -21,7 +21,7 @@ class ExternRegistry : public RegistryBase
 {
 public:
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIREQUIRE(Access::is_registered_class<T>())>
+              SIREQUIRE(meta::is_pointer<Pointer>() and Access::is_registered_class<T>())>
     static void save(core::ArchiveBase& archive, Pointer& pointer, key_type key)
     {
         if (pointer == nullptr)
@@ -31,27 +31,32 @@ public:
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIREQUIRE(Access::is_registered_class<T>())>
+              SIREQUIRE(meta::is_pointer<Pointer>() and Access::is_registered_class<T>())>
     static void load(core::ArchiveBase& archive, Pointer& pointer, key_type key)
     {
+        using PointerTrait = typename memory::ptr_trait<Pointer>::trait;
+
         if (pointer != nullptr)
-            throw "The read pointer must be initialized to nullptr.";
+            throw "The read shared pointer must be initialized to nullptr.";
 
-        auto cloned = FactoryTable::instance().clone(key);
-        pointer = dynamic_cast<Pointer>(cloned);
+        auto cloned = FactoryTable::instance().clone<PointerTrait>(key);
+        pointer = memory::dynamic_pointer_cast<T>(cloned);
 
-        Access::dynamic_load(archive, pointer);
+        auto raw_pointer = memory::raw(pointer);
+        Access::dynamic_load(archive, raw_pointer);
     }
 
-    template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIREQUIRE(Access::is_registered_class<T>())>
-    static void assign(Pointer& pointer, void* address, key_type key)
+    template <typename Pointer,
+              typename VoidPointer = typename memory::ptr_trait<Pointer>::void_ptr,
+              typename T = meta::dereference<Pointer>,
+              SIREQUIRE(meta::is_pointer<Pointer>() and Access::is_registered_class<T>())>
+    static void assign(Pointer& pointer, const VoidPointer& address, key_type key)
     {
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
 
         auto casted = FactoryTable::instance().cast(address, key);
-        pointer = dynamic_cast<Pointer>(casted);
+        pointer = memory::dynamic_pointer_cast<T>(casted);
     }
 };
 

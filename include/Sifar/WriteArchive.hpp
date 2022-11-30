@@ -13,6 +13,7 @@
 #include <Sifar/Registry.hpp>
 
 #include <Sifar/Utility.hpp>
+#include <Sifar/DataTrackBase.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
@@ -64,22 +65,27 @@ class WriteArchive : public core::ArchiveBase
     SERIALIZATION_ARCHIVE(WriteArchive)
 
 public:
-    using TrackingTable = std::unordered_map<std::uintptr_t, bool>;
+    using TrackingKeyType = std::uintptr_t;
+    using TrackingTable   = std::unordered_map<TrackingKeyType, bool>;
 
 private:
     StreamWrapper archive_;
-    TrackingTable track_table_;
+    TrackingTable track_common_;
     Registry registry_;
 
 public:
     WriteArchive(OutStream& stream);
 
     auto stream() noexcept -> StreamWrapper& { return archive_; }
-    auto tracking() noexcept -> TrackingTable& { return track_table_; }
+
+    template <typename TrackType = tracking::Common,
+              SIREQUIRE(meta::is_track_common<TrackType>())>
+    auto tracking() noexcept -> TrackingTable& { return track_common_; }
+
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator<< (T& data) -> WriteArchive&;
+    auto operator<< (T&& data) -> WriteArchive&;
 
     template <typename T, typename... Tn>
     auto operator() (T& data, Tn&... data_n) -> WriteArchive&;
@@ -111,14 +117,14 @@ WriteArchive<OutStream, StreamWrapper, Registry> writer(OutStream& stream)
 
 template <class OutStream, class StreamWrapper, class Registry>
 WriteArchive<OutStream, StreamWrapper, Registry>::WriteArchive(OutStream& stream)
-    : archive_{stream}, track_table_(), registry_()
+    : archive_{stream}, track_common_(), registry_()
 {
 }
 
 template <class OutStream, class StreamWrapper, class Registry>
 template <typename T>
 auto WriteArchive<OutStream, StreamWrapper, Registry>::operator<< (
-    T& data) -> WriteArchive&
+    T&& data) -> WriteArchive&
 {
     return (*this) & data;
 }

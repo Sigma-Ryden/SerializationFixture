@@ -3,6 +3,8 @@
 
 #include <Sifar/ApplyFunctor.hpp>
 
+#include <Sifar/Memory.hpp>
+
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
@@ -30,7 +32,7 @@ void strict(ReadArchive& archive, T& pod_pointer)
     if (pod_pointer != nullptr)
         throw "the read pointer must be initialized to nullptr.";
 
-    pod_pointer = new value_type;
+    memory::allocate<value_type>(pod_pointer);
 
     archive & (*pod_pointer);
 }
@@ -62,7 +64,7 @@ namespace detail
 
 template <class WriteArchive, typename T,
           SIREQUIRE(meta::is_write_archive<WriteArchive>() and
-                    meta::is_serializable_pointer<T>())>
+                    meta::is_serializable_pointer<T>() )>
 bool is_refer(WriteArchive& archive, T& pointer)
 {
     auto info = static_cast<bool>(pointer);

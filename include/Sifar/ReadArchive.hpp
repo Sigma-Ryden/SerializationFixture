@@ -4,7 +4,7 @@
 #include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
-#include <memory> // addressof
+#include <memory> // shared_ptr
 
 #include <Sifar/ArchiveBase.hpp>
 
@@ -13,6 +13,7 @@
 #include <Sifar/Registry.hpp>
 
 #include <Sifar/Utility.hpp>
+#include <Sifar/DataTrackBase.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
@@ -63,30 +64,50 @@ class ReadArchive : public core::ArchiveBase
 {
     SERIALIZATION_ARCHIVE(ReadArchive)
 
-private:
-    struct TrackingData
+public:
+    struct Raw
     {
         void* address = nullptr;
         bool is_tracking = false;
     };
 
+    struct Shared
+    {
+        std::shared_ptr<void> address = nullptr;
+        bool is_tracking = false;
+    };
+
 public:
-    using TrackingTable = std::unordered_map<std::uintptr_t, TrackingData>;
+    using TrackingKeyType = std::uintptr_t;
+
+    template <typename TrackData>
+    using TrackingTable = std::unordered_map<TrackingKeyType, TrackData>;
 
 private:
     StreamWrapper archive_;
-    TrackingTable track_table_;
+
+    TrackingTable<Shared> track_shared_;
+    TrackingTable<Raw> track_raw_;
+
     Registry registry_;
 
 public:
     ReadArchive(InStream& stream);
 
     auto stream() noexcept -> StreamWrapper& { return archive_; }
-    auto tracking() noexcept -> TrackingTable& { return track_table_; }
+
+    template <typename TrackType,
+              SIREQUIRE(meta::is_track_shared<TrackType>())>
+    auto tracking() noexcept -> TrackingTable<Shared>& { return track_shared_; }
+
+    template <typename TrackType,
+              SIREQUIRE(meta::is_track_raw<TrackType>())>
+    auto tracking() noexcept -> TrackingTable<Raw>& { return track_raw_; }
+
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator>> (T& data) -> ReadArchive&;
+    auto operator>> (T&& data) -> ReadArchive&;
 
     template <typename T, typename... Tn>
     auto operator() (T& data, Tn&... data_n) -> ReadArchive&;
@@ -118,14 +139,14 @@ ReadArchive<InStream, StreamWrapper, Registry> reader(InStream& stream)
 
 template <class InStream, class StreamWrapper, class Registry>
 ReadArchive<InStream, StreamWrapper, Registry>::ReadArchive(InStream& stream)
-    : archive_{stream}, track_table_(), registry_()
+    : archive_{stream}, track_shared_(), track_raw_(), registry_()
 {
 }
 
 template <class InStream, class StreamWrapper, class Registry>
 template <typename T>
 auto ReadArchive<InStream, StreamWrapper, Registry>::operator>> (
-    T& data) -> ReadArchive&
+    T&& data) -> ReadArchive&
 {
     return (*this) & data;
 }

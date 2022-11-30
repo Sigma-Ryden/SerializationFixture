@@ -7,7 +7,7 @@
 
 #ifndef SIFAR_STATIC_HASH
     #define SIFAR_STATIC_HASH(string) ::sifar::static_hash<key_type>((string))
-#endif
+#endif // SIFAR_STATIC_HASH
 
 namespace sifar
 {

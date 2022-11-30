@@ -3,12 +3,12 @@
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
+#include <Sifar/Support/shared_ptr.hpp>
+
 using sifar::reader;
 using sifar::writer;
 
-using sifar::virtual_base;
 using sifar::hierarchy;
-using sifar::native_base;
 
 using sifar::memory::pure;
 
@@ -17,42 +17,26 @@ using namespace sifar::tracking; // support of data tracking
 
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
-// Needed for clonable and serializable of derived object
 struct B : POLYMORPHIC_OBJECT()
 {
     POLYMORPHIC(B)
 
     int b = 0;
 };
-SAVE_LOAD_SERIALIZABLE(B)
-{
-    archive & self.b;
-}
 
 struct C : virtual B
 {
-    SERIALIZABLE_POLYMORPHIC(C)
+    POLYMORPHIC(C)
 
     int c = 1;
 };
-SAVE_LOAD_SERIALIZABLE(C)
-{
-    archive & virtual_base<B>(self)
-            & self.c;
-}
 
 struct D : virtual B
 {
-    POLYMORPHIC(D) // same as SERIALIZABLE_POLYMORPHIC()
+    POLYMORPHIC(D)
 
     int d = 22;
 };
-
-SERIALIZATION(D) // same as: SAVE_LOAD_SERIALIZABLE(D) {...}
-{
-    archive & native_base<B>(self) // expand to => virtual_base<B>
-            & self.d;
-}
 
 struct X : C, D
 {
@@ -61,13 +45,30 @@ struct X : C, D
     int x = 333;
 };
 
+SAVE_LOAD_SERIALIZABLE(B)
+{
+    archive & self.b;
+}
+
+SAVE_LOAD_SERIALIZABLE(C)
+{
+    archive & hierarchy<B>(self)
+            & self.c;
+}
+
+SAVE_LOAD_SERIALIZABLE(D)
+{
+    archive & hierarchy<B>(self)
+            & self.d;
+}
+
 SAVE_LOAD_SERIALIZABLE(X)
 {
-    archive & hierarchy<B, C, D>(self) // expand to => virtual_base<B>, base<C>, base<D>
+    archive & hierarchy<B, C, D>(self)
             & self.x;
 }
 
-void test_tracking_virtual()
+void test_tracking_shared_ptr()
 {
     {
         std::ofstream file("test_tracking_virtual.bin", std::ios::binary);
@@ -76,10 +77,12 @@ void test_tracking_virtual()
 
         auto ar = writer(file);
 
-        X* x = new X;
-        D* d = x;
-        C* c = x;
-        B* b = x;
+        auto xxx = sifar::Access::static_key<X>();
+
+        std::shared_ptr<X> x = std::make_shared<X>();
+        std::shared_ptr<D> d = x;
+        std::shared_ptr<C> c = x;
+        std::shared_ptr<B> b = x;
 
         println(x);
         println(d);
@@ -95,16 +98,16 @@ void test_tracking_virtual()
 
         try
         { // special shuffle
-            ar & track(d)
-               & track(b)
-               & track(c)
-               & track(x);
+            ar & d
+               & b
+               & c
+               & x;
         }
         catch (const char* e)
         {
             std::cout << e << '\n';
             return;
-        } 
+        }
     }
     std::cout << "---\n";
     {
@@ -114,17 +117,17 @@ void test_tracking_virtual()
 
         auto ar = reader(file);
 
-        X* x = nullptr;
-        D* d = nullptr;
-        C* c = nullptr;
-        B* b = nullptr;
+        std::shared_ptr<X> x = nullptr;
+        std::shared_ptr<D> d = nullptr;
+        std::shared_ptr<C> c = nullptr;
+        std::shared_ptr<B> b = nullptr;
 
         try
         { // special shuffle
-            ar & track(c)
-               & track(d)
-               & track(x)
-               & track(b);
+            ar & c
+               & d
+               & x
+               & b;
         }
         catch (const char* e)
         {
@@ -148,7 +151,7 @@ void test_tracking_virtual()
 
 int main()
 {
-    test_tracking_virtual();
+    test_tracking_shared_ptr();
 
     return 0;
 }

@@ -9,14 +9,14 @@ using sifar::writer;
 using sifar::base;
 using sifar::virtual_base;
 
-struct A : IMPORT_POLYMORPHIC()
+struct A : POLYMORPHIC_OBJECT()
 {
-    POLYMORPHIC()
+    POLYMORPHIC(A)
 
     virtual ~A() {}
 };
 
-SERIALIZATION_POLYMORPHIC(A) {}
+SERIALIZATION(A) {}
 
 // virtual_base serialization proccess:
 // if this->virtual_id != this->static_id
@@ -24,27 +24,27 @@ SERIALIZATION_POLYMORPHIC(A) {}
 // else do something...
 struct B : virtual A
 {
-    POLYMORPHIC()
+    POLYMORPHIC(B)
 };
-SERIALIZATION_POLYMORPHIC(B)
+SERIALIZATION(B)
 {
     virtual_base<A>(archive, self); // works even for non-virtual base, but maybe ambiguous
 }
 
 struct C :  virtual A
 {
-    POLYMORPHIC()
+    POLYMORPHIC(C)
 };
-SERIALIZATION_POLYMORPHIC(C)
+SERIALIZATION(C)
 {
     virtual_base<A>(archive, self);
 }
 
 struct D : B, C
 {
-    POLYMORPHIC()
+    POLYMORPHIC(D)
 };
-SERIALIZATION_POLYMORPHIC(D)
+SERIALIZATION(D)
 {
     base<A>(archive, self);
     base<B>(archive, self);
@@ -53,10 +53,10 @@ SERIALIZATION_POLYMORPHIC(D)
 
 struct F : D
 {
-    POLYMORPHIC()
+    POLYMORPHIC(F)
 };
 
-SERIALIZATION_POLYMORPHIC(F)
+SERIALIZATION(F)
 {
     base<D>(archive, self);
 }
@@ -116,7 +116,7 @@ void test_virtual_base()
     }
     //
 }
-//
+
 int main()
 {
     test_virtual_base();

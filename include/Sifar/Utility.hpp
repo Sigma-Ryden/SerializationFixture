@@ -44,18 +44,6 @@ inline char* byte_cast(T* data) noexcept
     return reinterpret_cast<char*>(data);
 }
 
-template <typename T, SIREQUIRE(not meta::is_polymorphic<T>())>
-inline void* pure(T* pointer)
-{
-    return static_cast<void*>(pointer);
-}
-
-template <typename T, SIREQUIRE(meta::is_polymorphic<T>())>
-inline void* pure(T* pointer_to_polymorphic)
-{
-    return dynamic_cast<void*>(pointer_to_polymorphic);
-}
-
 template <class InIt, class OutIt>
 OutIt copy(InIt first, InIt last, OutIt dst_first) noexcept
 {
@@ -76,10 +64,16 @@ _NULL_CHARACTER_FUNCTION_GENERIC(char16_t, u'\0')
 _NULL_CHARACTER_FUNCTION_GENERIC(char32_t, U'\0')
 
 template <typename CharType, SIREQUIRE(meta::is_character<CharType>())>
+constexpr std::size_t static_size(const CharType* str, std::size_t count = 0) noexcept
+{
+    return *str == null_character<CharType>() ? count : static_size(str + 1, count + 1);
+}
+
+template <typename CharType, SIREQUIRE(meta::is_character<CharType>())>
 std::size_t size(const CharType* str) noexcept
 {
     std::size_t count = 0;
-    while(*str++ != null_character<CharType>()) ++count;
+    while (*str++ != null_character<CharType>()) ++count;
 
     return count;
 }

@@ -40,8 +40,7 @@ template <typename T> constexpr bool is_registered() noexcept
 CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_arithmetic<T>())
 CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_enum<T>())
 CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_array<T>())
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_pod_pointer<T>())
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_pointer_to_polymorphic<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_serializable_raw_pointer<T>())
 CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_unsupported<T>())
 
 #endif // SIFAR_TYPE_REGISTRY_HPP
