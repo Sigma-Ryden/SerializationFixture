@@ -2,7 +2,7 @@
 #define SIFAR_POLYMORPHIC_HPP
 
 #include <Sifar/Access.hpp> // SERIALIZABLE
-#include <Sifar/FactoryTable.hpp> // CLONEABLE_BODY, _CLONEABLE_TEMPLATE_KEY_IMPLEMENTATION
+#include <Sifar/FactoryTable.hpp> // CLONEABLE_BODY
 
 #include <Sifar/PolymorphicArchive.hpp>
 
@@ -25,13 +25,9 @@
     SERIALIZABLE()                                                                                      \
     _POLYMORPHIC_OBJECT_BODY(__VA_ARGS__)
 
-#define POLYMORPHIC_TEMPLATE_SPECIALIZATION(...)                                                        \
-    _CLONEABLE_TEMPLATE_KEY_IMPLEMENTATION(__VA_ARGS__)
-
 #ifdef SIFAR_SMART
     // Additional macro defs
     #define POLYMORPHIC(...) SERIALIZABLE_POLYMORPHIC(__VA_ARGS__)
-    #define POLYMORPHIC_TEMPLATE(...) POLYMORPHIC_TEMPLATE_SPECIALIZATION(__VA_ARGS__)
 #endif // SIFAR_SMART
 
 namespace sifar

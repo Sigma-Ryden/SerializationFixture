@@ -3,7 +3,7 @@
 
 #ifndef SIFAR_SMART_DISABLE
     #define SIFAR_SMART // Use additional macro defs
-#endif // SIFAR_MACRO_DISABLE
+#endif // SIFAR_SMART_DISABLE
 
 #include <fstream> // ifstream, ofstream
 

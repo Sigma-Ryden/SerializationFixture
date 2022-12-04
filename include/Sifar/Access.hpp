@@ -6,6 +6,8 @@
 
 #include <Sifar/ApplyFunctor.hpp>
 
+#include <Sifar/PolymorphicTrait.hpp>
+
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
@@ -172,7 +174,9 @@ public:
     template <class T, SIREQUIRE(is_registered_class<T>())>
     static constexpr auto static_key() noexcept -> decltype(T::static_key())
     {
-        return T::static_key();
+        return dynamic::PolymorphicTraitKey<T>::key == dynamic::PolymorphicTraitCore::base_key
+             ? T::static_key()
+             : dynamic::PolymorphicTraitKey<T>::key;
     }
 
 private:

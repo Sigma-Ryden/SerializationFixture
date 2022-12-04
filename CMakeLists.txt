@@ -50,16 +50,17 @@ set(SIFAR
     include/Sifar/ReadArchive.hpp
     include/Sifar/WriteArchive.hpp
     include/Sifar/UnifiedData.hpp
-    include/Sifar/SerializatonBase.hpp
+	include/Sifar/SerializatonBase.hpp
 	include/Sifar/Memory.hpp
 	include/Sifar/DataTrackBase.hpp
-
+	include/Sifar/PolymorphicTrait.hpp
+	
     include/Sifar/Core.hpp
 )
 
 add_executable(${PROJECT_NAME}
-	# test/polymorphic.cpp
-	test/virtual_base.cpp
+	test/polymorphic.cpp
+	# test/virtual_base.cpp
 	# test/demo.cpp
 	# test/simple.cpp
 	# test/tracking.cpp

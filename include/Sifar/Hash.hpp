@@ -6,7 +6,11 @@
 #include <Sifar/Detail/Meta.hpp>
 
 #ifndef SIFAR_STATIC_HASH
-    #define SIFAR_STATIC_HASH(string) ::sifar::static_hash<key_type>((string))
+    #ifndef SIFAR_STATIC_HASH_KEY_TYPE
+        #define SIFAR_STATIC_HASH_KEY_TYPE ::sifar::let::u64
+    #endif // SIFAR_STATIC_HASH_KEY_TYPE
+    
+    #define SIFAR_STATIC_HASH(string) ::sifar::static_hash<SIFAR_STATIC_HASH_KEY_TYPE>((string))
 #endif // SIFAR_STATIC_HASH
 
 namespace sifar
@@ -15,7 +19,7 @@ namespace sifar
 namespace utility
 {
 
-enum class Word { x32, x64 };
+enum class Word { x32, x64 }; // word size: x* - number of bits
 
 namespace detail
 {

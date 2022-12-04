@@ -7,6 +7,8 @@
 #include <memory> // shared_ptr
 #include <unordered_map> // unordered_map
 
+#include <Sifar/PolymorphicTrait.hpp>
+
 #include <Sifar/Access.hpp>
 #include <Sifar/Utility.hpp>
 #include <Sifar/Memory.hpp>
@@ -16,12 +18,10 @@
 
 #define _CLONEABLE_KEY_IMPLEMENTATION(...)                                                              \
     private:                                                                                            \
-    static constexpr key_type static_key() noexcept _CLONEABLE_KEY_CALL(__VA_ARGS__)                    \
-    virtual key_type dynamic_key() const noexcept override { return static_key(); }
-
-#define _CLONEABLE_TEMPLATE_KEY_IMPLEMENTATION(...)                                                     \
-    template <> constexpr auto __VA_ARGS__::static_key() noexcept -> key_type                           \
-    _CLONEABLE_KEY_CALL(__VA_ARGS__)
+    static constexpr key_type static_key() noexcept                                                     \
+    _CLONEABLE_KEY_CALL(__VA_ARGS__)                                                                    \
+    virtual key_type dynamic_key() const noexcept override                                              \
+    { return ::sifar::Access::static_key<__VA_ARGS__>(); }
 
 #define _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION(...)                                                    \
     private:                                                                                            \
@@ -52,7 +52,7 @@ class Cloneable; // need for type alias
 
 struct FactoryTableCore
 {
-    using key_type   = let::u64;
+    using key_type   = PolymorphicTraitCore::key_type;
     using clone_type = Cloneable;
 };
 

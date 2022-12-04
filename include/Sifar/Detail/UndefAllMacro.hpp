@@ -1,4 +1,4 @@
-// If you want to undef all external users macros
+// If you want to undef all external lib's macros
 // you should include given file only after library files
 // note that: MACRO - is public macro, _MACRO - is private
 
@@ -19,19 +19,18 @@
 
 #undef _CLONEABLE_KEY_CALL
 #undef _CLONEABLE_KEY_IMPLEMENTATION
-#undef _CLONEABLE_TEMPLATE_KEY_IMPLEMENTATION
 #undef _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION
 #undef _CLONEABLE_IMPLEMENTATION
 #undef CLONEABLE_BODY
 
+#undef EXPORT_POLYMORPHIC_KEY
+#undef EXPORT_POLYMORPHIC
 #undef _POLYMORPHIC_ARCHIVE_CALL
 #undef _DYNAMIC_SAVE_LOAD_IMPLEMENTATION
 #undef _POLYMORPHIC_OBJECT_BODY
 #undef POLYMORPHIC_OBJECT
 #undef SERIALIZABLE_POLYMORPHIC
-#undef POLYMORPHIC_TEMPLATE_SPECIALIZATION
 #undef POLYMORPHIC
-#undef POLYMORPHIC_TEMPLATE
 
 #undef _SERIALIZATION_DECLARATION_IF
 #undef _SERIALIZATION_DECLARATION
@@ -54,6 +53,7 @@
 #undef SERIALIZATION
 
 #undef SIFAR_STATIC_HASH
+#undef SIFAR_STATIC_HASH_KEY_TYPE
 #undef SIFAR_SMART
 
 #undef SIREQUIRE

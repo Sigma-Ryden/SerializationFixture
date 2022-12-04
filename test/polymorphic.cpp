@@ -1,4 +1,3 @@
-#include "Sifar/ReadArchive.hpp"
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
@@ -79,13 +78,13 @@ public:
 
 SAVE_LOAD_SERIALIZABLE(internal::Derived)
 {
-    std::cout << "Save Load Derived class\n";
+    std::cout << "Save/Load Derived class\n";
     archive & base<Base<std::string>>(self);
     archive & self.value;
 }
 
-POLYMORPHIC_TEMPLATE_SPECIALIZATION(Base<std::string>)
-POLYMORPHIC_TEMPLATE(Base<double>) // smae as POLYMORPHIC_TEMPLATE_SPECIALIZATION
+EXPORT_POLYMORPHIC(Base<std::string>)
+EXPORT_POLYMORPHIC(Base<double>) // smae as EXPORT_POLYMORPHIC_KEY
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
@@ -98,8 +97,8 @@ void test_polymorphic()
     using Child  = internal::Derived;
     {
         println(Registry::key<Base<char>>()); // <-- default value
-        println(Registry::key<Base<std::string>>()); // <-- specialization
-        println(Registry::key<Base<double>>()); // <-- specialization
+        println(Registry::key<Base<std::string>>()); // <-- exported key
+        println(Registry::key<Base<double>>()); // <-- exported key
     }
     //
     {

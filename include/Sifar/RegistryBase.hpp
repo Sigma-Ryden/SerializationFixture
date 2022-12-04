@@ -4,6 +4,8 @@
 #include <Sifar/Access.hpp>
 #include <Sifar/Utility.hpp>
 
+#include <Sifar/PolymorphicTrait.hpp>
+
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
@@ -16,7 +18,7 @@ namespace dynamic
 class RegistryBase
 {
 public:
-    using key_type = let::u64;
+    using key_type = PolymorphicTraitCore::key_type;
 
 public:
     template <class T>
