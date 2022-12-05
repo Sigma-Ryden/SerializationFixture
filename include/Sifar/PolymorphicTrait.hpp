@@ -10,7 +10,7 @@
 #define EXPORT_POLYMORPHIC_KEY(unique_name, ...)                                                        \
     namespace sifar { namespace dynamic {                                                               \
         template <> struct PolymorphicTraitKey<__VA_ARGS__>                                             \
-        { static constexpr auto key = SIFAR_STATIC_HASH(#unique_name); };                               \
+        { static constexpr auto key = SIFAR_STATIC_HASH(unique_name); };                                \
     }}
 
 #define EXPORT_POLYMORPHIC(...)                                                                         \

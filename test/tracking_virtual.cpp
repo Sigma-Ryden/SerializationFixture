@@ -1,6 +1,7 @@
 #include <iostream> // cout
 #include <fstream> // ifstream, ofstream
 
+#define SIFAR_DEBUG
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
 using sifar::reader;
@@ -11,9 +12,6 @@ using sifar::hierarchy;
 using sifar::native_base;
 
 using sifar::memory::pure;
-
-using namespace sifar::common; // support of common types
-using namespace sifar::tracking; // support of data tracking
 
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
@@ -95,10 +93,10 @@ void test_tracking_virtual()
 
         try
         { // special shuffle
-            ar & track(d)
-               & track(b)
-               & track(c)
-               & track(x);
+            ar & d
+               & b
+               & c
+               & x;
         }
         catch (const char* e)
         {
@@ -121,10 +119,10 @@ void test_tracking_virtual()
 
         try
         { // special shuffle
-            ar & track(c)
-               & track(d)
-               & track(x)
-               & track(b);
+            ar & c
+               & d
+               & x
+               & b;
         }
         catch (const char* e)
         {

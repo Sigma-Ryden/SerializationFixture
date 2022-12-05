@@ -65,17 +65,8 @@ class ReadArchive : public core::ArchiveBase
     SERIALIZATION_ARCHIVE(ReadArchive)
 
 public:
-    struct Raw
-    {
-        void* address = nullptr;
-        bool is_tracking = false;
-    };
-
-    struct Shared
-    {
-        std::shared_ptr<void> address = nullptr;
-        bool is_tracking = false;
-    };
+    struct Raw { void* address = nullptr; };
+    struct Shared { std::shared_ptr<void> address = nullptr; };
 
 public:
     using TrackingKeyType = std::uintptr_t;

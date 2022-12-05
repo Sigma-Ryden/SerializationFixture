@@ -1,13 +1,13 @@
 #include <iostream> // cin, cout
 #include <fstream> // ifstream, ofstream
 
+#define SIFAR_DEBUG
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
 using sifar::reader;
 using sifar::writer;
 
-using namespace sifar::common; // support of common types
-using namespace sifar::tracking; // support of data tracking
+using sifar::tracking::track;
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
@@ -35,9 +35,9 @@ void test_tracking()
 
         try
         {
-            track(ar, x); // track data and read/write with key
-            track(ar, p1); // track data if not track and read/write with key
-            track(ar, p2); // is the same as above
+            ar & track(x) // track data and read/write with key
+               & p1 // track data if not track and read/write with key
+               & p2; // is the same as above
         }
         catch (const char* e)
         {
@@ -58,10 +58,9 @@ void test_tracking()
 
         try
         {
-            track(ar, x);
-            track(ar, p1);
-            track(ar, p2);
-
+            ar & track(x)
+               & p1
+               & p2;
         }
         catch (const char* e)
         {

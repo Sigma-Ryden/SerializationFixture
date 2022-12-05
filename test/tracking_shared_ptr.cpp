@@ -1,6 +1,7 @@
 #include <iostream> // cout
 #include <fstream> // ifstream, ofstream
 
+#define SIFAR_DEBUG
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
 
 #include <Sifar/Support/shared_ptr.hpp>

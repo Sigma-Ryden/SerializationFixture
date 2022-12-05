@@ -163,13 +163,14 @@ public:
 
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
+        auto key = Access::template static_key<T>();
+
     #ifdef SIFAR_DEBUG
         if (FactoryTable::instance().has_factory(key))
-            throw "FactoryTable must contain polymorphic clone with unique key.");
+            throw "FactoryTable must contain polymorphic clone with unique key.";
     #endif // SIFAR_DEBUG
 
         auto clone_instance = new T;
-        auto key = Access::template static_key<T>();
 
         FactoryTable::instance().update(clone_instance, key);
     }

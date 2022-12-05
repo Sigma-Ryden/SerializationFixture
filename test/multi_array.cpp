@@ -6,7 +6,7 @@
 using sifar::reader;
 using sifar::writer;
 
-using namespace sifar::common;
+using sifar::common::span;
 
 void print(int** arr, int h, int w)
 {

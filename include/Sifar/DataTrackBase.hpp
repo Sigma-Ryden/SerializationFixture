@@ -30,6 +30,27 @@ struct track_trait<memory::raw_ptr<T>>
     using trait = tracking::Raw;
 };
 
+template <typename T>
+struct reverse_trait;
+
+template <>
+struct reverse_trait<Shared>
+{
+    using trait = Raw;
+};
+
+template <>
+struct reverse_trait<Raw>
+{
+    using trait = Shared;
+};
+
+template <>
+struct reverse_trait<Common>
+{
+    using trait = Common;
+};
+
 } // namespace tracking
 
 namespace meta

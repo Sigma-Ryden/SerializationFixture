@@ -6,6 +6,8 @@
 
 #include <Sifar/UnifiedData.hpp>
 
+#include <Sifar/DataTrack.hpp>
+
 #include <Sifar/Strict.hpp>
 #include <Sifar/Compress.hpp>
 
@@ -19,21 +21,18 @@ inline namespace common
 CONDITIONAL_SAVE_SERIALIZABLE_TYPE(object, Access::is_save_class<T>())
 {
     Access::save(archive, object);
-
     return archive;
 }
 
 CONDITIONAL_LOAD_SERIALIZABLE_TYPE(object, Access::is_load_class<T>())
 {
     Access::load(archive, object);
-
     return archive;
 }
 
 CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(number, meta::is_arithmetic<T>())
 {
     archive.stream().call(&number, sizeof(number));
-
     return archive;
 }
 
@@ -50,7 +49,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(enumerator, meta::is_enum<T>())
     using underlying_type = typename std::underlying_type<T>::type;
 
     underlying_type buff = 0;
-
     archive & buff;
 
     enumerator = static_cast<T>(buff);
@@ -61,15 +59,12 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(enumerator, meta::is_enum<T>())
 CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(array, meta::is_array<T>())
 {
     compress::zip(archive, array);
-
     return archive;
 }
 
 CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(pointer, meta::is_serializable_raw_pointer<T>())
 {
-    auto success = detail::is_refer(archive, pointer); // read/write refer info
-    if (success) strict(archive, pointer);
-
+    tracking::track(archive, pointer);
     return archive;
 }
 

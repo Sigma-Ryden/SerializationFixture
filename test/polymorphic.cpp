@@ -11,7 +11,6 @@ using sifar::writer;
 using sifar::base;
 
 using namespace sifar::library; // support of std library
-using namespace sifar::tracking; // support of data tracking
 
 template <class SomeType>
 class Base : POLYMORPHIC_OBJECT()
@@ -83,8 +82,9 @@ SAVE_LOAD_SERIALIZABLE(internal::Derived)
     archive & self.value;
 }
 
+// EXPORT_POLYMORPHIC(internal::Derived) - not required
 EXPORT_POLYMORPHIC(Base<std::string>)
-EXPORT_POLYMORPHIC(Base<double>) // smae as EXPORT_POLYMORPHIC_KEY
+EXPORT_POLYMORPHIC(Base<double>) // smae as EXPORT_POLYMORPHIC_KEY("Base<double>", Base<double>)
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
@@ -137,6 +137,8 @@ void test_polymorphic()
         Parent* b = nullptr;
         Parent* d = nullptr;
 
+        // for shared: if exist in raw then add to shared (if can) and serialize key only
+        // for raw: if exist in shared then add to raw (if can) and serialize key only
         ar & b;
         ar & d;
 

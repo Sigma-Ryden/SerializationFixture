@@ -38,7 +38,7 @@
     template <typename Base, typename Derived,                                                          \
               SIREQUIRE(meta::is_base_of<Base, Derived>())>                                             \
     apply::class_name<Derived, Base> function_name(Derived& object)                                     \
-    { return { object }; }                                                                              \
+    { return { object }; }
 
 namespace sifar
 {
@@ -172,7 +172,7 @@ public:
     }
 
     template <class T, SIREQUIRE(is_registered_class<T>())>
-    static constexpr auto static_key() noexcept -> decltype(T::static_key())
+    static constexpr dynamic::PolymorphicTraitCore::key_type static_key() noexcept
     {
         return dynamic::PolymorphicTraitKey<T>::key == dynamic::PolymorphicTraitCore::base_key
              ? T::static_key()
