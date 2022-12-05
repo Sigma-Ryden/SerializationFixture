@@ -39,23 +39,23 @@ set(SIFAR
     include/Sifar/RegistryBase.hpp
     include/Sifar/NativeSaveLoad.hpp
     include/Sifar/Registry.hpp
-	include/Sifar/TypeRegistry.hpp
-	include/Sifar/ArchiveTrait.hpp
-	include/Sifar/Strict.hpp
-	include/Sifar/PolymorphicArchive.hpp
-	include/Sifar/Access.hpp
-	include/Sifar/Serializable.hpp
-	include/Sifar/Polymorphic.hpp
-	include/Sifar/ArchiveBase.hpp
-	include/Sifar/ReadArchive.hpp
-	include/Sifar/WriteArchive.hpp
-	include/Sifar/UnifiedData.hpp
-	include/Sifar/SerializatonBase.hpp
-	include/Sifar/Memory.hpp
-	include/Sifar/DataTrackBase.hpp
-	include/Sifar/PolymorphicTrait.hpp
+    include/Sifar/TypeRegistry.hpp
+    include/Sifar/ArchiveTrait.hpp
+    include/Sifar/Strict.hpp
+    include/Sifar/PolymorphicArchive.hpp
+    include/Sifar/Access.hpp
+    include/Sifar/Serializable.hpp
+    include/Sifar/Polymorphic.hpp
+    include/Sifar/ArchiveBase.hpp
+    include/Sifar/ReadArchive.hpp
+    include/Sifar/WriteArchive.hpp
+    include/Sifar/UnifiedData.hpp
+    include/Sifar/SerializatonBase.hpp
+    include/Sifar/Memory.hpp
+    include/Sifar/DataTrackBase.hpp
+    include/Sifar/PolymorphicTrait.hpp
 	
-	include/Sifar/Core.hpp
+    include/Sifar/Core.hpp
 )
 
 add_executable(${PROJECT_NAME}
