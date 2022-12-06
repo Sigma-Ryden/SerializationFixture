@@ -82,7 +82,7 @@ SAVE_LOAD_SERIALIZABLE(internal::Derived)
     archive & self.value;
 }
 
-// EXPORT_POLYMORPHIC(internal::Derived) - not required
+// EXPORT_POLYMORPHIC(internal::Derived)// - not required
 EXPORT_POLYMORPHIC(Base<std::string>)
 EXPORT_POLYMORPHIC(Base<double>) // smae as EXPORT_POLYMORPHIC_KEY("Base<double>", Base<double>)
 

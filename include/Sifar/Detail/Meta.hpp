@@ -11,6 +11,10 @@
 
 #include <Sifar/SerializatonBase.hpp>
 
+#ifndef SIFAR_MAX_TEMPLATE_DEPTH
+    #define SIFAR_MAX_TEMPLATE_DEPTH 256
+#endif // SIFAR_MAX_TEMPLATE_DEPTH
+
 namespace sifar
 {
 
@@ -221,11 +225,7 @@ using make_index_sequence = typename detail::index_sequence_helper<N>::type;
 
 constexpr std::size_t max_template_depth() noexcept
 {
-#ifndef SIFAR_MAX_TEMPLATE_DEPTH
-    return 256;
-#else
-    return SIFAR_MAX_TEMPLATE_DEPTH;
-#endif
+    return std::size_t(SIFAR_MAX_TEMPLATE_DEPTH);
 }
 
 namespace detail

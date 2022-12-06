@@ -5,6 +5,10 @@
 
 #include <Sifar/Utility.hpp>
 
+#ifndef SIFAR_ARCHIVE_MAX_TRAIT_KEY
+    #define SIFAR_ARCHIVE_MAX_TRAIT_KEY 2
+#endif // SIFAR_ARCHIVE_MAX_TRAIT_KEY
+
 #define SERIALIZATION_ARCHIVE(...)                                                                      \
     public:                                                                                             \
     virtual auto trait() const noexcept -> key_type override                                            \
@@ -21,7 +25,7 @@ struct ArchiveCore
     using key_type = let::u8;
 
     static constexpr auto base_key = key_type(-1);
-    static constexpr auto max_key = key_type(8);
+    static constexpr auto max_key = key_type(SIFAR_ARCHIVE_MAX_TRAIT_KEY);
 };
 
 template <class Archive> struct ArchiveTraitKey
