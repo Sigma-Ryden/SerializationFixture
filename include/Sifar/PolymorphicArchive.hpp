@@ -64,7 +64,7 @@ private:
               SIREQUIRE(not is_valid_archive<DerivedArchive>())>
     static void try_call(Archive& archive, T& data)
     {
-        throw "invalid archive";
+        throw "The read/write archive was not registered.";
     }
 
     template <class DerivedArchive, class T,
@@ -72,8 +72,11 @@ private:
     static void try_call(Archive& archive, T& data)
     {
         auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
+
+    #ifdef SIFAR_DEBUG
         if (derived_archive == nullptr)
-            throw "The read/write archive was not registered.";
+            throw "The read/write archive was registered incorrect.";
+    #endif // SIFAR_DEBUG
 
         proccess(*derived_archive, data);
     }
