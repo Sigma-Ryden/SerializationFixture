@@ -12,7 +12,7 @@
 #include <Sifar/Detail/MetaMacro.hpp>
 
 #define SERIALIZABLE(...)                                                                               \
-    friend class ::SifarSerializable;                                                                   \
+    friend class ::sifar_Serializable;                                                                  \
     friend class ::sifar::Access;
 
 #define _SIFAR_HAS_PROPERTY_HELPER(name)                                                                \
@@ -52,8 +52,6 @@ class ArchiveBase;
 
 class Access
 {
-    using Serializable = SifarSerializable;
-
 private:
     _SIFAR_HAS_PROPERTY_HELPER(save)
     _SIFAR_HAS_PROPERTY_HELPER(load)

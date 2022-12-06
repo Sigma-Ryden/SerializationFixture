@@ -25,11 +25,6 @@ namespace sifar
 namespace core
 {
 
-template <class Archive> struct ArchiveTrait
-{
-    static constexpr ArchiveCore::key_type key = 0;
-};
-
 template <ArchiveCore::key_type I> struct ReadArchiveTrait { using type = ArchiveBase; };
 template <ArchiveCore::key_type I> struct WriteArchiveTrait { using type = ArchiveBase; };
 

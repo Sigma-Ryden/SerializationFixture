@@ -13,7 +13,7 @@ using sifar::base;
 using namespace sifar::library; // support of std library
 
 template <class SomeType>
-class Base : POLYMORPHIC_OBJECT()
+class Base : POLYMORPHIC_BASE()
 {
     POLYMORPHIC(Base)
 

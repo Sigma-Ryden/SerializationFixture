@@ -59,9 +59,9 @@ set(SIFAR
 )
 
 add_executable(${PROJECT_NAME}
-    test/polymorphic.cpp
-    # test/virtual_base.cpp
-    # test/demo.cpp
+	test/polymorphic.cpp
+	# test/virtual_base.cpp
+	# test/demo.cpp
     # test/simple.cpp
     # test/tracking.cpp
     # test/inheritance.cpp

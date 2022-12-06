@@ -14,16 +14,16 @@
     virtual void save(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(save)                        \
     virtual void load(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(load)
 
-#define _POLYMORPHIC_OBJECT_BODY(...)                                                                   \
+#define _POLYMORPHIC_BASE_BODY(...)                                                                     \
     CLONEABLE_BODY(__VA_ARGS__)                                                                         \
     _DYNAMIC_SAVE_LOAD_IMPLEMENTATION()
 
-#define POLYMORPHIC_OBJECT(...)                                                                         \
+#define POLYMORPHIC_BASE(...)                                                                           \
     public ::sifar::dynamic::Polymorphic
 
 #define SERIALIZABLE_POLYMORPHIC(...)                                                                   \
     SERIALIZABLE()                                                                                      \
-    _POLYMORPHIC_OBJECT_BODY(__VA_ARGS__)
+    _POLYMORPHIC_BASE_BODY(__VA_ARGS__)
 
 #ifdef SIFAR_SMART
     // Additional macro defs

@@ -62,7 +62,10 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(not is_valid_archive<DerivedArchive>())>
-    static void try_call(Archive& archive, T& data) { /*pass*/ }
+    static void try_call(Archive& archive, T& data)
+    {
+        throw "invalid archive";
+    }
 
     template <class DerivedArchive, class T,
               SIREQUIRE(is_valid_archive<DerivedArchive>())>

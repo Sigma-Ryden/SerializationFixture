@@ -18,7 +18,7 @@ using namespace sifar::tracking; // support of data tracking
 
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
-struct B : POLYMORPHIC_OBJECT()
+struct B : POLYMORPHIC_BASE()
 {
     POLYMORPHIC(B)
 
