@@ -11,6 +11,7 @@
 #include <Sifar/ApplyFunctor.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
+#include <Sifar/Detail/MetaMacro.hpp>
 
 namespace sifar
 {

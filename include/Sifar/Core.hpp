@@ -30,10 +30,6 @@
 #include <Sifar/Span.hpp>
 #include <Sifar/Ref.hpp>
 
-#define EXPORT_SERIALIZATION_ARCHIVE(archive_key, archive_type, ...)                                    \
-    _EXPORT_SERIALIZATION_ARCHIVE_TRAIT_KEY(archive_key, archive_type, __VA_ARGS__)                     \
-    _EXPORT_SERIALIZATION_ARCHIVE_TYPE_TRAIT(archive_type, __VA_ARGS__)
-
 EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, std::ifstream)
 EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, std::ofstream)
 

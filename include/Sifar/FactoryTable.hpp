@@ -1,16 +1,13 @@
 #ifndef SIFAR_FACTORY_TABLE_HPP
 #define SIFAR_FACTORY_TABLE_HPP
 
-#include <cassert> // assert
-#include <cstddef> // size_t
-
-#include <memory> // shared_ptr
 #include <unordered_map> // unordered_map
 
 #include <Sifar/PolymorphicTrait.hpp>
 
 #include <Sifar/Access.hpp>
 #include <Sifar/Utility.hpp>
+
 #include <Sifar/Memory.hpp>
 
 #define _CLONEABLE_KEY_CALL(...)                                                                        \

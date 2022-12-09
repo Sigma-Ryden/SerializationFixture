@@ -19,7 +19,7 @@ using namespace sifar::tracking; // support of data tracking
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
 // Needed for clonable and serializable of derived object
-struct B : POLYMORPHIC_OBJECT()
+struct B : POLYMORPHIC_BASE()
 {
     POLYMORPHIC(B)
 

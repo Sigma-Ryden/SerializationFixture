@@ -2,7 +2,6 @@
 #define SIFAR_REGISTRY_BASE_HPP
 
 #include <Sifar/Access.hpp>
-#include <Sifar/Utility.hpp>
 
 #include <Sifar/PolymorphicTrait.hpp>
 

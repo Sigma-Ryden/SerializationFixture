@@ -11,6 +11,7 @@
 #include <Sifar/DataTrack.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
+#include <Sifar/Detail/MetaMacro.hpp>
 
 namespace sifar
 {
@@ -112,14 +113,14 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
     key_type key;
     archive & key;
 
-    auto& track_data = archive.template tracking<track_type>()[key];
+    auto& item = archive.template tracking<track_type>()[key];
 
-    if (not track_data.is_tracking)
+    if (item.address == nullptr)
         throw "the read reference must be tracked before.";
 
     value_type* pointer = nullptr;
 
-    detail::native_load(archive, pointer, track_data.address);
+    detail::native_load(archive, pointer, item.address);
 
     ref.set(*pointer); // pointer will never nullptr
 

@@ -1,8 +1,6 @@
 #ifndef SIFAR_ARCHIVE_BASE_HPP
 #define SIFAR_ARCHIVE_BASE_HPP
 
-#include <cstdint> // int8_t
-
 #include <Sifar/Utility.hpp>
 
 #ifndef SIFAR_ARCHIVE_MAX_TRAIT_KEY

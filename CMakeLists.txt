@@ -59,7 +59,7 @@ set(SIFAR
 )
 
 add_executable(${PROJECT_NAME}
-    test/polymorphic.cpp
+	test/polymorphic.cpp
     # test/virtual_base.cpp
     # test/demo.cpp
     # test/simple.cpp
@@ -67,7 +67,7 @@ add_executable(${PROJECT_NAME}
     # test/inheritance.cpp
     # test/multi_array.cpp
     # test/tracking_virtual.cpp
-    # test/ref_tracking.cpp
+	# test/ref_tracking.cpp
     # test/tracking_shared_ptr.cpp
     ${SIFAR}
 )

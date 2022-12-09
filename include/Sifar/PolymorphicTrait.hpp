@@ -3,9 +3,6 @@
 
 #include <Sifar/Hash.hpp>
 
-#define _CLONEABLE_KEY_CALL(...)                                                                        \
-    { return SIFAR_STATIC_HASH(#__VA_ARGS__); }
-
 // EXPORT_POLYMORPHIC_KEY - only for translation unit (.cpp) or templates (.hpp)
 #define EXPORT_POLYMORPHIC_KEY(unique_name, ...)                                                        \
     namespace sifar { namespace dynamic {                                                               \

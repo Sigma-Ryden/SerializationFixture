@@ -7,8 +7,6 @@
 #include <Sifar/UnifiedData.hpp>
 
 #include <Sifar/DataTrack.hpp>
-
-#include <Sifar/Strict.hpp>
 #include <Sifar/Compress.hpp>
 
 namespace sifar
