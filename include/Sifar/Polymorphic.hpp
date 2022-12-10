@@ -10,7 +10,7 @@
     { ::sifar::dynamic::PolymorphicArchive::function_name(archive, *this); }
 
 #define _DYNAMIC_SAVE_LOAD_IMPLEMENTATION(...)                                                          \
-    public:                                                                                             \
+    private:                                                                                            \
     virtual void save(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(save)                        \
     virtual void load(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(load)
 
