@@ -170,11 +170,13 @@ public:
     }
 
     template <class T, SIREQUIRE(is_registered_class<T>())>
-    static constexpr dynamic::PolymorphicTraitCore::key_type static_key() noexcept
+    static dynamic::PolymorphicTraitCore::key_type static_key() noexcept
     {
-        return dynamic::PolymorphicTraitKey<T>::key == dynamic::PolymorphicTraitCore::base_key
+        static constexpr auto trait_key = dynamic::PolymorphicTraitKey<T>::key;
+
+        return trait_key == dynamic::PolymorphicTraitCore::base_key
              ? T::static_key()
-             : dynamic::PolymorphicTraitKey<T>::key;
+             : trait_key;
     }
 
 private:
