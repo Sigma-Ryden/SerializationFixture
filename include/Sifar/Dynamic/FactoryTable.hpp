@@ -3,12 +3,12 @@
 
 #include <unordered_map> // unordered_map
 
-#include <Sifar/PolymorphicTrait.hpp>
+#include <Sifar/Dynamic/PolymorphicTrait.hpp>
 
 #include <Sifar/Access.hpp>
 #include <Sifar/Utility.hpp>
 
-#include <Sifar/Memory.hpp>
+#include <Sifar/Memory/Memory.hpp>
 
 #define _CLONEABLE_KEY_CALL(...)                                                                        \
     { return SIFAR_STATIC_HASH(#__VA_ARGS__); }
@@ -34,7 +34,7 @@
     virtual raw_ptr<clone_type> cast(raw_ptr<void> address) const override                              \
     { return ::sifar::memory::static_pointer_cast<__VA_ARGS__>(address); };                             \
 
-#define CLONEABLE_BODY(...)                                                                             \
+#define _CLONEABLE_BODY(...)                                                                            \
     _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION(__VA_ARGS__)                                                \
     _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
     _CLONEABLE_KEY_IMPLEMENTATION(__VA_ARGS__)

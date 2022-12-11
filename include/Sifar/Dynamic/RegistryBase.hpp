@@ -3,8 +3,6 @@
 
 #include <Sifar/Access.hpp>
 
-#include <Sifar/PolymorphicTrait.hpp>
-
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
 
@@ -32,6 +30,7 @@ public:
         return Access::static_key<T>();
     }
 
+public:
     template <class Archive, class Pointer,
               SIREQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
     static key_type save_key(Archive& archive, Pointer& pointer)

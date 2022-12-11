@@ -3,7 +3,7 @@
 
 #include <type_traits> // is_same
 
-#include <Sifar/Memory.hpp>
+#include <Sifar/Memory/Memory.hpp>
 
 namespace sifar
 {

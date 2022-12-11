@@ -3,21 +3,13 @@
 
 #include <Sifar/ArchiveBase.hpp>
 
-#define _EXPORT_SERIALIZATION_ARCHIVE_TYPE_TRAIT(archive_type, ...)                                     \
-    namespace sifar { namespace core {                                                                  \
-        template <> struct archive_type##Trait<ArchiveTraitKey<archive_type<__VA_ARGS__>>::key>         \
-        { using type = archive_type<__VA_ARGS__>; };                                                    \
-    }}
-
-#define _EXPORT_SERIALIZATION_ARCHIVE_TRAIT_KEY(archive_key, archive_type, ...)                         \
+#define EXPORT_SERIALIZATION_ARCHIVE(archive_key, archive_type, ...)                                    \
     namespace sifar { namespace core {                                                                  \
         template <> struct ArchiveTraitKey<archive_type<__VA_ARGS__>>                                   \
         { static constexpr ArchiveCore::key_type key = archive_key; };                                  \
+        template <> struct archive_type##Trait<ArchiveTraitKey<archive_type<__VA_ARGS__>>::key>         \
+        { using type = archive_type<__VA_ARGS__>; };                                                    \
     }}
-
-#define EXPORT_SERIALIZATION_ARCHIVE(archive_key, archive_type, ...)                                    \
-    _EXPORT_SERIALIZATION_ARCHIVE_TRAIT_KEY(archive_key, archive_type, __VA_ARGS__)                     \
-    _EXPORT_SERIALIZATION_ARCHIVE_TYPE_TRAIT(archive_type, __VA_ARGS__)
 
 namespace sifar
 {

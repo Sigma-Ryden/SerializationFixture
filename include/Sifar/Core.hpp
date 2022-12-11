@@ -10,12 +10,12 @@
 #include <Sifar/Access.hpp>
 #include <Sifar/Serializable.hpp>
 
-#include <Sifar/FactoryTable.hpp>
-#include <Sifar/Polymorphic.hpp>
+#include <Sifar/Dynamic/FactoryTable.hpp>
+#include <Sifar/Dynamic/Polymorphic.hpp>
+#include <Sifar/Dynamic/Registry.hpp>
 
 #include <Sifar/ArchiveTrait.hpp>
 
-#include <Sifar/Registry.hpp>
 #include <Sifar/TypeRegistry.hpp>
 
 #include <Sifar/WriteArchive.hpp>
@@ -25,10 +25,7 @@
 #include <Sifar/DataTrack.hpp>
 
 #include <Sifar/Hash.hpp>
-
 #include <Sifar/Common.hpp>
-#include <Sifar/Span.hpp>
-#include <Sifar/Ref.hpp>
 
 EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, std::ifstream)
 EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, std::ofstream)

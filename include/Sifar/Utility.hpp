@@ -32,18 +32,6 @@ namespace utility
 template <typename T, std::size_t N>
 constexpr std::size_t size(const T (&array)[N]) noexcept { return N; }
 
-template <typename T>
-inline const char* const_byte_cast(T* data) noexcept
-{
-    return reinterpret_cast<const char*>(data);
-}
-
-template <typename T>
-inline char* byte_cast(T* data) noexcept
-{
-    return reinterpret_cast<char*>(data);
-}
-
 template <class InIt, class OutIt>
 OutIt copy(InIt first, InIt last, OutIt dst_first) noexcept
 {

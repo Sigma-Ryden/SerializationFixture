@@ -129,6 +129,16 @@ template <typename Pointer, typename T = meta::dereference<Pointer>,
           SIREQUIRE(meta::is_shared_pointer<Pointer>())>
 inline raw_ptr<T> raw(const Pointer& pointer) { return pointer.get(); }
 
+template <typename T> inline const char* const_byte_cast(T* data) noexcept
+{
+    return reinterpret_cast<const char*>(data);
+}
+
+template <typename T> inline char* byte_cast(T* data) noexcept
+{
+    return reinterpret_cast<char*>(data);
+}
+
 } // namespace memory
 
 namespace meta

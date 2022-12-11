@@ -16,7 +16,7 @@
 namespace sifar
 {
 
-namespace utility
+namespace memory
 {
 
 template <typename T>
@@ -47,13 +47,13 @@ public:
 } // namespace utility
 
 template <typename T>
-utility::Ref<T> ref() noexcept { return {}; }
+memory::Ref<T> ref() noexcept { return {}; }
 
 template <typename To, typename From>
-utility::Ref<To> ref(From& data) noexcept { return { data }; }
+memory::Ref<To> ref(From& data) noexcept { return { data }; }
 
 template <typename T>
-utility::Ref<T> ref(T& data) noexcept { return { data }; }
+memory::Ref<T> ref(T& data) noexcept { return { data }; }
 
 namespace meta
 {
@@ -63,7 +63,7 @@ namespace detail
 
 template <typename> struct is_ref : std::false_type {};
 template <typename T>
-struct is_ref<sifar::utility::Ref<T>> : std::true_type {};
+struct is_ref<sifar::memory::Ref<T>> : std::true_type {};
 
 } // namespcae detail
 

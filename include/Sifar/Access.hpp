@@ -6,7 +6,7 @@
 
 #include <Sifar/ApplyFunctor.hpp>
 
-#include <Sifar/PolymorphicTrait.hpp>
+#include <Sifar/Dynamic/PolymorphicTrait.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>

@@ -2,11 +2,10 @@
 #define SIFAR_REGISTRY_HPP
 
 #include <Sifar/Access.hpp>
-#include <Sifar/FactoryTable.hpp>
+#include <Sifar/Memory/Memory.hpp>
 
-#include <Sifar/Memory.hpp>
-
-#include <Sifar/RegistryBase.hpp>
+#include <Sifar/Dynamic/RegistryBase.hpp>
+#include <Sifar/Dynamic/FactoryTable.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>
@@ -19,6 +18,9 @@ namespace dynamic
 
 class ExternRegistry : public RegistryBase
 {
+public:
+    using key_type = PolymorphicTraitCore::key_type;
+
 public:
     template <typename Pointer, typename T = meta::dereference<Pointer>,
               SIREQUIRE(meta::is_pointer<Pointer>() and Access::is_registered_class<T>())>

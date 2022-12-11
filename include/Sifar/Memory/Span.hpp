@@ -16,7 +16,7 @@
 namespace sifar
 {
 
-namespace utility
+namespace memory
 {
 
 template <typename T, std::size_t N>
@@ -163,7 +163,7 @@ namespace detail
 
 template <typename> struct is_span : std::false_type {};
 template <typename T, std::size_t N>
-struct is_span<sifar::utility::Span<T, N>> : std::true_type {};
+struct is_span<memory::Span<T, N>> : std::true_type {};
 
 } // namespcae detail
 
@@ -189,7 +189,7 @@ namespace utility
 template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
           typename Type = meta::remove_ptr_n<Pointer, N>,
-          typename Span = utility::Span<Type, N>,
+          typename Span = memory::Span<Type, N>,
           SIREQUIRE(meta::is_span_set<Pointer, D, Dn...>())>
 Span make_span(Pointer& data, D d, Dn... dn)
 {

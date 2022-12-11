@@ -10,9 +10,9 @@
 
 #include <Sifar/Access.hpp>
 #include <Sifar/TypeRegistry.hpp>
-#include <Sifar/Registry.hpp>
+#include <Sifar/Dynamic/Registry.hpp>
 
-#include <Sifar/Utility.hpp>
+#include <Sifar/Memory/Memory.hpp>
 #include <Sifar/DataTrackBase.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
@@ -49,13 +49,13 @@ public:
     template <typename T>
     void call(const T* data, std::size_t memory_size)
     {
-        stream_.write(utility::const_byte_cast(data), memory_size);
+        stream_.write(memory::const_byte_cast(data), memory_size);
     }
 
     OutStream& get() noexcept { return stream_; }
 };
 
-} // namespace wrap
+} // namespace wrapper
 
 template <class OutStream,
           class StreamWrapper = wrapper::OutStreamWrapper<OutStream>,
@@ -135,7 +135,6 @@ auto WriteArchive<OutStream, StreamWrapper, Registry>::operator() (
     T& data, Tn&... data_n) -> WriteArchive&
 {
     (*this) & data;
-
     return (*this)(data_n...);
 }
 

@@ -2,9 +2,9 @@
 #define SIFAR_POLYMORPHIC_HPP
 
 #include <Sifar/Access.hpp> // SERIALIZABLE
-#include <Sifar/FactoryTable.hpp> // CLONEABLE_BODY
+#include <Sifar/Dynamic/FactoryTable.hpp> // _CLONEABLE_BODY
 
-#include <Sifar/PolymorphicArchive.hpp>
+#include <Sifar/Dynamic/PolymorphicArchive.hpp>
 
 #define _POLYMORPHIC_ARCHIVE_CALL(function_name)                                                        \
     { ::sifar::dynamic::PolymorphicArchive::function_name(archive, *this); }
@@ -15,15 +15,19 @@
     virtual void load(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(load)
 
 #define _POLYMORPHIC_BASE_BODY(...)                                                                     \
-    CLONEABLE_BODY(__VA_ARGS__)                                                                         \
+    _CLONEABLE_BODY(__VA_ARGS__)                                                                        \
     _DYNAMIC_SAVE_LOAD_IMPLEMENTATION()
 
-#define POLYMORPHIC_BASE(...)                                                                           \
-    public ::sifar::dynamic::Polymorphic
+#ifndef POLYMORPHIC_BASE
+    #define POLYMORPHIC_BASE(...)                                                                       \
+        public ::sifar::dynamic::Polymorphic
+#endif // POLYMORPHIC_BASE
 
-#define SERIALIZABLE_POLYMORPHIC(...)                                                                   \
-    SERIALIZABLE()                                                                                      \
-    _POLYMORPHIC_BASE_BODY(__VA_ARGS__)
+#ifndef SERIALIZABLE_POLYMORPHIC
+    #define SERIALIZABLE_POLYMORPHIC(...)                                                               \
+        SERIALIZABLE()                                                                                  \
+        _POLYMORPHIC_BASE_BODY(__VA_ARGS__)
+#endif // SERIALIZABLE_POLYMORPHIC
 
 #ifdef SIFAR_SMART
     // Additional macro defs

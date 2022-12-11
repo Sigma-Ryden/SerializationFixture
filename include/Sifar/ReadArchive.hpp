@@ -10,9 +10,9 @@
 
 #include <Sifar/Access.hpp>
 #include <Sifar/TypeRegistry.hpp>
-#include <Sifar/Registry.hpp>
+#include <Sifar/Dynamic/Registry.hpp>
 
-#include <Sifar/Utility.hpp>
+#include <Sifar/Memory/Memory.hpp>
 #include <Sifar/DataTrackBase.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
@@ -49,7 +49,7 @@ public:
     template <typename T>
     void call(T* data, std::size_t memory_size)
     {
-        stream_.read(utility::byte_cast(data), memory_size);
+        stream_.read(memory::byte_cast(data), memory_size);
     }
 
     InStream& get() noexcept { return stream_; }
@@ -66,7 +66,7 @@ class ReadArchive : public core::ArchiveBase
 
 public:
     struct Raw { void* address = nullptr; };
-    struct Shared { std::shared_ptr<void> address = nullptr; };
+    struct Shared { memory::shared_ptr<void> address = nullptr; };
 
 public:
     using TrackingKeyType = std::uintptr_t;
@@ -148,7 +148,6 @@ auto ReadArchive<InStream, StreamWrapper, Registry>::operator() (
     T& data, Tn&... data_n) -> ReadArchive&
 {
     (*this) & data;
-
     return (*this)(data_n...);
 }
 

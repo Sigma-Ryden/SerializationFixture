@@ -3,7 +3,7 @@
 
 #include <Sifar/Access.hpp>
 
-#include <Sifar/Memory.hpp>
+#include <Sifar/Memory/Memory.hpp>
 
 #include <Sifar/Detail/Meta.hpp>
 #include <Sifar/Detail/MetaMacro.hpp>

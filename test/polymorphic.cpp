@@ -91,7 +91,7 @@ EXPORT_POLYMORPHIC(Base<double>) // smae as EXPORT_POLYMORPHIC_KEY("Base<double>
 
 void test_polymorphic()
 {
-    using Registry = sifar::dynamic::ExternRegistry;
+    using Registry = sifar::dynamic::RegistryBase;
 
     using Parent = Base<std::string>;
     using Child  = internal::Derived;
@@ -137,8 +137,6 @@ void test_polymorphic()
         Parent* b = nullptr;
         Parent* d = nullptr;
 
-        // for shared: if exist in raw then add to shared (if can) and serialize key only
-        // for raw: if exist in shared then add to raw (if can) and serialize key only
         ar & b;
         ar & d;
 
