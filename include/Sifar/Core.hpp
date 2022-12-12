@@ -27,6 +27,8 @@
 #include <Sifar/Hash.hpp>
 #include <Sifar/Common.hpp>
 
+#include <Sifar/Config.hpp>
+
 EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, std::ifstream)
 EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, std::ofstream)
 

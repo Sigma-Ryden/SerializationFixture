@@ -48,7 +48,7 @@ struct ptr_trait<T*>
     using type     = T*;
     using element  = T;
 
-    using void_ptr = raw_ptr<void>;
+    using void_ptr = void*;
 };
 
 template <typename T, typename Pointer,

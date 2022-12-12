@@ -64,9 +64,13 @@ class ReadArchive : public core::ArchiveBase
 {
     SERIALIZATION_ARCHIVE(ReadArchive)
 
+private:
+    template <typename VoidPointer>
+    struct TrackData { VoidPointer address = nullptr; };
+
 public:
-    struct Raw { void* address = nullptr; };
-    struct Shared { memory::shared_ptr<void> address = nullptr; };
+    using Shared = TrackData<memory::shared_ptr<void>>;
+    using Raw = TrackData<memory::raw_ptr<void>>;
 
 public:
     using TrackingKeyType = std::uintptr_t;

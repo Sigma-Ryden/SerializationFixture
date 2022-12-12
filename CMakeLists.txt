@@ -56,7 +56,8 @@ set(SIFAR
     include/Sifar/UnifiedData.hpp
     include/Sifar/SerializatonBase.hpp
     include/Sifar/DataTrackBase.hpp
-	
+	include/Sifar/Config.hpp
+
     include/Sifar/Core.hpp
 )
 
