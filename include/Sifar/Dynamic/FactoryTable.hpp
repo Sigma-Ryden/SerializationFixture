@@ -111,9 +111,10 @@ public:
         return self;
     }
 
-    void update(clone_type* clone, key_type key)
+    template <class T>
+    void update(key_type key)
     {
-        if (not has_factory(key)) factory_[key] = clone;
+        if (not has_factory(key)) factory_[key] = new T;
     }
 
     template <typename PointerWrapper,
@@ -157,7 +158,6 @@ public:
     FactoryTableUpdater()
     {
         if (lock_) return;
-
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
         auto key = Access::template static_key<T>();
@@ -167,9 +167,7 @@ public:
             throw "FactoryTable must contain polymorphic clone with unique key.";
     #endif // SIFAR_DEBUG
 
-        auto clone_instance = new T;
-
-        FactoryTable::instance().update(clone_instance, key);
+        FactoryTable::instance().update<T>(key);
     }
 };
 

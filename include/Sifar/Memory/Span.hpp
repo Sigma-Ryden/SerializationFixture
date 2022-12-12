@@ -5,7 +5,7 @@
 #include <initializer_list> // initializer_list
 #include <tuple> // tuple
 
-#include <Sifar/Ref.hpp>
+#include <Sifar/Memory/Ref.hpp>
 
 #include <Sifar/Utility.hpp>
 #include <Sifar/ApplyFunctor.hpp>
