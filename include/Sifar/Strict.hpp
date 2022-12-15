@@ -27,12 +27,12 @@ template <class ReadArchive, typename T,
                     meta::is_pod_pointer<T>())>
 void strict(ReadArchive& archive, T& pod_pointer)
 {
-    using value_type = meta::dereference<T>;
+    using item_type = typename memory::ptr_trait<T>::item;
 
     if (pod_pointer != nullptr)
         throw "the read pointer must be initialized to nullptr.";
 
-    memory::allocate<value_type>(pod_pointer);
+    memory::allocate<item_type>(pod_pointer);
 
     archive & (*pod_pointer);
 }

@@ -10,6 +10,8 @@
 
 #include <Sifar/TypeRegistry.hpp>
 
+#include <Sifar/Memory/Memory.hpp>
+
 // serialization of shared_ptr
 #include <Sifar/Support/shared_ptr.hpp>
 
@@ -38,9 +40,9 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(weak_ptr, meta::is_std_weak_ptr<T>::value)
 
 CONDITIONAL_LOAD_SERIALIZABLE_TYPE(weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
-    using element_type = typename T::element_type;
+    using item_type = typename memory::ptr_trait<T>::item;
 
-    std::shared_ptr<element_type> sptr;
+    std::shared_ptr<item_type> sptr;
     archive & sptr;
 
     weak_ptr = sptr;

@@ -9,6 +9,7 @@
 #include <Sifar/ReadArchive.hpp>
 
 #include <Sifar/TypeRegistry.hpp>
+#include <Sifar/Memory/Memory.hpp>
 
 namespace sifar
 {
@@ -28,7 +29,6 @@ inline namespace library
 CONDITIONAL_SAVE_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     auto data = unique_ptr.get();
-
     archive & data;
 
     return archive;
@@ -36,9 +36,9 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value
 
 CONDITIONAL_LOAD_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
-    using element_type = typename T::element_type;
+    using item_type = typename memory::ptr_trait<T>::item_type;
 
-    element_type* data = nullptr;
+    item_type* data = nullptr;
     archive & data;
 
     unique_ptr.reset(data);

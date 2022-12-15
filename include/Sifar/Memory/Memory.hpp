@@ -24,17 +24,17 @@ using raw_ptr = T*;
 template <typename T> struct ptr_trait;
 
 template <typename T>
-struct ptr_trait<shared_ptr<T>>
+struct ptr_trait<std::shared_ptr<T>>
 {
     using trait    = Shared;
 
     template <typename U>
     using wrapper  = shared_ptr<U>;
 
-    using type     = shared_ptr<T>;
-    using element  = T;
+    using type     = std::shared_ptr<T>;
+    using item     = T;
 
-    using void_ptr = shared_ptr<void>;
+    using void_ptr = std::shared_ptr<void>;
 };
 
 template <typename T>
@@ -46,9 +46,23 @@ struct ptr_trait<T*>
     using wrapper  = raw_ptr<U>;
 
     using type     = T*;
-    using element  = T;
+    using item     = T;
 
     using void_ptr = void*;
+};
+
+template <typename T>
+struct ptr_trait<std::weak_ptr<T>>
+{
+    using type     = std::weak_ptr<T>;
+    using item     = T;
+};
+
+template <typename T>
+struct ptr_trait<std::unique_ptr<T>>
+{
+    using type     = std::unique_ptr<T>;
+    using item     = T;
 };
 
 template <typename T, typename Pointer,
