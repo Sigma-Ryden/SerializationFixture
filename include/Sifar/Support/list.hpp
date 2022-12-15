@@ -32,7 +32,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(list, meta::is_std_list<T>::value)
     let::u64 size = list.size();
     archive & size;
 
-    for (const auto& item : list)
+    for (auto& item : list)
         archive & item;
 
     return archive;

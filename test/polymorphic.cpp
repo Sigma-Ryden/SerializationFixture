@@ -156,7 +156,7 @@ void test_polymorphic()
 
 int main()
 {
-    test_polymorphic();
+    //test_polymorphic();
 
     return 0;
 }

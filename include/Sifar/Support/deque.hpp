@@ -30,7 +30,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(deque, meta::is_std_deque<T>::value)
     let::u64 size = deque.size();
     archive & size;
 
-    for (const auto& item : deque)
+    for (auto& item : deque)
         archive & item;
 
     return archive;

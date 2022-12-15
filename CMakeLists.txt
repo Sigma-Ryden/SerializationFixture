@@ -22,6 +22,7 @@ set(SIFAR
 	include/Sifar/Support/set.hpp
 	include/Sifar/Support/unique_ptr.hpp
 	include/Sifar/Support/shared_ptr.hpp
+	include/Sifar/Support/weak_ptr.hpp
 	include/Sifar/Support/map.hpp
 	include/Sifar/Support/deque.hpp
 	include/Sifar/Support/stack.hpp

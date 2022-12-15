@@ -32,7 +32,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(forward_list, meta::is_std_forward_list<T>::v
     let::u64 size = std::distance(forward_list.begin(), forward_list.end());
     archive & size;
 
-    for (const auto& item : forward_list)
+    for (auto& item : forward_list)
         archive & item;
 
     return archive;
