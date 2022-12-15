@@ -12,7 +12,8 @@
 #define _DYNAMIC_SAVE_LOAD_IMPLEMENTATION(...)                                                          \
     private:                                                                                            \
     virtual void save(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(save)                        \
-    virtual void load(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(load)
+    virtual void load(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(load)                        \
+    public:
 
 #define _POLYMORPHIC_BASE_BODY(...)                                                                     \
     _CLONEABLE_BODY(__VA_ARGS__)                                                                        \

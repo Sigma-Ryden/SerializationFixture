@@ -2,6 +2,7 @@
 #include <fstream> // ifstream, ofstream
 
 #include <Sifar/Core.hpp> // ReadArchive, WriteArchive
+#include <Sifar/Memory/Ref.hpp>
 
 using sifar::writer;
 using sifar::reader;

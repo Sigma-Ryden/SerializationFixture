@@ -9,7 +9,6 @@ using sifar::writer;
 
 using sifar::virtual_base;
 using sifar::hierarchy;
-using sifar::native_base;
 
 using sifar::memory::pure;
 
@@ -48,7 +47,7 @@ struct D : virtual B
 
 SERIALIZATION(D) // same as: SAVE_LOAD_SERIALIZABLE(D) {...}
 {
-    archive & native_base<B>(self) // expand to => virtual_base<B>
+    archive & hierarchy<B>(self) // expand to => virtual_base<B>
             & self.d;
 }
 
