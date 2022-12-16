@@ -1,16 +1,16 @@
 #include <iostream> // cout
 #include <fstream> // ifstream, ofstream
 
-#define SIFAR_DEBUG
-#include <Sifar/Core.hpp> // ReadArchive, WriteArchive
+#define SIRAF_DEBUG
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
-using sifar::reader;
-using sifar::writer;
+using siraf::iarchive;
+using siraf::oarchive;
 
-using sifar::virtual_base;
-using sifar::hierarchy;
+using siraf::virtual_base;
+using siraf::hierarchy;
 
-using sifar::memory::pure;
+using siraf::memory::pure;
 
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
@@ -71,7 +71,7 @@ void test_tracking_virtual()
 
         if (not file.is_open()) return;
 
-        auto ar = writer(file);
+        auto ar = oarchive(file);
 
         X* x = new X;
         D* d = x;
@@ -109,7 +109,7 @@ void test_tracking_virtual()
 
         if (not file.is_open()) return;
 
-        auto ar = reader(file);
+        auto ar = iarchive(file);
 
         X* x = nullptr;
         D* d = nullptr;

@@ -1,21 +1,21 @@
 #include <iostream> // cin, cout
 #include <fstream> // ifstream, ofstream
 
-#include <Sifar/Core.hpp> // ReadArchive, WriteArchive
-#include <Sifar/Memory/Ref.hpp>
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive
+#include <Siraf/Memory/Ref.hpp>
 
-using sifar::writer;
-using sifar::reader;
+using siraf::oarchive;
+using siraf::iarchive;
 
-using sifar::base;
-using sifar::virtual_base;
+using siraf::base;
+using siraf::virtual_base;
 
-using sifar::ref;
+using siraf::ref;
 
-using sifar::memory::pure;
+using siraf::memory::pure;
 
-using namespace sifar::common; // support of common types
-using namespace sifar::tracking; // support of data tracking
+using namespace siraf::common; // support of common types
+using namespace siraf::tracking; // support of data tracking
 
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
@@ -79,7 +79,7 @@ void test_ref_tracking()
         std::ofstream file("test_tracking_virtual.bin", std::ios::binary);
         if (not file.is_open()) return;
 
-        auto ar = writer(file);
+        auto ar = oarchive(file);
 
         X x;
         auto d = ref<D>(x);
@@ -116,7 +116,7 @@ void test_ref_tracking()
         std::ifstream file("test_tracking_virtual.bin", std::ios::binary);
         if (not file.is_open()) return;
 
-        auto ar = reader(file);
+        auto ar = iarchive(file);
 
         X x;
         auto d = ref<D>();

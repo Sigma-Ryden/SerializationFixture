@@ -2,12 +2,12 @@
 #include <fstream> // ifstream, ofstream
 
 #define SIFAR_DEBUG
-#include <Sifar/Core.hpp> // ReadArchive, WriteArchive
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
-using sifar::reader;
-using sifar::writer;
+using siraf::iarchive;
+using siraf::oarchive;
 
-using sifar::tracking::track;
+using siraf::tracking::track;
 
 #define println(...) \
     std::cout << (#__VA_ARGS__) << " : " << (__VA_ARGS__) << '\n'
@@ -19,7 +19,7 @@ void test_tracking()
 
         if (not file.is_open()) return;
 
-        auto ar = writer(file);
+        auto ar = oarchive(file);
 
         int x = 123;
         int* p1 = &x;
@@ -50,7 +50,7 @@ void test_tracking()
 
         if (not file.is_open()) return;
 
-        auto ar = reader(file);
+        auto ar = iarchive(file);
 
         int x;
         int* p1 = nullptr;

@@ -1,14 +1,14 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Sifar/Core.hpp>// WriteArchive, ExternRegistry
+#include <Siraf/Core.hpp>// WriteArchive, ExternRegistry
 
-#include <Sifar/Support/string.hpp>
-#include <Sifar/Support/array.hpp>
+#include <Siraf/Support/string.hpp>
+#include <Siraf/Support/array.hpp>
 
-using sifar::WriteArchive;
+using siraf::WriteArchive;
 
-using namespace sifar::library;
+using namespace siraf::library;
 
 // Impl of user wrapper for iostream
 class FormatOutStream
@@ -41,8 +41,8 @@ enum class Color { Red, Green, Blue, Alpha };
 class B
 {
     // is the same:
-    // friend class SifarSerializable;
-    // friend class sifar::Access;
+    // friend class SirafSerializable;
+    // friend class siraf::Access;
     SERIALIZABLE()
 
 private:
@@ -108,7 +108,7 @@ auto operator& (FormatWriteArchive& ar, B& b) -> decltype(ar)
 
 void test_common()
 {
-    auto ar = sifar::writer<FormatOutStream>(std::cout);
+    auto ar = siraf::oarchive<FormatOutStream>(std::cout);
 
     int number = 123;
     int* pointer = &number;

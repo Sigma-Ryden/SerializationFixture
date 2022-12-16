@@ -1,16 +1,16 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Sifar/Core.hpp> // ReadArchive, WriteArchive, InnerRegistry
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive, InnerRegistry
 
-#include <Sifar/Support/string.hpp>
+#include <Siraf/Support/string.hpp>
 
-using sifar::reader;
-using sifar::writer;
+using siraf::iarchive;
+using siraf::oarchive;
 
-using sifar::base;
+using siraf::base;
 
-using namespace sifar::library; // support of std library
+using namespace siraf::library; // support of std library
 
 template <class SomeType>
 class Base : POLYMORPHIC_BASE()
@@ -91,7 +91,7 @@ EXPORT_POLYMORPHIC(Base<double>) // smae as EXPORT_POLYMORPHIC_KEY("Base<double>
 
 void test_polymorphic()
 {
-    using Registry = sifar::dynamic::RegistryBase;
+    using Registry = siraf::dynamic::RegistryBase;
 
     using Parent = Base<std::string>;
     using Child  = internal::Derived;
@@ -106,7 +106,7 @@ void test_polymorphic()
 
         if (not file.is_open()) return;
 
-        auto ar = writer(file);
+        auto ar = oarchive(file);
 
         Parent* b = new Parent("Hello!");
         Parent* d = new Child("Bye!", 3.1415926);
@@ -132,7 +132,7 @@ void test_polymorphic()
 
         if (not file.is_open()) return;
 
-        auto ar = reader(file);
+        auto ar = iarchive(file);
 
         Parent* b = nullptr;
         Parent* d = nullptr;

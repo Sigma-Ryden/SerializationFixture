@@ -1,10 +1,10 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Sifar/Core.hpp>
-#include <Sifar/Support/string.hpp>
+#include <Siraf/Core.hpp>
+#include <Siraf/Support/string.hpp>
 
-using namespace sifar::library; // support of string
+using namespace siraf::library; // support of string
 
 class Shape
 {
@@ -38,7 +38,7 @@ void save(Shape& shape)
     std::ofstream file("example.bin", std::ios::binary);
     if (not file.is_open()) return;
 
-    auto ar = sifar::writer(file);
+    auto ar = siraf::oarchive(file);
 
     ar & shape;
 
@@ -50,7 +50,7 @@ void load(Shape& shape)
     std::ifstream file("example.bin", std::ios::binary);
     if (not file.is_open()) return;
 
-    auto ar = sifar::reader(file);
+    auto ar = siraf::iarchive(file);
     ar & shape;
 
     file.close();

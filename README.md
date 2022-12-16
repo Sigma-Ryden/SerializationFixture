@@ -1,6 +1,6 @@
-# Sifar - Simple serialization library
+# Siraf - Simple serialization library
 
-`Sifar` is a flexible and extensible C++ library with many features, that will allow you to easily
+`Siraf` is a flexible and extensible C++ library with many features, that will allow you to easily
 and quickly turn your objects into a sequence of bits.
 The library has a small code base, but enough to use it.
 
@@ -29,18 +29,18 @@ Is a header-only library implemented purely in C++11.
 - abstract
 
 ### Quick start.
-Warning! This is a simple example. You can see real applied examples [here](https://github.com/Sigma-Ryden/Sifar/tree/master/test).
+Warning! This is a simple example. You can see real applied examples [here](https://github.com/Sigma-Ryden/Siraf/tree/master/test).
 
 Preparing:
 
 ```C++
-#include <Sifar/Core.hpp>
+#include <Siraf/Core.hpp>
 ```
 Let's include support of std::string serialization:
 ```C++
-#include <Sifar/Support/string.hpp>
+#include <Siraf/Support/string.hpp>
 
-using namespace sifar::library; // support of string
+using namespace siraf::library; // support of string
 ```
 And let's equip our simple class with serialization support:
 ```C++
@@ -90,7 +90,7 @@ void save(Shape& shape)
     std::ofstream file("example.bin", std::ios::binary);
     if (not file.is_open()) return;
 
-    auto ar = sifar::writer(file);
+    auto ar = siraf::oarchive(file);
 
     ar & shape;
 
@@ -103,7 +103,7 @@ void load(Shape& shape)
     std::ifstream file("example.bin", std::ios::binary);
     if (not file.is_open()) return;
 
-    auto ar = sifar::reader(file);
+    auto ar = siraf::iarchive(file);
 
     ar & shape;
 

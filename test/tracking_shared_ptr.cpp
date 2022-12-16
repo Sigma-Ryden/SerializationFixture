@@ -2,19 +2,19 @@
 #include <fstream> // ifstream, ofstream
 
 #define SIFAR_DEBUG
-#include <Sifar/Core.hpp> // ReadArchive, WriteArchive
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
-#include <Sifar/Support/shared_ptr.hpp>
+#include <Siraf/Support/shared_ptr.hpp>
 
-using sifar::reader;
-using sifar::writer;
+using siraf::iarchive;
+using siraf::oarchive;
 
-using sifar::hierarchy;
+using siraf::hierarchy;
 
-using sifar::memory::pure;
+using siraf::memory::pure;
 
-using namespace sifar::common; // support of common types
-using namespace sifar::tracking; // support of data tracking
+using namespace siraf::common; // support of common types
+using namespace siraf::tracking; // support of data tracking
 
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
@@ -76,9 +76,9 @@ void test_tracking_shared_ptr()
 
         if (not file.is_open()) return;
 
-        auto ar = writer(file);
+        auto ar = oarchive(file);
 
-        auto xxx = sifar::Access::static_key<X>();
+        auto xxx = siraf::Access::static_key<X>();
 
         std::shared_ptr<X> x = std::make_shared<X>();
         std::shared_ptr<D> d = x;
@@ -116,7 +116,7 @@ void test_tracking_shared_ptr()
 
         if (not file.is_open()) return;
 
-        auto ar = reader(file);
+        auto ar = iarchive(file);
 
         std::shared_ptr<X> x = nullptr;
         std::shared_ptr<D> d = nullptr;

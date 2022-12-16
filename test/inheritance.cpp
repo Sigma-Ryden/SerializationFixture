@@ -1,16 +1,16 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Sifar/Core.hpp> // ReadArchive, WriteArchive
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
-#include <Sifar/Support/string.hpp>
+#include <Siraf/Support/string.hpp>
 
-using sifar::reader;
-using sifar::writer;
+using siraf::iarchive;
+using siraf::oarchive;
 
-using sifar::base;
+using siraf::base;
 
-using namespace sifar::library;
+using namespace siraf::library;
 
 class Human
 {
@@ -70,7 +70,7 @@ void test_object_serialization()
 
         if (not file.is_open()) return;
 
-        auto ar = writer(file);
+        auto ar = oarchive(file);
 
         Boy obj("Tom", 21, 9);
 
@@ -90,7 +90,7 @@ void test_object_serialization()
 
         if (not file.is_open()) return;
 
-        auto ar = reader(file);
+        auto ar = iarchive(file);
 
         Boy obj;
 

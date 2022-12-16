@@ -1,13 +1,13 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Sifar/Core.hpp> // ReadArchive, WriteArchive, InnerRegistry
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive, InnerRegistry
 
-using sifar::reader;
-using sifar::writer;
+using siraf::iarchive;
+using siraf::oarchive;
 
-using sifar::base;
-using sifar::virtual_base;
+using siraf::base;
+using siraf::virtual_base;
 
 struct A : POLYMORPHIC_BASE()
 {
@@ -68,10 +68,10 @@ void test_virtual_base()
 
         if (not file.is_open()) return;
 
-        auto ar = writer(file);
+        auto ar = oarchive(file);
 
         A* a = new F;
-        std::cout << sifar::Access::dynamic_key(*a) << '\n';
+        std::cout << siraf::Access::dynamic_key(*a) << '\n';
 
         try
         {
@@ -96,7 +96,7 @@ void test_virtual_base()
 
         if (not file.is_open()) return;
 
-        auto ar = reader(file);
+        auto ar = iarchive(file);
 
         try
         {
@@ -107,8 +107,9 @@ void test_virtual_base()
             std::cout << e << '\n';
             return;
         }
+        auto xxx = siraf::Access::static_key<A>();
 
-        std::cout << sifar::Access::dynamic_key(*a) << '\n';
+        std::cout << siraf::Access::dynamic_key(*a) << '\n';
 
         file.close();
 

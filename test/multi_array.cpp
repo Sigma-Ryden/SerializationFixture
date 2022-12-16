@@ -1,12 +1,12 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Sifar/Core.hpp> // ReadArchive, WriteArchive
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
-using sifar::reader;
-using sifar::writer;
+using siraf::iarchive;
+using siraf::oarchive;
 
-using sifar::common::span;
+using siraf::common::span;
 
 void print(int** arr, int h, int w)
 {
@@ -24,7 +24,7 @@ void test_scope()
 
         if (not file.is_open()) return;
 
-        auto ar = writer(file);
+        auto ar = oarchive(file);
 
         int height = 3;
         unsigned int width = 4;
@@ -51,7 +51,7 @@ void test_scope()
 
         if (not file.is_open()) return;
 
-        auto ar = reader(file);
+        auto ar = iarchive(file);
 
         int height;
         int width;
