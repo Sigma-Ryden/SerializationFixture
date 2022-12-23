@@ -6,34 +6,34 @@
 
 #include <Siraf/Dynamic/PolymorphicArchive.hpp>
 
+#define _DYNAMIC_SAVE_LOAD_ALIASES(...)                                                                 \
+    using clone_type = ::siraf::dynamic::FactoryTableCore::clone_type;                                  \
+    using key_type   = ::siraf::dynamic::FactoryTableCore::key_type;
+
 #define _POLYMORPHIC_ARCHIVE_CALL(function_name)                                                        \
     { ::siraf::dynamic::PolymorphicArchive::function_name(archive, *this); }
 
 #define _DYNAMIC_SAVE_LOAD_IMPLEMENTATION(...)                                                          \
+    void __save(::siraf::core::ArchiveBase& archive) _POLYMORPHIC_ARCHIVE_CALL(save)                    \
+    void __load(::siraf::core::ArchiveBase& archive) _POLYMORPHIC_ARCHIVE_CALL(load)                    \
+
+#define POLYMORPHIC_BODY(...)                                                                           \
     private:                                                                                            \
-    virtual void __save(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(save)                      \
-    virtual void __load(Archive& archive) override _POLYMORPHIC_ARCHIVE_CALL(load)                      \
+    _DYNAMIC_SAVE_LOAD_ALIASES()                                                                        \
+    _DYNAMIC_SAVE_LOAD_IMPLEMENTATION()                                                                 \
+    _CLONEABLE_BODY(__VA_ARGS__)                                                                        \
     public:
 
-#define _POLYMORPHIC_BASE_BODY(...)                                                                     \
-    _CLONEABLE_BODY(__VA_ARGS__)                                                                        \
-    _DYNAMIC_SAVE_LOAD_IMPLEMENTATION()
-
-#ifndef POLYMORPHIC_BASE
-    #define POLYMORPHIC_BASE(...)                                                                       \
+#ifndef POLYMORPHIC
+    #define POLYMORPHIC(...)                                                                            \
         public ::siraf::dynamic::Polymorphic
-#endif // POLYMORPHIC_BASE
+#endif // POLYMORPHIC
 
-#ifndef SERIALIZABLE_POLYMORPHIC
-    #define SERIALIZABLE_POLYMORPHIC(...)                                                               \
-        SERIALIZABLE()                                                                                  \
-        _POLYMORPHIC_BASE_BODY(__VA_ARGS__)
-#endif // SERIALIZABLE_POLYMORPHIC
-
-#ifdef SIRAF_SMART
-    // Additional macro defs
-    #define POLYMORPHIC(...) SERIALIZABLE_POLYMORPHIC(__VA_ARGS__)
-#endif // SIRAF_SMART
+#ifndef SERIALIZABLE
+    #define SERIALIZABLE(...)                                                                           \
+        SERIALIZABLE_ACCESS(__VA_ARGS__)                                                                \
+        POLYMORPHIC_BODY(__VA_ARGS__)
+#endif // SERIALIZABLE
 
 namespace siraf
 {

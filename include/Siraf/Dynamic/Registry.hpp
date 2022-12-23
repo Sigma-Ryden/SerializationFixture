@@ -42,6 +42,12 @@ public:
             throw "The read shared pointer must be initialized to nullptr.";
 
         auto cloned = FactoryTable::instance().clone<TraitType>(key);
+
+    #ifdef SIRAF_DEBUG
+        if (cloned == nullptr)
+            throw "The 'siraf::dynamic::FactoryTable' does not have clone instance with input key.";
+    #endif // SIRAF_DEBUG
+
         pointer = memory::dynamic_pointer_cast<T>(cloned);
 
         auto raw_pointer = memory::raw(pointer);

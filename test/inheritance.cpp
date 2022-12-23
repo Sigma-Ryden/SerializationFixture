@@ -14,7 +14,7 @@ using namespace siraf::library;
 
 class Human
 {
-    SERIALIZABLE()
+    SERIALIZABLE(Human)
 
 protected:
     std::string name_;
@@ -38,7 +38,7 @@ SAVE_LOAD_SERIALIZABLE(Human)
 
 class Boy : public Human
 {
-    SERIALIZABLE()
+    SERIALIZABLE(Boy)
 
 private:
     int force_;

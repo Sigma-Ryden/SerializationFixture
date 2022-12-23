@@ -15,9 +15,9 @@ using siraf::memory::pure;
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
 // Needed for clonable and serializable of derived object
-struct B : POLYMORPHIC_BASE()
+struct B : POLYMORPHIC()
 {
-    POLYMORPHIC(B)
+    SERIALIZABLE(B)
 
     int b = 0;
 };
@@ -28,7 +28,7 @@ SAVE_LOAD_SERIALIZABLE(B)
 
 struct C : virtual B
 {
-    SERIALIZABLE_POLYMORPHIC(C)
+    SERIALIZABLE(C)
 
     int c = 1;
 };
@@ -40,7 +40,7 @@ SAVE_LOAD_SERIALIZABLE(C)
 
 struct D : virtual B
 {
-    POLYMORPHIC(D) // same as SERIALIZABLE_POLYMORPHIC()
+    SERIALIZABLE(D) // same as SERIALIZABLE_POLYMORPHIC()
 
     int d = 22;
 };
@@ -53,7 +53,7 @@ SERIALIZATION(D) // same as: SAVE_LOAD_SERIALIZABLE(D) {...}
 
 struct X : C, D
 {
-    POLYMORPHIC(X)
+    SERIALIZABLE(X)
 
     int x = 333;
 };
@@ -90,6 +90,7 @@ void test_tracking_virtual()
         println(pure(c));
         println(pure(b));
 
+        //
         try
         { // special shuffle
             ar & d

@@ -9,9 +9,9 @@ using siraf::oarchive;
 using siraf::base;
 using siraf::virtual_base;
 
-struct A : POLYMORPHIC_BASE()
+struct A : POLYMORPHIC()
 {
-    POLYMORPHIC(A)
+    SERIALIZABLE(A)
 
     virtual ~A() {}
 };
@@ -24,7 +24,7 @@ SERIALIZATION(A) {}
 // else do something...
 struct B : virtual A
 {
-    POLYMORPHIC(B)
+    SERIALIZABLE(B)
 };
 SERIALIZATION(B)
 {
@@ -33,7 +33,7 @@ SERIALIZATION(B)
 
 struct C :  virtual A
 {
-    POLYMORPHIC(C)
+    SERIALIZABLE(C)
 };
 SERIALIZATION(C)
 {
@@ -42,7 +42,7 @@ SERIALIZATION(C)
 
 struct D : B, C
 {
-    POLYMORPHIC(D)
+    SERIALIZABLE(D)
 };
 SERIALIZATION(D)
 {
@@ -53,7 +53,7 @@ SERIALIZATION(D)
 
 struct F : D
 {
-    POLYMORPHIC(F)
+    SERIALIZABLE(F)
 };
 
 SERIALIZATION(F)
@@ -71,7 +71,7 @@ void test_virtual_base()
         auto ar = oarchive(file);
 
         A* a = new F;
-        std::cout << siraf::Access::dynamic_key(*a) << '\n';
+        std::cout << siraf::Access::trait(*a) << '\n';
 
         try
         {
@@ -107,9 +107,9 @@ void test_virtual_base()
             std::cout << e << '\n';
             return;
         }
-        auto xxx = siraf::Access::static_key<A>();
+        auto xxx = siraf::Access::static_trait<A>();
 
-        std::cout << siraf::Access::dynamic_key(*a) << '\n';
+        std::cout << siraf::Access::trait(*a) << '\n';
 
         file.close();
 

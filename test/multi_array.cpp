@@ -2,6 +2,7 @@
 #include <iostream> // cout
 
 #include <Siraf/Core.hpp> // ReadArchive, WriteArchive
+#include <Siraf/Memory/Span.hpp>
 
 using siraf::iarchive;
 using siraf::oarchive;

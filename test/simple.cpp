@@ -8,7 +8,7 @@ using namespace siraf::library; // support of string
 
 class Shape
 {
-    SERIALIZABLE()
+    SERIALIZABLE(Shape)
 
 private:
     std::string name_;

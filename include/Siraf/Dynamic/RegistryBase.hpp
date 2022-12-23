@@ -36,7 +36,7 @@ public:
     static key_type save_key(Archive& archive, Pointer& pointer)
     {
         if (pointer == nullptr)
-            throw "the write pointer was not allocated.";
+            throw "The write pointer was not allocated.";
 
         auto id = Access::trait(*pointer);
         archive & id;

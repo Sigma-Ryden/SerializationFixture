@@ -48,7 +48,7 @@ And let's equip our simple class with serialization support:
 
 class Shape
 {
-    SERIALIZABLE()
+    SERIALIZABLE(Shape)
 
 private:
     std::string name_;

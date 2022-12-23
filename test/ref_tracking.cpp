@@ -20,9 +20,9 @@ using namespace siraf::tracking; // support of data tracking
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
 // Needed for clonable and serializable of derived object
-struct B : POLYMORPHIC_BASE()
+struct B : POLYMORPHIC()
 {
-    POLYMORPHIC(B)
+    SERIALIZABLE(B)
 
     int b = 0;
 };
@@ -33,7 +33,7 @@ SAVE_LOAD_SERIALIZABLE(B)
 
 struct C : virtual B
 {
-    POLYMORPHIC(C)
+    SERIALIZABLE(C)
 
     int c = 1;
 };
@@ -46,7 +46,7 @@ SAVE_LOAD_SERIALIZABLE(C)
 
 struct D : virtual B
 {
-    POLYMORPHIC(D)
+    SERIALIZABLE(D)
 
     int d = 22;
 };
@@ -59,7 +59,7 @@ SAVE_LOAD_SERIALIZABLE(D)
 
 struct X : C, D
 {
-    POLYMORPHIC(X)
+    SERIALIZABLE(X)
 
     int x = 333;
 };

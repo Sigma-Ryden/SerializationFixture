@@ -1,7 +1,7 @@
 #include <iostream> // cin, cout
 #include <fstream> // ifstream, ofstream
 
-#define SIFAR_DEBUG
+#define SIRAF_DEBUG
 #include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
 using siraf::iarchive;

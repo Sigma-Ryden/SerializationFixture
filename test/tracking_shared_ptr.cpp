@@ -1,7 +1,7 @@
 #include <iostream> // cout
 #include <fstream> // ifstream, ofstream
 
-#define SIFAR_DEBUG
+#define SIRAF_DEBUG
 #include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
 #include <Siraf/Support/shared_ptr.hpp>
@@ -18,30 +18,30 @@ using namespace siraf::tracking; // support of data tracking
 
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
-struct B : POLYMORPHIC_BASE()
+struct B : POLYMORPHIC()
 {
-    POLYMORPHIC(B)
+    SERIALIZABLE(B)
 
     int b = 0;
 };
 
 struct C : virtual B
 {
-    POLYMORPHIC(C)
+    SERIALIZABLE(C)
 
     int c = 1;
 };
 
 struct D : virtual B
 {
-    POLYMORPHIC(D)
+    SERIALIZABLE(D)
 
     int d = 22;
 };
 
 struct X : C, D
 {
-    POLYMORPHIC(X)
+    SERIALIZABLE(X)
 
     int x = 333;
 };
@@ -78,7 +78,7 @@ void test_tracking_shared_ptr()
 
         auto ar = oarchive(file);
 
-        auto xxx = siraf::Access::static_key<X>();
+        auto xxx = siraf::Access::static_trait<X>();
 
         std::shared_ptr<X> x = std::make_shared<X>();
         std::shared_ptr<D> d = x;

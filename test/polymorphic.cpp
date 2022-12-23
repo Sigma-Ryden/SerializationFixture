@@ -1,6 +1,7 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
+#define SIRAF_DEBUG
 #include <Siraf/Core.hpp> // ReadArchive, WriteArchive, InnerRegistry
 
 #include <Siraf/Support/string.hpp>
@@ -13,9 +14,9 @@ using siraf::base;
 using namespace siraf::library; // support of std library
 
 template <class SomeType>
-class Base : POLYMORPHIC_BASE()
+class Base : POLYMORPHIC()
 {
-    POLYMORPHIC(Base)
+    SERIALIZABLE(Base)
 
 protected:
     SomeType data;
@@ -59,7 +60,7 @@ namespace internal // example namespace
 
 class Derived : public Base<std::string>
 {
-    POLYMORPHIC(internal::Derived)
+    SERIALIZABLE(internal::Derived)
 
 private:
     float value;
@@ -95,6 +96,7 @@ void test_polymorphic()
 
     using Parent = Base<std::string>;
     using Child  = internal::Derived;
+
     {
         println(Registry::key<Base<char>>()); // <-- default value
         println(Registry::key<Base<std::string>>()); // <-- exported key
@@ -108,11 +110,24 @@ void test_polymorphic()
 
         auto ar = oarchive(file);
 
-        Parent* b = new Parent("Hello!");
-        Parent* d = new Child("Bye!", 3.1415926);
+        Parent* b = nullptr;
+        Parent* d = nullptr;
 
-        ar & b;
-        ar & d;
+        try
+        {
+            b = new Parent("Hello!");
+            d = new Child("Bye!", 3.1415926);
+
+            ar & b;
+            ar & d;
+        }
+        catch (const char* e)
+        {
+            println(e);
+
+            file.close();
+            return;
+        }
 
         println(Registry::key(*b));
         println(Registry::key(*d));
@@ -137,8 +152,18 @@ void test_polymorphic()
         Parent* b = nullptr;
         Parent* d = nullptr;
 
-        ar & b;
-        ar & d;
+        try
+        {
+            ar & b;
+            ar & d;
+        }
+        catch (const char* e)
+        {
+            println(e);
+
+            file.close();
+            return;
+        }
 
         println(Registry::key(*b));
         println(Registry::key(*d));

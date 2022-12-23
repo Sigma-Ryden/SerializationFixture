@@ -227,7 +227,7 @@ template <class ReadArchive, typename T,
                     and not meta::is_span<T>())>
 void raw_span(ReadArchive& archive, T& data)
 {
-    archive & data;
+    archive & data; // will improve
 }
 
 // serialization of scoped data with previous dimension initialization

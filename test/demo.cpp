@@ -40,10 +40,7 @@ enum class Color { Red, Green, Blue, Alpha };
 
 class B
 {
-    // is the same:
-    // friend class SirafSerializable;
-    // friend class siraf::Access;
-    SERIALIZABLE()
+    SERIALIZABLE(B)
 
 private:
     float pi_;
@@ -77,7 +74,7 @@ LOAD_SERIALIZABLE(B)
 
 class A
 {
-    SERIALIZABLE()
+    SERIALIZABLE(A)
 
 private:
     int x, y;
@@ -110,6 +107,8 @@ void test_common()
 {
     auto ar = siraf::oarchive<FormatOutStream>(std::cout);
 
+    constexpr auto xxx = sizeof(A);
+
     int number = 123;
     int* pointer = &number;
 
@@ -118,7 +117,7 @@ void test_common()
 
     //const char* boo = "boo"; // will serialize first symbol
 
-    A obj(666, 999, 2.71);
+    auto obj = new A(666, 999, 2.71);
 
     float array[] { 1.1, 2.2 , 3.3 };
     int matrix[4][3] { { }, { 1 }, { 2, 3 }, { 4, 5, 6 } };
@@ -145,6 +144,8 @@ void test_common()
     ar & std_array;
 
     std::cout << '\n';
+
+    delete obj;
 }
 
 int main()

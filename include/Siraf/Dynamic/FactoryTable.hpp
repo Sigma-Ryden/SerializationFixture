@@ -14,30 +14,30 @@
     { return SIRAF_STATIC_HASH(#__VA_ARGS__); }
 
 #define _CLONEABLE_KEY_IMPLEMENTATION(...)                                                              \
-    private:                                                                                            \
     static constexpr key_type __static_trait() noexcept                                                 \
     _CLONEABLE_KEY_CALL(__VA_ARGS__)                                                                    \
-    virtual key_type __trait() const noexcept override                                                  \
-    { return ::siraf::Access::static_trait<__VA_ARGS__>(); }
+    key_type __trait() const noexcept                                                                   \
+    { return siraf::Access::static_trait<__VA_ARGS__>(); }
 
 #define _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION(...)                                                    \
-    private:                                                                                            \
-    ::siraf::dynamic::FactoryTableUpdater<__VA_ARGS__> __factory_updater;                               \
+    siraf::dynamic::FactoryTableUpdater<__VA_ARGS__> __factory_updater;
 
 #define _CLONEABLE_IMPLEMENTATION(...)                                                                  \
-    private:                                                                                            \
-    virtual shared_ptr<clone_type> __shared() const override                                            \
-    { return std::make_shared<__VA_ARGS__>(); }                                                         \
-    virtual shared_ptr<clone_type> __cast(shared_ptr<void> address) const override                      \
-    { return ::siraf::memory::static_pointer_cast<__VA_ARGS__>(address); }                              \
-    virtual raw_ptr<clone_type> __raw() const override { return new __VA_ARGS__; }                      \
-    virtual raw_ptr<clone_type> __cast(raw_ptr<void> address) const override                            \
-    { return ::siraf::memory::static_pointer_cast<__VA_ARGS__>(address); };                             \
+    siraf::memory::shared_ptr<clone_type> __shared() const                                              \
+    { return siraf::memory::allocate_shared<clone_type, __VA_ARGS__>(); }                               \
+    siraf::memory::shared_ptr<clone_type> __cast(siraf::memory::shared_ptr<void> address) const         \
+    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }                    \
+    siraf::memory::raw_ptr<clone_type> __raw() const                                                    \
+    { return siraf::memory::allocate_raw<clone_type, __VA_ARGS__>(); }                                  \
+    siraf::memory::raw_ptr<clone_type> __cast(siraf::memory::raw_ptr<void> address) const               \
+    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }
 
 #define _CLONEABLE_BODY(...)                                                                            \
+    private:                                                                                            \
     _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION(__VA_ARGS__)                                                \
     _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
-    _CLONEABLE_KEY_IMPLEMENTATION(__VA_ARGS__)
+    _CLONEABLE_KEY_IMPLEMENTATION(__VA_ARGS__)                                                          \
+    public:
 
 namespace siraf
 {
@@ -94,6 +94,7 @@ private:
     InnerTabel factory_;
 
 private:
+
     FactoryTable() : factory_() {}
 
     ~FactoryTable()
@@ -111,10 +112,23 @@ public:
         return self;
     }
 
-    template <class T>
+private:
+    template <typename T> static constexpr bool is_cloneable() noexcept
+    {
+        return meta::is_convertible<T, Cloneable>();
+    }
+
+public:
+    template <class T, SIREQUIRE(not is_cloneable<T>())>
     void update(key_type key)
     {
-        if (not has_factory(key)) factory_[key] = new T;
+        throw "The polymorphic 'T' type is not convertible to 'siraf::dynamic::Cloneable'.";
+    }
+
+    template <class T, SIREQUIRE(is_cloneable<T>())>
+    void update(key_type key)
+    {
+        if (not has_factory(key)) factory_[key] = memory::allocate_raw<T>();
     }
 
     template <typename TraitType,
@@ -163,6 +177,13 @@ private:
 public:
     FactoryTableUpdater()
     {
+        call<T>();
+    }
+
+private:
+    template <typename U = T, SIREQUIRE(meta::is_polymorphic<U>())>
+    void call()
+    {
         if (lock_) return;
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
@@ -170,11 +191,14 @@ public:
 
     #ifdef SIRAF_DEBUG
         if (FactoryTable::instance().has_factory(key))
-            throw "FactoryTable must contain polymorphic clone with unique key.";
+            throw "The 'siraf::dynamic::FactoryTable' must contain clone instance with unique key.";
     #endif // SIRAF_DEBUG
 
         FactoryTable::instance().update<T>(key);
     }
+
+    template <typename U = T, SIREQUIRE(not meta::is_polymorphic<U>())>
+    void call() { /*pass*/ }
 };
 
 template <class T>

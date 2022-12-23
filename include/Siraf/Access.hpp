@@ -11,7 +11,7 @@
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
-#define SERIALIZABLE(...)                                                                               \
+#define SERIALIZABLE_ACCESS(...)                                                                        \
     friend class ::siraf_Serializable;                                                                  \
     friend class ::siraf::Access;
 

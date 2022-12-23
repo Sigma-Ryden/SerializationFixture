@@ -61,6 +61,9 @@ template <typename T>
 struct deref_impl<std::unique_ptr<T>> { using type = T; };
 
 template <typename T>
+struct deref_impl<std::weak_ptr<T>> { using type = T; };
+
+template <typename T>
 struct deref_impl<std::shared_ptr<T>> { using type = T; };
 
 template <typename T>
@@ -363,6 +366,11 @@ template <class T> constexpr bool is_compressible() noexcept
 template <typename From, typename To> constexpr bool can_static_cast() noexcept
 {
     return detail::can_static_cast_impl<From, To>::value;
+}
+
+template <typename From, typename To> constexpr bool is_convertible() noexcept
+{
+    return can_static_cast<From, To>() or std::is_convertible<From, To>::value;
 }
 
 template <class Base, class Derived> constexpr bool is_base_of() noexcept
