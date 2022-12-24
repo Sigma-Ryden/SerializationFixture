@@ -99,11 +99,20 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_archive<DerivedArchive>() and
-                        meta::is_registered<T>() and
-                        not Access::is_save_load_class<T>())>
+                        not Access::is_save_load_class<T>() and
+                        meta::is_registered<T>())>
     static void proccess(DerivedArchive& archive, T& data)
     {
         archive & data;
+    }
+
+    template <class DerivedArchive, class T,
+              SIREQUIRE(meta::is_archive<DerivedArchive>() and
+                        not Access::is_save_load_class<T>() and
+                        not meta::is_registered<T>())>
+    static void proccess(DerivedArchive& archive, T& data)
+    {
+        throw "The 'T' type is unregistered.";
     }
 };
 

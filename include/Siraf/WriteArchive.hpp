@@ -144,7 +144,7 @@ template <class WriteArchive, typename T,
 WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "'T' is an unsupported type for the 'siraf::WriteArchive'.");
+        "The 'T' is an unsupported type for the 'siraf::WriteArchive'.");
 
     return archive;
 }
@@ -155,7 +155,7 @@ template <class WriteArchive, typename T,
 WriteArchive& operator& (WriteArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "'T' is an unregistered type for the 'siraf::WriteArchive'. "
+        "The 'T' is an unregistered type for the 'siraf::WriteArchive'. "
         "Try overload an operator& to serialize the type 'T' with the macro "
         "'SERIALIZATION_SAVE_DATA(parameter, condition)' "
         "and then register the type 'T' with the macros: "

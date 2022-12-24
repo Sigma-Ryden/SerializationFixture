@@ -11,7 +11,7 @@
 
 #define REGISTRY_SERIALIZABLE_TYPE(...)                                                                 \
     namespace siraf {                                                                                   \
-        template <> struct TypeRegistry<__VA_ARGS__, void> : std::true_type {};                         \
+        template <> struct TypeRegistry<__VA_ARGS__> : std::true_type {};                               \
     }
 
 #ifdef SIRAF_SMART

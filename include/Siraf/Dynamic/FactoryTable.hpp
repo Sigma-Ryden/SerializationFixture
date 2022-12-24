@@ -19,9 +19,6 @@
     key_type __trait() const noexcept                                                                   \
     { return siraf::Access::static_trait<__VA_ARGS__>(); }
 
-#define _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION(...)                                                    \
-    siraf::dynamic::FactoryTableUpdater<__VA_ARGS__> __factory_updater;
-
 #define _CLONEABLE_IMPLEMENTATION(...)                                                                  \
     siraf::memory::shared_ptr<clone_type> __shared() const                                              \
     { return siraf::memory::allocate_shared<clone_type, __VA_ARGS__>(); }                               \
@@ -34,7 +31,6 @@
 
 #define _CLONEABLE_BODY(...)                                                                            \
     private:                                                                                            \
-    _CLONEABLE_FACTORY_TABLE_IMPLEMENTATION(__VA_ARGS__)                                                \
     _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
     _CLONEABLE_KEY_IMPLEMENTATION(__VA_ARGS__)                                                          \
     public:
@@ -169,13 +165,13 @@ private:
 };
 
 template <class T>
-class FactoryTableUpdater
+class FactoryRegistry
 {
 private:
     static bool lock_;
 
 public:
-    FactoryTableUpdater()
+    FactoryRegistry()
     {
         call<T>();
     }
@@ -202,7 +198,7 @@ private:
 };
 
 template <class T>
-bool FactoryTableUpdater<T>::lock_ = false;
+bool FactoryRegistry<T>::lock_ = false;
 
 } // namespace dynamic
 

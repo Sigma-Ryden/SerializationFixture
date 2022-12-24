@@ -31,11 +31,9 @@ public:
         std::cout << data << '\n';
     }
 };
-template <typename>
-struct is_base : std::false_type {};
 
-template <typename T>
-struct is_base<Base<T>> : std::true_type {};
+template <typename> struct is_base : std::false_type {};
+template <typename T> struct is_base<Base<T>> : std::true_type {};
 
 SAVE_LOAD_SERIALIZABLE(Base<std::string>)
 {
@@ -96,7 +94,6 @@ void test_polymorphic()
 
     using Parent = Base<std::string>;
     using Child  = internal::Derived;
-
     {
         println(Registry::key<Base<char>>()); // <-- default value
         println(Registry::key<Base<std::string>>()); // <-- exported key

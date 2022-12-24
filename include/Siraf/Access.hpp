@@ -12,7 +12,7 @@
 #include <Siraf/Detail/MetaMacro.hpp>
 
 #define SERIALIZABLE_ACCESS(...)                                                                        \
-    friend class ::siraf_Serializable;                                                                  \
+    friend class ::__Serializable;                                                                      \
     friend class ::siraf::Access;
 
 #define _SIRAF_HAS_PROPERTY_HELPER(extern_name, inner_name)                                             \

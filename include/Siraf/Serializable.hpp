@@ -4,62 +4,59 @@
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
-#define _SERIALIZATION_DECLARATION_IF(serialization_type, ...)                                          \
-    template <typename T>                                                                               \
-    struct siraf_Serializable::serialization_type<T, SIWHEN(__VA_ARGS__)> {                             \
-        template <class Archive>                                                                        \
-        static void call(Archive& archive, T& self);                                                    \
-    };
+#define _SERIALIZATION_CALL_DECLARATION(...)                                                            \
+    template <class Archive> static void call(Archive& archive, __VA_ARGS__& self);
 
-#define _SERIALIZATION_DECLARATION(serialization_type, ...)                                             \
+#define _SERIALIZATION_CALL_IMPLEMENTATION(mode, ...)                                                   \
+    { __Serializable::mode<__VA_ARGS__>::call(archive, self); }
+
+#define _SERIALIZATION_DECLARATION_IF(mode, ...)                                                        \
+    template <typename T>                                                                               \
+    struct __Serializable::mode<T, SIWHEN(__VA_ARGS__)> { _SERIALIZATION_CALL_DECLARATION(T) };
+
+#define _SERIALIZATION_DECLARATION(mode, ...)                                                           \
     template <>                                                                                         \
-    struct siraf_Serializable::serialization_type<__VA_ARGS__, void> {                                  \
-        template <class Archive>                                                                        \
-        static void call(Archive& archive, __VA_ARGS__& self);                                          \
-    };
+    struct __Serializable::mode<__VA_ARGS__> { _SERIALIZATION_CALL_DECLARATION(__VA_ARGS__) };
 
-#define _SERIALIZATION_IMPLEMENTATION_IF(serialization_type, ...)                                       \
+#define _SERIALIZATION_IMPLEMENTATION_IF(mode, ...)                                                     \
     template <typename T>                                                                               \
     template <class Archive>                                                                            \
-    void siraf_Serializable::serialization_type<T, SIWHEN(__VA_ARGS__)>::call(                          \
-        Archive& archive, T& self)
+    void __Serializable::mode<T, SIWHEN(__VA_ARGS__)>::call(Archive& archive, T& self)
 
-#define _SERIALIZATION_IMPLEMENTATION(serialization_type, ...)                                          \
+#define _SERIALIZATION_IMPLEMENTATION(mode, ...)                                                        \
     template <class Archive>                                                                            \
-    void siraf_Serializable::serialization_type<__VA_ARGS__, void>::call(                               \
-        Archive& archive, __VA_ARGS__& self)
+    void __Serializable::mode<__VA_ARGS__>::call(Archive& archive, __VA_ARGS__& self)
+
+#define _CONDITIONAL_SERIALIZABLE_IMPLEMENTATION(mode, ...)                                             \
+    _SERIALIZATION_DECLARATION_IF(mode, __VA_ARGS__)                                                    \
+    _SERIALIZATION_IMPLEMENTATION_IF(mode, __VA_ARGS__)
 
 #define CONDITIONAL_SAVE_SERIALIZABLE(...)                                                              \
-    _SERIALIZATION_DECLARATION_IF(Save, __VA_ARGS__)                                                    \
-    _SERIALIZATION_IMPLEMENTATION_IF(Save, __VA_ARGS__)
+    _CONDITIONAL_SERIALIZABLE_IMPLEMENTATION(Save, __VA_ARGS__)
 
 #define CONDITIONAL_LOAD_SERIALIZABLE(...)                                                              \
-    _SERIALIZATION_DECLARATION_IF(Load, __VA_ARGS__)                                                    \
-    _SERIALIZATION_IMPLEMENTATION_IF(Load, __VA_ARGS__)
+    _CONDITIONAL_SERIALIZABLE_IMPLEMENTATION(Load, __VA_ARGS__)
 
-#define _SERIALIZATION_CALL(serialization_type, ...)                                                    \
-    { ::siraf_Serializable::serialization_type<__VA_ARGS__>::call(archive, self); }
+#define _SERIALIZABLE_IMPLEMENTATION(mode, ...)                                                         \
+    _SERIALIZATION_DECLARATION(mode, __VA_ARGS__)                                                       \
+    _SERIALIZATION_IMPLEMENTATION(mode, __VA_ARGS__)
+
+#define SAVE_SERIALIZABLE(...)                                                                          \
+    _SERIALIZABLE_IMPLEMENTATION(Save, __VA_ARGS__)
+
+#define LOAD_SERIALIZABLE(...)                                                                          \
+    _SERIALIZABLE_IMPLEMENTATION(Load, __VA_ARGS__)
 
 #define CONDITIONAL_SAVE_LOAD_SERIALIZABLE(...)                                                         \
     _SERIALIZATION_DECLARATION_IF(Save, __VA_ARGS__)                                                    \
-    _SERIALIZATION_DECLARATION_IF(Load, __VA_ARGS__)                                                    \
-    _SERIALIZATION_IMPLEMENTATION_IF(Load, __VA_ARGS__)                                                 \
-    _SERIALIZATION_CALL(Save, T, SIWHEN(__VA_ARGS__))                                                   \
+    CONDITIONAL_LOAD_SERIALIZABLE(__VA_ARGS__)                                                          \
+    _SERIALIZATION_CALL_IMPLEMENTATION(Save, T, SIWHEN(__VA_ARGS__))                                    \
     _SERIALIZATION_IMPLEMENTATION_IF(Save, __VA_ARGS__)
-
-#define SAVE_SERIALIZABLE(...)                                                                          \
-    _SERIALIZATION_DECLARATION(Save, __VA_ARGS__)                                                       \
-    _SERIALIZATION_IMPLEMENTATION(Save, __VA_ARGS__)
-
-#define LOAD_SERIALIZABLE(...)                                                                          \
-    _SERIALIZATION_DECLARATION(Load, __VA_ARGS__)                                                       \
-    _SERIALIZATION_IMPLEMENTATION(Load, __VA_ARGS__)
 
 #define SAVE_LOAD_SERIALIZABLE(...)                                                                     \
     _SERIALIZATION_DECLARATION(Save, __VA_ARGS__)                                                       \
-    _SERIALIZATION_DECLARATION(Load, __VA_ARGS__)                                                       \
-    _SERIALIZATION_IMPLEMENTATION(Load, __VA_ARGS__)                                                    \
-    _SERIALIZATION_CALL(Save, __VA_ARGS__, void)                                                        \
+    LOAD_SERIALIZABLE(__VA_ARGS__)                                                                      \
+    _SERIALIZATION_CALL_IMPLEMENTATION(Save, __VA_ARGS__)                                               \
     _SERIALIZATION_IMPLEMENTATION(Save, __VA_ARGS__)
 
 #ifdef SIRAF_SMART
@@ -68,7 +65,7 @@
     #define SERIALIZATION(...) SAVE_LOAD_SERIALIZABLE(__VA_ARGS__)
 #endif // SIRAF_SMART
 
-class siraf_Serializable
+class __Serializable
 {
 public:
     template <typename T, typename enable = void>
@@ -81,7 +78,7 @@ public:
 namespace siraf
 {
 
-using Serializable = siraf_Serializable;
+using Serializable = __Serializable;
 
 } // namespace siraf
 
