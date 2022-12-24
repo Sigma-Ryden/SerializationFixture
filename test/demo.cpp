@@ -61,12 +61,12 @@ public:
     }
 };
 
-SAVE_SERIALIZABLE(B)
+SERIALIZATION(Save, B)
 {
     archive & self.pi_ & self.data_;
 }
 
-LOAD_SERIALIZABLE(B)
+SERIALIZATION(Load, B)
 {
     archive & self.pi_;
     archive & self.data_;
@@ -90,7 +90,7 @@ public:
     }
 };
 
-SERIALIZATION(A)
+SERIALIZATION(SaveLoad, A)
 {
     archive & self.x & self.y & self.b;
 }

@@ -35,19 +35,19 @@ public:
 template <typename> struct is_base : std::false_type {};
 template <typename T> struct is_base<Base<T>> : std::true_type {};
 
-SAVE_LOAD_SERIALIZABLE(Base<std::string>)
+SERIALIZATION(Save, Base<std::string>)
 {
     std::cout << "Save Base<std::string> class\n";
     archive & self.data;
 }
 
-CONDITIONAL_SAVE_SERIALIZABLE(is_base<T>::value)
+CONDITIONAL_SERIALIZATION(Save, is_base<T>::value)
 {
-    std::cout << "Load Base class\n";
+    std::cout << "Save Base class\n";
     archive & self.data;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE(is_base<T>::value)
+CONDITIONAL_SERIALIZATION(Load, is_base<T>::value)
 {
     std::cout << "Load Base class\n";
     archive & self.data;
@@ -74,7 +74,7 @@ public:
 
 } // namespace internal
 
-SAVE_LOAD_SERIALIZABLE(internal::Derived)
+SERIALIZATION(SaveLoad, internal::Derived)
 {
     std::cout << "Save/Load Derived class\n";
     archive & base<Base<std::string>>(self);

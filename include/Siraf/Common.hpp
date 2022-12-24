@@ -16,13 +16,15 @@ namespace siraf
 inline namespace common
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(object, Access::is_save_class<T>())
+CONDITIONAL_SAVE_SERIALIZABLE_TYPE(object,
+    Access::is_save_class<T>() or Access::is_saveload_class<T>())
 {
     Access::save(archive, object);
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(object, Access::is_load_class<T>())
+CONDITIONAL_LOAD_SERIALIZABLE_TYPE(object,
+    Access::is_load_class<T>() or Access::is_saveload_class<T>())
 {
     Access::load(archive, object);
     return archive;

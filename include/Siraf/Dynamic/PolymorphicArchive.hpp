@@ -83,7 +83,7 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_write_archive<DerivedArchive>() and
-                        Access::is_save_class<T>())>
+                        (Access::is_save_class<T>() or Access::is_saveload_class<T>()))>
     static void proccess(DerivedArchive& archive, T& object)
     {
         Access::save(archive, object);
@@ -91,7 +91,7 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_read_archive<DerivedArchive>() and
-                        Access::is_load_class<T>())>
+                        (Access::is_load_class<T>() or Access::is_saveload_class<T>()))>
     static void proccess(DerivedArchive& archive, T& object)
     {
         Access::load(archive, object);
@@ -99,18 +99,24 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_archive<DerivedArchive>() and
-                        not Access::is_save_load_class<T>() and
-                        meta::is_registered<T>())>
+                        not Access::is_save_class<T>() and
+                        not Access::is_load_class<T>() and
+                        not Access::is_saveload_class<T>())>
     static void proccess(DerivedArchive& archive, T& data)
+    {
+        process_data(archive, data);
+    }
+
+    template <class DerivedArchive, class T,
+              SIREQUIRE(meta::is_registered<T>())>
+    static void process_data(DerivedArchive& archive, T& data)
     {
         archive & data;
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(meta::is_archive<DerivedArchive>() and
-                        not Access::is_save_load_class<T>() and
-                        not meta::is_registered<T>())>
-    static void proccess(DerivedArchive& archive, T& data)
+              SIREQUIRE(not meta::is_registered<T>())>
+    static void process_data(DerivedArchive& archive, T& data)
     {
         throw "The 'T' type is unregistered.";
     }

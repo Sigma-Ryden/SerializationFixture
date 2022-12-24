@@ -16,7 +16,7 @@ struct A : POLYMORPHIC()
     virtual ~A() {}
 };
 
-SERIALIZATION(A) {}
+SERIALIZATION(SaveLoad, A) {}
 
 // virtual_base serialization proccess:
 // if this->virtual_id != this->static_id
@@ -26,7 +26,7 @@ struct B : virtual A
 {
     SERIALIZABLE(B)
 };
-SERIALIZATION(B)
+SERIALIZATION(SaveLoad, B)
 {
     virtual_base<A>(archive, self); // works even for non-virtual base, but maybe ambiguous
 }
@@ -35,7 +35,7 @@ struct C :  virtual A
 {
     SERIALIZABLE(C)
 };
-SERIALIZATION(C)
+SERIALIZATION(SaveLoad, C)
 {
     virtual_base<A>(archive, self);
 }
@@ -44,7 +44,7 @@ struct D : B, C
 {
     SERIALIZABLE(D)
 };
-SERIALIZATION(D)
+SERIALIZATION(SaveLoad, D)
 {
     base<A>(archive, self);
     base<B>(archive, self);
@@ -56,7 +56,7 @@ struct F : D
     SERIALIZABLE(F)
 };
 
-SERIALIZATION(F)
+SERIALIZATION(SaveLoad, F)
 {
     base<D>(archive, self);
 }
@@ -107,7 +107,6 @@ void test_virtual_base()
             std::cout << e << '\n';
             return;
         }
-        auto xxx = siraf::Access::static_trait<A>();
 
         std::cout << siraf::Access::trait(*a) << '\n';
 

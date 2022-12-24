@@ -10,12 +10,9 @@
 
 #include <Siraf/Memory/Memory.hpp>
 
-#define _CLONEABLE_KEY_CALL(...)                                                                        \
-    { return SIRAF_STATIC_HASH(#__VA_ARGS__); }
-
-#define _CLONEABLE_KEY_IMPLEMENTATION(...)                                                              \
+#define _CLONEABLE_TRAIT_IMPLEMENTATION(...)                                                            \
     static constexpr key_type __static_trait() noexcept                                                 \
-    _CLONEABLE_KEY_CALL(__VA_ARGS__)                                                                    \
+    { return SIRAF_STATIC_HASH(#__VA_ARGS__); }                                                         \
     key_type __trait() const noexcept                                                                   \
     { return siraf::Access::static_trait<__VA_ARGS__>(); }
 
@@ -31,8 +28,8 @@
 
 #define _CLONEABLE_BODY(...)                                                                            \
     private:                                                                                            \
+    _CLONEABLE_TRAIT_IMPLEMENTATION(__VA_ARGS__)                                                        \
     _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
-    _CLONEABLE_KEY_IMPLEMENTATION(__VA_ARGS__)                                                          \
     public:
 
 namespace siraf

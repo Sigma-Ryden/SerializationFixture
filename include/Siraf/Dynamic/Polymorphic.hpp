@@ -35,7 +35,7 @@
 
 #ifndef SERIALIZABLE
     #define SERIALIZABLE(...)                                                                           \
-        SERIALIZABLE_ACCESS(__VA_ARGS__)                                                                \
+        SERIALIZATION_ACCESS(__VA_ARGS__)                                                               \
         POLYMORPHIC_BODY(__VA_ARGS__)
 #endif // SERIALIZABLE
 

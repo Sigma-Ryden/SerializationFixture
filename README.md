@@ -18,7 +18,7 @@ Is a header-only library implemented purely in C++11.
 - all arithmetic types
 - enum or scoped enum
 - static or dynamic array
-- pointer (with data tracking)
+- raw & smart pointers (with data tracking)
 #### Sserialization of library types:
 - STL: string, vector, array...
 - any usage types
@@ -27,6 +27,7 @@ Is a header-only library implemented purely in C++11.
 - hierarchy
 - polymorphic
 - abstract
+- template
 
 ### Quick start.
 Warning! This is a simple example. You can see real applied examples [here](https://github.com/Sigma-Ryden/Siraf/tree/master/test).
@@ -66,7 +67,7 @@ public:
     float y() const { return y_; }
 };
 
-SAVE_LOAD_SERIALIZABLE(Shape)
+SERIALIZATION(SaveLoad, Shape)
 {
     archive & self.name_
             & self.x_
@@ -74,9 +75,8 @@ SAVE_LOAD_SERIALIZABLE(Shape)
 }
 ```
 Explaining of using macros above:
-- ```SERIALIZABLE()``` - Provide us with secure saving and loading of objects.
-- ```SAVE_LOAD_SERIALIZABLE()``` - Generate save/load serialization functions for given class.
-This macro allows you to split into two separate macros: ```SAVE_SERIALIZABLE()``` and ```LOAD_SERIALIZABLE()``` if needed.
+- ```SERIALIZABLE(type)``` - Provide us with secure saving and loading of objects.
+- ```SERIALIZATION(mode, type)``` - Generate Save/Load/SaveLoad serialization functions for given class.
 
 ### Using of serialization library:
 

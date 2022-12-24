@@ -46,24 +46,24 @@ struct X : C, D
     int x = 333;
 };
 
-SAVE_LOAD_SERIALIZABLE(B)
+SERIALIZATION(SaveLoad, B)
 {
     archive & self.b;
 }
 
-SAVE_LOAD_SERIALIZABLE(C)
+SERIALIZATION(SaveLoad, C)
 {
     archive & hierarchy<B>(self)
             & self.c;
 }
 
-SAVE_LOAD_SERIALIZABLE(D)
+SERIALIZATION(SaveLoad, D)
 {
     archive & hierarchy<B>(self)
             & self.d;
 }
 
-SAVE_LOAD_SERIALIZABLE(X)
+SERIALIZATION(SaveLoad, X)
 {
     archive & hierarchy<B, C, D>(self)
             & self.x;

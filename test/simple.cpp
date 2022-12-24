@@ -26,7 +26,7 @@ public:
     float y() const { return y_; }
 };
 
-SAVE_LOAD_SERIALIZABLE(Shape)
+SERIALIZATION(SaveLoad, Shape)
 {
     archive & self.name_
             & self.x_

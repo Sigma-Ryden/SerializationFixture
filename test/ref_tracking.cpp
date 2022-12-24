@@ -26,7 +26,7 @@ struct B : POLYMORPHIC()
 
     int b = 0;
 };
-SAVE_LOAD_SERIALIZABLE(B)
+SERIALIZATION(SaveLoad, B)
 {
     archive & self.b;
 }
@@ -38,7 +38,7 @@ struct C : virtual B
     int c = 1;
 };
 
-SAVE_LOAD_SERIALIZABLE(C)
+SERIALIZATION(SaveLoad, C)
 {
     archive & virtual_base<B>(self)
             & self.c;
@@ -51,7 +51,7 @@ struct D : virtual B
     int d = 22;
 };
 
-SAVE_LOAD_SERIALIZABLE(D)
+SERIALIZATION(SaveLoad, D)
 {
     archive & virtual_base<B>(self) // expand to => virtual_base<B>
             & self.d;
@@ -64,7 +64,7 @@ struct X : C, D
     int x = 333;
 };
 
-SAVE_LOAD_SERIALIZABLE(X)
+SERIALIZATION(SaveLoad, X)
 {
     archive & virtual_base<B>(self)
             & base<C>(self)

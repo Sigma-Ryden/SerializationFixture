@@ -83,6 +83,32 @@ using if_ = typename std::conditional<condition, if_true, if_false>::type;
 template <typename T>
 using decay = typename std::decay<T>::type;
 
+template <typename...> struct scope;
+
+template <> struct scope<>
+{
+public:
+    template <int I> struct arg { using type = void; };
+};
+
+template <typename T, typename... Tn>
+struct scope<T, Tn...>
+{
+public:
+    template <int I, typename overload = void> struct arg
+    {
+        using type = typename scope<Tn...>::template arg<I - 1>::type;
+    };
+
+    template <typename overload> struct arg<0, overload>
+    {
+        using type = T;
+    };
+
+public:
+    template <int I> using type = typename arg<I>::type;
+};
+
 namespace detail
 {
 
@@ -349,6 +375,17 @@ template <typename> std::false_type is_returnable_impl(...);
 template <typename T> constexpr bool is_returnable() noexcept
 {
     return decltype(detail::is_returnable_impl<T>(0))::value;
+}
+
+template <std::size_t I> constexpr std::size_t select() noexcept
+{
+    return I;
+}
+
+template <std::size_t I = 0, typename B, typename... Bn>
+constexpr std::size_t select(B b, Bn... bn) noexcept
+{
+    return b ? I : select<I + 1>(bn...);
 }
 
 template <typename... Tn> constexpr bool to_false() noexcept { return false; }

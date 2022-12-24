@@ -30,7 +30,7 @@ public:
     int age() const noexcept { return age_; }
 };
 
-SAVE_LOAD_SERIALIZABLE(Human)
+SERIALIZATION(SaveLoad, Human)
 {
     archive & self.name_
             & self.age_;
@@ -57,7 +57,7 @@ public:
 };
 
 // Macro same as SAVE_LOAD_SERIALIZABLE
-SERIALIZATION(Boy)
+SERIALIZATION(SaveLoad, Boy)
 {
     archive & base<Human>(self)
             & self.force_;

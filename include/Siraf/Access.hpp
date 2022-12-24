@@ -11,8 +11,8 @@
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
-#define SERIALIZABLE_ACCESS(...)                                                                        \
-    friend class ::__Serializable;                                                                      \
+#define SERIALIZATION_ACCESS(...)                                                                       \
+    friend class ::Serialization;                                                                       \
     friend class ::siraf::Access;
 
 #define _SIRAF_HAS_PROPERTY_HELPER(extern_name, inner_name)                                             \
@@ -53,6 +53,16 @@ class ArchiveBase;
 class Access
 {
 private:
+    using Sr = Serialization;
+
+public:
+    template <typename T>
+    using SaveMode = meta::scope<Sr::Save<T>, Sr::SaveLoad<T>, Sr::SaveFail>;
+
+    template <typename T>
+    using LoadMode = meta::scope<Sr::Load<T>, Sr::SaveLoad<T>, Sr::LoadFail>;
+
+private:
     _SIRAF_HAS_PROPERTY_HELPER(save, __save)
     _SIRAF_HAS_PROPERTY_HELPER(load, __load)
 
@@ -65,19 +75,19 @@ public:
     template <class T>
     static constexpr bool is_save_class() noexcept
     {
-        return not has_pure<Serializable::Save<T>>::value;
+        return not has_pure<Sr::Save<T>>::value;
     }
 
     template <class T>
     static constexpr bool is_load_class() noexcept
     {
-        return not has_pure<Serializable::Load<T>>::value;
+        return not has_pure<Sr::Load<T>>::value;
     }
 
     template <class T>
-    static constexpr bool is_save_load_class() noexcept
+    static constexpr bool is_saveload_class() noexcept
     {
-        return is_save_class<T>() and is_load_class<T>();
+        return not has_pure<Sr::SaveLoad<T>>::value;
     }
 
     template <class T>
@@ -115,41 +125,27 @@ public:
     }
 
 public:
-    template <class Archive, class T,
-              SIREQUIRE(not meta::is_write_archive<Archive>() or
-                        not is_save_class<T>())>
-    static void save(Archive& archive, T& object)
+    template <typename Archive, typename T>
+    static void save(Archive& archive, T& data)
     {
-        throw "The 'T' type cannot be saved.";
+        constexpr auto I = meta::select(is_save_class<T>(), is_saveload_class<T>());
+        using Mode = typename SaveMode<T>::template type<I>;
+
+        Mode::call(archive, data);
     }
 
-    template <class Archive, class T,
-              SIREQUIRE(meta::is_write_archive<Archive>() and
-                        is_save_class<T>())>
-    static void save(Archive& archive, T& object)
+    template <typename Archive, typename T>
+    static void load(Archive& archive, T& data)
     {
-        Serializable::Save<T>::call(archive, object);
-    }
+        constexpr auto I = meta::select(is_load_class<T>(), is_saveload_class<T>());
+        using Mode = typename LoadMode<T>::template type<I>;
 
-    template <class Archive, class T,
-              SIREQUIRE(not meta::is_read_archive<Archive>() or
-                        not is_load_class<T>())>
-    static void load(Archive& archive, T& object)
-    {
-        throw "The 'T' type cannot be loaded.";
-    }
-
-    template <class Archive, class T,
-              SIREQUIRE(meta::is_read_archive<Archive>() and
-                        is_load_class<T>())>
-    static void load(Archive& archive, T& object)
-    {
-        Serializable::Load<T>::call(archive, object);
+        Mode::call(archive, data);
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
               SIREQUIRE(is_dynamic_save_class<T>() and
-                        is_save_class<T>())>
+                        (is_save_class<T>() or is_saveload_class<T>()))>
     static void dynamic_save(core::ArchiveBase& archive, Pointer& object)
     {
         object->__save(archive);
@@ -157,7 +153,7 @@ public:
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
               SIREQUIRE(is_dynamic_load_class<T>() and
-                        is_load_class<T>())>
+                        (is_load_class<T>() or is_saveload_class<T>()))>
     static void dynamic_load(core::ArchiveBase& archive, Pointer& object)
     {
         object->__load(archive);
@@ -170,13 +166,19 @@ public:
     }
 
     template <class T, SIREQUIRE(is_registered_class<T>())>
-    static dynamic::PolymorphicTraitCore::key_type static_trait() noexcept
+    static dynamic::PolymorphicTraitCore::key_type trait() noexcept
     {
         static constexpr auto trait_key = dynamic::PolymorphicTraitKey<T>::key;
 
         return trait_key == dynamic::PolymorphicTraitCore::base_key
              ? T::__static_trait()
              : trait_key;
+    }
+
+    template <class T, SIREQUIRE(is_registered_class<T>())>
+    static constexpr dynamic::PolymorphicTraitCore::key_type static_trait() noexcept
+    {
+        return T::__static_trait();
     }
 
 private:
@@ -196,7 +198,7 @@ public: // not necessary, friend search applied via ADL or external declaration
     template <typename Base, class Archive, typename Derived,
               meta::require<meta::is_archive<Archive>() and
                             meta::is_base_of<Base, Derived>()> = 0>
-    friend void base(Archive& archive, Derived& object) noexcept
+    friend void base(Archive& archive, Derived& object)
     {
         archive & Access::template cast<Base&>(object);
     }
@@ -206,11 +208,11 @@ public: // not necessary, friend search applied via ADL or external declaration
 template <typename Base, class Archive, typename Derived,
           meta::require<meta::is_archive<Archive>() and
                         meta::is_base_of<Base, Derived>()>>
-void base(Archive& archive, Derived& object) noexcept;
+void base(Archive& archive, Derived& object);
 
 template <typename Base, class Archive, typename Derived,
           SIREQUIRE(meta::is_base_of<Base, Derived>())>
-void virtual_base(Archive& archive, Derived& object) noexcept
+void virtual_base(Archive& archive, Derived& object)
 {
     if (Access::trait(object) == Access::template static_trait<Derived>())
         base<Base>(archive, object);
@@ -291,6 +293,7 @@ apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
 } // namespace siraf
 
 CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(Access::is_save_class<T>() or Access::is_load_class<T>())
+CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(Access::is_saveload_class<T>())
 
 // clean up
 #undef _SIRAF_HAS_PROPERTY_HELPER
