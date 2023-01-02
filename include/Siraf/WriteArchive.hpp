@@ -15,21 +15,10 @@
 #include <Siraf/Memory/Memory.hpp>
 #include <Siraf/DataTrackBase.hpp>
 
+#include <Siraf/Detail/StaticMessage.hpp>
+
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
-
-#define CONDITIONAL_SAVE_SERIALIZABLE_TYPE(parameter, ...)                                              \
-    template <class WriteArchive, typename T,                                                           \
-              SIREQUIRE(::siraf::meta::is_write_archive<WriteArchive>() and                             \
-                        ::siraf::meta::is_registered<T>() and                                           \
-                        (bool)(__VA_ARGS__))>                                                           \
-    WriteArchive& operator& (WriteArchive& archive, T& parameter)
-
-#define SAVE_SERIALIZABLE_TYPE(parameter, ...)                                                          \
-    template <class WriteArchive,                                                                       \
-              SIREQUIRE(::siraf::meta::is_write_archive<WriteArchive>() and                             \
-                        ::siraf::meta::is_registered<__VA_ARGS__>())>                                   \
-    WriteArchive& operator& (WriteArchive& archive, __VA_ARGS__& parameter)
 
 namespace siraf
 {
@@ -155,12 +144,7 @@ template <class WriteArchive, typename T,
 WriteArchive& operator& (WriteArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'siraf::WriteArchive'. "
-        "Try overload an operator& to serialize the type 'T' with the macro "
-        "'SERIALIZATION_SAVE_DATA(parameter, condition)' "
-        "and then register the type 'T' with the macros: "
-        "'SERIALIZATION_TYPE_REGISTRY(name)' or "
-        "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'.");
+        STATIC_MESSAGE_UNREGISTERED_TYPE(siraf::WriteArchive, Save));
 
     return archive;
 }

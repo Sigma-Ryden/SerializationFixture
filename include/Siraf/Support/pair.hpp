@@ -5,10 +5,7 @@
 
 #include <utility> // pair
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-#include <Siraf/UnifiedData.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 namespace siraf
@@ -26,7 +23,7 @@ struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
 inline namespace library
 {
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(pair, meta::is_std_pair<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pair, meta::is_std_pair<T>::value)
 {
     archive & pair.first & pair.second;
 
@@ -37,6 +34,6 @@ CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(pair, meta::is_std_pair<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_pair<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_pair<T>::value)
 
 #endif // SIRAF_SUPPORT_PAIR_HPP

@@ -5,11 +5,8 @@
 
 #include <vector> // vector
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/Compress.hpp>
-
 #include <Siraf/TypeRegistry.hpp>
 
 #include <Siraf/Utility.hpp>
@@ -29,7 +26,7 @@ struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(vector, meta::is_std_vector<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, vector, meta::is_std_vector<T>::value)
 {
     let::u64 size = vector.size();
     archive & size;
@@ -39,7 +36,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(vector, meta::is_std_vector<T>::value)
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(vector, meta::is_std_vector<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, vector, meta::is_std_vector<T>::value)
 {
     let::u64 size;
     archive & size;
@@ -54,6 +51,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(vector, meta::is_std_vector<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_vector<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_vector<T>::value)
 
 #endif // SIRAF_SUPPORT_VECTOR_HPP

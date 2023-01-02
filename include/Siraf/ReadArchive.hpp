@@ -4,32 +4,17 @@
 #include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
-#include <memory> // shared_ptr
 
 #include <Siraf/ArchiveBase.hpp>
-
-#include <Siraf/Access.hpp>
-#include <Siraf/TypeRegistry.hpp>
 #include <Siraf/Dynamic/Registry.hpp>
 
 #include <Siraf/Memory/Memory.hpp>
 #include <Siraf/DataTrackBase.hpp>
 
+#include <Siraf/Detail/StaticMessage.hpp>
+
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
-
-#define CONDITIONAL_LOAD_SERIALIZABLE_TYPE(parameter, ...)                                              \
-    template <class ReadArchive, typename T,                                                            \
-              SIREQUIRE(::siraf::meta::is_read_archive<ReadArchive>() and                               \
-                        ::siraf::meta::is_registered<T>() and                                           \
-                        (bool)(__VA_ARGS__))>                                                           \
-    ReadArchive& operator& (ReadArchive& archive, T& parameter)
-
-#define LOAD_SERIALIZABLE_TYPE(parameter, ...)                                                          \
-    template <class ReadArchive,                                                                        \
-              SIREQUIRE(::siraf::meta::is_read_archive<WriteArchive>() and                              \
-                        ::siraf::meta::is_registered<__VA_ARGS__>())>                                   \
-    ReadArchive& operator& (ReadArchive& archive, __VA_ARGS__& parameter)
 
 namespace siraf
 {
@@ -172,12 +157,7 @@ template <class ReadArchive, typename T,
 ReadArchive& operator& (ReadArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'siraf::ReadArchive'. "
-        "Try overload an operator& to serialize the type 'T' with the macro "
-        "'SERIALIZATION_LOAD_DATA(parameter, condition)' "
-        "and then register the type 'T' with the macros: "
-        "'SERIALIZATION_TYPE_REGISTRY(name)' or "
-        "'SERIALIZATION_TYPE_REGISTRY_IF(condition)'.");
+        STATIC_MESSAGE_UNREGISTERED_TYPE(siraf::ReadArchive, Load));
 
     return archive;
 }

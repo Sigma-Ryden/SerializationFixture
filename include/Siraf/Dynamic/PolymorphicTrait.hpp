@@ -1,5 +1,5 @@
-#ifndef SIRAF_POLYMORPHIC_TRAIT_HPP
-#define SIRAF_POLYMORPHIC_TRAIT_HPP
+#ifndef SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
+#define SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
 
 #include <Siraf/Hash.hpp>
 
@@ -36,4 +36,4 @@ struct PolymorphicTraitKey
 
 } // namespace siraf
 
-#endif // SIRAF_POLYMORPHIC_TRAIT_HPP
+#endif // SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP

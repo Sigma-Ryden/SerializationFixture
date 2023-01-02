@@ -1,7 +1,7 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Siraf/Core.hpp> // ReadArchive, WriteArchive, InnerRegistry
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
 using siraf::iarchive;
 using siraf::oarchive;
@@ -18,26 +18,22 @@ struct A : POLYMORPHIC()
 
 SERIALIZATION(SaveLoad, A) {}
 
-// virtual_base serialization proccess:
-// if this->virtual_id != this->static_id
-//     throw "the srializable object must serialize the virtual base object."
-// else do something...
 struct B : virtual A
 {
     SERIALIZABLE(B)
 };
 SERIALIZATION(SaveLoad, B)
 {
-    virtual_base<A>(archive, self); // works even for non-virtual base, but maybe ambiguous
+    archive & virtual_base<A>(self); // works even for non-virtual base, but maybe ambiguous
 }
 
-struct C :  virtual A
+struct C : virtual A
 {
     SERIALIZABLE(C)
 };
 SERIALIZATION(SaveLoad, C)
 {
-    virtual_base<A>(archive, self);
+    virtual_base<A>(archive, self); // same as archive & virtual_base<A>(self);
 }
 
 struct D : B, C
@@ -46,9 +42,9 @@ struct D : B, C
 };
 SERIALIZATION(SaveLoad, D)
 {
-    base<A>(archive, self);
-    base<B>(archive, self);
-    base<C>(archive, self);
+    archive & base<A>(self)
+            & base<B>(self)
+            & base<C>(self); // or archive & hierarchy<A, B, C>(self);
 }
 
 struct F : D
@@ -58,7 +54,7 @@ struct F : D
 
 SERIALIZATION(SaveLoad, F)
 {
-    base<D>(archive, self);
+    base<D>(archive, self); // same as archive & base<D>(self);
 }
 
 void test_virtual_base()

@@ -5,10 +5,7 @@
 
 #include <queue> // queue
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-#include <Siraf/UnifiedData.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 // default container for queue
@@ -50,7 +47,7 @@ Container& underlying(std::queue<Type, Container>& queue)
 inline namespace library
 {
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(queue, meta::is_std_queue<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, queue, meta::is_std_queue<T>::value)
 {
     archive & detail::underlying(queue);
 
@@ -61,6 +58,6 @@ CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(queue, meta::is_std_queue<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_queue<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_queue<T>::value)
 
 #endif // SIRAF_SUPPORT_QUEUE_HPP

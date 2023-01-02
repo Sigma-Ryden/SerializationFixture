@@ -3,12 +3,8 @@
 
 #include <memory> // shared_ptr
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-#include <Siraf/UnifiedData.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
-
 #include <Siraf/DataTrack.hpp>
 
 #include <Siraf/Detail/Meta.hpp> // is_std_shared_ptr
@@ -19,7 +15,7 @@ namespace siraf
 inline namespace library
 {
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(shared_ptr, meta::is_std_shared_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, shared_ptr, meta::is_std_shared_ptr<T>::value)
 {
     tracking::track(archive, shared_ptr);
     return archive;
@@ -29,6 +25,6 @@ CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(shared_ptr, meta::is_std_shared_ptr<T>::
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_shared_ptr<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_shared_ptr<T>::value)
 
 #endif // SIRAF_SUPPORT_SHARED_PTR_HPP

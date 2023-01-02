@@ -75,8 +75,8 @@ SERIALIZATION(SaveLoad, Shape)
 }
 ```
 Explaining of using macros above:
-- ```SERIALIZABLE(type)``` - Provide us with secure saving and loading of objects.
-- ```SERIALIZATION(mode, type)``` - Generate Save/Load/SaveLoad serialization functions for given class.
+- ```SERIALIZABLE(<type>)``` - Provide us with secure saving and loading of objects.
+- ```SERIALIZATION(<mode>, <type>)``` - Generate Save/Load/SaveLoad serialization functions for given class.
 
 ### Using of serialization library:
 

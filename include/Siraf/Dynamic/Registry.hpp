@@ -1,5 +1,5 @@
-#ifndef SIRAF_REGISTRY_HPP
-#define SIRAF_REGISTRY_HPP
+#ifndef SIRAF_DYNAMIC_REGISTRY_HPP
+#define SIRAF_DYNAMIC_REGISTRY_HPP
 
 #include <Siraf/Access.hpp>
 #include <Siraf/Memory/Memory.hpp>
@@ -72,4 +72,4 @@ public:
 
 } // namespace siraf
 
-#endif // SIRAF_REGISTRY_HPP
+#endif // SIRAF_DYNAMIC_REGISTRY_HPP

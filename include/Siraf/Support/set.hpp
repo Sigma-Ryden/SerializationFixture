@@ -8,9 +8,7 @@
 
 #include <utility> // move
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 #include <Siraf/Utility.hpp>
@@ -44,7 +42,7 @@ template <class T> constexpr bool is_std_any_set() noexcept
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(set, meta::is_std_any_set<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>())
 {
     let::u64 size = set.size();
     archive & size;
@@ -55,7 +53,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(set, meta::is_std_any_set<T>())
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(set, meta::is_std_any_set<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>())
 {
     using value_type = typename T::value_type;
 
@@ -80,7 +78,7 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(set, meta::is_std_any_set<T>())
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_any_set<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_set<T>())
 
 // clean up
 #undef _SIRAF_IS_STD_MAP_TYPE_META_GENERIC

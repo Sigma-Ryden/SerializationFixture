@@ -5,10 +5,8 @@
 
 #include <string> // basic_string
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/Compress.hpp>
-
 #include <Siraf/TypeRegistry.hpp>
 
 #include <Siraf/Utility.hpp>
@@ -30,7 +28,7 @@ struct is_std_basic_string<std::basic_string<Char, Traits, Alloc>> : std::true_t
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(string, meta::is_std_basic_string<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, string, meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
@@ -42,7 +40,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(string, meta::is_std_basic_string<T>::value)
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(string, meta::is_std_basic_string<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, string, meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
@@ -59,6 +57,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(string, meta::is_std_basic_string<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_basic_string<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_basic_string<T>::value)
 
 #endif // SIRAF_SUPPORT_STRING_HPP

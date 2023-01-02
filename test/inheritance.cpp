@@ -56,7 +56,6 @@ public:
     int force() const noexcept { return force_; }
 };
 
-// Macro same as SAVE_LOAD_SERIALIZABLE
 SERIALIZATION(SaveLoad, Boy)
 {
     archive & base<Human>(self)

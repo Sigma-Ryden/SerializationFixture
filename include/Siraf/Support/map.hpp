@@ -8,9 +8,7 @@
 
 #include <utility> // move
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 // serialization of base map value_type
@@ -47,7 +45,7 @@ template <class T> constexpr bool is_std_any_map() noexcept
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(map, meta::is_std_any_map<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Save, map, meta::is_std_any_map<T>())
 {
     let::u64 size = map.size();
     archive & size;
@@ -58,7 +56,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(map, meta::is_std_any_map<T>())
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(map, meta::is_std_any_map<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Load, map, meta::is_std_any_map<T>())
 {
     using key   = typename T::key_type;
     using value = typename T::mapped_type;
@@ -84,7 +82,7 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(map, meta::is_std_any_map<T>())
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_any_map<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_map<T>())
 
 //clear
 #undef _SIRAF_IS_STD_MAP_TYPE_META_GENERIC

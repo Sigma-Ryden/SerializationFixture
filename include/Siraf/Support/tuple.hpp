@@ -5,10 +5,7 @@
 
 #include <tuple> // tuple
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-#include <Siraf/UnifiedData.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 namespace siraf
@@ -46,7 +43,7 @@ void expand(Archive& archive, T& tuple)
     detail::expand_impl(archive, tuple, meta::make_index_sequence<N>{});
 }
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(tuple, meta::is_std_tuple<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, tuple, meta::is_std_tuple<T>::value)
 {
     expand(archive, tuple);
 
@@ -57,6 +54,6 @@ CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(tuple, meta::is_std_tuple<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_tuple<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_tuple<T>::value)
 
 #endif // SIRAF_SUPPORT_TUPLE_HPP

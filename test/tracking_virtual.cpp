@@ -40,12 +40,12 @@ SERIALIZATION(SaveLoad, C)
 
 struct D : virtual B
 {
-    SERIALIZABLE(D) // same as SERIALIZABLE_POLYMORPHIC()
+    SERIALIZABLE(D)
 
     int d = 22;
 };
 
-SERIALIZATION(SaveLoad, D) // same as: SAVE_LOAD_SERIALIZABLE(D) {...}
+SERIALIZATION(SaveLoad, D)
 {
     archive & hierarchy<B>(self) // expand to => virtual_base<B>
             & self.d;

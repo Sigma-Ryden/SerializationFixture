@@ -1,11 +1,9 @@
-#ifndef SIRAF_REF_HPP
-#define SIRAF_REF_HPP
+#ifndef SIRAF_MEMORY_REF_HPP
+#define SIRAF_MEMORY_REF_HPP
 
 #include <memory> // addressof
 
-#include <Siraf/ReadArchive.hpp>
-#include <Siraf/WriteArchive.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 #include <Siraf/DataTrack.hpp>
@@ -44,7 +42,7 @@ public:
     void set(T& data) noexcept { data_ = std::addressof(data); }
 };
 
-} // namespace utility
+} // namespace memory
 
 template <typename T>
 memory::Ref<T> ref() noexcept { return {}; }
@@ -78,9 +76,9 @@ template <class T> constexpr bool is_ref() noexcept
 inline namespace common
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Save, ref, meta::is_ref<T>())
 {
-    using key_type = typename WriteArchive::TrackingKeyType;
+    using key_type = typename Archive::TrackingKeyType;
 
     if (ref.is_null())
         throw "the write reference must be initialized.";
@@ -100,9 +98,9 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Load, ref, meta::is_ref<T>())
 {
-    using key_type   = typename ReadArchive::TrackingKeyType;
+    using key_type   = typename Archive::TrackingKeyType;
     using value_type = typename T::type;
 
     using track_type = tracking::Raw;
@@ -131,6 +129,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(ref, meta::is_ref<T>())
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_ref<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_ref<T>())
 
-#endif // SIRAF_REF_HPP
+#endif // SIRAF_MEMORY_REF_HPP

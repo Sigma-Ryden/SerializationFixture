@@ -1,5 +1,5 @@
-#ifndef SIRAF_REGISTRY_BASE_HPP
-#define SIRAF_REGISTRY_BASE_HPP
+#ifndef SIRAF_DYNAMIC_REGISTRY_BASE_HPP
+#define SIRAF_DYNAMIC_REGISTRY_BASE_HPP
 
 #include <Siraf/Access.hpp>
 
@@ -27,7 +27,7 @@ public:
     template <class T>
     static constexpr key_type key() noexcept
     {
-        return Access::static_trait<T>();
+        return Access::trait<T>();
     }
 
 public:
@@ -38,7 +38,7 @@ public:
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto id = Access::trait(*pointer);
+        auto id = key(*pointer);
         archive & id;
 
         return id;
@@ -62,4 +62,4 @@ public:
 
 } // namespace siraf
 
-#endif // SIRAF_REGISTRY_BASE_HPP
+#endif // SIRAF_DYNAMIC_REGISTRY_BASE_HPP

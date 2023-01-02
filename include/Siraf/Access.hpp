@@ -57,10 +57,10 @@ private:
 
 public:
     template <typename T>
-    using SaveMode = meta::scope<Sr::Save<T>, Sr::SaveLoad<T>, Sr::SaveFail>;
+    using SaveMode = meta::scope<Sr::Save<T>, Sr::SaveLoad<T>, Sr::Fail>;
 
     template <typename T>
-    using LoadMode = meta::scope<Sr::Load<T>, Sr::SaveLoad<T>, Sr::LoadFail>;
+    using LoadMode = meta::scope<Sr::Load<T>, Sr::SaveLoad<T>, Sr::Fail>;
 
 private:
     _SIRAF_HAS_PROPERTY_HELPER(save, __save)
@@ -292,8 +292,8 @@ apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(Access::is_save_class<T>() or Access::is_load_class<T>())
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(Access::is_saveload_class<T>())
+CONDITIONAL_TYPE_REGISTRY(Access::is_save_class<T>() or Access::is_load_class<T>())
+CONDITIONAL_TYPE_REGISTRY(Access::is_saveload_class<T>())
 
 // clean up
 #undef _SIRAF_HAS_PROPERTY_HELPER

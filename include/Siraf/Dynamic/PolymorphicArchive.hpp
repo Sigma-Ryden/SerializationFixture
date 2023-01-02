@@ -1,5 +1,5 @@
-#ifndef SIRAF_POLYMORPHIC_ARCHIVE_HPP
-#define SIRAF_POLYMORPHIC_ARCHIVE_HPP
+#ifndef SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP
+#define SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP
 
 #include <Siraf/ArchiveBase.hpp>
 #include <Siraf/ArchiveTrait.hpp>
@@ -126,4 +126,4 @@ private:
 
 } // namespace siraf
 
-#endif // SIRAF_POLYMORPHIC_ARCHIVE_HPP
+#endif // SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP

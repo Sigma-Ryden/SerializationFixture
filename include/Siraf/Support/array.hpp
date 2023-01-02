@@ -5,12 +5,8 @@
 
 #include <array> // array
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-#include <Siraf/UnifiedData.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/Compress.hpp>
-
 #include <Siraf/TypeRegistry.hpp>
 
 namespace siraf
@@ -28,7 +24,7 @@ struct is_std_array<std::array<T, N>> : std::true_type {};
 inline namespace library
 {
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(array, meta::is_std_array<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, array, meta::is_std_array<T>::value)
 {
     compress::zip(archive, array);
     return archive;
@@ -38,6 +34,6 @@ CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(array, meta::is_std_array<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_array<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_array<T>::value)
 
 #endif // SIRAF_SUPPORT_ARRAY_HPP

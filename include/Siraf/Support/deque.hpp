@@ -5,10 +5,10 @@
 
 #include <deque> // deque
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
+
+#include <Siraf/Utility.hpp>
 
 namespace siraf
 {
@@ -25,7 +25,7 @@ struct is_std_deque<std::deque<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(deque, meta::is_std_deque<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, deque, meta::is_std_deque<T>::value)
 {
     let::u64 size = deque.size();
     archive & size;
@@ -36,7 +36,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(deque, meta::is_std_deque<T>::value)
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(deque, meta::is_std_deque<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, deque, meta::is_std_deque<T>::value)
 {
     let::u64 size;
     archive & size;
@@ -53,6 +53,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(deque, meta::is_std_deque<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_deque<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_deque<T>::value)
 
 #endif // SIRAF_SUPPORT_DEQUE_HPP

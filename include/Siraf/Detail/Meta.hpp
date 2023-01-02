@@ -359,6 +359,10 @@ template <class T> constexpr bool is_archive() noexcept
     return is_read_archive<T>() or is_write_archive<T>();
 }
 
+template <class T> constexpr bool is_Save() noexcept { return is_write_archive<T>(); }
+template <class T> constexpr bool is_Load() noexcept { return is_read_archive<T>(); }
+template <class T> constexpr bool is_SaveLoad() noexcept { return is_archive<T>(); }
+
 namespace detail
 {
 

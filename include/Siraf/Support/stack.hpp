@@ -5,10 +5,7 @@
 
 #include <stack> // stack
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-#include <Siraf/UnifiedData.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 // default container for stack
@@ -50,7 +47,7 @@ Container& underlying(std::stack<Type, Container>& stack)
 inline namespace library
 {
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(stack, meta::is_std_stack<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, stack, meta::is_std_stack<T>::value)
 {
     archive & detail::underlying(stack);
 
@@ -61,6 +58,6 @@ CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(stack, meta::is_std_stack<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_stack<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_stack<T>::value)
 
 #endif // SIRAF_SUPPORT_STACK_HPP

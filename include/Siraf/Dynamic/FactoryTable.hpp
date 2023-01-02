@@ -1,5 +1,5 @@
-#ifndef SIRAF_FACTORY_TABLE_HPP
-#define SIRAF_FACTORY_TABLE_HPP
+#ifndef SIRAF_DYNAMIC_FACTORY_TABLE_HPP
+#define SIRAF_DYNAMIC_FACTORY_TABLE_HPP
 
 #include <unordered_map> // unordered_map
 
@@ -14,9 +14,10 @@
     static constexpr key_type __static_trait() noexcept                                                 \
     { return SIRAF_STATIC_HASH(#__VA_ARGS__); }                                                         \
     key_type __trait() const noexcept                                                                   \
-    { return siraf::Access::static_trait<__VA_ARGS__>(); }
+    { return siraf::Access::trait<__VA_ARGS__>(); }
 
 #define _CLONEABLE_IMPLEMENTATION(...)                                                                  \
+    siraf::dynamic::FactoryRegistry<__VA_ARGS__> __registry;                                            \
     siraf::memory::shared_ptr<clone_type> __shared() const                                              \
     { return siraf::memory::allocate_shared<clone_type, __VA_ARGS__>(); }                               \
     siraf::memory::shared_ptr<clone_type> __cast(siraf::memory::shared_ptr<void> address) const         \
@@ -26,11 +27,16 @@
     siraf::memory::raw_ptr<clone_type> __cast(siraf::memory::raw_ptr<void> address) const               \
     { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }
 
-#define _CLONEABLE_BODY(...)                                                                            \
+#define CLONEABLE_BODY(...)                                                                             \
     private:                                                                                            \
     _CLONEABLE_TRAIT_IMPLEMENTATION(__VA_ARGS__)                                                        \
     _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
     public:
+
+#ifndef CLONEABLE
+    #define CLONEABLE(...)                                                                              \
+        public siraf::dynamic::Cloneable
+#endif // CLONEABLE
 
 namespace siraf
 {
@@ -180,7 +186,7 @@ private:
         if (lock_) return;
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
-        auto key = Access::template static_trait<T>();
+        auto key = Access::template trait<T>();
 
     #ifdef SIRAF_DEBUG
         if (FactoryTable::instance().has_factory(key))
@@ -201,4 +207,4 @@ bool FactoryRegistry<T>::lock_ = false;
 
 } // namespace siraf
 
-#endif // SIRAF_FACTORY_TABLE_HPP
+#endif // SIRAF_DYNAMIC_FACTORY_TABLE_HPP

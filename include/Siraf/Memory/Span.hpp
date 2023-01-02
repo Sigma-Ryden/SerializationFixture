@@ -1,5 +1,5 @@
-#ifndef SIRAF_SPAN_HPP
-#define SIRAF_SPAN_HPP
+#ifndef SIRAF_MEMORY_SPAN_HPP
+#define SIRAF_MEMORY_SPAN_HPP
 
 #include <cstddef> // size_t
 #include <initializer_list> // initializer_list
@@ -333,4 +333,4 @@ apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_
 
 } // namespace siraf
 
-#endif // SIRAF_SPAN_HPP
+#endif // SIRAF_MEMORY_SPAN_HPP

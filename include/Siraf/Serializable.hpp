@@ -35,21 +35,11 @@ public:
     struct Load { static constexpr bool pure = true; };
 
 public:
-    struct SaveFail
+    struct Fail
     {
-        template <typename Archive, typename T>
-        static void call(Archive& archive, T& self)
+        template <typename Archive, typename T> static void call(Archive& archive, T& self)
         {
-            throw "The 'T' type cannot be saved.";
-        }
-    };
-
-    struct LoadFail
-    {
-        template <typename Archive, typename T>
-        static void call(Archive& archive, T& self)
-        {
-            throw "The 'T' type cannot be loaded.";
+            throw "The 'T' type cannot be saved/loaded.";
         }
     };
 };

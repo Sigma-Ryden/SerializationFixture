@@ -17,7 +17,7 @@ template <class WriteArchive, typename T,
 void strict(WriteArchive& archive, T& pod_pointer)
 {
     if (pod_pointer == nullptr)
-        throw "the write pointer must be allocated.";
+        throw "The write pointer must be allocated.";
 
     archive & (*pod_pointer);
 }
@@ -30,7 +30,7 @@ void strict(ReadArchive& archive, T& pod_pointer)
     using item_type = typename memory::ptr_trait<T>::item;
 
     if (pod_pointer != nullptr)
-        throw "the read pointer must be initialized to nullptr.";
+        throw "The read pointer must be initialized to nullptr.";
 
     memory::allocate<item_type>(pod_pointer);
 
@@ -80,7 +80,7 @@ bool is_refer(ReadArchive& archive, T& pointer)
 {
 #ifdef SIRAF_DEBUG
     if (pointer != nullptr)
-        throw "the read pointer must be initialized to nullptr.";
+        throw "The read pointer must be initialized to nullptr.";
 #endif // SIRAF_DEBUG
 
     auto info = false;

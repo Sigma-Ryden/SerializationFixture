@@ -5,9 +5,7 @@
 
 #include <list> // list
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 #include <Siraf/Utility.hpp>
@@ -27,7 +25,7 @@ struct is_std_list<std::list<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(list, meta::is_std_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, list, meta::is_std_list<T>::value)
 {
     let::u64 size = list.size();
     archive & size;
@@ -38,7 +36,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(list, meta::is_std_list<T>::value)
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(list, meta::is_std_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, list, meta::is_std_list<T>::value)
 {
     let::u64 size;
     archive & size;
@@ -55,6 +53,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(list, meta::is_std_list<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_list<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_list<T>::value)
 
 #endif // SIRAF_SUPPORT_LIST_HPP

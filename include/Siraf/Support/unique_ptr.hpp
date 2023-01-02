@@ -5,10 +5,9 @@
 
 #include <memory> // unique_ptr
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
+
 #include <Siraf/Memory/Memory.hpp>
 
 namespace siraf
@@ -26,7 +25,7 @@ struct is_std_unique_ptr<std::unique_ptr<T, Deleter>> : std::true_type {};
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     auto data = unique_ptr.get();
     archive & data;
@@ -34,7 +33,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     using item_type = typename memory::ptr_trait<T>::item_type;
 
@@ -50,6 +49,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(unique_ptr, meta::is_std_unique_ptr<T>::value
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_unique_ptr<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_unique_ptr<T>::value)
 
 #endif // SIRAF_SUPPORT_UNIQUE_PTR_HPP

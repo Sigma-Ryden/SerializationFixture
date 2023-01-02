@@ -5,9 +5,7 @@
 
 #include <memory> // weak_ptr
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-
+#include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
 #include <Siraf/Memory/Memory.hpp>
@@ -30,7 +28,7 @@ struct is_std_weak_ptr<std::weak_ptr<T>> : std::true_type {};
 inline namespace library
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(weak_ptr, meta::is_std_weak_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
     auto sptr = weak_ptr.lock();
     archive & sptr;
@@ -38,7 +36,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(weak_ptr, meta::is_std_weak_ptr<T>::value)
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(weak_ptr, meta::is_std_weak_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
     using item_type = typename memory::ptr_trait<T>::item;
 
@@ -54,6 +52,6 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(weak_ptr, meta::is_std_weak_ptr<T>::value)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_std_weak_ptr<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_weak_ptr<T>::value)
 
 #endif // SIRAF_SUPPORT_WEAK_PTR_HPP

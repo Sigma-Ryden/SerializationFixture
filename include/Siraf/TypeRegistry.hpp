@@ -4,20 +4,15 @@
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
-#define CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(...)                                                     \
+#define CONDITIONAL_TYPE_REGISTRY(...)                                                                  \
     namespace siraf {                                                                                   \
         template <typename T> struct TypeRegistry<T, SIWHEN(__VA_ARGS__)> : std::true_type {};          \
     }
 
-#define REGISTRY_SERIALIZABLE_TYPE(...)                                                                 \
+#define TYPE_REGISTRY(...)                                                                              \
     namespace siraf {                                                                                   \
         template <> struct TypeRegistry<__VA_ARGS__> : std::true_type {};                               \
     }
-
-#ifdef SIRAF_SMART
-    #define CONDITIONAL_REGISTRY_TYPE(...) CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(__VA_ARGS__)
-    #define REGISTRY_TYPE(...) REGISTRY_SERIALIZABLE_TYPE(__VA_ARGS__)
-#endif // SIRAF_SMART
 
 namespace siraf
 {
@@ -37,10 +32,10 @@ template <typename T> constexpr bool is_registered() noexcept
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_arithmetic<T>())
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_enum<T>())
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_array<T>())
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_serializable_raw_pointer<T>())
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_unsupported<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_arithmetic<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_enum<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_array<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_unsupported<T>())
 
 #endif // SIRAF_TYPE_REGISTRY_HPP

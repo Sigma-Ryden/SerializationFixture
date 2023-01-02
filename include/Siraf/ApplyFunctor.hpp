@@ -39,6 +39,6 @@ Archive& operator& (Archive& archive, T&& apply_functor)
 
 } // namespace siraf
 
-CONDITIONAL_REGISTRY_SERIALIZABLE_TYPE(meta::is_apply_functor<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_apply_functor<T>())
 
 #endif // SIRAF_APPLY_FUNCTOR_HPP

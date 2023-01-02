@@ -54,17 +54,18 @@ set(SIRAF
     include/Siraf/ArchiveBase.hpp
     include/Siraf/ReadArchive.hpp
     include/Siraf/WriteArchive.hpp
-    include/Siraf/UnifiedData.hpp
+	include/Siraf/ExternSerialization.hpp
     include/Siraf/SerializatonBase.hpp
     include/Siraf/DataTrackBase.hpp
     include/Siraf/Config.hpp
+	include/Siraf/Detail/StaticMessage.hpp
 
     include/Siraf/Core.hpp
 )
 
 add_executable(${PROJECT_NAME}
-	# test/polymorphic.cpp
-	test/virtual_base.cpp
+	test/polymorphic.cpp
+	# test/virtual_base.cpp
 	# test/demo.cpp
 	# test/simple.cpp
 	# test/tracking.cpp

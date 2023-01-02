@@ -4,7 +4,7 @@
 #include <Siraf/WriteArchive.hpp>
 #include <Siraf/ReadArchive.hpp>
 
-#include <Siraf/UnifiedData.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 #include <Siraf/DataTrack.hpp>
 #include <Siraf/Compress.hpp>
@@ -16,27 +16,27 @@ namespace siraf
 inline namespace common
 {
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(object,
+EXTERN_CONDITIONAL_SERIALIZATION(Save, object,
     Access::is_save_class<T>() or Access::is_saveload_class<T>())
 {
     Access::save(archive, object);
     return archive;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(object,
+EXTERN_CONDITIONAL_SERIALIZATION(Load, object,
     Access::is_load_class<T>() or Access::is_saveload_class<T>())
 {
     Access::load(archive, object);
     return archive;
 }
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(number, meta::is_arithmetic<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, number, meta::is_arithmetic<T>())
 {
     archive.stream().call(&number, sizeof(number));
     return archive;
 }
 
-CONDITIONAL_SAVE_SERIALIZABLE_TYPE(enumerator, meta::is_enum<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Save, enumerator, meta::is_enum<T>())
 {
     using underlying_type = typename std::underlying_type<T>::type;
     auto value = static_cast<underlying_type>(enumerator);
@@ -44,7 +44,7 @@ CONDITIONAL_SAVE_SERIALIZABLE_TYPE(enumerator, meta::is_enum<T>())
     return archive & value;
 }
 
-CONDITIONAL_LOAD_SERIALIZABLE_TYPE(enumerator, meta::is_enum<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Load, enumerator, meta::is_enum<T>())
 {
     using underlying_type = typename std::underlying_type<T>::type;
 
@@ -56,13 +56,13 @@ CONDITIONAL_LOAD_SERIALIZABLE_TYPE(enumerator, meta::is_enum<T>())
     return archive;
 }
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(array, meta::is_array<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, array, meta::is_array<T>())
 {
     compress::zip(archive, array);
     return archive;
 }
 
-CONDITIONAL_SAVE_LOAD_SERIALIZABLE_TYPE(pointer, meta::is_serializable_raw_pointer<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_pointer<T>())
 {
     tracking::track(archive, pointer);
     return archive;

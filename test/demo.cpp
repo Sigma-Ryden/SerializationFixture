@@ -1,7 +1,7 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Siraf/Core.hpp>// WriteArchive, ExternRegistry
+#include <Siraf/Core.hpp>// WriteArchive
 
 #include <Siraf/Support/string.hpp>
 #include <Siraf/Support/array.hpp>
