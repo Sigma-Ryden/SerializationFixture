@@ -25,7 +25,7 @@ public:
     }
 
     template <class T>
-    static constexpr key_type key() noexcept
+    static key_type key() noexcept
     {
         return Access::trait<T>();
     }

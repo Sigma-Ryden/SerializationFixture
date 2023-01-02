@@ -65,7 +65,7 @@ set(SIRAF
 
 add_executable(${PROJECT_NAME}
     test/polymorphic.cpp
-    # test/virtual_base.cpp
+	# test/virtual_base.cpp
     # test/demo.cpp
     # test/simple.cpp
     # test/tracking.cpp

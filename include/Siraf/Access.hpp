@@ -166,19 +166,19 @@ public:
     }
 
     template <class T, SIREQUIRE(is_registered_class<T>())>
+    static constexpr dynamic::PolymorphicTraitCore::key_type static_trait() noexcept
+    {
+        return T::__static_trait();
+    }
+
+    template <class T, SIREQUIRE(is_registered_class<T>())>
     static dynamic::PolymorphicTraitCore::key_type trait() noexcept
     {
         static constexpr auto trait_key = dynamic::PolymorphicTraitKey<T>::key;
 
         return trait_key == dynamic::PolymorphicTraitCore::base_key
-             ? T::__static_trait()
+             ? static_trait<T>()
              : trait_key;
-    }
-
-    template <class T, SIREQUIRE(is_registered_class<T>())>
-    static constexpr dynamic::PolymorphicTraitCore::key_type static_trait() noexcept
-    {
-        return T::__static_trait();
     }
 
 private:
@@ -214,7 +214,7 @@ template <typename Base, class Archive, typename Derived,
           SIREQUIRE(meta::is_base_of<Base, Derived>())>
 void virtual_base(Archive& archive, Derived& object)
 {
-    if (Access::trait(object) == Access::template static_trait<Derived>())
+    if (Access::trait(object) == Access::template trait<Derived>())
         base<Base>(archive, object);
 }
 

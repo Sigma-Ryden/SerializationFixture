@@ -4,12 +4,8 @@
 #include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
-#include <memory> // addressof
 
 #include <Siraf/ArchiveBase.hpp>
-
-#include <Siraf/Access.hpp>
-#include <Siraf/TypeRegistry.hpp>
 #include <Siraf/Dynamic/Registry.hpp>
 
 #include <Siraf/Memory/Memory.hpp>
