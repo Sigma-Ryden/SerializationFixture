@@ -29,7 +29,9 @@
 
 #include <Siraf/Config.hpp>
 
-EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, std::ifstream)
-EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, std::ofstream)
+#ifndef SIRAF_DEFAULT_DISABLE
+    EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, std::ifstream)
+    EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, std::ofstream)
+#endif // SIRAF_DEFAULT_DISABLE
 
 #endif // SIRAF_CORE_HPP

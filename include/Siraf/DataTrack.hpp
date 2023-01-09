@@ -94,7 +94,7 @@ void track(WriteArchive& archive, T& data)
     auto& is_tracking = archive.tracking()[key];
 
     if (is_tracking)
-        throw "the write tracking data is already tracked.";
+        throw "The write tracking data is already tracked.";
 
     is_tracking = true;
 
@@ -111,7 +111,7 @@ void track(ReadArchive& archive, T& pointer)
     using track_type = typename tracking::track_trait<T>::trait;
 
     if (pointer != nullptr)
-        throw "the read track pointer must be initialized to nullptr.";
+        throw "The read track pointer must be initialized to nullptr.";
 
     auto success = detail::is_refer(archive, pointer); // serialize refer info
     if (not success) return;
@@ -121,7 +121,7 @@ void track(ReadArchive& archive, T& pointer)
 
 #ifdef SIRAF_DEBUG
     if (is_mixed<track_type>(archive, key))
-        throw "mixed pointer tracking is not allowed.";
+        throw "Mixed pointer tracking is not allowed.";
 #endif // SIRAF_DEBUG
 
     auto& item = archive.template tracking<track_type>()[key];
@@ -151,7 +151,7 @@ void track(ReadArchive& archive, T& data)
     auto& item = archive.template tracking<track_type>()[key];
 
     if (item.address != nullptr)
-        throw  "the read tracking data is already tracked.";
+        throw  "The read tracking data is already tracked.";
 
     item.address = memory::pure(std::addressof(data));
 

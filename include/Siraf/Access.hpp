@@ -57,10 +57,10 @@ private:
 
 public:
     template <typename T>
-    using SaveMode = meta::scope<Sr::Save<T>, Sr::SaveLoad<T>, Sr::Fail>;
+    using SaveMode = meta::scope<Sr::Save<T>, Sr::SaveLoad<T>, Sr>;
 
     template <typename T>
-    using LoadMode = meta::scope<Sr::Load<T>, Sr::SaveLoad<T>, Sr::Fail>;
+    using LoadMode = meta::scope<Sr::Load<T>, Sr::SaveLoad<T>, Sr>;
 
 private:
     _SIRAF_HAS_PROPERTY_HELPER(save, __save)

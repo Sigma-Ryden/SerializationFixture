@@ -35,13 +35,12 @@ public:
     struct Load { static constexpr bool pure = true; };
 
 public:
-    struct Fail
+    // default implementation
+    template <typename Archive, typename T>
+    static void call(Archive& archive, T& self)
     {
-        template <typename Archive, typename T> static void call(Archive& archive, T& self)
-        {
-            throw "The 'T' type cannot be saved/loaded.";
-        }
-    };
+        throw "The 'T' type cannot be saved/loaded.";
+    }
 };
 
 #endif // SIRAF_SERIALIZABLE_HPP

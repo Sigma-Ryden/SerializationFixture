@@ -81,7 +81,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, ref, meta::is_ref<T>())
     using key_type = typename Archive::TrackingKeyType;
 
     if (ref.is_null())
-        throw "the write reference must be initialized.";
+        throw "The write reference must be initialized.";
 
     auto pointer = std::addressof(ref.get());
     auto address = memory::pure(pointer);
@@ -91,7 +91,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, ref, meta::is_ref<T>())
     auto& is_tracking = archive.tracking()[key];
 
     if (not is_tracking)
-        throw "the write reference must be tracked before.";
+        throw "The write reference must be tracked before.";
 
     detail::native_save(archive, pointer, key);
 
@@ -106,7 +106,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, ref, meta::is_ref<T>())
     using track_type = tracking::Raw;
 
     if (not ref.is_null())
-        throw "the read reference must be null.";
+        throw "The read reference must be null.";
 
     key_type key;
     archive & key;
@@ -114,7 +114,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, ref, meta::is_ref<T>())
     auto& item = archive.template tracking<track_type>()[key];
 
     if (item.address == nullptr)
-        throw "the read reference must be tracked before.";
+        throw "The read reference must be tracked before.";
 
     value_type* pointer = nullptr;
 

@@ -10,12 +10,13 @@
     using clone_type = siraf::dynamic::FactoryTableCore::clone_type;                                    \
     using key_type = siraf::dynamic::FactoryTableCore::key_type;
 
-#define _POLYMORPHIC_ARCHIVE_CALL(function_name)                                                        \
+#define _POLYMORPHIC_INTERFACE_IMPLEMENTATION(function_name)                                            \
+    void __##function_name(siraf::core::ArchiveBase& archive)                                           \
     { siraf::dynamic::PolymorphicArchive::function_name(archive, *this); }
 
 #define _POLYMORPHIC_IMPLEMENTATION(...)                                                                \
-    void __save(siraf::core::ArchiveBase& archive) _POLYMORPHIC_ARCHIVE_CALL(save)                      \
-    void __load(siraf::core::ArchiveBase& archive) _POLYMORPHIC_ARCHIVE_CALL(load)                      \
+    _POLYMORPHIC_INTERFACE_IMPLEMENTATION(save)                                                         \
+    _POLYMORPHIC_INTERFACE_IMPLEMENTATION(load)
 
 #define POLYMORPHIC_BODY(...)                                                                           \
     private:                                                                                            \

@@ -261,7 +261,7 @@ template <class WriteArchive, typename T,
 void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (pointer == nullptr)
-        throw "the write span data must be allocated.";
+        throw "The write span data must be allocated.";
 
     archive(dimension, dimension_n...);
 
@@ -276,7 +276,7 @@ template <class ReadArchive, typename T,
 void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (pointer != nullptr)
-        throw "the read span data must be initialized to nullptr.";
+        throw "The read span data must be initialized to nullptr.";
 
     archive(dimension, dimension_n...);
 

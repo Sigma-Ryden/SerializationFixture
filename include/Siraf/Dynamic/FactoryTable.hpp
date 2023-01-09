@@ -16,16 +16,16 @@
     key_type __trait() const noexcept                                                                   \
     { return siraf::Access::trait<__VA_ARGS__>(); }
 
+#define _CLONEABLE_INTERFACE_IMPLEMENTATION(type, ...)                                                  \
+    siraf::memory::type##_ptr<clone_type> __##type() const                                              \
+    { return siraf::memory::allocate_##type<clone_type, __VA_ARGS__>(); }                               \
+    siraf::memory::type##_ptr<clone_type> __cast(siraf::memory::type##_ptr<void> address) const         \
+    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }
+
 #define _CLONEABLE_IMPLEMENTATION(...)                                                                  \
     siraf::dynamic::FactoryRegistry<__VA_ARGS__> __registry;                                            \
-    siraf::memory::shared_ptr<clone_type> __shared() const                                              \
-    { return siraf::memory::allocate_shared<clone_type, __VA_ARGS__>(); }                               \
-    siraf::memory::shared_ptr<clone_type> __cast(siraf::memory::shared_ptr<void> address) const         \
-    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }                    \
-    siraf::memory::raw_ptr<clone_type> __raw() const                                                    \
-    { return siraf::memory::allocate_raw<clone_type, __VA_ARGS__>(); }                                  \
-    siraf::memory::raw_ptr<clone_type> __cast(siraf::memory::raw_ptr<void> address) const               \
-    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }
+    _CLONEABLE_INTERFACE_IMPLEMENTATION(shared, __VA_ARGS__)                                            \
+    _CLONEABLE_INTERFACE_IMPLEMENTATION(raw, __VA_ARGS__)
 
 #define CLONEABLE_BODY(...)                                                                             \
     private:                                                                                            \
