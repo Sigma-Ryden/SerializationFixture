@@ -153,7 +153,7 @@ Span<T, 1>::Span(pointer& data, size_type size)
 {
 }
 
-} // namespace utility
+} // namespace memory
 
 namespace meta
 {
@@ -183,21 +183,20 @@ constexpr bool is_span_set() noexcept
 
 } // namespace meta
 
-namespace utility
+namespace memory
 {
 
 template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
           typename Type = meta::remove_ptr_n<Pointer, N>,
-          typename Span = memory::Span<Type, N>,
           SIREQUIRE(meta::is_span_set<Pointer, D, Dn...>())>
-Span make_span(Pointer& data, D d, Dn... dn)
+Span<Type, N> make_span(Pointer& data, D d, Dn... dn)
 {
-    using size_type = typename Span::size_type;
+    using size_type = typename Span<Type, N>::size_type;
     return { data, static_cast<size_type>(d), static_cast<size_type>(dn)... };
 }
 
-} // namespace utility
+} // namespace memory
 
 namespace detail
 {
@@ -265,7 +264,7 @@ void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 
     archive(dimension, dimension_n...);
 
-    auto span_data = utility::make_span(pointer, dimension, dimension_n...);
+    auto span_data = memory::make_span(pointer, dimension, dimension_n...);
     detail::raw_span(archive, span_data);
 }
 
@@ -280,7 +279,7 @@ void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 
     archive(dimension, dimension_n...);
 
-    auto span_data = utility::make_span(pointer, dimension, dimension_n...);
+    auto span_data = memory::make_span(pointer, dimension, dimension_n...);
     detail::raw_span(archive, span_data);
 }
 

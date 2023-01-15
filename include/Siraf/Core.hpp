@@ -5,7 +5,9 @@
     #define SIRAF_SMART // Use additional macro defs
 #endif // SIRAF_SMART_DISABLE
 
+#ifndef SIRAF_DEFAULT_DISABLE
 #include <fstream> // ifstream, ofstream
+#endif // SIRAF_DEFAULT_DISABLE
 
 #include <Siraf/Access.hpp>
 #include <Siraf/Serializable.hpp>
