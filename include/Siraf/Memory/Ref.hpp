@@ -26,7 +26,7 @@ private:
 public:
     using type = T;
 
-    // DONT use dereferencing of null data before rebining
+    // DONT use dereferencing of null data before rebinding
     Ref() noexcept : data_(nullptr) {}
     Ref(T& data) noexcept : data_(std::addressof(data)) {}
 

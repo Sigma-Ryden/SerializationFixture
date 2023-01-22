@@ -2,7 +2,7 @@
 #include <iostream> // cout
 
 #define SIRAF_DEBUG
-#include <Siraf/Core.hpp> // ReadArchive, WriteArchive, InnerRegistry
+#include <Siraf/Core.hpp> // ReadArchive, WriteArchive
 
 #include <Siraf/Support/string.hpp>
 
@@ -181,4 +181,6 @@ int main()
     test_polymorphic();
 
     return 0;
+}
+   return 0;
 }

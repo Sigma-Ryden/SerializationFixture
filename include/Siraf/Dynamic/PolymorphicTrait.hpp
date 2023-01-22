@@ -3,7 +3,6 @@
 
 #include <Siraf/Hash.hpp>
 
-// EXPORT_POLYMORPHIC_KEY - only for translation unit (.cpp) or templates (.hpp)
 #define EXPORT_POLYMORPHIC_KEY(unique_name, ...)                                                        \
     namespace siraf { namespace dynamic {                                                               \
         template <> struct PolymorphicTraitKey<__VA_ARGS__>                                             \
@@ -37,3 +36,9 @@ struct PolymorphicTraitKey
 } // namespace siraf
 
 #endif // SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
+c
+
+} // namespace siraf
+
+#endif // SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
+TRAIT_HPP

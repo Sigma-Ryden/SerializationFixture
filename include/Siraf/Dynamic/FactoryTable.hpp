@@ -190,7 +190,7 @@ private:
 
     #ifdef SIRAF_DEBUG
         if (FactoryTable::instance().has_factory(key))
-            throw "The 'siraf::dynamic::FactoryTable' must contain clone instance with unique key.";
+            throw "The 'siraf::dynamic::FactoryTable' must contains clone instance with unique key.";
     #endif // SIRAF_DEBUG
 
         FactoryTable::instance().update<T>(key);

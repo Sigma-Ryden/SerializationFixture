@@ -45,7 +45,7 @@ public:
 
     #ifdef SIRAF_DEBUG
         if (cloned == nullptr)
-            throw "The 'siraf::dynamic::FactoryTable' does not have clone instance with input key.";
+            throw "The 'siraf::dynamic::FactoryTable' does not has clone instance with input key.";
     #endif // SIRAF_DEBUG
 
         pointer = memory::dynamic_pointer_cast<T>(cloned);
@@ -73,3 +73,4 @@ public:
 } // namespace siraf
 
 #endif // SIRAF_DYNAMIC_REGISTRY_HPP
+

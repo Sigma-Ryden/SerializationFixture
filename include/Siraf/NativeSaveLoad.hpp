@@ -59,3 +59,4 @@ void native_load(Archive& archive, Pointer& pointer, VoidPointer& address)
 } // namespace siraf
 
 #endif // SIRAF_NATIVE_SAVE_LOAD_HPP
+D_HPP

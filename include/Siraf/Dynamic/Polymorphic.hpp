@@ -2,7 +2,7 @@
 #define SIRAF_DYNAMIC_POLYMORPHIC_HPP
 
 #include <Siraf/Access.hpp> // SERIALIZABLE
-#include <Siraf/Dynamic/FactoryTable.hpp> // _CLONEABLE_BODY
+#include <Siraf/Dynamic/FactoryTable.hpp> // CLONEABLE_BODY
 
 #include <Siraf/Dynamic/PolymorphicArchive.hpp>
 
@@ -57,3 +57,4 @@ private:
 } // namespace siraf
 
 #endif // SIRAF_DYNAMIC_POLYMORPHIC_HPP
+

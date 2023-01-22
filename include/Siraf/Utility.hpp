@@ -35,14 +35,7 @@ constexpr std::size_t size(const T (&array)[N]) noexcept { return N; }
 template <class InIt, class OutIt>
 OutIt copy(InIt first, InIt last, OutIt dst_first) noexcept
 {
-    while (first != last)
-    {
-        *dst_first = *first;
-
-        ++dst_first;
-        ++first;
-    }
-
+    while (first != last) *dst_first++ = *first++; // increment apply first by priority
     return dst_first;
 }
 
@@ -72,5 +65,8 @@ std::size_t size(const CharType* str) noexcept
 
 // clean up
 #undef _NULL_CHARACTER_FUNCTION_GENERIC
+
+#endif // SIRAF_UTILITY_HPP
+CHARACTER_FUNCTION_GENERIC
 
 #endif // SIRAF_UTILITY_HPP
