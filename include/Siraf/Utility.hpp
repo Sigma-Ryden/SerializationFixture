@@ -67,6 +67,3 @@ std::size_t size(const CharType* str) noexcept
 #undef _NULL_CHARACTER_FUNCTION_GENERIC
 
 #endif // SIRAF_UTILITY_HPP
-CHARACTER_FUNCTION_GENERIC
-
-#endif // SIRAF_UTILITY_HPP

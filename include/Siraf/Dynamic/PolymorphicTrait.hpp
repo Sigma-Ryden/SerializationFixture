@@ -36,9 +36,3 @@ struct PolymorphicTraitKey
 } // namespace siraf
 
 #endif // SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
-c
-
-} // namespace siraf
-
-#endif // SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
-TRAIT_HPP
