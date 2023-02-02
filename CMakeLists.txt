@@ -53,9 +53,9 @@ set(SIRAF
     include/Siraf/Serializable.hpp
     include/Siraf/ArchiveBase.hpp
     include/Siraf/ReadArchive.hpp
-	include/Siraf/WriteArchive.hpp
+    include/Siraf/WriteArchive.hpp
     include/Siraf/ExternSerialization.hpp
-	include/Siraf/StreamWrapper.hpp
+    include/Siraf/StreamWrapper.hpp
     include/Siraf/SerializatonBase.hpp
     include/Siraf/DataTrackBase.hpp
     include/Siraf/Config.hpp
