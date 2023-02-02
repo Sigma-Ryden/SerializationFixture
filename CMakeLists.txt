@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -53,8 +53,9 @@ set(SIRAF
     include/Siraf/Serializable.hpp
     include/Siraf/ArchiveBase.hpp
     include/Siraf/ReadArchive.hpp
-    include/Siraf/WriteArchive.hpp
+	include/Siraf/WriteArchive.hpp
     include/Siraf/ExternSerialization.hpp
+	include/Siraf/StreamWrapper.hpp
     include/Siraf/SerializatonBase.hpp
     include/Siraf/DataTrackBase.hpp
     include/Siraf/Config.hpp

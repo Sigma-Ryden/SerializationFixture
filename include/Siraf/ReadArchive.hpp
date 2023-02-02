@@ -11,6 +11,8 @@
 #include <Siraf/Memory/Memory.hpp>
 #include <Siraf/DataTrackBase.hpp>
 
+#include <Siraf/StreamWrapper.hpp>
+
 #include <Siraf/Detail/StaticMessage.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -19,31 +21,8 @@
 namespace siraf
 {
 
-namespace wrapper
-{
-
-template <typename InStream>
-class InStreamWrapper
-{
-private:
-    InStream& stream_;
-
-public:
-    InStreamWrapper(InStream& stream) : stream_(stream) {}
-
-    template <typename T>
-    void call(T* data, std::size_t memory_size)
-    {
-        stream_.read(memory::byte_cast(data), memory_size);
-    }
-
-    InStream& get() noexcept { return stream_; }
-};
-
-} // namespace wrapper
-
 template <class InStream,
-          class StreamWrapper = wrapper::InStreamWrapper<InStream>,
+          class StreamWrapper,
           class Registry = dynamic::ExternRegistry>
 class ReadArchive : public core::ArchiveBase
 {
@@ -95,8 +74,9 @@ public:
     auto operator() () -> ReadArchive& { return *this; }
 };
 
+// create default ReadArchive<> with wrapper::IFileStream<>
 template <class InStream>
-ReadArchive<InStream> iarchive(InStream& stream)
+ReadArchive<InStream, wrapper::IFileStream<InStream>> iarchive(InStream& stream)
 {
     return { stream };
 }

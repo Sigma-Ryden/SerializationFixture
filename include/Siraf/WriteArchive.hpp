@@ -11,6 +11,8 @@
 #include <Siraf/Memory/Memory.hpp>
 #include <Siraf/DataTrackBase.hpp>
 
+#include <Siraf/StreamWrapper.hpp>
+
 #include <Siraf/Detail/StaticMessage.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -19,31 +21,8 @@
 namespace siraf
 {
 
-namespace wrapper
-{
-
-template <typename OutStream>
-class OutStreamWrapper
-{
-private:
-    OutStream& stream_;
-
-public:
-    OutStreamWrapper(OutStream& stream) : stream_(stream) {}
-
-    template <typename T>
-    void call(const T* data, std::size_t memory_size)
-    {
-        stream_.write(memory::const_byte_cast(data), memory_size);
-    }
-
-    OutStream& get() noexcept { return stream_; }
-};
-
-} // namespace wrapper
-
 template <class OutStream,
-          class StreamWrapper = wrapper::OutStreamWrapper<OutStream>,
+          class StreamWrapper,
           class Registry = dynamic::ExternRegistry>
 class WriteArchive : public core::ArchiveBase
 {
@@ -78,8 +57,9 @@ public:
     auto operator() () noexcept -> WriteArchive& { return *this; }
 };
 
+// create default WriteArchive<> with wrapper::OFileStream<>
 template <class OutStream>
-WriteArchive<OutStream> oarchive(OutStream& stream)
+WriteArchive<OutStream, wrapper::OFileStream<OutStream>> oarchive(OutStream& stream)
 {
     return { stream };
 }

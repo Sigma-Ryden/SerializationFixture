@@ -4,7 +4,7 @@
 #include <Siraf/Utility.hpp>
 
 #ifndef SIRAF_ARCHIVE_MAX_TRAIT_KEY
-    #define SIRAF_ARCHIVE_MAX_TRAIT_KEY 2
+    #define SIRAF_ARCHIVE_MAX_TRAIT_KEY 4
 #endif // SIRAF_ARCHIVE_MAX_TRAIT_KEY
 
 #define SERIALIZATION_ARCHIVE(...)                                                                      \

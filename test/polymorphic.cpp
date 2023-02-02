@@ -43,7 +43,7 @@ SERIALIZATION(Save, Base<std::string>)
 
 CONDITIONAL_SERIALIZATION(Save, is_base<T>::value)
 {
-    std::cout << "Save Base class\n";
+    //std::cout << "Save Base class\n";
     archive & self.data;
 }
 
@@ -79,7 +79,7 @@ SERIALIZATION(SaveLoad, internal::Derived)
     std::cout << "Save/Load Derived class\n";
     archive & base<Base<std::string>>(self);
     archive & self.value;
-}
+};
 
 // EXPORT_POLYMORPHIC(internal::Derived) // - not required
 EXPORT_POLYMORPHIC(Base<std::string>)
@@ -90,6 +90,8 @@ EXPORT_POLYMORPHIC(Base<double>) // smae as EXPORT_POLYMORPHIC_KEY("Base<double>
 
 void test_polymorphic()
 {
+    using namespace siraf::wrapper;
+
     using Registry = siraf::dynamic::RegistryBase;
 
     using Parent = Base<std::string>;
@@ -100,12 +102,9 @@ void test_polymorphic()
         println(Registry::key<Base<double>>()); // <-- exported key
     }
     //
+    std::vector<unsigned char> data;
     {
-        std::ofstream file("test_polymorphic.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = oarchive(file);
+        auto ar = oarchive<OByteStream>(data);
 
         Parent* b = nullptr;
         Parent* d = nullptr;
@@ -121,8 +120,6 @@ void test_polymorphic()
         catch (const char* e)
         {
             println(e);
-
-            file.close();
             return;
         }
 
@@ -134,17 +131,11 @@ void test_polymorphic()
 
         delete b;
         delete d;
-
-        file.close();
     }
     //
     //
     {
-        std::ifstream file("test_polymorphic.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = iarchive(file);
+        auto ar = iarchive<IByteStream>(data);
 
         Parent* b = nullptr;
         Parent* d = nullptr;
@@ -157,8 +148,6 @@ void test_polymorphic()
         catch (const char* e)
         {
             println(e);
-
-            file.close();
             return;
         }
 
@@ -170,8 +159,6 @@ void test_polymorphic()
 
         delete b;
         delete d;
-
-        file.close();
     }
     //
 }

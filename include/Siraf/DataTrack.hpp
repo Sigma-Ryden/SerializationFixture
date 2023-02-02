@@ -60,8 +60,10 @@ void track(WriteArchive& archive, T& pointer)
 {
     using key_type = typename WriteArchive::TrackingKeyType;
 
-    auto success = detail::is_refer(archive, pointer); // serialize refer info
+#ifndef SIRAF_NULLPTR_DISABLE
+    const auto success = detail::is_refer(archive, pointer); // serialize refer info
     if (not success) return;
+#endif // SIRAF_NULLPTR_DISABLE
 
     auto pure = memory::pure(pointer);
     auto key = reinterpret_cast<key_type>(memory::raw(pure));
@@ -113,8 +115,10 @@ void track(ReadArchive& archive, T& pointer)
     if (pointer != nullptr)
         throw "The read track pointer must be initialized to nullptr.";
 
-    auto success = detail::is_refer(archive, pointer); // serialize refer info
+#ifndef SIRAF_NULLPTR_DISABLE
+    const auto success = detail::is_refer(archive, pointer); // serialize refer info
     if (not success) return;
+#endif // SIRAF_NULLPTR_DISABLE
 
     key_type key;
     archive & key;
@@ -163,8 +167,10 @@ template <class Archive, typename T,
                     meta::is_serializable_raw_pointer<T>())>
 void raw(Archive& archive, T& pointer)
 {
-    auto success = detail::is_refer(archive, pointer); // read/write refer info
-    if (success) strict(archive, pointer);
+#ifndef SIRAF_NULLPTR_DISABLE
+    if (detail::is_refer(archive, pointer))
+#endif //SIRAF_NULLPTR_DISABLE
+    strict(archive, pointer);
 }
 
 } // namespace tracking
