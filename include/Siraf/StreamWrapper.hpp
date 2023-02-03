@@ -15,12 +15,12 @@ namespace wrapper
 class OByteStream
 {
 public:
-    std::vector<unsigned char>& file;
+    std::vector<unsigned char>& storage;
 
 public:
-    OByteStream(std::vector<unsigned char>& stream) : file(stream)
+    OByteStream(std::vector<unsigned char>& stream) : storage(stream)
     {
-        file.reserve(1024);
+        storage.reserve(1024);
     }
 
     template <typename T>
@@ -29,7 +29,7 @@ public:
         auto it = memory::const_byte_cast(data);
         while (size > 0)
         {
-            file.emplace_back(static_cast<unsigned char>(*it++));
+            storage.emplace_back(static_cast<unsigned char>(*it++));
             --size;
         }
     }
@@ -38,10 +38,10 @@ public:
 struct IByteStream
 {
 public:
-    std::vector<unsigned char>& file;
+    std::vector<unsigned char>& storage;
     std::size_t offset;
 
-    IByteStream(std::vector<unsigned char>& data) : file(data), offset() {}
+    IByteStream(std::vector<unsigned char>& data) : storage(data), offset() {}
 
     template <typename T>
     void call(T* data, std::size_t size)
@@ -49,7 +49,7 @@ public:
         auto it = memory::byte_cast(data);
         while (size > 0)
         {
-            *it++ = static_cast<unsigned char>(file[offset++]);
+            *it++ = static_cast<unsigned char>(storage[offset++]);
             --size;
         }
     }

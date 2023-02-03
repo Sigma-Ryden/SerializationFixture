@@ -35,6 +35,7 @@ void test_scope()
             tensor[i] = new int [width] { i, i + 1, i + 2, i + 3 };
 
         print(tensor, height, width);
+        auto r = siraf::memory::make_span(tensor, height, width);
 
         try
         {

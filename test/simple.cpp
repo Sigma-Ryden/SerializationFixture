@@ -51,6 +51,7 @@ void load(Shape& shape)
     if (not file.is_open()) return;
 
     auto ar = siraf::iarchive(file);
+
     ar & shape;
 
     file.close();

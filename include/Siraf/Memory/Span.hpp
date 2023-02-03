@@ -20,136 +20,168 @@ namespace memory
 {
 
 template <typename T, std::size_t N>
-class Span
+class Span;
+
+template <typename T, std::size_t N>
+class SpanCore
 {
 public:
     using size_type         = std::size_t;
+    using value_type        = Span<T, N - 1>;
+
+    using pointer           = meta::pointer<T, N>;
+    using const_pointer     = const meta::pointer<T, N>;
+
+protected:
+    using Dimension         = size_type[N];
+
+protected:
+    Ref<pointer> data_;
+    Dimension dim_;
+
+protected:
+    SpanCore(pointer& data) noexcept;
+
+    template <typename D, typename... Dn>
+    SpanCore(pointer& data, D d, Dn... dn) noexcept;
+
+public:
+    void init(pointer data) noexcept { data_.get() = data; }
+    void data(Ref<pointer> data) noexcept { data_ = data; }
+
+    pointer& data() noexcept { return data_; }
+    const_pointer& data() const noexcept { return data_; }
+
+    size_type size() const noexcept { return dim_[0]; }
+
+    Dimension& dim() noexcept { return dim_; }
+    const Dimension& dim() const noexcept { return dim_; }
+};
+
+template <typename T, std::size_t N>
+class Span : public SpanCore<T, N>
+{
+protected:
+    using Base = SpanCore<T, N>;
+
+public:
+    using typename Base::size_type;
+    using typename Base::pointer;
+
+public:
     using value_type        = Span<T, N - 1>;
     using dereference_type  = meta::pointer<T, N - 1>;
 
     using reference         = value_type&;
     using const_reference   = const value_type&;
 
-    using pointer           = meta::pointer<T, N>;
-    using const_pointer     = const meta::pointer<T, N>;
+protected:
+    using typename Base::Dimension;
 
 private:
-    using Dimension         = size_type[N];
-
-private:
-    Ref<pointer> data_;
-    Dimension dim_;
-
     mutable value_type child_scope_;
 
 public:
-    Span(pointer& data, Dimension dim_);
+    Span(pointer& data, Dimension dim_) noexcept;
 
     template <typename D, typename... Dn,
               meta::require<not meta::is_array<D>()> = 0>
-    Span(pointer& data, D d, Dn... dn);
+    Span(pointer& data, D d, Dn... dn) noexcept;
 
-    void init(pointer data) noexcept { data_.get() = data; }
-    void data(Ref<pointer> data) noexcept { data_ = data; }
-
-    pointer& data() noexcept { return data_; }
-    const_pointer& data() const noexcept { return data_; }
-
-    Dimension& dim() noexcept { return dim_; }
-    const Dimension& dim() const noexcept { return dim_; }
-
-    size_type size() const noexcept { return dim_[0]; }
-    void size(size_type value) noexcept { dim_[0] = value; }
+    void size(size_type value) noexcept { this->dim_[0] = value; }
 
     reference operator[] (size_type i) noexcept;
     const_reference operator[] (size_type i) const noexcept;
+
+public:
+    using Base::size; // prevent Base function hiding
 };
 
 template <typename T>
-class Span<T, 1>
+class Span<T, 1> : public SpanCore<T, 1>
 {
+protected:
+    using Base = SpanCore<T, 1>;
+
 public:
-    using size_type         = std::size_t;
+    using typename Base::size_type;
+    using typename Base::pointer;
+
+public:
     using value_type        = T;
     using dereference_type  = T;
 
     using reference         = T&;
     using const_reference   = const T&;
 
-    using pointer           = meta::pointer<T, 1>;
-    using const_pointer     = const meta::pointer<T, 1>;
-
-    using Dimension         = size_type[1];
-
-private:
-    Ref<pointer> data_;
-    Dimension dim_;
+protected:
+    using typename Base::Dimension;
 
 public:
-    Span(pointer& data, Dimension size);
-    Span(pointer& data, size_type size);
+    Span(pointer& data, Dimension size) noexcept;
+    Span(pointer& data, size_type size) noexcept;
 
-    void init(pointer data) noexcept { data_.get() = data; }
-    void data(Ref<pointer> data) noexcept { data_ = data; }
-
-    pointer& data() noexcept { return data_; }
-    const_pointer& data() const noexcept { return data_; }
-
-    size_type size() const noexcept { return dim_[0]; }
-
-    Dimension& dim() noexcept { return dim_; }
-    const Dimension& dim() const noexcept { return dim_; }
-
-    reference operator[] (size_type i) noexcept { return data_[i]; }
-    const_reference operator[] (size_type i) const noexcept { return data_[i]; }
+    reference operator[] (size_type i) noexcept { return this->data_[i]; }
+    const_reference operator[] (size_type i) const noexcept { return this->data_[i]; }
 };
 
 template <typename T, std::size_t N>
-Span<T, N>::Span(pointer& data, Dimension dim)
+inline SpanCore<T, N>::SpanCore(pointer& data) noexcept
     : data_(data)
     , dim_()
+{
+}
+
+template <typename T, std::size_t N>
+template <typename D, typename... Dn>
+SpanCore<T, N>::SpanCore(pointer& data, D d, Dn... dn) noexcept
+    : data_(data)
+    , dim_{d, dn...}
+{
+}
+
+template <typename T, std::size_t N>
+Span<T, N>::Span(pointer& data, Dimension dim) noexcept
+    : Base(data)
     , child_scope_(data[0], dim + 1)
 {
     for (size_type i = 0; i < N; ++i)
-        dim_[i] = dim;
+        this->dim_[i] = dim;
 }
 
 template <typename T, std::size_t N>
 template <typename D, typename... Dn,
           meta::require<not meta::is_array<D>()>>
-Span<T, N>::Span(pointer& data, D d, Dn... dn)
-    : data_(data)
-    , dim_{ d, dn... }
+Span<T, N>::Span(pointer& data, D d, Dn... dn) noexcept
+    : Base(data, d, dn...)
     , child_scope_(data[0], dn...)
 {
 }
 
 template <typename T, std::size_t N>
-auto Span<T, N>::operator[] (size_type i) noexcept -> reference
+inline auto Span<T, N>::operator[] (size_type i) noexcept -> reference
 {
-    child_scope_.data(data_[i]);
-
+    child_scope_.data(this->data_[i]);
     return child_scope_;
 }
 
 template <typename T, std::size_t N>
-auto Span<T, N>::operator[] (size_type i) const noexcept -> const_reference
+inline auto Span<T, N>::operator[] (size_type i) const noexcept -> const_reference
 {
-    child_scope_.data(data_[i]);
-
+    child_scope_.data(this->data_[i]);
     return child_scope_;
 }
 
 template <typename T>
-Span<T, 1>::Span(pointer& data, Dimension dim)
-    : data_(data)
+inline Span<T, 1>::Span(pointer& data, Dimension dim) noexcept
+    : Base(data)
 {
-    dim_[0] = dim[0];
+    this->dim_[0] = dim[0];
 }
 
 template <typename T>
-Span<T, 1>::Span(pointer& data, size_type size)
-    : data_(data), dim_{ size }
+inline Span<T, 1>::Span(pointer& data, size_type size) noexcept
+    : Base(data, size)
 {
 }
 
