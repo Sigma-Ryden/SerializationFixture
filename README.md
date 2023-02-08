@@ -37,41 +37,46 @@ Preparing:
 ```C++
 #include <Siraf/Core.hpp>
 ```
-Let's include support of std::string serialization:
+Let's include serialization support of common STL types:
 ```C++
 #include <Siraf/Support/string.hpp>
-
-using namespace siraf::library; // support of string
+#include <Siraf/Support/vector.hpp>
+#include <Siraf/Support/map.hpp>
+#include <Siraf/Support/shared_ptr.hpp>
 ```
-And let's equip our simple class with serialization support:
+And let's write own serializable types:
 ```C++
-#include <iostream> // cout
-
-class Shape
+enum class Property
 {
-    SERIALIZABLE(Shape)
-
-private:
-    std::string name_;
-    float x_;
-    float y_;
-
-public:
-    Shape() : name_("Unknown"), x_(), y_() {}
-
-    Shape(const char* name, float x, float y)
-        : name_(name), x_(x), y_(y) {}
-
-    const std::string& name() const { return name_; }
-    float x() const { return x_; }
-    float y() const { return y_; }
+    Speed,
+    Force,
+    Intelige,
+    Fly
 };
 
-SERIALIZATION(SaveLoad, Shape)
+struct Prototype
 {
-    archive & self.name_
-            & self.x_
-            & self.y_;
+    SERIALIZABLE(Prototype)
+
+    std::string name;
+    std::vector<Property> properties;
+};
+
+struct Handbook
+{
+    SERIALIZABLE(Handbook)
+
+    std::map<int, std::shared_ptr<Prototype>> prototypes;
+};
+
+SERIALIZATION(SaveLoad, Prototype)
+{
+    archive & self.name & self.properties;
+}
+
+SERIALIZATION(SaveLoad, Handbook)
+{
+    archive & self.prototypes;
 }
 ```
 Explaining of using macros above:
@@ -80,69 +85,52 @@ Explaining of using macros above:
 
 ### Using of serialization library:
 
-Sinse we are going to use hard drive storage, let's include standard file stream:
+Sinse we are going to use memory storage, let's define a variable for it:
 ```C++
-#include <fstream> // ifstream, ofstream
+std::vector<unsigned char> storage;
 ```
+Preparing our data:
 ```C++
-void save(Shape& shape)
-{
-    std::ofstream file("example.bin", std::ios::binary);
-    if (not file.is_open()) return;
+Handbook db;
 
-    auto ar = siraf::oarchive(file);
+auto zero = std::make_shared<Prototype>();
+zero->name = "Zero";
+zero->properties = {Property::Speed};
 
-    ar & shape;
+auto rew = std::make_shared<Prototype>();
+rew->name = "Rew";
+rew->properties = {Property::Force};
 
-    file.close();
-}
+auto ifly = std::make_shared<Prototype>();
+ifly->name = "I.Fly";
+ifly->properties = {Property::Intelige, Property::Fly};
+
+db.prototypes[0] = zero;
+db.prototypes[3] = rew;
+db.prototypes[2] = ifly;
 ```
+
+Serialization:
 ```C++
-void load(Shape& shape)
-{
-    std::ifstream file("example.bin", std::ios::binary);
-    if (not file.is_open()) return;
+using siraf::oarchive;
+using siraf::wrapper::OByteStream;
 
-    auto ar = siraf::iarchive(file);
-
-    ar & shape;
-
-    file.close();
-}
+auto ar = oarchive<OByteStream>(storage);
+ar & db;
 ```
-Processing:
+
+Deserialization:
 ```C++
-void info(const Shape& shape)
-{
-    std::cout << shape.name() << " shape is lacated at: "
-              << shape.x() << "; " << shape.y() << std::endl;
-};
+using siraf::iarchive;
+using siraf::wrapper::IByteStream;
 
-int main()
-{
-    // Saving of Shape object
-    {
-        Shape shape("Square", 0.25f, 2.5f);
-        save(shape);
-    }
-    // Loading of Shape object
-    {
-        Shape shape;
-        info(shape); // before load
+Handbook db;
 
-        load(shape);
-
-        info(shape); // after load
-    }
-
-    return 0;
-}
+auto ar = iarchive<IByteStream>(storage);
+ar & db;
 ```
-### Output:
-```console
-Unknown shape is lacated at: (0, 0)
-Square shape is lacated at: (0.25, 2.5)
-```
+See full code here: [example](https://github.com/Sigma-Ryden/Siraf/tree/master/test/example.cpp)
+
 #### Notes:
 In this case the ```load``` and ```save``` functions are just a division of the code into blocks.
 It does not affect the library's performance in any way.
