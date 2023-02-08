@@ -132,24 +132,20 @@ ar & db;
 See full code here: [example](https://github.com/Sigma-Ryden/Siraf/tree/master/test/example.cpp)
 
 #### Notes:
-In this case the ```load``` and ```save``` functions are just a division of the code into blocks.
-It does not affect the library's performance in any way.
-
-For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```,
-and also ```operator >>``` for ```ReadArchive``` objects.
+For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
+```or operator()```, and also ```operator >>``` for ```ReadArchive``` objects.
 
 Examples:
-```
+```C++
 // saving objects to the archive
-archive << shape << vector << animal << human;
+archive << obj_0 << ... << obj_n;
 // loading objects from the archive
-archive >> shape >> vector >> animal >> human;
+archive >> obj_0 >> ... >> obj_n;
 
 //depends on archive type
-archive & shape & vector & animal & human;
-
-// or operator()
-archive(shape, vector, animal, human);
+archive & obj_0 & ... & obj_n;
+// or
+archive(obj_0, ..., obj_n);
 ```
 
 # License:
