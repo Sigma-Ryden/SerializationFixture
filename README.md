@@ -89,7 +89,7 @@ Sinse we are going to use memory storage, let's define a variable for it:
 ```C++
 std::vector<unsigned char> storage;
 ```
-Preparing our data:
+Let's prepare our data for save:
 ```C++
 Handbook db;
 
