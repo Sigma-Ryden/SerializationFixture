@@ -129,11 +129,11 @@ Handbook db;
 auto ar = iarchive<IByteStream>(storage);
 ar & db;
 ```
-See full code here: [example](https://github.com/Sigma-Ryden/Siraf/tree/master/test/example.cpp)
+See full code here: [example.cpp](https://github.com/Sigma-Ryden/Siraf/tree/master/test/example.cpp)
 
 #### Notes:
 For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
-```or operator()```, and also ```operator >>``` for ```ReadArchive``` objects.
+or ```operator()```, and also ```operator >>``` for ```ReadArchive``` objects.
 
 Examples:
 ```C++
