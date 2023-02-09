@@ -75,6 +75,7 @@ add_executable(${PROJECT_NAME}
     # test/tracking_virtual.cpp
     # test/ref_tracking.cpp
     # test/tracking_shared_ptr.cpp
-	test/example.cpp
+	# test/example.cpp
+	test/testing.cpp
 	${SIRAF}
 )
