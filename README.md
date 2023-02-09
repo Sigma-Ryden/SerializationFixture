@@ -12,24 +12,26 @@ The type registrar will allow you to properly serialize and deserialize polymorp
 
 Is a header-only library implemented purely in C++11.
 
-# Functional:
+## Functional:
 
-#### Serialization of common types:
-- all arithmetic types
-- enum or scoped enum
-- static or dynamic array
-- raw & smart pointers (with data tracking)
-#### Sserialization of library types:
-- STL: string, vector, array...
-- any usage types
-#### serialization of users class:
-- common
-- hierarchy
-- polymorphic
-- abstract
-- template
+### Serialization of common types:
+- All arithmetic types
+- Enum or scoped enum
+- Static or dynamic array
+- Raw & Smart pointers (with data tracking)
+### Serialization of library types:
+- STL: string, vector, array, and other
+- Any usage types
+### Serialization of users class:
+- Common
+- Hierarchy
+- Polymorphic/Abstract
+- Template
 
-### Quick start.
+## Auto Tests:
+See library testing here: [testing.cpp](https://github.com/Sigma-Ryden/Siraf/tree/master/test/testing.cpp)
+
+## Quick start:
 Warning! This is a simple example. You can see real applied examples [here](https://github.com/Sigma-Ryden/Siraf/tree/master/test).
 
 Preparing:
@@ -131,7 +133,7 @@ ar & db;
 ```
 See full code here: [example.cpp](https://github.com/Sigma-Ryden/Siraf/tree/master/test/example.cpp)
 
-#### Notes:
+### Notes:
 For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
 or ```operator()```, and also ```operator >>``` for ```ReadArchive``` objects.
 
@@ -147,6 +149,5 @@ archive & obj_0 & ... & obj_n;
 // or
 archive(obj_0, ..., obj_n);
 ```
-
-# License:
+## License:
 This library is an open source project licensed under: [MIT](https://opensource.org/licenses/MIT).
