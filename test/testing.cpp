@@ -250,22 +250,22 @@ DEFINE_AUTO_TEST(TestArray)
 
 DEFINE_AUTO_TEST(TestBitset)
 {
-    static auto s_value_8 = 0b001010001101;
+    static auto s_bvalue_12 = 0b001010001101;
 
     std::vector<unsigned char> storage;
     {
-        std::bitset<12> b_8 = s_value_8;
+        std::bitset<12> b_12 = s_bvalue_12;
 
         auto ar = oarchive<OByteStream>(storage);
-        ar & b_8;
+        ar & b_12;
     }
     {
-        std::bitset<12> b_8;
+        std::bitset<12> b_12;
 
         auto ar = iarchive<IByteStream>(storage);
-        ar & b_8;
+        ar & b_12;
 
-        ASSERT(b_8==s_value_8, "std::bitset<>");
+        ASSERT(b_12==s_bvalue_12, "std::bitset<>");
     }
 }
 
