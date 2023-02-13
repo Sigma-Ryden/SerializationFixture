@@ -4,7 +4,7 @@
 class AutoTest
 {
 public:
-    static unsigned completed;
+    static unsigned passed;
     static unsigned failed;
 
 public:
@@ -17,7 +17,7 @@ public:
     virtual void Run() = 0;
 };
 
-unsigned AutoTest::completed = 0;
+unsigned AutoTest::passed = 0;
 unsigned AutoTest::failed = 0;
 
 // Helpful macros:
@@ -38,13 +38,13 @@ unsigned AutoTest::failed = 0;
 #define ASSERT(condition, ...)                                                                          \
     do {                                                                                                \
         auto ok = (condition);                                                                          \
-        completed += ok;                                                                                \
+        passed += ok;                                                                                   \
         failed += !ok;                                                                                  \
         std::cout << name << ". " __VA_ARGS__ << " - " << (ok?"Ok":"Fail") << '\n';                     \
     } while(false)
 
-#define STATS_AUTO_TEST(...)                                                                            \
-    std::cout << "\nCompleted: " << AutoTest::completed << "\nFailed: " << AutoTest::failed << '\n'
+#define STAT_AUTO_TEST(...)                                                                             \
+    std::cout << "\nPassed: " << AutoTest::passed << "\nFailed: " << AutoTest::failed << '\n'
 
 // Your own tests bellow:
 
@@ -156,8 +156,265 @@ DEFINE_AUTO_TEST(TestEnum)
         auto ar = iarchive<IByteStream>(storage);
         ar & i & r & w & f & b;
 
-        ASSERT(i == s_i && f == s_f, "NumberType");
-        ASSERT(r == s_r && w == s_w && b == s_b, "Color");
+        ASSERT(i == s_i && f == s_f, "Enum");
+        ASSERT(r == s_r && w == s_w && b == s_b, "Scoped Enum");
+    }
+}
+
+struct Vector
+{
+    //SERIALIZABLE(Vector) // not required
+
+    Vector(float x = 0.f, float y = 0.f, float z = 0.f)
+        : X(x), Y(y), Z(z) {}
+
+    float X;
+    float Y;
+    float Z;
+};
+
+struct Box
+{
+    //SERIALIZABLE(Box) // not required
+
+    Box() {}
+    Box(const Vector& min, const Vector& max)
+        : Min(min), Max(max) {}
+
+    Vector Min;
+    Vector Max;
+};
+
+SERIALIZATION(SaveLoad, Vector)
+{
+    archive & self.X & self.Y & self.Z;
+}
+
+SERIALIZATION(SaveLoad, Box)
+{
+    archive & self.Min & self.Max;
+}
+
+DEFINE_AUTO_TEST(TestUserType)
+{
+    static Vector s_min(0.1f, 1.3f, 2.1f);
+    static Vector s_max(3.2f, 2.f, 3.5f);
+
+    static auto is_equal = [](const Vector& A, const Vector& B)
+    {
+        return A.X == B.X && A.Y == B.Y && A.Z == B.Z;
+    };
+
+    std::vector<unsigned char> storage;
+    {
+        Box box(s_min, s_max);
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & box;
+    }
+    {
+        Box box;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & box;
+
+        ASSERT(is_equal(box.Min, s_min) && is_equal(box.Max, s_max), "Struct");
+    }
+}
+
+#include <Siraf/Support/array.hpp>
+
+DEFINE_AUTO_TEST(TestArray)
+{
+    constexpr auto s_a_size = 5;
+    static std::array<char, s_a_size> s_a = { 'H', 'e', 'l', 'l', 'o' };
+
+    std::vector<unsigned char> storage;
+    {
+        std::array<char, s_a_size> a = s_a;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & a;
+    }
+    {
+        std::array<char, s_a_size> a = s_a;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & a;
+
+        ASSERT(std::equal(a.begin(), a.end(), s_a.begin()), "std::array<>");
+    }
+}
+
+#include <Siraf/Support/bitset.hpp>
+
+DEFINE_AUTO_TEST(TestBitset)
+{
+    static auto s_value_8 = 0b001010001101;
+
+    std::vector<unsigned char> storage;
+    {
+        std::bitset<12> b_8 = s_value_8;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & b_8;
+    }
+    {
+        std::bitset<12> b_8;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & b_8;
+
+        ASSERT(b_8==s_value_8, "std::bitset<>");
+    }
+}
+
+#include <Siraf/Support/deque.hpp>
+
+DEFINE_AUTO_TEST(TestDeque)
+{
+    static std::deque<std::int8_t> s_d = { 1, -2, 3, 0, -2, 5, 4 };
+
+    std::vector<unsigned char> storage;
+    {
+        std::deque<std::int8_t> d = s_d;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & d;
+    }
+    {
+        std::deque<std::int8_t> d;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & d;
+
+        ASSERT(d.size() == s_d.size(), "std::deque<>");
+        ASSERT(std::equal(d.begin(), d.end(), s_d.begin()), "std::deque<>");
+    }
+}
+
+#include <Siraf/Support/forward_list.hpp>
+
+DEFINE_AUTO_TEST(TestForwardList)
+{
+    enum class State { Free, Blocked, Forced };
+
+    static std::forward_list<State> s_fl = { State::Forced, State::Blocked, State::Forced, State::Free };
+    static auto s_fl_size = std::distance(s_fl.begin(), s_fl.end());
+
+    std::vector<unsigned char> storage;
+    {
+        std::forward_list<State> fl = s_fl;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & fl;
+    }
+    {
+        std::forward_list<State> fl;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & fl;
+
+        ASSERT(std::distance(fl.begin(), fl.end()) == s_fl_size, "std::forward_list<>");
+        ASSERT(std::equal(fl.begin(), fl.end(), s_fl.begin()), "std::forward_list<>");
+    }
+}
+
+#include <Siraf/Support/list.hpp>
+
+DEFINE_AUTO_TEST(TestList)
+{
+    enum Color
+    {
+        R = 0xff0000, G = 0x00ff00, B = 0x0000ff
+    };
+
+    static std::list<Color> s_l = { Color(Color::R | Color::B), Color::G, Color::R };
+
+    std::vector<unsigned char> storage;
+    {
+        std::list<Color> l = s_l;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & l;
+    }
+    {
+        std::list<Color> l;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & l;
+
+        ASSERT(l.size() == s_l.size(), "std::list<>");
+        ASSERT(std::equal(l.begin(), l.end(), s_l.begin()), "std::list<>");
+    }
+}
+
+#include <Siraf/Support/pair.hpp>
+
+struct IntPoint
+{
+    int X;
+    int Y;
+};
+
+constexpr bool operator== (const IntPoint& A, const IntPoint& B) noexcept
+{
+    return A.X == B.X && A.Y == B.Y;
+}
+
+SERIALIZATION(SaveLoad, IntPoint)
+{
+    archive & self.X & self.Y;
+}
+
+DEFINE_AUTO_TEST(TestPair)
+{
+    std::pair<std::uintptr_t, IntPoint> s_p = {0xff00fdda0bacca0f, {256, -128}};
+
+    std::vector<unsigned char> storage;
+    {
+        std::pair<std::uintptr_t, IntPoint> p = s_p;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & p;
+    }
+    {
+        std::pair<std::uintptr_t, IntPoint> p;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & p;
+
+        ASSERT(p == s_p, "std::pair<>");
+    }
+}
+
+#include <Siraf/Support/vector.hpp>
+
+DEFINE_AUTO_TEST(TestVector)
+{
+    static std::vector<bool> s_bv = { true, true, false, true };
+    static std::vector<double> s_dv = { 17.85, 211.2, 8.723 };
+
+    std::vector<unsigned char> storage;
+    {
+        std::vector<bool> bv = s_bv;
+        std::vector<double> dv = s_dv;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & bv & dv;
+    }
+    {
+        std::vector<bool> bv;
+        std::vector<double> dv;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & bv & dv;
+
+        ASSERT(bv.size() == s_bv.size(), "std::vector<bool>");
+        ASSERT(std::equal( bv.begin(), bv.end(), s_bv.begin() ), "std::vector<bool>");
+
+        ASSERT(dv.size() == s_dv.size(), "std::vector<>");
+        ASSERT(std::equal( dv.begin(), dv.end(), s_dv.begin() ), "std::vector<>");
     }
 }
 
@@ -165,7 +422,17 @@ int main()
 {
     RUN_AUTO_TEST(TestNumber);
     RUN_AUTO_TEST(TestEnum);
+    RUN_AUTO_TEST(TestUserType);
 
-    STATS_AUTO_TEST();
+    RUN_AUTO_TEST(TestArray);
+    RUN_AUTO_TEST(TestBitset);
+    RUN_AUTO_TEST(TestDeque);
+    RUN_AUTO_TEST(TestForwardList);
+    RUN_AUTO_TEST(TestList);
+    RUN_AUTO_TEST(TestPair);
+    RUN_AUTO_TEST(TestVector);
+
+    STAT_AUTO_TEST();
+
     return 0;
 }

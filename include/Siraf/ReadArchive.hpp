@@ -4,6 +4,7 @@
 #include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
+#include <utility> // forward
 
 #include <Siraf/ArchiveBase.hpp>
 #include <Siraf/Dynamic/Registry.hpp>
@@ -108,7 +109,7 @@ template <typename T>
 auto ReadArchive<InStream, StreamWrapper, Registry>::operator>> (
     T&& data) -> ReadArchive&
 {
-    return (*this) & data;
+    return (*this) & std::forward<T>(data);
 }
 
 template <class InStream, class StreamWrapper, class Registry>

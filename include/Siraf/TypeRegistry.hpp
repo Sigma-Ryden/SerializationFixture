@@ -9,6 +9,7 @@
         template <typename T> struct TypeRegistry<T, SIWHEN(__VA_ARGS__)> : std::true_type {};          \
     }
 
+// you should use TYPE_REGISTRY before using EXTERN_SERIALIZATION e.t.
 #define TYPE_REGISTRY(...)                                                                              \
     namespace siraf {                                                                                   \
         template <> struct TypeRegistry<__VA_ARGS__> : std::true_type {};                               \

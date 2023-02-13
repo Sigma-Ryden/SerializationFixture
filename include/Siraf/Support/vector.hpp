@@ -47,6 +47,38 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, vector, meta::is_std_vector<T>::value)
     return archive;
 }
 
+// slow impl
+EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
+{
+    let::u64 size = vector.size();
+    archive & size;
+
+    for(auto item:vector)
+    {
+        bool boolean = item;
+        archive & boolean;
+    }
+
+    return archive;
+}
+
+EXTERN_SERIALIZATION(Load, vector, std::vector<bool>)
+{
+    let::u64 size;
+    archive & size;
+
+    vector.resize(size);
+
+    for(auto item/*bit_reference*/:vector)
+    {
+        bool boolean{};
+        archive & boolean;
+        item = boolean;
+    }
+
+    return archive;
+}
+
 } // inline namespace library
 
 } // namespace siraf

@@ -4,6 +4,7 @@
 #include <cstdint> // uintptr_t
 #include <cstddef> // size_t
 #include <unordered_map> // unordered_map
+#include <utility> // forward
 
 #include <Siraf/ArchiveBase.hpp>
 #include <Siraf/Dynamic/Registry.hpp>
@@ -91,7 +92,7 @@ template <typename T>
 auto WriteArchive<OutStream, StreamWrapper, Registry>::operator<< (
     T&& data) -> WriteArchive&
 {
-    return (*this) & data;
+    return (*this) & std::forward<T>(data);
 }
 
 template <class OutStream, class StreamWrapper, class Registry>
