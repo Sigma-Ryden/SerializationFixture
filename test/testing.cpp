@@ -200,7 +200,7 @@ DEFINE_AUTO_TEST(TestUserType)
     static Vector s_min(0.1f, 1.3f, 2.1f);
     static Vector s_max(3.2f, 2.f, 3.5f);
 
-    static auto is_equal = [](const Vector& A, const Vector& B)
+    static auto equal = [](const Vector& A, const Vector& B)
     {
         return A.X == B.X && A.Y == B.Y && A.Z == B.Z;
     };
@@ -218,8 +218,14 @@ DEFINE_AUTO_TEST(TestUserType)
         auto ar = iarchive<IByteStream>(storage);
         ar & box;
 
-        ASSERT(is_equal(box.Min, s_min) && is_equal(box.Max, s_max), "Struct");
+        ASSERT(equal(box.Min, s_min) && equal(box.Max, s_max), "Struct");
     }
+}
+
+template <class Container>
+bool is_equal(const Container& A, const Container& B)
+{
+    return std::equal(A.begin(), A.end(), B.begin());
 }
 
 #include <Siraf/Support/array.hpp>
@@ -242,7 +248,7 @@ DEFINE_AUTO_TEST(TestArray)
         auto ar = iarchive<IByteStream>(storage);
         ar & a;
 
-        ASSERT(std::equal(a.begin(), a.end(), s_a.begin()), "std::array<>");
+        ASSERT(is_equal(a, s_a), "std::array<>");
     }
 }
 
@@ -289,7 +295,7 @@ DEFINE_AUTO_TEST(TestDeque)
         ar & d;
 
         ASSERT(d.size() == s_d.size(), "std::deque<>");
-        ASSERT(std::equal(d.begin(), d.end(), s_d.begin()), "std::deque<>");
+        ASSERT(is_equal(d, s_d), "std::deque<>");
     }
 }
 
@@ -316,7 +322,7 @@ DEFINE_AUTO_TEST(TestForwardList)
         ar & fl;
 
         ASSERT(std::distance(fl.begin(), fl.end()) == s_fl_size, "std::forward_list<>");
-        ASSERT(std::equal(fl.begin(), fl.end(), s_fl.begin()), "std::forward_list<>");
+        ASSERT(is_equal(fl, s_fl), "std::forward_list<>");
     }
 }
 
@@ -345,7 +351,51 @@ DEFINE_AUTO_TEST(TestList)
         ar & l;
 
         ASSERT(l.size() == s_l.size(), "std::list<>");
-        ASSERT(std::equal(l.begin(), l.end(), s_l.begin()), "std::list<>");
+        ASSERT(is_equal(l, s_l), "std::list<>");
+    }
+}
+
+#include <Siraf/Support/map.hpp>
+
+DEFINE_AUTO_TEST(TestMap)
+{
+    enum class Hint { Alpha, Relative, Fly };
+
+    static std::map<int, float> s_m = { {3, 0.1f}, {0, 0.5f}, {4, 0.17f} };
+    static std::unordered_map<int, char> s_um = { {1, 'c'}, {3, '+'}, {2, '+'} };
+    static std::multimap<Hint, int> s_mm = { {Hint::Fly, -1}, {Hint::Alpha, 1}, {Hint::Fly, 0} };
+    static std::unordered_multimap<int, int> s_umm = { {1, -1}, {-1, 0}, {1, 0}, {1, 2}, {-1, 2} };
+
+    std::vector<unsigned char> storage;
+    {
+        std::map<int, float> m = s_m;
+        std::unordered_map<int, char> um = s_um;
+        std::multimap<Hint, int> mm = s_mm;
+        std::unordered_multimap<int, int> umm = s_umm;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & m & um & mm & umm;
+    }
+    {
+        std::map<int, float> m;
+        std::unordered_map<int, char> um;
+        std::multimap<Hint, int> mm;
+        std::unordered_multimap<int, int> umm;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & m & um & mm & umm;
+
+        //ASSERT(m.size() == s_m_size, "std::map<>");
+        ASSERT(false, "std::map<>");
+
+        //ASSERT(um.size() == s_um_size, "std::unordered_map<>");
+        ASSERT(false, "std::unordered_map<>");
+
+        //ASSERT(mm.size() == s_mm_size, "std::multimap<>");
+        ASSERT(false, "std::multimap<>");
+
+        //ASSERT(umm.size() == s_umm_size, "std::unordered_multimap<>");
+        ASSERT(false, "std::unordered_multimap<>");
     }
 }
 
@@ -369,7 +419,7 @@ SERIALIZATION(SaveLoad, IntPoint)
 
 DEFINE_AUTO_TEST(TestPair)
 {
-    std::pair<std::uintptr_t, IntPoint> s_p = {0xff00fdda0bacca0f, {256, -128}};
+    static std::pair<std::uintptr_t, IntPoint> s_p = {0xff00fdda0bacca0f, {256, -128}};
 
     std::vector<unsigned char> storage;
     {
@@ -386,6 +436,158 @@ DEFINE_AUTO_TEST(TestPair)
 
         ASSERT(p == s_p, "std::pair<>");
     }
+}
+
+#include <Siraf/Support/queue.hpp>
+
+DEFINE_AUTO_TEST(TestQueue)
+{
+    std::queue<bool> s_q;
+    s_q.push(true);
+    s_q.push(false);
+    s_q.push(true);
+    s_q.push(false);
+    s_q.push(false);
+
+    std::vector<unsigned char> storage;
+    {
+        std::queue<bool> q = s_q;
+        auto ar = oarchive<OByteStream>(storage);
+        ar & q;
+    }
+    {
+        std::queue<bool> q;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & q;
+
+        ASSERT(q.size() == s_q.size(), "std::queue<>");
+
+        auto& c = siraf::detail::underlying(q);
+        auto& s_c = siraf::detail::underlying(s_q);
+
+        ASSERT(is_equal(c, s_c), "std::queue<>");
+    }
+}
+
+#include <Siraf/Support/set.hpp>
+
+DEFINE_AUTO_TEST(TestSet)
+{
+    ASSERT(false, "std::set<>");
+    ASSERT(false, "std::unordered_set<>");
+    ASSERT(false, "std::multiset<>");
+    ASSERT(false, "std::unordered_multiset<>");
+}
+
+#include <Siraf/Support/shared_ptr.hpp>
+
+DEFINE_AUTO_TEST(TestSharedPtr)
+{
+    ASSERT(false, "std::shared_ptr<>");
+}
+
+#include <Siraf/Support/stack.hpp>
+
+DEFINE_AUTO_TEST(TestStack)
+{
+    std::stack<char16_t> s_s;
+    s_s.push(u's');
+    s_s.push(u't');
+    s_s.push(u'a');
+    s_s.push(u'c');
+    s_s.push(u'k');
+
+    std::vector<unsigned char> storage;
+    {
+        std::stack<char16_t> s = s_s;
+        auto ar = oarchive<OByteStream>(storage);
+        ar & s;
+    }
+    {
+        std::stack<char16_t> s;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & s;
+
+        ASSERT(s.size() == s_s.size(), "std::stack<>");
+
+        auto& c = siraf::detail::underlying(s);
+        auto& s_c = siraf::detail::underlying(s_s);
+
+        ASSERT(is_equal(c, s_c), "std::stack<>");
+    }
+}
+
+#include <Siraf/Support/string.hpp>
+
+DEFINE_AUTO_TEST(TestString)
+{
+    static std::string s_s = "Hello, World!";
+    static std::wstring s_ws = L"You're welcome!";
+    static std::u16string s_u16s = u"Stack overflow";
+    static std::u32string s_u32s = U"Github.com";
+
+    std::vector<unsigned char> storage;
+    {
+        std::string s = s_s;
+        std::wstring ws = s_ws;
+        std::u16string u16s = s_u16s;
+        std::u32string u32s = s_u32s;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & s & ws & u16s & u32s;
+    }
+    {
+        std::string s;
+        std::wstring ws;
+        std::u16string u16s;
+        std::u32string u32s;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & s & ws & u16s & u32s;
+
+        ASSERT(s == s_s, "std::string");
+        ASSERT(ws == s_ws, "std::wstring");
+        ASSERT(u16s == s_u16s, "std::u16string");
+        ASSERT(u32s == s_u32s, "std::u32string");
+    }
+}
+
+#include <Siraf/Support/tuple.hpp>
+
+DEFINE_AUTO_TEST(TestTuple)
+{
+    enum class Charge { Low, Medium, High };
+
+    static std::tuple<> s_et;
+    static std::tuple<std::string, double, Charge> s_t{ "Tuple", 123.456, Charge::Low };
+
+    std::vector<unsigned char> storage;
+    {
+        std::tuple<> et = s_et;
+        std::tuple<std::string, double, Charge> t = s_t;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & et & t;
+    }
+    {
+        std::tuple<> et;
+        std::tuple<std::string, double, Charge> t;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & et & t;
+
+        ASSERT(et == s_et, "std::tuple<>");
+        ASSERT(t == s_t, "std::tuple<>");
+    }
+}
+
+#include <Siraf/Support/unique_ptr.hpp>
+
+DEFINE_AUTO_TEST(TestUniquePtr)
+{
+    ASSERT(false, "std::unique_ptr<>");
 }
 
 #include <Siraf/Support/vector.hpp>
@@ -411,11 +613,18 @@ DEFINE_AUTO_TEST(TestVector)
         ar & bv & dv;
 
         ASSERT(bv.size() == s_bv.size(), "std::vector<bool>");
-        ASSERT(std::equal( bv.begin(), bv.end(), s_bv.begin() ), "std::vector<bool>");
+        ASSERT(is_equal(bv, s_bv), "std::vector<bool>");
 
         ASSERT(dv.size() == s_dv.size(), "std::vector<>");
-        ASSERT(std::equal( dv.begin(), dv.end(), s_dv.begin() ), "std::vector<>");
+        ASSERT(is_equal(dv, s_dv), "std::vector<>");
     }
+}
+
+#include <Siraf/Support/weak_ptr.hpp>
+
+DEFINE_AUTO_TEST(TestWeakPtr)
+{
+    ASSERT(false, "std::weak_ptr<>");
 }
 
 int main()
@@ -429,8 +638,17 @@ int main()
     RUN_AUTO_TEST(TestDeque);
     RUN_AUTO_TEST(TestForwardList);
     RUN_AUTO_TEST(TestList);
+    RUN_AUTO_TEST(TestMap);
     RUN_AUTO_TEST(TestPair);
+    RUN_AUTO_TEST(TestQueue);
+    RUN_AUTO_TEST(TestSet);
+    RUN_AUTO_TEST(TestSharedPtr);
+    RUN_AUTO_TEST(TestStack);
+    RUN_AUTO_TEST(TestString);
+    RUN_AUTO_TEST(TestTuple);
+    RUN_AUTO_TEST(TestUniquePtr);
     RUN_AUTO_TEST(TestVector);
+    RUN_AUTO_TEST(TestWeakPtr);
 
     STAT_AUTO_TEST();
 
