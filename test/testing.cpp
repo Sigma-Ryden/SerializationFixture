@@ -56,6 +56,8 @@ using siraf::wrapper::OByteStream;
 
 using siraf::iarchive;
 using siraf::wrapper::IByteStream;
+
+using siraf::hierarchy;
 // ~
 
 DEFINE_AUTO_TEST(TestNumber)
@@ -222,12 +224,6 @@ DEFINE_AUTO_TEST(TestUserType)
     }
 }
 
-template <class Container>
-bool is_equal(const Container& A, const Container& B)
-{
-    return std::equal(A.begin(), A.end(), B.begin());
-}
-
 #include <Siraf/Support/array.hpp>
 
 DEFINE_AUTO_TEST(TestArray)
@@ -248,7 +244,7 @@ DEFINE_AUTO_TEST(TestArray)
         auto ar = iarchive<IByteStream>(storage);
         ar & a;
 
-        ASSERT(is_equal(a, s_a), "std::array<>");
+        ASSERT(a == s_a, "std::array<>");
     }
 }
 
@@ -271,7 +267,7 @@ DEFINE_AUTO_TEST(TestBitset)
         auto ar = iarchive<IByteStream>(storage);
         ar & b_12;
 
-        ASSERT(b_12==s_bvalue_12, "std::bitset<>");
+        ASSERT(b_12 == s_bvalue_12, "std::bitset<>");
     }
 }
 
@@ -295,7 +291,7 @@ DEFINE_AUTO_TEST(TestDeque)
         ar & d;
 
         ASSERT(d.size() == s_d.size(), "std::deque<>");
-        ASSERT(is_equal(d, s_d), "std::deque<>");
+        ASSERT(d == s_d, "std::deque<>");
     }
 }
 
@@ -322,7 +318,7 @@ DEFINE_AUTO_TEST(TestForwardList)
         ar & fl;
 
         ASSERT(std::distance(fl.begin(), fl.end()) == s_fl_size, "std::forward_list<>");
-        ASSERT(is_equal(fl, s_fl), "std::forward_list<>");
+        ASSERT(fl == s_fl, "std::forward_list<>");
     }
 }
 
@@ -351,20 +347,27 @@ DEFINE_AUTO_TEST(TestList)
         ar & l;
 
         ASSERT(l.size() == s_l.size(), "std::list<>");
-        ASSERT(is_equal(l, s_l), "std::list<>");
+        ASSERT(l == s_l, "std::list<>");
     }
 }
 
 #include <Siraf/Support/map.hpp>
 
+template <typename Tree>
+bool is_tree_equal(const Tree& lhs, const Tree& rhs)
+{
+    for(auto& pair:rhs) if(lhs.count(pair.first) == 0) return false;
+    return true;
+}
+
 DEFINE_AUTO_TEST(TestMap)
 {
     enum class Hint { Alpha, Relative, Fly };
 
-    static std::map<int, float> s_m = { {3, 0.1f}, {0, 0.5f}, {4, 0.17f} };
-    static std::unordered_map<int, char> s_um = { {1, 'c'}, {3, '+'}, {2, '+'} };
-    static std::multimap<Hint, int> s_mm = { {Hint::Fly, -1}, {Hint::Alpha, 1}, {Hint::Fly, 0} };
-    static std::unordered_multimap<int, int> s_umm = { {1, -1}, {-1, 0}, {1, 0}, {1, 2}, {-1, 2} };
+    static std::map<int, float> s_m = { {0, 0.5f}, {3, 0.1f}, {4, 0.17f} };
+    static std::unordered_map<int, char> s_um = { {1, 'c'}, {2, '+'}, {3, '+'} };
+    static std::multimap<Hint, int> s_mm = { {Hint::Alpha, 1}, {Hint::Fly, -1}, {Hint::Fly, 0} };
+    static std::unordered_multimap<int, int> s_umm = { {-1, 0}, {-1, 2}, {1, -1}, {1, 0}, {1, 2} };
 
     std::vector<unsigned char> storage;
     {
@@ -385,17 +388,17 @@ DEFINE_AUTO_TEST(TestMap)
         auto ar = iarchive<IByteStream>(storage);
         ar & m & um & mm & umm;
 
-        //ASSERT(m.size() == s_m_size, "std::map<>");
-        ASSERT(false, "std::map<>");
+        ASSERT(m.size() == s_m.size(), "std::map<>");
+        ASSERT(is_tree_equal(m, s_m), "std::map<>");
 
-        //ASSERT(um.size() == s_um_size, "std::unordered_map<>");
-        ASSERT(false, "std::unordered_map<>");
+        ASSERT(um.size() == s_um.size(), "std::unordered_map<>");
+        ASSERT(um == s_um, "std::unordered_map<>");
 
-        //ASSERT(mm.size() == s_mm_size, "std::multimap<>");
-        ASSERT(false, "std::multimap<>");
+        ASSERT(mm.size() == s_mm.size(), "std::multimap<>");
+        ASSERT(is_tree_equal(mm, s_mm), "std::multimap<>");
 
-        //ASSERT(umm.size() == s_umm_size, "std::unordered_multimap<>");
-        ASSERT(false, "std::unordered_multimap<>");
+        ASSERT(umm.size() == s_umm.size(), "std::unordered_multimap<>");
+        ASSERT(umm == s_umm, "std::unordered_multimap<>");
     }
 }
 
@@ -466,7 +469,7 @@ DEFINE_AUTO_TEST(TestQueue)
         auto& c = siraf::detail::underlying(q);
         auto& s_c = siraf::detail::underlying(s_q);
 
-        ASSERT(is_equal(c, s_c), "std::queue<>");
+        ASSERT(c == s_c, "std::queue<>");
     }
 }
 
@@ -515,7 +518,7 @@ DEFINE_AUTO_TEST(TestStack)
         auto& c = siraf::detail::underlying(s);
         auto& s_c = siraf::detail::underlying(s_s);
 
-        ASSERT(is_equal(c, s_c), "std::stack<>");
+        ASSERT(c == s_c, "std::stack<>");
     }
 }
 
@@ -585,9 +588,66 @@ DEFINE_AUTO_TEST(TestTuple)
 
 #include <Siraf/Support/unique_ptr.hpp>
 
+struct Parent : POLYMORPHIC()
+{
+    SERIALIZABLE(Parent)
+
+    virtual ~Parent()=default;
+    int p = 0;
+};
+
+SERIALIZATION(SaveLoad, Parent)
+{
+    archive & self.p;
+}
+
+struct Child : Parent
+{
+    SERIALIZABLE(Child)
+
+    int c = 0;
+};
+
+SERIALIZATION(SaveLoad, Child)
+{
+    archive & hierarchy<Parent>(self) & self.c;
+}
+
+bool operator== (const Child& lhs, const Child& rhs)
+{
+    return lhs.p == rhs.p && lhs.c == rhs.c;
+}
+
 DEFINE_AUTO_TEST(TestUniquePtr)
 {
-    ASSERT(false, "std::unique_ptr<>");
+    static int s_v_i = 8791;
+
+    Child s_c;
+    s_c.p = 506;
+    s_c.c = 1234;
+
+    std::vector<unsigned char> storage;
+    {
+        std::unique_ptr<int> u_i(new int{s_v_i});
+        std::unique_ptr<Parent> u_p(new Child{s_c});
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & u_i & u_p;
+    }
+    {
+        std::unique_ptr<int> u_i = nullptr;
+        std::unique_ptr<Parent> u_p = nullptr;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & u_i & u_p;
+
+        ASSERT(u_i != nullptr && *u_i == s_v_i, "std::unique_ptr<>");
+
+        auto raw_u_p = u_p.get();
+        auto raw_u_c = dynamic_cast<Child*>(raw_u_p);
+
+        ASSERT(raw_u_p != nullptr && raw_u_c != nullptr && *raw_u_c == s_c, "std::unique_ptr<polymorphic>");
+    }
 }
 
 #include <Siraf/Support/vector.hpp>
@@ -613,10 +673,10 @@ DEFINE_AUTO_TEST(TestVector)
         ar & bv & dv;
 
         ASSERT(bv.size() == s_bv.size(), "std::vector<bool>");
-        ASSERT(is_equal(bv, s_bv), "std::vector<bool>");
+        ASSERT(bv == s_bv, "std::vector<bool>");
 
         ASSERT(dv.size() == s_dv.size(), "std::vector<>");
-        ASSERT(is_equal(dv, s_dv), "std::vector<>");
+        ASSERT(dv == s_dv, "std::vector<>");
     }
 }
 
