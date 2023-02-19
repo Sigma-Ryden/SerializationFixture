@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 // Base AutoTest class
 struct TestModule
