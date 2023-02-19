@@ -1,50 +1,41 @@
 #include <iostream>
 
 // Base AutoTest class
-class AutoTest
+struct TestModule
 {
-public:
+    static std::ostream& stream;
+
     static unsigned passed;
     static unsigned failed;
 
-public:
-    const char* name;
+    static void Expect(const char* name, const char* text, bool condition)
+    {
+        passed += condition;
+        failed += !condition;
+        stream << name << ". " << text << " - " << (condition?"Ok":"Fail") << '\n';
+    }
 
-public:
-    AutoTest(const char* name) : name(name) {}
-
-public:
-    virtual void Run() = 0;
+    static void Stat()
+    {
+        stream << "\nPassed: " << passed << "\nFailed: " << failed << '\n';
+    }
 };
 
-unsigned AutoTest::passed = 0;
-unsigned AutoTest::failed = 0;
+std::ostream& TestModule::stream = std::cout;
+
+unsigned TestModule::passed = 0;
+unsigned TestModule::failed = 0;
 
 // Helpful macros:
 // Define your own impl or Run test function
-#define DEFINE_AUTO_TEST(class_name)                                                                    \
-    class class_name : public AutoTest {                                                                \
-    public:                                                                                             \
-        class_name() : AutoTest(#class_name) {}                                                         \
-        virtual void Run() override;                                                                    \
-    };                                                                                                  \
-    void class_name::Run()
-
-// Run four own test impl defined before
-#define RUN_AUTO_TEST(class_name)                                                                       \
-    class_name().Run()
+#define TEST(test, ...)                                                                                 \
+    struct test { test(); const char* name = #test; };                                                  \
+    static std::unique_ptr<test> s##test(new test);                                                     \
+    test::test()
 
 // Calculate completed and failed test, provide debug info
-#define ASSERT(condition, ...)                                                                          \
-    do {                                                                                                \
-        auto ok = (condition);                                                                          \
-        passed += ok;                                                                                   \
-        failed += !ok;                                                                                  \
-        std::cout << name << ". " __VA_ARGS__ << " - " << (ok?"Ok":"Fail") << '\n';                     \
-    } while(false)
-
-#define STAT_AUTO_TEST(...)                                                                             \
-    std::cout << "\nPassed: " << AutoTest::passed << "\nFailed: " << AutoTest::failed << '\n'
+#define EXPECT(msg, ...)                                                                                \
+    TestModule::Expect(name, msg, __VA_ARGS__)
 
 // Your own tests bellow:
 
@@ -60,7 +51,7 @@ using siraf::wrapper::IByteStream;
 using siraf::hierarchy;
 // ~
 
-DEFINE_AUTO_TEST(TestNumber)
+TEST(TestNumber)
 {
     static int s_i = 123;
     static long long s_ll = 10101;
@@ -110,20 +101,20 @@ DEFINE_AUTO_TEST(TestNumber)
         ar & s & d & c;
         ar & it & wc;
 
-        ASSERT(i == s_i, "int");
-        ASSERT(ll == s_ll, "long long");
-        ASSERT(f == s_f, "float");
+        EXPECT("int", i == s_i);
+        EXPECT("long long", ll == s_ll);
+        EXPECT("float", f == s_f);
 
-        ASSERT(s == s_s, "short");
-        ASSERT(d == s_d, "double");
-        ASSERT(c == s_c, "char");
+        EXPECT("short", s == s_s);
+        EXPECT("double", d == s_d);
+        EXPECT("char", c == s_c);
 
-        ASSERT(it == s_it, "int32_t");
-        ASSERT(wc == s_wc, "wchar_t");
+        EXPECT("int32_t", it == s_it);
+        EXPECT("wchar_t", wc == s_wc);
     }
 }
 
-DEFINE_AUTO_TEST(TestEnum)
+TEST(TestEnum)
 {
     enum NumberType { None, Int, Float, Char, Bool };
     enum class Color { None, Red, Green, Blue, Black, White };
@@ -158,8 +149,8 @@ DEFINE_AUTO_TEST(TestEnum)
         auto ar = iarchive<IByteStream>(storage);
         ar & i & r & w & f & b;
 
-        ASSERT(i == s_i && f == s_f, "Enum");
-        ASSERT(r == s_r && w == s_w && b == s_b, "Scoped Enum");
+        EXPECT("Enum", i == s_i && f == s_f);
+        EXPECT("Scoped Enum", r == s_r && w == s_w && b == s_b);
     }
 }
 
@@ -197,7 +188,7 @@ SERIALIZATION(SaveLoad, Box)
     archive & self.Min & self.Max;
 }
 
-DEFINE_AUTO_TEST(TestUserType)
+TEST(TestUserType)
 {
     static Vector s_min(0.1f, 1.3f, 2.1f);
     static Vector s_max(3.2f, 2.f, 3.5f);
@@ -220,13 +211,13 @@ DEFINE_AUTO_TEST(TestUserType)
         auto ar = iarchive<IByteStream>(storage);
         ar & box;
 
-        ASSERT(equal(box.Min, s_min) && equal(box.Max, s_max), "Struct");
+        EXPECT("Struct", equal(box.Min, s_min) && equal(box.Max, s_max));
     }
 }
 
 #include <Siraf/Support/array.hpp>
 
-DEFINE_AUTO_TEST(TestArray)
+TEST(TestArray)
 {
     constexpr auto s_a_size = 5;
     static std::array<char, s_a_size> s_a = { 'H', 'e', 'l', 'l', 'o' };
@@ -244,13 +235,13 @@ DEFINE_AUTO_TEST(TestArray)
         auto ar = iarchive<IByteStream>(storage);
         ar & a;
 
-        ASSERT(a == s_a, "std::array<>");
+        EXPECT("std::array<>", a == s_a);
     }
 }
 
 #include <Siraf/Support/bitset.hpp>
 
-DEFINE_AUTO_TEST(TestBitset)
+TEST(TestBitset)
 {
     static auto s_bvalue_12 = 0b001010001101;
 
@@ -267,13 +258,13 @@ DEFINE_AUTO_TEST(TestBitset)
         auto ar = iarchive<IByteStream>(storage);
         ar & b_12;
 
-        ASSERT(b_12 == s_bvalue_12, "std::bitset<>");
+        EXPECT("std::bitset<>", b_12 == s_bvalue_12);
     }
 }
 
 #include <Siraf/Support/deque.hpp>
 
-DEFINE_AUTO_TEST(TestDeque)
+TEST(TestDeque)
 {
     static std::deque<std::int8_t> s_d = { 1, -2, 3, 0, -2, 5, 4 };
 
@@ -290,14 +281,14 @@ DEFINE_AUTO_TEST(TestDeque)
         auto ar = iarchive<IByteStream>(storage);
         ar & d;
 
-        ASSERT(d.size() == s_d.size(), "std::deque<>");
-        ASSERT(d == s_d, "std::deque<>");
+        EXPECT("std::deque<>", d.size() == s_d.size());
+        EXPECT("std::deque<>", d == s_d);
     }
 }
 
 #include <Siraf/Support/forward_list.hpp>
 
-DEFINE_AUTO_TEST(TestForwardList)
+TEST(TestForwardList)
 {
     enum class State { Free, Blocked, Forced };
 
@@ -317,14 +308,14 @@ DEFINE_AUTO_TEST(TestForwardList)
         auto ar = iarchive<IByteStream>(storage);
         ar & fl;
 
-        ASSERT(std::distance(fl.begin(), fl.end()) == s_fl_size, "std::forward_list<>");
-        ASSERT(fl == s_fl, "std::forward_list<>");
+        EXPECT("std::forward_list<>", std::distance(fl.begin(), fl.end()) == s_fl_size);
+        EXPECT("std::forward_list<>", fl == s_fl);
     }
 }
 
 #include <Siraf/Support/list.hpp>
 
-DEFINE_AUTO_TEST(TestList)
+TEST(TestList)
 {
     enum Color
     {
@@ -346,8 +337,8 @@ DEFINE_AUTO_TEST(TestList)
         auto ar = iarchive<IByteStream>(storage);
         ar & l;
 
-        ASSERT(l.size() == s_l.size(), "std::list<>");
-        ASSERT(l == s_l, "std::list<>");
+        EXPECT("std::list<>", l.size() == s_l.size());
+        EXPECT("std::list<>", l == s_l);
     }
 }
 
@@ -356,11 +347,13 @@ DEFINE_AUTO_TEST(TestList)
 template <typename Tree>
 bool is_tree_equal(const Tree& lhs, const Tree& rhs)
 {
+    if (lhs.size() != rhs.size()) return false;
+
     for(auto& pair:rhs) if(lhs.count(pair.first) == 0) return false;
     return true;
 }
 
-DEFINE_AUTO_TEST(TestMap)
+TEST(TestMap)
 {
     enum class Hint { Alpha, Relative, Fly };
 
@@ -388,17 +381,15 @@ DEFINE_AUTO_TEST(TestMap)
         auto ar = iarchive<IByteStream>(storage);
         ar & m & um & mm & umm;
 
-        ASSERT(m.size() == s_m.size(), "std::map<>");
-        ASSERT(is_tree_equal(m, s_m), "std::map<>");
+        EXPECT("std::map<>", is_tree_equal(m, s_m));
 
-        ASSERT(um.size() == s_um.size(), "std::unordered_map<>");
-        ASSERT(um == s_um, "std::unordered_map<>");
+        EXPECT("std::unordered_map<>", um.size() == s_um.size());
+        EXPECT("std::unordered_map<>", um == s_um);
 
-        ASSERT(mm.size() == s_mm.size(), "std::multimap<>");
-        ASSERT(is_tree_equal(mm, s_mm), "std::multimap<>");
+        EXPECT("std::multimap<>", is_tree_equal(mm, s_mm));
 
-        ASSERT(umm.size() == s_umm.size(), "std::unordered_multimap<>");
-        ASSERT(umm == s_umm, "std::unordered_multimap<>");
+        EXPECT("std::unordered_multimap<>", umm.size() == s_umm.size());
+        EXPECT("std::unordered_multimap<>", umm == s_umm);
     }
 }
 
@@ -420,7 +411,7 @@ SERIALIZATION(SaveLoad, IntPoint)
     archive & self.X & self.Y;
 }
 
-DEFINE_AUTO_TEST(TestPair)
+TEST(TestPair)
 {
     static std::pair<std::uintptr_t, IntPoint> s_p = {0xff00fdda0bacca0f, {256, -128}};
 
@@ -437,13 +428,13 @@ DEFINE_AUTO_TEST(TestPair)
         auto ar = iarchive<IByteStream>(storage);
         ar & p;
 
-        ASSERT(p == s_p, "std::pair<>");
+        EXPECT("std::pair<>", p == s_p);
     }
 }
 
 #include <Siraf/Support/queue.hpp>
 
-DEFINE_AUTO_TEST(TestQueue)
+TEST(TestQueue)
 {
     std::queue<bool> s_q;
     s_q.push(true);
@@ -464,35 +455,69 @@ DEFINE_AUTO_TEST(TestQueue)
         auto ar = iarchive<IByteStream>(storage);
         ar & q;
 
-        ASSERT(q.size() == s_q.size(), "std::queue<>");
+        EXPECT("std::queue<>", q.size() == s_q.size());
 
         auto& c = siraf::detail::underlying(q);
         auto& s_c = siraf::detail::underlying(s_q);
 
-        ASSERT(c == s_c, "std::queue<>");
+        EXPECT("std::queue<>", c == s_c);
     }
 }
 
 #include <Siraf/Support/set.hpp>
 
-DEFINE_AUTO_TEST(TestSet)
+TEST(TestSet)
 {
-    ASSERT(false, "std::set<>");
-    ASSERT(false, "std::unordered_set<>");
-    ASSERT(false, "std::multiset<>");
-    ASSERT(false, "std::unordered_multiset<>");
+    enum class Signal { True, False };
+
+    static std::set<int> s_s = {1, 2, 3, 2, 3, 2, 1, 0, 1, 4};
+    static std::unordered_set<char> s_us = { 'u', 'n', 'o', 'r', 'd', 'e', 'r', 'e', 'd', 's', 'e', 't' };
+    static std::multiset<Signal> s_ms = { Signal::True, Signal::False, Signal::True };
+    static std::unordered_multiset<int> s_ums = { -1, -1, 1, 1, 0, 1, -1, 0 };
+
+    std::vector<unsigned char> storage;
+    {
+        std::set<int> s = s_s;
+        std::unordered_set<char> us = s_us;
+        std::multiset<Signal> ms = s_ms;
+        std::unordered_multiset<int> ums = s_ums;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & s & us & ms & ums;
+    }
+    {
+        std::set<int> s;
+        std::unordered_set<char> us;
+        std::multiset<Signal> ms;
+        std::unordered_multiset<int> ums;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & s & us & ms & ums;
+
+        EXPECT("std::set<>", s.size() == s_s.size());
+        EXPECT("std::set<>", s == s_s);
+
+        EXPECT("std::unordered_set<>", us.size() == s_us.size());
+        EXPECT("std::unordered_set<>", us == s_us);
+
+        EXPECT("std::multiset<>", ms.size() == s_ms.size());
+        EXPECT("std::multiset<>", ms == s_ms);
+
+        EXPECT("std::unordered_multiset<>", ums.size() == s_ums.size());
+        EXPECT("std::unordered_multiset<>", ums == s_ums);
+    }
 }
 
 #include <Siraf/Support/shared_ptr.hpp>
 
-DEFINE_AUTO_TEST(TestSharedPtr)
+TEST(TestSharedPtr)
 {
-    ASSERT(false, "std::shared_ptr<>");
+    EXPECT("std::shared_ptr<>", false);
 }
 
 #include <Siraf/Support/stack.hpp>
 
-DEFINE_AUTO_TEST(TestStack)
+TEST(TestStack)
 {
     std::stack<char16_t> s_s;
     s_s.push(u's');
@@ -513,18 +538,18 @@ DEFINE_AUTO_TEST(TestStack)
         auto ar = iarchive<IByteStream>(storage);
         ar & s;
 
-        ASSERT(s.size() == s_s.size(), "std::stack<>");
+        EXPECT("std::stack<>", s.size() == s_s.size());
 
         auto& c = siraf::detail::underlying(s);
         auto& s_c = siraf::detail::underlying(s_s);
 
-        ASSERT(c == s_c, "std::stack<>");
+        EXPECT("std::stack<>", c == s_c);
     }
 }
 
 #include <Siraf/Support/string.hpp>
 
-DEFINE_AUTO_TEST(TestString)
+TEST(TestString)
 {
     static std::string s_s = "Hello, World!";
     static std::wstring s_ws = L"You're welcome!";
@@ -550,16 +575,16 @@ DEFINE_AUTO_TEST(TestString)
         auto ar = iarchive<IByteStream>(storage);
         ar & s & ws & u16s & u32s;
 
-        ASSERT(s == s_s, "std::string");
-        ASSERT(ws == s_ws, "std::wstring");
-        ASSERT(u16s == s_u16s, "std::u16string");
-        ASSERT(u32s == s_u32s, "std::u32string");
+        EXPECT("std::string", s == s_s);
+        EXPECT("std::wstring", ws == s_ws);
+        EXPECT("std::u16string", u16s == s_u16s);
+        EXPECT("std::u32string", u32s == s_u32s);
     }
 }
 
 #include <Siraf/Support/tuple.hpp>
 
-DEFINE_AUTO_TEST(TestTuple)
+TEST(TestTuple)
 {
     enum class Charge { Low, Medium, High };
 
@@ -581,8 +606,8 @@ DEFINE_AUTO_TEST(TestTuple)
         auto ar = iarchive<IByteStream>(storage);
         ar & et & t;
 
-        ASSERT(et == s_et, "std::tuple<>");
-        ASSERT(t == s_t, "std::tuple<>");
+        EXPECT("std::tuple<empty>", et == s_et);
+        EXPECT("std::tuple<>", t == s_t);
     }
 }
 
@@ -618,18 +643,18 @@ bool operator== (const Child& lhs, const Child& rhs)
     return lhs.p == rhs.p && lhs.c == rhs.c;
 }
 
-DEFINE_AUTO_TEST(TestUniquePtr)
+TEST(TestUniquePtr)
 {
-    static int s_v_i = 8791;
+    static int sv_i = 8791;
 
-    Child s_c;
-    s_c.p = 506;
-    s_c.c = 1234;
+    Child sv_c;
+    sv_c.p = 506;
+    sv_c.c = 1234;
 
     std::vector<unsigned char> storage;
     {
-        std::unique_ptr<int> u_i(new int{s_v_i});
-        std::unique_ptr<Parent> u_p(new Child{s_c});
+        std::unique_ptr<int> u_i(new int(sv_i));
+        std::unique_ptr<Parent> u_p(new Child(sv_c));
 
         auto ar = oarchive<OByteStream>(storage);
         ar & u_i & u_p;
@@ -641,18 +666,18 @@ DEFINE_AUTO_TEST(TestUniquePtr)
         auto ar = iarchive<IByteStream>(storage);
         ar & u_i & u_p;
 
-        ASSERT(u_i != nullptr && *u_i == s_v_i, "std::unique_ptr<>");
+        EXPECT("std::unique_ptr<>", u_i != nullptr && *u_i == sv_i);
 
         auto raw_u_p = u_p.get();
         auto raw_u_c = dynamic_cast<Child*>(raw_u_p);
 
-        ASSERT(raw_u_p != nullptr && raw_u_c != nullptr && *raw_u_c == s_c, "std::unique_ptr<polymorphic>");
+        EXPECT("std::unique_ptr<polymorphic>", raw_u_p != nullptr && raw_u_c != nullptr && *raw_u_c == sv_c);
     }
 }
 
 #include <Siraf/Support/vector.hpp>
 
-DEFINE_AUTO_TEST(TestVector)
+TEST(TestVector)
 {
     static std::vector<bool> s_bv = { true, true, false, true };
     static std::vector<double> s_dv = { 17.85, 211.2, 8.723 };
@@ -672,45 +697,53 @@ DEFINE_AUTO_TEST(TestVector)
         auto ar = iarchive<IByteStream>(storage);
         ar & bv & dv;
 
-        ASSERT(bv.size() == s_bv.size(), "std::vector<bool>");
-        ASSERT(bv == s_bv, "std::vector<bool>");
+        EXPECT("std::vector<bool>", bv.size() == s_bv.size());
+        EXPECT("std::vector<bool>", bv == s_bv);
 
-        ASSERT(dv.size() == s_dv.size(), "std::vector<>");
-        ASSERT(dv == s_dv, "std::vector<>");
+        EXPECT("std::vector<>", dv.size() == s_dv.size());
+        EXPECT("std::vector<>", dv == s_dv);
     }
 }
 
 #include <Siraf/Support/weak_ptr.hpp>
 
-DEFINE_AUTO_TEST(TestWeakPtr)
+TEST(TestWeakPtr)
 {
-    ASSERT(false, "std::weak_ptr<>");
+    static int sv_i = 983258;
+
+    Child sv_c;
+    sv_c.p = 7458;
+    sv_c.c = 589;
+
+    std::vector<unsigned char> storage;
+    {
+        auto s_i = std::make_shared<int>(sv_i);
+        auto s_p = std::make_shared<Child>(sv_c);
+
+        std::weak_ptr<int> w_i = s_i;
+        std::weak_ptr<Parent> w_p = s_p;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & w_i & w_p;
+    }
+    {
+        std::unique_ptr<int> w_i = nullptr;
+        std::unique_ptr<Parent> w_p = nullptr;
+
+        auto ar = iarchive<IByteStream>(storage);
+        ar & w_i & w_p;
+
+        EXPECT("std::weak_ptr<>", w_i != nullptr && *w_i == sv_i);
+
+        auto raw_w_p = w_p.get();
+        auto raw_w_c = dynamic_cast<Child*>(raw_w_p);
+
+        EXPECT("std::weak_ptr<polymorphic>", raw_w_p != nullptr && raw_w_c != nullptr && *raw_w_c == sv_c);
+    }
 }
 
 int main()
 {
-    RUN_AUTO_TEST(TestNumber);
-    RUN_AUTO_TEST(TestEnum);
-    RUN_AUTO_TEST(TestUserType);
-
-    RUN_AUTO_TEST(TestArray);
-    RUN_AUTO_TEST(TestBitset);
-    RUN_AUTO_TEST(TestDeque);
-    RUN_AUTO_TEST(TestForwardList);
-    RUN_AUTO_TEST(TestList);
-    RUN_AUTO_TEST(TestMap);
-    RUN_AUTO_TEST(TestPair);
-    RUN_AUTO_TEST(TestQueue);
-    RUN_AUTO_TEST(TestSet);
-    RUN_AUTO_TEST(TestSharedPtr);
-    RUN_AUTO_TEST(TestStack);
-    RUN_AUTO_TEST(TestString);
-    RUN_AUTO_TEST(TestTuple);
-    RUN_AUTO_TEST(TestUniquePtr);
-    RUN_AUTO_TEST(TestVector);
-    RUN_AUTO_TEST(TestWeakPtr);
-
-    STAT_AUTO_TEST();
-
+    TestModule::Stat();
     return 0;
 }
