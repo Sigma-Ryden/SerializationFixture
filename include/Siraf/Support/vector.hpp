@@ -47,6 +47,19 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, vector, meta::is_std_vector<T>::value)
     return archive;
 }
 
+} // inline namespace library
+
+} // namespace siraf
+
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_vector<T>::value)
+TYPE_REGISTRY(std::vector<bool>)
+
+namespace siraf
+{
+
+inline namespace library
+{
+
 // slow impl
 EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
 {
@@ -82,7 +95,5 @@ EXTERN_SERIALIZATION(Load, vector, std::vector<bool>)
 } // inline namespace library
 
 } // namespace siraf
-
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_vector<T>::value)
 
 #endif // SIRAF_SUPPORT_VECTOR_HPP

@@ -244,7 +244,7 @@ TEST(TestArray)
 
 TEST(TestBitset)
 {
-    static auto s_bvalue_12 = 0b001010001101;
+    static auto s_bvalue_12 = 653;
 
     std::vector<unsigned char> storage;
     {
@@ -618,7 +618,7 @@ struct Parent : POLYMORPHIC()
 {
     SERIALIZABLE(Parent)
 
-    virtual ~Parent()=default;
+    virtual ~Parent() = default;
     int p = 0;
 };
 

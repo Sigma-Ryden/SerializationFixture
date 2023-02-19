@@ -419,12 +419,6 @@ template <class Base, class Derived> constexpr bool is_base_of() noexcept
     return std::is_base_of<Base, Derived>::value;
 }
 
-template <class Base, class Derived> constexpr bool is_virtual_base_of() noexcept
-{
-    return not can_static_cast<Base, Derived>()
-           and is_base_of<Base, Derived>();
-}
-
 template <class Derived, class Base, class... Base_n> constexpr bool is_derived_of() noexcept
 {
     return meta::all<std::is_base_of<Base, Derived>,

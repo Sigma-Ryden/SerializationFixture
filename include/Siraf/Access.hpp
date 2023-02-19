@@ -109,6 +109,14 @@ public:
     }
 
 private:
+    template <typename From, typename To, typename = void>
+    struct can_static_cast_impl : std::false_type {};
+
+    template <typename From, typename To>
+    struct can_static_cast_impl<From, To,
+        meta::to_void<decltype( static_cast<To>(std::declval<From>()) )>>
+    : std::true_type {};
+
     template <class, class> static std::false_type try_cast(...);
     template <class From, class To> static auto try_cast(int) -> decltype
     (
@@ -117,6 +125,12 @@ private:
     );
 
 public:
+    template <class From, class To>
+    static constexpr bool can_static_cast() noexcept
+    {
+        return can_static_cast_impl<From, To>::value;
+    }
+
     template <class From, class To>
     static constexpr bool is_convertible() noexcept
     {
@@ -222,7 +236,7 @@ namespace detail
 {
 
 template <class Base, class Archive, class Derived,
-          SIREQUIRE(meta::can_static_cast<Base, Derived>() and
+          SIREQUIRE(Access::can_static_cast<Base*, Derived*>() and
                     meta::is_base_of<Base, Derived>())>
 void hierarchy_impl(Archive& archive, Derived& object_with_base)
 {
@@ -230,7 +244,7 @@ void hierarchy_impl(Archive& archive, Derived& object_with_base)
 }
 
 template <class Base, class Archive, class Derived,
-          SIREQUIRE(not meta::can_static_cast<Base, Derived>() and
+          SIREQUIRE(not Access::can_static_cast<Base*, Derived*>() and
                     meta::is_base_of<Base, Derived>())>
 void hierarchy_impl(Archive& archive, Derived& object_with_virtual_base)
 {

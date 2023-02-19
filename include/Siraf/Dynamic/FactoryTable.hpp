@@ -28,6 +28,7 @@
     _CLONEABLE_INTERFACE_IMPLEMENTATION(raw, __VA_ARGS__)
 
 #define CLONEABLE_BODY(...)                                                                             \
+    friend class ::siraf::dynamic::FactoryTable;                                                        \
     private:                                                                                            \
     _CLONEABLE_TRAIT_IMPLEMENTATION(__VA_ARGS__)                                                        \
     _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
@@ -87,10 +88,10 @@ public:
     using key_type   = FactoryTableCore::key_type;
     using clone_type = FactoryTableCore::clone_type;
 
-    using InnerTabel = std::unordered_map<key_type, clone_type*>;
+    using InnerTable = std::unordered_map<key_type, clone_type*>;
 
 private:
-    InnerTabel factory_;
+    InnerTable factory_;
 
 private:
 
@@ -114,7 +115,7 @@ public:
 private:
     template <typename T> static constexpr bool is_cloneable() noexcept
     {
-        return meta::is_convertible<T, Cloneable>();
+        return Access::is_convertible<T*, Cloneable*>();
     }
 
 public:
@@ -180,7 +181,7 @@ public:
     }
 
 private:
-    template <typename U = T, SIREQUIRE(meta::is_polymorphic<U>())>
+    template <typename dT = T, SIREQUIRE(meta::is_polymorphic<dT>())>
     void call()
     {
         if (lock_) return;
@@ -196,7 +197,7 @@ private:
         FactoryTable::instance().update<T>(key);
     }
 
-    template <typename U = T, SIREQUIRE(not meta::is_polymorphic<U>())>
+    template <typename dT = T, SIREQUIRE(not meta::is_polymorphic<dT>())>
     void call() { /*pass*/ }
 };
 

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -67,13 +67,13 @@ set(SIRAF
 
 add_executable(${PROJECT_NAME}
 	# test/polymorphic.cpp
-    # test/virtual_base.cpp
+	# test/virtual_base.cpp
 	# test/demo.cpp
 	# test/simple.cpp
     # test/tracking.cpp
 	# test/inheritance.cpp
     # test/multi_array.cpp
-    # test/tracking_virtual.cpp
+	# test/tracking_virtual.cpp
     # test/ref_tracking.cpp
     # test/tracking_shared_ptr.cpp
 	# test/example.cpp
