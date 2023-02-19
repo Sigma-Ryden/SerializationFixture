@@ -66,17 +66,66 @@ set(SIRAF
 )
 
 add_executable(${PROJECT_NAME}
-	# test/polymorphic.cpp
-	# test/virtual_base.cpp
-	# test/demo.cpp
-	# test/simple.cpp
-    # test/tracking.cpp
-	# test/inheritance.cpp
-    # test/multi_array.cpp
-	# test/tracking_virtual.cpp
-    # test/ref_tracking.cpp
-    # test/tracking_shared_ptr.cpp
-	# test/example.cpp
-	test/testing.cpp
+	# test/demo/polymorphic.cpp
+	# test/demo/virtual_base.cpp
+	# test/demo/demo.cpp
+	# test/demo/simple.cpp
+	# test/demo/tracking.cpp
+	# test/demo/inheritance.cpp
+	# test/demo/multi_array.cpp
+	# test/demo/tracking_virtual.cpp
+	# test/demo/ref_tracking.cpp
+	# test/demo/tracking_shared_ptr.cpp
+	# test/demo/example.cpp
+
+	test/TestModule.h
+	test/TestModule.cpp
+
+	test/TestNumber.h
+	test/TestNumber.cpp
+	test/TestEnum.h
+	test/TestEnum.cpp
+	test/TestUserType.h
+	test/TestUserType.cpp
+
+	test/TestVector.h
+	test/TestVector.cpp
+	test/TestArray.h
+	test/TestArray.cpp
+
+	test/TestString.h
+	test/TestString.cpp
+
+	test/TestDeque.h
+	test/TestDeque.cpp
+
+	test/TestQueue.h
+	test/TestQueue.cpp
+	test/TestStack.h
+	test/TestStack.cpp
+
+	test/TestBitset.h
+	test/TestBitset.cpp
+
+	test/TestList.h
+	test/TestList.cpp
+	test/TestForwardList.h
+	test/TestForwardList.cpp
+
+	test/TestMap.h
+	test/TestMap.cpp
+	test/TestSet.h
+	test/TestSet.cpp
+
+	test/TestPair.h
+	test/TestPair.cpp
+	test/TestTuple.h
+	test/TestTuple.cpp
+
+	test/TestMemory.h
+	test/TestMemory.cpp
+
+	test/main.cpp
+
 	${SIRAF}
 )
