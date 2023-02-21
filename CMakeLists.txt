@@ -65,6 +65,11 @@ set(SIRAF
     include/Siraf/Core.hpp
 )
 
+set(AUTO
+    include/Auto/TestingCore.hpp
+    include/Auto/TestingCore.cpp
+)
+
 add_executable(${PROJECT_NAME}
 	# test/demo/polymorphic.cpp
 	# test/demo/virtual_base.cpp
@@ -78,54 +83,37 @@ add_executable(${PROJECT_NAME}
 	# test/demo/tracking_shared_ptr.cpp
 	# test/demo/example.cpp
 
-	test/TestModule.h
-	test/TestModule.cpp
+    test/SirafTestingBase.hpp
 
-	test/TestNumber.h
-	test/TestNumber.cpp
-	test/TestEnum.h
+    test/TestNumber.cpp
 	test/TestEnum.cpp
-	test/TestUserType.h
 	test/TestUserType.cpp
 
-	test/TestVector.h
 	test/TestVector.cpp
-	test/TestArray.h
 	test/TestArray.cpp
 
-	test/TestString.h
 	test/TestString.cpp
 
-	test/TestDeque.h
 	test/TestDeque.cpp
 
-	test/TestQueue.h
 	test/TestQueue.cpp
-	test/TestStack.h
 	test/TestStack.cpp
 
-	test/TestBitset.h
 	test/TestBitset.cpp
 
-	test/TestList.h
 	test/TestList.cpp
-	test/TestForwardList.h
 	test/TestForwardList.cpp
 
-	test/TestMap.h
 	test/TestMap.cpp
-	test/TestSet.h
 	test/TestSet.cpp
 
-	test/TestPair.h
 	test/TestPair.cpp
-	test/TestTuple.h
 	test/TestTuple.cpp
 
-	test/TestMemory.h
 	test/TestMemory.cpp
 
 	test/main.cpp
 
 	${SIRAF}
+    ${AUTO}
 )

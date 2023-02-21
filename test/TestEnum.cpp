@@ -1,6 +1,6 @@
-#include "TestEnum.h"
+#include "SirafTestingBase.hpp"
 
-DEFINE_AUTO_TEST(TestEnum)
+TEST(TestCommon, TestEnum)
 {
     enum NumberType { None, Int, Float, Char, Bool };
     enum class Color { None, Red, Green, Blue, Black, White };

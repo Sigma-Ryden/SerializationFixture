@@ -1,4 +1,4 @@
-#include "TestMemory.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/unique_ptr.hpp>
 
@@ -32,7 +32,7 @@ bool operator== (const Child& lhs, const Child& rhs)
     return lhs.p == rhs.p && lhs.c == rhs.c;
 }
 
-DEFINE_AUTO_TEST(TestUniquePtr)
+TEST(TestMemory, TestUniquePtr)
 {
     static int sv_i = 8791;
 
@@ -66,14 +66,14 @@ DEFINE_AUTO_TEST(TestUniquePtr)
 
 #include <Siraf/Support/shared_ptr.hpp>
 
-DEFINE_AUTO_TEST(TestSharedPtr)
+TEST(TestMemory, TestSharedPtr)
 {
     EXPECT("std::shared_ptr<>", false);
 }
 
 #include <Siraf/Support/weak_ptr.hpp>
 
-DEFINE_AUTO_TEST(TestWeakPtr)
+TEST(TestMemory, TestWeakPtr)
 {
     static int sv_i = 983258;
 

@@ -1,8 +1,8 @@
-#include "TestBitset.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/bitset.hpp>
 
-DEFINE_AUTO_TEST(TestBitset)
+TEST(TestSTL, TestBitset)
 {
     static auto s_bvalue_12 = 653;
 

@@ -1,8 +1,8 @@
-#include "TestQueue.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/queue.hpp>
 
-DEFINE_AUTO_TEST(TestQueue)
+TEST(TestSTLAdapter, TestQueue)
 {
     std::queue<bool> s_q;
     s_q.push(true);

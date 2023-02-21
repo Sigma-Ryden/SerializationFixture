@@ -1,6 +1,6 @@
-#include "TestNumber.h"
+#include "SirafTestingBase.hpp"
 
-DEFINE_AUTO_TEST(TestNumber)
+TEST(TestCommon, TestNumber)
 {
     static int s_i = 123;
     static long long s_ll = 10101;

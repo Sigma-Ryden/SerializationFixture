@@ -1,8 +1,8 @@
-#include "TestStack.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/stack.hpp>
 
-DEFINE_AUTO_TEST(TestStack)
+TEST(TestSTLAdapter, TestStack)
 {
     std::stack<char16_t> s_s;
     s_s.push(u's');

@@ -1,8 +1,8 @@
-#include "TestString.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/string.hpp>
 
-DEFINE_AUTO_TEST(TestString)
+TEST(TestSTL, TestString)
 {
     static std::string s_s = "Hello, World!";
     static std::wstring s_ws = L"You're welcome!";

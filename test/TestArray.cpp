@@ -1,8 +1,8 @@
-#include "TestArray.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/array.hpp>
 
-DEFINE_AUTO_TEST(TestArray)
+TEST(TestSTL, TestArray)
 {
     constexpr auto s_a_size = 5;
     static std::array<char, s_a_size> s_a = { 'H', 'e', 'l', 'l', 'o' };

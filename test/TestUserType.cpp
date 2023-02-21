@@ -1,4 +1,4 @@
-#include "TestUserType.h"
+#include "SirafTestingBase.hpp"
 
 struct Vector
 {
@@ -34,7 +34,7 @@ SERIALIZATION(SaveLoad, Box)
     archive & self.Min & self.Max;
 }
 
-DEFINE_AUTO_TEST(TestUserType)
+TEST(TestCommon, TestUserType)
 {
     static Vector s_min(0.1f, 1.3f, 2.1f);
     static Vector s_max(3.2f, 2.f, 3.5f);

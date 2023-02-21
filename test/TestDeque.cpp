@@ -1,8 +1,8 @@
-#include "TestDeque.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/deque.hpp>
 
-DEFINE_AUTO_TEST(TestDeque)
+TEST(TestSTL, TestDeque)
 {
     static std::deque<std::int8_t> s_d = { 1, -2, 3, 0, -2, 5, 4 };
 

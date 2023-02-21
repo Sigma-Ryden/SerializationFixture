@@ -1,8 +1,8 @@
-#include "TestList.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/list.hpp>
 
-DEFINE_AUTO_TEST(TestList)
+TEST(TestSTL, TestList)
 {
     enum Color
     {

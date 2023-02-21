@@ -1,9 +1,9 @@
-#include "TestTuple.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/tuple.hpp>
 #include <Siraf/Support/string.hpp>
 
-DEFINE_AUTO_TEST(TestTuple)
+TEST(TestSTL, TestTuple)
 {
     enum class Charge { Low, Medium, High };
 

@@ -1,8 +1,8 @@
-#include "TestSet.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/set.hpp>
 
-DEFINE_AUTO_TEST(TestSet)
+TEST(TestSTL, TestSet)
 {
     enum class Signal { True, False };
 

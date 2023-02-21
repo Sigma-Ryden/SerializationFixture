@@ -1,4 +1,4 @@
-#include "TestMap.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/map.hpp>
 
@@ -11,7 +11,7 @@ static bool is_tree_equal(const Tree& lhs, const Tree& rhs)
     return true;
 }
 
-DEFINE_AUTO_TEST(TestMap)
+TEST(TestSTL, TestMap)
 {
     enum class Hint { Alpha, Relative, Fly };
 

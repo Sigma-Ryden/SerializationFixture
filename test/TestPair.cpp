@@ -1,4 +1,4 @@
-#include "TestPair.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/pair.hpp>
 
@@ -18,7 +18,7 @@ SERIALIZATION(SaveLoad, IntPoint)
     archive & self.X & self.Y;
 }
 
-DEFINE_AUTO_TEST(TestPair)
+TEST(TestSTL, TestPair)
 {
     static std::pair<std::uintptr_t, IntPoint> s_p = {0xff00fdda0bacca0f, {256, -128}};
 

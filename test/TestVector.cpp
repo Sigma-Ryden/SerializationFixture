@@ -1,8 +1,8 @@
-#include "TestVector.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/vector.hpp>
 
-DEFINE_AUTO_TEST(TestVector)
+TEST(TestSTL, TestVector)
 {
     static std::vector<bool> s_bv = { true, true, false, true };
     static std::vector<double> s_dv = { 17.85, 211.2, 8.723 };

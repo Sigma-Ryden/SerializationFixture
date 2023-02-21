@@ -1,8 +1,8 @@
-#include "TestForwardList.h"
+#include "SirafTestingBase.hpp"
 
 #include <Siraf/Support/forward_list.hpp>
 
-DEFINE_AUTO_TEST(TestForwardList)
+TEST(TestSTL, TestForwardList)
 {
     enum class State { Free, Blocked, Forced };
 
