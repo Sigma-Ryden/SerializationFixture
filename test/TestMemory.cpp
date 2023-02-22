@@ -55,7 +55,7 @@ TEST(TestMemory, TestUniquePtr)
         auto ar = iarchive<IByteStream>(storage);
         ar & u_i & u_p;
 
-        EXPECT("std::unique_ptr<>", u_i != nullptr && *u_i == sv_i);
+        ASSERT("std::unique_ptr<>", u_i != nullptr && *u_i == sv_i);
 
         auto raw_u_p = u_p.get();
         auto raw_u_c = dynamic_cast<Child*>(raw_u_p);
@@ -99,7 +99,7 @@ TEST(TestMemory, TestWeakPtr)
         auto ar = iarchive<IByteStream>(storage);
         ar & w_i & w_p;
 
-        EXPECT("std::weak_ptr<>", w_i != nullptr && *w_i == sv_i);
+        ASSERT("std::weak_ptr<>", w_i != nullptr && *w_i == sv_i);
 
         auto raw_w_p = w_p.get();
         auto raw_w_c = dynamic_cast<Child*>(raw_w_p);
