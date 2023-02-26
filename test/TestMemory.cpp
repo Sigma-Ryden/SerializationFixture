@@ -49,14 +49,14 @@ TEST(TestMemory, TestUniquePtr)
         ar & u_i & u_p;
     }
     {
-        std::unique_ptr<int> u_i = nullptr;
-        std::unique_ptr<Parent> u_p = nullptr;
+        std::unique_ptr<int> u_i;
+        std::unique_ptr<Parent> u_p;
 
         auto ar = iarchive<IByteStream>(storage);
         ar & u_i & u_p;
 
         ASSERT("std::unique_ptr<>", u_i != nullptr);
-        EXPECT("std:;unique_ptr<>", *u_i == sv_i);
+        EXPECT("std::unique_ptr<>", *u_i == sv_i);
         
         ASSERT("std::unique_ptr<polymorphic>", u_p != nullptr);
        
@@ -71,34 +71,35 @@ TEST(TestMemory, TestUniquePtr)
 
 struct A : POLYMORPHIC()
 {
-	SERIALIZABLE(A)
-	
-	int a = 0;
+    SERIALIZABLE(A)
+
+    int a = 0;
 };
 
 struct B : virtual A
 {
-	SERIALIZABLE(B)
-	
-	int b = 0;
-	
+    SERIALIZABLE(B)
+
+    int b = 0;
 };
 
 struct C : virtual A
 {
-	SERIALIZABLE(C)
-	
-	int c = 0;
+    SERIALIZABLE(C)
+
+    int c = 0;
 };
 
-struct D : B. C
+struct D : B, C
 {
-	SERIALIZANLE(D)
+    SERIALIZABLE(D)
+
+    int d = 0;
 };
 
 SERIALIZATION(SaveLoad, A)
 {
-	archive & self.a;
+    archive & self.a;
 }
 
 SERIALIZATION(SaveLoad, B)
@@ -109,22 +110,22 @@ SERIALIZATION(SaveLoad, B)
 
 SERIALIZATION(SaveLoad, C)
 {
-	archive & hierarchy<A>(self)
-	        & self.c;
+    archive & hierarchy<A>(self)
+            & self.c;
 }
 
 SERIALIZATION(SaveLoad, D)
 {
-	archive & hierarchy<A, B, C>(self) // type order does not matter
-	        & self.d;
+    archive & hierarchy<A, B, C>(self) // type order does not matter
+            & self.d;
 }
 
 bool operator== (const D& lhs, const D& rhs)
 {
-	return lhs.a == rhs.a
-	    && lhs.b == rhs.b
-	    && lhs.c == rhs.c
-	    && lhs.d == rhs.d;
+    return lhs.a == rhs.a
+        && lhs.b == rhs.b
+        && lhs.c == rhs.c
+        && lhs.d == rhs.d;
 }
 
 TEST(TestMemory, TestSharedPtr)
@@ -146,20 +147,27 @@ TEST(TestMemory, TestSharedPtr)
     	ar & s_b & s_a & s_c & s_d; // special shuffle
     }
     {
-    	std::shared_ptr<D> s_d = nullptr;
-    	std::shared_ptr<B> s_b = nullptr;
-    	std::shared_ptr<C> s_c = nullptr;
-    	std::shared_ptr<A> s_a = nullptr;
+        std::shared_ptr<D> s_d;
+        std::shared_ptr<B> s_b;
+        std::shared_ptr<C> s_c;
+        std::shared_ptr<A> s_a;
     	
-    	auto ar = iarchive<IByteStream(storage);
-    	ar & s_c & s_a & s_d & s_b; // one more shuffle
-    	
+        {
+            auto ar = iarchive<IByteStream>(storage);
+            ar & s_c & s_a & s_d & s_b; // one more shuffle
+        }
+
     	using siraf::memory::pure;
     	
-    	ASSERT("std::shared_ptr<polymorphic>", s_a != nullptr && s_b != nullptr && s_c != nullptr && s_d != nullptr);
+        ASSERT("std::shared_ptr<polymorphic>",
+            s_a != nullptr && s_b != nullptr && s_c != nullptr && s_d != nullptr);
     	
-    	EXPECT("std::shared_ptr<polymorphic>", s_a.count() == 4 && s_b.count() == 4 && s_c.count() == 4 && s_d.count() == 4);
-    	EXPECT("std::shared_ptr<polymorphic>", pure(s_a) == pure(s_b) && pure(s_b) == pure(s_c) && pure(s_c) == pure(s_d));
+        EXPECT("std::shared_ptr<polymorphic>",
+            s_a.use_count() == 4 && s_b.use_count() == 4 &&
+            s_c.use_count() == 4 && s_d.use_count() == 4);
+
+        EXPECT("std::shared_ptr<polymorphic>",
+            pure(s_a) == pure(s_b) && pure(s_b) == pure(s_c) && pure(s_c) == pure(s_d));
     	
     	auto raw_s_d = s_d.get();
     	auto raw_s_b = s_b.get();
@@ -195,52 +203,58 @@ TEST(TestMemory, TestWeakPtr)
         ar & w_i & w_p;
     }
     {
-        std::unique_ptr<int> w_i = nullptr;
-        std::unique_ptr<Parent> w_p = nullptr;
+        std::weak_ptr<int> w_i;
+        std::weak_ptr<Parent> w_p;
 
         auto ar = iarchive<IByteStream>(storage);
         ar & w_i & w_p;
 
-        ASSERT("std::weak_ptr<>", w_i != nullptr);
-        EXPECT("std::weak_ptr<>", *w_i == sv_i);
+        ASSERT("std::weak_ptr<>", !w_i.expired());
+        EXPECT("std::weak_ptr<>", *w_i.lock() == sv_i);
         
-        ASSERT("std::weak_ptr<polymorphic>", w_p != nullptr);
+        ASSERT("std::weak_ptr<polymorphic>", !w_p.expired());
 
-        auto raw_w_c = dynamic_cast<Child*>(u_p.get());
+        auto s_c = std::dynamic_pointer_cast<Child>(w_p.lock());
 
-        EXPECT("std::weak_ptr<polymorphic>", *raw_w_c == sv_c);
+        EXPECT("std::weak_ptr<polymorphic>", *s_c == sv_c);
     }
 }
 
 
 TEST(TestMemory, TestSharedAndWeakPtr)
 {
-	static float sv_f = 0.5f;
-	
-	std::vector<unsigned char> storage;
-	{
-		std::shared_ptr<float> s_f = std::make_shared<float>(sv_f);
-		std::weak_ptr<float> w1_f = s_f;
-		std::weak_ptr<float> w2_f = s_f;
-		
-		auto ar = oarchive<OByteStream>(storage);
-		ar & w1_f & s_f & w2_f; // special shuffle
-	}
-	{
-		std::shared_ptr<float> s_f = nullptr;
-		std::weak_ptr<float> w1_f = nullptr;
-		std::weak_ptr<float> w2_f = nullptr;
-		
-		auto ar = iarchive<IByteStream>(storage);
-		at & w1_f & w2_f & s_f; // one more shuffle
-		
-		ASSERT("std;:shared_ptr<>", s_f != nullptr);
-		ASSERT("std::weak_ptr<>", w1_f != nullptr && w2_f != nullptr);
-		
-		EXPECT("std::shared_ptr<>", s_f.count() == 1);
-		EXPECT("std::weak_ptr<>", w1_f.count() == 2 && w2_f.count() == 2);
-		
-		EXPECT("std::shared_ptr<>", *s_f == sv_f);
-		EXPECT("std::weak_ptr<>", *w1_f.lock() == sv_f && *w2_f.lock() == sv_f);
-	}
+    static float sv_f = 0.5f;
+
+    std::vector<unsigned char> storage;
+    {
+        std::shared_ptr<float> s_f = std::make_shared<float>(sv_f);
+        std::weak_ptr<float> w1_f = s_f;
+        std::weak_ptr<float> w2_f = s_f;
+
+        auto ar = oarchive<OByteStream>(storage);
+        ar & w1_f & s_f & w2_f; // special shuffle
+    }
+    {
+        std::shared_ptr<float> s_f;
+        std::weak_ptr<float> w1_f;
+        std::weak_ptr<float> w2_f;
+
+        {
+            auto ar = iarchive<IByteStream>(storage);
+            ar & w1_f & w2_f & s_f; // one more shuffle
+        }
+
+        ASSERT("std::shared_ptr<>", s_f != nullptr);
+        ASSERT("std::weak_ptr<>", !w1_f.expired() && !w2_f.expired());
+
+        EXPECT("std::shared_ptr<>", s_f.use_count() == 1);
+
+        auto s1_f = w1_f.lock();
+        auto s2_f = w2_f.lock();
+
+        EXPECT("std::weak_ptr<>", w1_f.use_count() == 3 && w2_f.use_count() == 3);
+
+        EXPECT("std::shared_ptr<>", *s_f == sv_f);
+        EXPECT("std::weak_ptr<>", *w1_f.lock() == sv_f && *w2_f.lock() == sv_f);
+    }
 }
