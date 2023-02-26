@@ -1,5 +1,3 @@
-#include <cassert> // assert
-
 #include <iostream> // cout
 
 #include <Auto/TestingCore.hpp>
@@ -10,7 +8,7 @@ TestingInterface::TestingInterface(const char* module, const char* name)
     TestingCore::instance().add(this);
 }
 
-std::ostream& TestingCore::stream_ = std::cout;
+std::ostream& TestingCore::stream = std::cout;
 
 TestingCore& TestingCore::instance()
 {
@@ -36,13 +34,10 @@ static void update_stat(unsigned& passed, unsigned& failed, bool ok)
     failed += not ok;
 }
 
-void TestingCore::check(TestingInterface* test, const char* msg, bool strict, bool condition)
+void TestingCore::check(bool condition, TestingInterface* test, const char* msg)
 {
-    auto info = info_format(test, msg, condition);
-    if (strict) assert(condition && info.c_str());
-
     update_stat(passed, failed, condition);
-    stream_ << info_format(test, msg, condition);
+    stream << info_format(test, msg, condition);
 }
 
 void TestingCore::add(TestingInterface* test)
@@ -95,5 +90,5 @@ static std::string stat_format(unsigned passed, unsigned failed)
 
 void TestingCore::stat()
 {
-    stream_ << stat_format(passed, failed);
+    stream << stat_format(passed, failed);
 }

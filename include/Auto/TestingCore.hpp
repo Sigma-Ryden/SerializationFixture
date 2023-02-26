@@ -1,6 +1,8 @@
 #ifndef TESTING_CORE_HPP
 #define TESTING_CORE_HPP
 
+#include <cassert> // assert
+
 #include <map> // map
 #include <string> // string
 #include <iosfwd> // ostream
@@ -18,10 +20,11 @@
 
 // Calculate completed and failed test, provide debug info
 #define EXPECT(msg, ...)                                                                                \
-    TestingCore::instance().check(this, msg, false, __VA_ARGS__)
+    TestingCore::instance().check(__VA_ARGS__, this, msg)
 
 #define ASSERT(msg, ...)                                                                                \
-    TestingCore::instance().check(this, msg, true, __VA_ARGS__)
+    assert(msg && (__VA_ARGS__));                                                                       \
+    TestingCore::instance().check(__VA_ARGS__, this, msg)
 
 // Tests Execution
 #define EXECUTE_TEST(name, ...)                                                                         \
@@ -69,7 +72,7 @@ public:
     TestingCore& operator= (const TestingCore&) = delete;
 
 public:
-    void check(TestingInterface* test, const char* msg, bool strict, bool condition);
+    void check(bool condition, TestingInterface* test, const char* msg);
 
 public:
     void add(TestingInterface* test);
@@ -87,10 +90,10 @@ public:
     unsigned failed;
 
 protected:
-    ModuleRegistry registry_;
+    static std::ostream& stream;
 
 protected:
-    static std::ostream& stream_;
+    ModuleRegistry registry_;
 };
 
 #endif // TESTING_CORE_HPP
