@@ -58,7 +58,7 @@ public:
     auto operator() () noexcept -> WriteArchive& { return *this; }
 };
 
-// create default WriteArchive<> with wrapper::OFileStream<>
+// create default WriteArchive<> with wrapper::OByteStream<>
 template <class OutStream>
 WriteArchive<OutStream, wrapper::OByteStream<OutStream>> oarchive(OutStream& stream)
 {
