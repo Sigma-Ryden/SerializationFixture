@@ -75,7 +75,7 @@ public:
     auto operator() () -> ReadArchive& { return *this; }
 };
 
-// create default ReadArchive<> with wrapper::IFileStream<>
+// create default ReadArchive<> with wrapper::IByteStream<>
 template <class InStream>
 ReadArchive<InStream, wrapper::IByteStream<InStream>> iarchive(InStream& stream)
 {
