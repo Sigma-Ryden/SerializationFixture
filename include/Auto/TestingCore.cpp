@@ -8,7 +8,7 @@ TestingInterface::TestingInterface(const char* module, const char* name)
     TestingCore::instance().add(this);
 }
 
-std::ostream& TestingCore::stream = std::cout;
+std::ostream& TestingCore::stream_ = std::cout;
 
 TestingCore& TestingCore::instance()
 {
@@ -37,7 +37,7 @@ static void update_stat(unsigned& passed, unsigned& failed, bool ok)
 void TestingCore::check(bool condition, TestingInterface* test, const char* msg)
 {
     update_stat(passed, failed, condition);
-    stream << info_format(test, msg, condition);
+    stream_ << info_format(test, msg, condition);
 }
 
 void TestingCore::add(TestingInterface* test)
@@ -90,5 +90,5 @@ static std::string stat_format(unsigned passed, unsigned failed)
 
 void TestingCore::stat()
 {
-    stream << stat_format(passed, failed);
+    stream_ << stat_format(passed, failed);
 }

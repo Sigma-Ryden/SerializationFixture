@@ -14,20 +14,15 @@ TEST(TestSTLAdapter, TestQueue)
     std::vector<unsigned char> storage;
     {
         std::queue<bool> q = s_q;
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & q;
     }
     {
         std::queue<bool> q;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & q;
 
-        EXPECT("std::queue<>", q.size() == s_q.size());
-
-        auto& c = siraf::detail::underlying(q);
-        auto& s_c = siraf::detail::underlying(s_q);
-
-        EXPECT("std::queue<>", c == s_c);
+        EXPECT("std::queue<>", q == s_q);
     }
 }

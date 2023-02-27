@@ -232,14 +232,16 @@ template <typename Pointer, typename T = typename ptr_trait<Pointer>::item,
           SIREQUIRE(meta::is_shared_pointer<Pointer>())>
 inline raw_ptr<T> raw(const Pointer& pointer) { return pointer.get(); }
 
-template <typename T> inline const char* const_byte_cast(T* data) noexcept
+template <typename ByteType = char, typename T>
+inline const ByteType* const_byte_cast(T* data) noexcept
 {
-    return reinterpret_cast<const char*>(data);
+    return reinterpret_cast<const ByteType*>(data);
 }
 
-template <typename T> inline char* byte_cast(T* data) noexcept
+template <typename ByteType = char, typename T>
+inline ByteType* byte_cast(T* data) noexcept
 {
-    return reinterpret_cast<char*>(data);
+    return reinterpret_cast<ByteType*>(data);
 }
 
 } // namespace memory

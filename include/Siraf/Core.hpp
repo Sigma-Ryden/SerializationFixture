@@ -33,11 +33,11 @@
 
 #ifndef SIRAF_DEFAULT_DISABLE
 
-EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, std::ifstream, wrapper::IFileStream<std::ifstream>)
-EXPORT_SERIALIZATION_ARCHIVE(1, ReadArchive, std::vector<unsigned char>, wrapper::IByteStream)
+EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, ByteContainer, IByteStream<ByteContainer>)
+EXPORT_SERIALIZATION_ARCHIVE(1, ReadArchive, std::ifstream, IFileStream<std::ifstream>)
 
-EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, std::ofstream, wrapper::OFileStream<std::ofstream>)
-EXPORT_SERIALIZATION_ARCHIVE(1, WriteArchive, std::vector<unsigned char>, wrapper::OByteStream)
+EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, ByteContainer, OByteStream<ByteContainer>)
+EXPORT_SERIALIZATION_ARCHIVE(1, WriteArchive, std::ofstream, OFileStream<std::ofstream>)
 
 #endif // SIRAF_DEFAULT_DISABLE
 

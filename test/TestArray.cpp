@@ -11,13 +11,13 @@ TEST(TestSTL, TestArray)
     {
         std::array<char, s_a_size> a = s_a;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & a;
     }
     {
         std::array<char, s_a_size> a = s_a;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & a;
 
         EXPECT("std::array<>", a == s_a);

@@ -14,12 +14,9 @@ using siraf::tracking::track;
 
 void test_tracking()
 {
+    std::vector<unsigned char> storage;
     {
-        std::ofstream file("test_tracking.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = oarchive(file);
+        auto ar = oarchive(storage);
 
         int x = 123;
         int* p1 = &x;
@@ -46,11 +43,7 @@ void test_tracking()
         }
     }
     {
-        std::ifstream file("test_tracking.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = iarchive(file);
+        auto ar = iarchive(storage);
 
         int x;
         int* p1 = nullptr;

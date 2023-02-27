@@ -26,7 +26,7 @@ TEST(TestCommon, TestNumber)
         int32_t it = s_it;
         wchar_t wc = s_wc;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
 
         ar & i & ll & f;
         ar & s & d & c;
@@ -44,7 +44,7 @@ TEST(TestCommon, TestNumber)
         int32_t it;
         wchar_t wc;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
 
         ar & i & ll & f;
         ar & s & d & c;

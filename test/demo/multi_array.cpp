@@ -7,7 +7,7 @@
 using siraf::iarchive;
 using siraf::oarchive;
 
-using siraf::common::span;
+using siraf::common::span; // or siraf::span
 
 void print(int** arr, int h, int w)
 {
@@ -20,12 +20,9 @@ void print(int** arr, int h, int w)
 
 void test_scope()
 {
+    std::vector<unsigned char> storage;
     {
-        std::ofstream file("test_scope.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = oarchive(file);
+        auto ar = oarchive(storage);
 
         int height = 3;
         unsigned int width = 4;
@@ -35,7 +32,6 @@ void test_scope()
             tensor[i] = new int [width] { i, i + 1, i + 2, i + 3 };
 
         print(tensor, height, width);
-        auto r = siraf::memory::make_span(tensor, height, width);
 
         try
         {
@@ -49,11 +45,7 @@ void test_scope()
         // implicit delete pointer
     }
     {
-        std::ifstream file("test_scope.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = iarchive(file);
+        auto ar = iarchive(storage);
 
         int height;
         int width;

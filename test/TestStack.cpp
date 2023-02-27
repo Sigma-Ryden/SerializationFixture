@@ -14,20 +14,15 @@ TEST(TestSTLAdapter, TestStack)
     std::vector<unsigned char> storage;
     {
         std::stack<char16_t> s = s_s;
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & s;
     }
     {
         std::stack<char16_t> s;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & s;
 
-        EXPECT("std::stack<>", s.size() == s_s.size());
-
-        auto& c = siraf::detail::underlying(s);
-        auto& s_c = siraf::detail::underlying(s_s);
-
-        EXPECT("std::stack<>", c == s_c);
+        EXPECT("std::stack<>", s == s_s);
     }
 }

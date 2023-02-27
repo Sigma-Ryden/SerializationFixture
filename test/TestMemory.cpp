@@ -45,14 +45,14 @@ TEST(TestMemory, TestUniquePtr)
         std::unique_ptr<int> u_i(new int(sv_i));
         std::unique_ptr<Parent> u_p(new Child(sv_c));
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & u_i & u_p;
     }
     {
         std::unique_ptr<int> u_i;
         std::unique_ptr<Parent> u_p;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & u_i & u_p;
 
         ASSERT("std::unique_ptr<>", u_i != nullptr);
@@ -143,7 +143,7 @@ TEST(TestMemory, TestSharedPtr)
     	std::shared_ptr<C> s_c = s_d;
     	std::shared_ptr<A> s_a = s_d;
     	
-    	auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
     	ar & s_b & s_a & s_c & s_d; // special shuffle
     }
     {
@@ -153,7 +153,7 @@ TEST(TestMemory, TestSharedPtr)
         std::shared_ptr<A> s_a;
     	
         {
-            auto ar = iarchive<IByteStream>(storage);
+            auto ar = iarchive(storage);
             ar & s_c & s_a & s_d & s_b; // one more shuffle
         }
 
@@ -199,14 +199,14 @@ TEST(TestMemory, TestWeakPtr)
         std::weak_ptr<int> w_i = s_i;
         std::weak_ptr<Parent> w_p = s_p;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & w_i & w_p;
     }
     {
         std::weak_ptr<int> w_i;
         std::weak_ptr<Parent> w_p;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & w_i & w_p;
 
         ASSERT("std::weak_ptr<>", !w_i.expired());
@@ -231,7 +231,7 @@ TEST(TestMemory, TestSharedAndWeakPtr)
         std::weak_ptr<float> w1_f = s_f;
         std::weak_ptr<float> w2_f = s_f;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & w1_f & s_f & w2_f; // special shuffle
     }
     {
@@ -240,7 +240,7 @@ TEST(TestMemory, TestSharedAndWeakPtr)
         std::weak_ptr<float> w2_f;
 
         {
-            auto ar = iarchive<IByteStream>(storage);
+            auto ar = iarchive(storage);
             ar & w1_f & w2_f & s_f; // one more shuffle
         }
 

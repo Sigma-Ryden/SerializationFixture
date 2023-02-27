@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -71,17 +71,16 @@ set(AUTO
 )
 
 add_executable(${PROJECT_NAME}
-	# test/demo/polymorphic.cpp
-	# test/demo/virtual_base.cpp
-	# test/demo/demo.cpp
-	# test/demo/simple.cpp
-	# test/demo/tracking.cpp
-	# test/demo/inheritance.cpp
-	# test/demo/multi_array.cpp
-	# test/demo/tracking_virtual.cpp
-	# test/demo/ref_tracking.cpp
-	# test/demo/tracking_shared_ptr.cpp
-	# test/demo/example.cpp
+    # test/demo/polymorphic.cpp
+    # test/demo/virtual_base.cpp
+    # test/demo/demo.cpp
+    # test/demo/tracking.cpp
+    # test/demo/inheritance.cpp
+    # test/demo/multi_array.cpp
+    # test/demo/tracking_virtual.cpp
+    # test/demo/ref_tracking.cpp
+    # test/demo/tracking_shared_ptr.cpp
+    # test/demo/example.cpp
 
     test/SirafTestingBase.hpp
 
@@ -112,7 +111,7 @@ add_executable(${PROJECT_NAME}
 
 	test/TestMemory.cpp
 
-	test/main.cpp
+    test/main.cpp
 
 	${SIRAF}
     ${AUTO}

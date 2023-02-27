@@ -48,13 +48,13 @@ TEST(TestCommon, TestUserType)
     {
         Box box(s_min, s_max);
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & box;
     }
     {
         Box box;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & box;
 
         EXPECT("Struct", equal(box.Min, s_min) && equal(box.Max, s_max));

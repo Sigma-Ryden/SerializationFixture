@@ -8,8 +8,6 @@
 
 using siraf::WriteArchive;
 
-using namespace siraf::library;
-
 // Impl of user wrapper for iostream
 class FormatOutStream
 {

@@ -28,17 +28,17 @@
 
 // Tests Execution
 #define EXECUTE_TEST(name, ...)                                                                         \
-    TestingCore::instance().execute_test(name);
+    TestingCore::instance().execute_test(name)
 
 #define EXECUTE_MODULE(name, ...)                                                                       \
-    TestingCore::instance().execute_module(name);
+    TestingCore::instance().execute_module(name)
 
 #define EXECUTE_ALL(...)                                                                                \
-    TestingCore::instance().execute_all();
+    TestingCore::instance().execute_all()
 
 // Stat info
 #define TESTING_STAT(...)                                                                               \
-    TestingCore::instance().stat();
+    TestingCore::instance().stat()
 
 struct TestingInterface
 {
@@ -90,7 +90,7 @@ public:
     unsigned failed;
 
 protected:
-    static std::ostream& stream;
+    static std::ostream& stream_;
 
 protected:
     ModuleRegistry registry_;

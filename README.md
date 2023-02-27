@@ -112,23 +112,17 @@ db.prototypes[3] = rew;
 db.prototypes[2] = ifly;
 ```
 
-Serialization:
+Serialization prepared data:
 ```C++
-using siraf::oarchive;
-using siraf::wrapper::OByteStream;
-
-auto ar = oarchive<OByteStream>(storage);
+auto ar = siraf::oarchive(storage);
 ar & db;
 ```
 
-Deserialization:
+Deserialization from storage:
 ```C++
-using siraf::iarchive;
-using siraf::wrapper::IByteStream;
+Handbook db; // some other clear db
 
-Handbook db;
-
-auto ar = iarchive<IByteStream>(storage);
+auto ar = siraf::iarchive(storage);
 ar & db;
 ```
 See full code here: [example.cpp](https://github.com/Sigma-Ryden/Siraf/tree/master/test/example.cpp)

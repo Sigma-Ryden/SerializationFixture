@@ -10,8 +10,6 @@ using siraf::oarchive;
 
 using siraf::base;
 
-using namespace siraf::library;
-
 class Human
 {
     SERIALIZABLE(Human)
@@ -64,12 +62,9 @@ SERIALIZATION(SaveLoad, Boy)
 
 void test_object_serialization()
 {
+    siraf::ByteContainer storage; // is same std::vector<unsigned char>
     {
-        std::ofstream file("test_object_serialization.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = oarchive(file);
+        auto ar = oarchive(storage);
 
         Boy obj("Tom", 21, 9);
 
@@ -80,16 +75,10 @@ void test_object_serialization()
         ar & hi;
         ar & bye;
 
-        file.close();
-
         std::cout << "Serialization done.\n";
     }
     {
-        std::ifstream file("test_object_serialization.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = iarchive(file);
+        auto ar = iarchive(storage);
 
         Boy obj;
 
@@ -99,8 +88,6 @@ void test_object_serialization()
         ar & obj;
         ar & hi;
         ar & bye;
-
-        file.close();
 
         std::cout << "Deserialization done.\n";
         //

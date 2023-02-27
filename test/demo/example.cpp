@@ -44,9 +44,6 @@ int main()
 
     // save
     {
-        using siraf::oarchive;
-        using siraf::wrapper::OByteStream;
-
         Handbook db;
 
         auto zero = std::make_shared<Prototype>();
@@ -65,17 +62,14 @@ int main()
         db.prototypes[3] = rew;
         db.prototypes[2] = ifly;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = siraf::oarchive(storage);
         ar & db;
     }
     // load
     {
-        using siraf::iarchive;
-        using siraf::wrapper::IByteStream;
-
         Handbook db;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = siraf::iarchive(storage);
         ar & db;
     }
 

@@ -77,7 +77,7 @@ public:
 
 // create default ReadArchive<> with wrapper::IFileStream<>
 template <class InStream>
-ReadArchive<InStream, wrapper::IFileStream<InStream>> iarchive(InStream& stream)
+ReadArchive<InStream, wrapper::IByteStream<InStream>> iarchive(InStream& stream)
 {
     return { stream };
 }

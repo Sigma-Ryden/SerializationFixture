@@ -27,7 +27,7 @@ TEST(TestSTL, TestMap)
         std::multimap<Hint, int> mm = s_mm;
         std::unordered_multimap<int, int> umm = s_umm;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & m & um & mm & umm;
     }
     {
@@ -36,17 +36,13 @@ TEST(TestSTL, TestMap)
         std::multimap<Hint, int> mm;
         std::unordered_multimap<int, int> umm;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & m & um & mm & umm;
 
         EXPECT("std::map<>", is_tree_equal(m, s_m));
-
-        EXPECT("std::unordered_map<>", um.size() == s_um.size());
         EXPECT("std::unordered_map<>", um == s_um);
 
         EXPECT("std::multimap<>", is_tree_equal(mm, s_mm));
-
-        EXPECT("std::unordered_multimap<>", umm.size() == s_umm.size());
         EXPECT("std::unordered_multimap<>", umm == s_umm);
     }
 }

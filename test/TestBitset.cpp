@@ -16,14 +16,14 @@ TEST(TestSTL, TestBitset)
 
         std::bitset<10> b_10 = sv_bitset10;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & b_10 & b_128;
     }
     {
         std::bitset<128> b_128;
         std::bitset<10> b_10;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & b_10 & b_128;
 
         EXPECT("std::bitset<>", b_128.test(s_position) == s_value);

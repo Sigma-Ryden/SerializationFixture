@@ -16,7 +16,7 @@ TEST(TestSTL, TestString)
         std::u16string u16s = s_u16s;
         std::u32string u32s = s_u32s;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & s & ws & u16s & u32s;
     }
     {
@@ -25,7 +25,7 @@ TEST(TestSTL, TestString)
         std::u16string u16s;
         std::u32string u32s;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & s & ws & u16s & u32s;
 
         EXPECT("std::string", s == s_s);

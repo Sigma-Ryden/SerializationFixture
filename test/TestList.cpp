@@ -15,16 +15,15 @@ TEST(TestSTL, TestList)
     {
         std::list<Color> l = s_l;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & l;
     }
     {
         std::list<Color> l;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & l;
 
-        EXPECT("std::list<>", l.size() == s_l.size());
         EXPECT("std::list<>", l == s_l);
     }
 }

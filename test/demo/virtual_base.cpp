@@ -59,12 +59,15 @@ SERIALIZATION(SaveLoad, F)
 
 void test_virtual_base()
 {
+    using siraf::OFileStream;
+    using siraf::IFileStream;
+
     {
         std::ofstream file("test_virtual_base.bin", std::ios::binary);
 
         if (not file.is_open()) return;
 
-        auto ar = oarchive(file);
+        auto ar = oarchive<OFileStream>(file);
 
         A* a = new F;
         std::cout << siraf::Access::trait(*a) << '\n';
@@ -92,7 +95,7 @@ void test_virtual_base()
 
         if (not file.is_open()) return;
 
-        auto ar = iarchive(file);
+        auto ar = iarchive<IFileStream>(file);
 
         try
         {

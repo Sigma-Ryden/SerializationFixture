@@ -75,11 +75,9 @@ SERIALIZATION(SaveLoad, X)
 
 void test_ref_tracking()
 {
+    std::vector<unsigned char> storage;
     {
-        std::ofstream file("test_tracking_virtual.bin", std::ios::binary);
-        if (not file.is_open()) return;
-
-        auto ar = oarchive(file);
+        auto ar = oarchive(storage);
 
         X x;
         auto d = ref<D>(x);
@@ -113,10 +111,7 @@ void test_ref_tracking()
     }
     std::cout << "---\n";
     {
-        std::ifstream file("test_tracking_virtual.bin", std::ios::binary);
-        if (not file.is_open()) return;
-
-        auto ar = iarchive(file);
+        auto ar = iarchive(storage);
 
         X x;
         auto d = ref<D>();

@@ -15,14 +15,14 @@ TEST(TestSTL, TestTuple)
         std::tuple<> et = s_et;
         std::tuple<std::string, double, Charge> t = s_t;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & et & t;
     }
     {
         std::tuple<> et;
         std::tuple<std::string, double, Charge> t;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & et & t;
 
         EXPECT("std::tuple<empty>", et == s_et);

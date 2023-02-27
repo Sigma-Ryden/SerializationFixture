@@ -11,8 +11,6 @@ using siraf::oarchive;
 
 using siraf::base;
 
-using namespace siraf::library; // support of std library
-
 template <class SomeType>
 class Base : POLYMORPHIC()
 {
@@ -90,8 +88,6 @@ EXPORT_POLYMORPHIC(Base<double>) // smae as EXPORT_POLYMORPHIC_KEY("Base<double>
 
 void test_polymorphic()
 {
-    using namespace siraf::wrapper;
-
     using Registry = siraf::dynamic::RegistryBase;
 
     using Parent = Base<std::string>;
@@ -104,7 +100,7 @@ void test_polymorphic()
     //
     std::vector<unsigned char> data;
     {
-        auto ar = oarchive<OByteStream>(data);
+        auto ar = oarchive(data);
 
         Parent* b = nullptr;
         Parent* d = nullptr;
@@ -135,7 +131,7 @@ void test_polymorphic()
     //
     //
     {
-        auto ar = iarchive<IByteStream>(data);
+        auto ar = iarchive(data);
 
         Parent* b = nullptr;
         Parent* d = nullptr;

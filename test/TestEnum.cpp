@@ -21,7 +21,7 @@ TEST(TestCommon, TestEnum)
         NumberType f = s_f;
         Color b = s_b;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & i & r & w & f & b;
     }
     {
@@ -32,7 +32,7 @@ TEST(TestCommon, TestEnum)
         NumberType f;
         Color b;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & i & r & w & f & b;
 
         EXPECT("Enum", i == s_i && f == s_f);

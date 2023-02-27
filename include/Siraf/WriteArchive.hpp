@@ -60,7 +60,7 @@ public:
 
 // create default WriteArchive<> with wrapper::OFileStream<>
 template <class OutStream>
-WriteArchive<OutStream, wrapper::OFileStream<OutStream>> oarchive(OutStream& stream)
+WriteArchive<OutStream, wrapper::OByteStream<OutStream>> oarchive(OutStream& stream)
 {
     return { stream };
 }

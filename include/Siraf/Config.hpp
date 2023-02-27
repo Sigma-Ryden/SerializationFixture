@@ -1,10 +1,10 @@
 #ifndef SIRAF_CONFIG_HPP
 #define SIRAF_CONFIG_HPP
 
-#if __cplusplus >= 201703L
-    #define _SIRAF_STATIC_INLINE static inline
-#else
+#if __cplusplus < 201703L
     #define _SIRAF_STATIC_INLINE
+#else
+    #define _SIRAF_STATIC_INLINE static inline
 #endif
 
 namespace siraf

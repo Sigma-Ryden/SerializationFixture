@@ -9,47 +9,57 @@
 namespace siraf
 {
 
-namespace wrapper
+inline namespace wrapper
 {
 
+using ByteContainer = std::vector<unsigned char>;
+
+template <typename OutStream>
 class OByteStream
 {
-public:
-    std::vector<unsigned char>& storage;
+protected:
+    using item_type = typename OutStream::value_type;
 
 public:
-    OByteStream(std::vector<unsigned char>& stream) : storage(stream)
+    OutStream& storage;
+
+public:
+    OByteStream(OutStream& stream) : storage(stream)
     {
-        storage.reserve(1024);
+        storage.reserve(1024); // default reserve memory
     }
 
     template <typename T>
     void call(const T* data, std::size_t size)
     {
-        auto it = memory::const_byte_cast(data);
+        auto it = memory::const_byte_cast<item_type>(data);
         while (size > 0)
         {
-            storage.emplace_back(static_cast<unsigned char>(*it++));
+            storage.emplace_back(*it++);
             --size;
         }
     }
 };
 
+template <typename InStream>
 struct IByteStream
 {
+protected:
+    using item_type = typename InStream::value_type;
+
 public:
-    std::vector<unsigned char>& storage;
+    InStream& storage;
     std::size_t offset;
 
-    IByteStream(std::vector<unsigned char>& data) : storage(data), offset() {}
+    IByteStream(InStream& stream) : storage(stream), offset() {}
 
     template <typename T>
     void call(T* data, std::size_t size)
     {
-        auto it = memory::byte_cast(data);
+        auto it = memory::byte_cast<item_type>(data);
         while (size > 0)
         {
-            *it++ = static_cast<unsigned char>(storage[offset++]);
+            *it++ = storage[offset++];
             --size;
         }
     }
@@ -87,7 +97,7 @@ public:
     }
 };
 
-} // namespace wrapper
+} // inline namespace wrapper
 
 } // namespace siraf
 

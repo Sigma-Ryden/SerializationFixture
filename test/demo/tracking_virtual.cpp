@@ -66,12 +66,9 @@ SERIALIZATION(SaveLoad, X)
 
 void test_tracking_virtual()
 {
+    siraf::ByteContainer storage;
     {
-        std::ofstream file("test_tracking_virtual.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = oarchive(file);
+        auto ar = oarchive(storage);
 
         X* x = new X;
         D* d = x;
@@ -106,11 +103,7 @@ void test_tracking_virtual()
     }
     std::cout << "---\n";
     {
-        std::ifstream file("test_tracking_virtual.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = iarchive(file);
+        auto ar = iarchive(storage);
 
         X* x = nullptr;
         D* d = nullptr;

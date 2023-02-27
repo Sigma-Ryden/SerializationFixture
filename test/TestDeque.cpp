@@ -10,16 +10,15 @@ TEST(TestSTL, TestDeque)
     {
         std::deque<std::int8_t> d = s_d;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & d;
     }
     {
         std::deque<std::int8_t> d;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & d;
 
-        EXPECT("std::deque<>", d.size() == s_d.size());
         EXPECT("std::deque<>", d == s_d);
     }
 }

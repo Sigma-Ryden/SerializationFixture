@@ -12,20 +12,17 @@ TEST(TestSTL, TestVector)
         std::vector<bool> bv = s_bv;
         std::vector<double> dv = s_dv;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & bv & dv;
     }
     {
         std::vector<bool> bv;
         std::vector<double> dv;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & bv & dv;
 
-        EXPECT("std::vector<bool>", bv.size() == s_bv.size());
         EXPECT("std::vector<bool>", bv == s_bv);
-
-        EXPECT("std::vector<>", dv.size() == s_dv.size());
         EXPECT("std::vector<>", dv == s_dv);
     }
 }

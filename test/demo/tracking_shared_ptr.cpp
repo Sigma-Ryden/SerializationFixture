@@ -13,9 +13,6 @@ using siraf::hierarchy;
 
 using siraf::memory::pure;
 
-using namespace siraf::common; // support of common types
-using namespace siraf::tracking; // support of data tracking
-
 #define println(expr) std::cout << '\t' << #expr << " : " << expr << '\n';
 
 struct B : POLYMORPHIC()
@@ -71,12 +68,9 @@ SERIALIZATION(SaveLoad, X)
 
 void test_tracking_shared_ptr()
 {
+    siraf::ByteContainer storage;
     {
-        std::ofstream file("test_tracking_virtual.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = oarchive(file);
+        auto ar = oarchive(storage);
 
         auto xxx = siraf::Access::static_trait<X>();
 
@@ -112,11 +106,7 @@ void test_tracking_shared_ptr()
     }
     std::cout << "---\n";
     {
-        std::ifstream file("test_tracking_virtual.bin", std::ios::binary);
-
-        if (not file.is_open()) return;
-
-        auto ar = iarchive(file);
+        auto ar = iarchive(storage);
 
         std::shared_ptr<X> x = nullptr;
         std::shared_ptr<D> d = nullptr;

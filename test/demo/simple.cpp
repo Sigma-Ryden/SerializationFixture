@@ -50,7 +50,7 @@ void load(Shape& shape)
     std::ifstream file("example.bin", std::ios::binary);
     if (not file.is_open()) return;
 
-    auto ar = siraf::iarchive(file);
+    auto ar = siraf::iarchive<IFileStream>(file);
 
     ar & shape;
 

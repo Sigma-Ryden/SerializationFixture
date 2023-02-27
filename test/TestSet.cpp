@@ -18,7 +18,7 @@ TEST(TestSTL, TestSet)
         std::multiset<Signal> ms = s_ms;
         std::unordered_multiset<int> ums = s_ums;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & s & us & ms & ums;
     }
     {
@@ -27,19 +27,13 @@ TEST(TestSTL, TestSet)
         std::multiset<Signal> ms;
         std::unordered_multiset<int> ums;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & s & us & ms & ums;
 
-        EXPECT("std::set<>", s.size() == s_s.size());
         EXPECT("std::set<>", s == s_s);
-
-        EXPECT("std::unordered_set<>", us.size() == s_us.size());
         EXPECT("std::unordered_set<>", us == s_us);
 
-        EXPECT("std::multiset<>", ms.size() == s_ms.size());
         EXPECT("std::multiset<>", ms == s_ms);
-
-        EXPECT("std::unordered_multiset<>", ums.size() == s_ums.size());
         EXPECT("std::unordered_multiset<>", ums == s_ums);
     }
 }

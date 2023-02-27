@@ -26,13 +26,13 @@ TEST(TestSTL, TestPair)
     {
         std::pair<std::uintptr_t, IntPoint> p = s_p;
 
-        auto ar = oarchive<OByteStream>(storage);
+        auto ar = oarchive(storage);
         ar & p;
     }
     {
         std::pair<std::uintptr_t, IntPoint> p;
 
-        auto ar = iarchive<IByteStream>(storage);
+        auto ar = iarchive(storage);
         ar & p;
 
         EXPECT("std::pair<>", p == s_p);

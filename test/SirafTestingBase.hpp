@@ -5,10 +5,7 @@
 #include <Auto/TestingCore.hpp>
 
 using siraf::oarchive;
-using siraf::wrapper::OByteStream;
-
 using siraf::iarchive;
-using siraf::wrapper::IByteStream;
 
 using siraf::hierarchy;
 
