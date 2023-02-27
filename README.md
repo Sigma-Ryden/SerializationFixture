@@ -125,7 +125,7 @@ Handbook db; // some other clear db
 auto ar = siraf::iarchive(storage);
 ar & db;
 ```
-See full code here: [example.cpp](https://github.com/Sigma-Ryden/Siraf/tree/master/test/example.cpp)
+See full code here: [example.cpp](https://github.com/Sigma-Ryden/Siraf/tree/master/test/demo/example.cpp)
 
 ### Notes:
 For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
