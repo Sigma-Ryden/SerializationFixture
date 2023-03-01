@@ -52,4 +52,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, complex, meta::is_std_complex<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_complex<T>::value)
 
-#endif // SIRAF_SUPPORT_PAIR_HPP
+#endif // SIRAF_SUPPORT_COMPLEX_HPP
