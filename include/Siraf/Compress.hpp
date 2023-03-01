@@ -29,7 +29,8 @@ void fast(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_archive<Archive>())>
+          SIREQUIRE(meta::is_archive<Archive>() and
+                    not meta::is_compressible<T>())>
 void slow(Archive& archive, T& data)
 {
     for (auto& item : data)

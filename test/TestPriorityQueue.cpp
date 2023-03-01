@@ -7,7 +7,9 @@ TEST(TestSTLAdapter, TestPriorityQueue)
     const auto sv_pq = {1, 8, 5, 6, 3, 4, 0, 9, 7, 2};
 
     std::priority_queue<int> s_pq;
-    for (auto item : sv_pq) s_pq.push(item);
+
+    for (auto item : sv_pq)
+        s_pq.push(item);
 
     std::vector<unsigned char> storage;
     {

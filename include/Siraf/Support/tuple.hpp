@@ -46,7 +46,6 @@ void expand(Archive& archive, T& tuple)
 EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, tuple, meta::is_std_tuple<T>::value)
 {
     expand(archive, tuple);
-
     return archive;
 }
 

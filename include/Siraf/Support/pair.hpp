@@ -26,7 +26,6 @@ inline namespace library
 EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pair, meta::is_std_pair<T>::value)
 {
     archive & pair.first & pair.second;
-
     return archive;
 }
 
