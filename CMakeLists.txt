@@ -31,6 +31,7 @@ set(SIRAF
     include/Siraf/Support/valarray.hpp
 	include/Siraf/Support/bitset.hpp
     include/Siraf/Support/atomic.hpp
+    include/Siraf/Support/complex.hpp
 
     include/Siraf/Dynamic/FactoryTable.hpp
     include/Siraf/Dynamic/Registry.hpp
@@ -118,6 +119,7 @@ add_executable(${PROJECT_NAME}
 	test/TestMemory.cpp
 
     test/TestAtomic.cpp
+    test/TestComplex.cpp
 
     test/main.cpp
 

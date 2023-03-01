@@ -64,7 +64,6 @@ void TestingCore::execute_test(const char* name)
         if (it == module.end()) continue;
 
         it->second->run();
-        return;
     }
 }
 

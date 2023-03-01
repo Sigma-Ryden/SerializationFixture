@@ -78,8 +78,8 @@ public:
     void add(TestingInterface* test);
 
 public:
-    void execute_module(const char* name);
-    void execute_test(const char* name);
+    void execute_module(const char* name); // execute test module with specify name
+    void execute_test(const char* name); // execute tests with specify name
     void execute_all();
 
 public:
