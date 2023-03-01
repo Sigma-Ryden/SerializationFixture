@@ -12,6 +12,7 @@ set(SIRAF
     include/Siraf/Detail/MetaMacro.hpp
     include/Siraf/Detail/UndefAllMacro.hpp
 
+    include/Siraf/Support/Detail/Meta.hpp
     include/Siraf/Support/vector.hpp
     include/Siraf/Support/array.hpp
     include/Siraf/Support/string.hpp
@@ -27,7 +28,9 @@ set(SIRAF
     include/Siraf/Support/deque.hpp
     include/Siraf/Support/stack.hpp
     include/Siraf/Support/queue.hpp
+    include/Siraf/Support/valarray.hpp
 	include/Siraf/Support/bitset.hpp
+    include/Siraf/Support/atomic.hpp
 
     include/Siraf/Dynamic/FactoryTable.hpp
     include/Siraf/Dynamic/Registry.hpp
@@ -91,11 +94,14 @@ add_executable(${PROJECT_NAME}
 	test/TestVector.cpp
 	test/TestArray.cpp
 
+    test/TestValarray.cpp
+
 	test/TestString.cpp
 
 	test/TestDeque.cpp
 
 	test/TestQueue.cpp
+    test/TestPriorityQueue.cpp
 	test/TestStack.cpp
 
 	test/TestBitset.cpp
@@ -110,6 +116,8 @@ add_executable(${PROJECT_NAME}
 	test/TestTuple.cpp
 
 	test/TestMemory.cpp
+
+    test/TestAtomic.cpp
 
     test/main.cpp
 

@@ -8,6 +8,8 @@
 #include <Siraf/ExternSerialization.hpp>
 #include <Siraf/TypeRegistry.hpp>
 
+#include <Siraf/Support/Detail/Meta.hpp>
+
 // default container for stack
 #include <Siraf/Support/deque.hpp>
 
@@ -23,34 +25,12 @@ struct is_std_stack<std::stack<T, Container>> : std::true_type {};
 
 } // namespace meta
 
-namespace detail
-{
-
-template <typename Type, class Container,
-          class Base = std::stack<Type, Container>>
-Container& underlying(std::stack<Type, Container>& stack)
-{
-    struct stack_inner : public Base
-    {
-        static Container& underlying(Base& base)
-        {
-            auto underlying_container = &stack_inner::c;
-            return base.*underlying_container;
-        }
-    };
-
-    return stack_inner::underlying(stack);
-}
-
-} // namespace detail
-
 inline namespace library
 {
 
 EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, stack, meta::is_std_stack<T>::value)
 {
-    archive & detail::underlying(stack);
-
+    archive & meta::underlying(stack);
     return archive;
 }
 

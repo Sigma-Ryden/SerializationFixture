@@ -5,10 +5,6 @@
     #define SIRAF_SMART // Use additional macro defs
 #endif // SIRAF_SMART_DISABLE
 
-#ifndef SIRAF_DEFAULT_DISABLE
-#include <fstream> // ifstream, ofstream
-#endif // SIRAF_DEFAULT_DISABLE
-
 #include <Siraf/Access.hpp>
 #include <Siraf/Serializable.hpp>
 
@@ -31,12 +27,14 @@
 
 #include <Siraf/Config.hpp>
 
+EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, ByteContainer, IByteStream<ByteContainer>)
+EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, ByteContainer, OByteStream<ByteContainer>)
+
 #ifndef SIRAF_DEFAULT_DISABLE
 
-EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive, ByteContainer, IByteStream<ByteContainer>)
-EXPORT_SERIALIZATION_ARCHIVE(1, ReadArchive, std::ifstream, IFileStream<std::ifstream>)
+#include <fstream> // ifstream, ofstream
 
-EXPORT_SERIALIZATION_ARCHIVE(0, WriteArchive, ByteContainer, OByteStream<ByteContainer>)
+EXPORT_SERIALIZATION_ARCHIVE(1, ReadArchive, std::ifstream, IFileStream<std::ifstream>)
 EXPORT_SERIALIZATION_ARCHIVE(1, WriteArchive, std::ofstream, OFileStream<std::ofstream>)
 
 #endif // SIRAF_DEFAULT_DISABLE

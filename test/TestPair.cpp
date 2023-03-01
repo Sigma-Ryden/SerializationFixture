@@ -20,7 +20,7 @@ SERIALIZATION(SaveLoad, IntPoint)
 
 TEST(TestSTL, TestPair)
 {
-    static std::pair<std::uintptr_t, IntPoint> s_p = {0xff00fdda0bacca0f, {256, -128}};
+    static std::pair<std::uintptr_t, IntPoint> s_p = {0xfedcba, {256, -128}};
 
     std::vector<unsigned char> storage;
     {
