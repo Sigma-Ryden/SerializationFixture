@@ -18,7 +18,7 @@ SERIALIZATION(SaveLoad, IntPoint)
     archive & self.X & self.Y;
 }
 
-TEST(TestSTL, TestPair)
+TEST(TestUtility, TestPair)
 {
     static std::pair<std::uintptr_t, IntPoint> s_p = {0xfedcba, {256, -128}};
 

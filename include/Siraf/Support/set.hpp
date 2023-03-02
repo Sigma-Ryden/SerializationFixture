@@ -13,7 +13,7 @@
 
 #include <Siraf/Utility.hpp>
 
-#define _SIRAF_IS_STD_MAP_TYPE_META_GENERIC(set_type)                                                   \
+#define _SIRAF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                   \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
     template <typename Key, typename Compare, typename Alloc>                                           \
     struct is_std_##set_type<std::set_type<Key, Compare, Alloc>> : std::true_type {};
@@ -24,20 +24,41 @@ namespace siraf
 namespace meta
 {
 
-_SIRAF_IS_STD_MAP_TYPE_META_GENERIC(set)
-_SIRAF_IS_STD_MAP_TYPE_META_GENERIC(unordered_set)
-_SIRAF_IS_STD_MAP_TYPE_META_GENERIC(multiset)
-_SIRAF_IS_STD_MAP_TYPE_META_GENERIC(unordered_multiset)
+_SIRAF_IS_STD_SET_TYPE_META_GENERIC(set)
+_SIRAF_IS_STD_SET_TYPE_META_GENERIC(unordered_set)
+_SIRAF_IS_STD_SET_TYPE_META_GENERIC(multiset)
+_SIRAF_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
+
+template <class T> constexpr bool is_std_any_unordered_set() noexcept
+{
+    return is_std_unordered_set<T>::value
+        or is_std_unordered_multiset<T>::value;
+}
 
 template <class T> constexpr bool is_std_any_set() noexcept
 {
     return is_std_set<T>::value
-        or is_std_unordered_set<T>::value
         or is_std_multiset<T>::value
-        or is_std_unordered_multiset<T>::value;
+        or is_std_any_unordered_set<T>();
 }
 
 } // namespace meta
+
+namespace detail
+{
+
+template <class T,
+          SIREQUIRE(not meta::is_std_any_unordered_set<T>())>
+void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
+
+template <class T,
+          SIREQUIRE(meta::is_std_any_unordered_set<T>())>
+void reserve_unordered(T& unordered, std::size_t size)
+{
+    unordered.reserve(size);
+}
+
+} // namespace detail
 
 inline namespace library
 {
@@ -61,6 +82,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>())
     archive & size;
 
     set.clear();
+    detail::reserve_unordered(set, size);
 
     auto hint = set.begin();
     for (let::u64 i = 0; i < size; ++i)
@@ -81,6 +103,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>())
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_set<T>())
 
 // clean up
-#undef _SIRAF_IS_STD_MAP_TYPE_META_GENERIC
+#undef _SIRAF_IS_STD_SET_TYPE_META_GENERIC
 
 #endif // SIRAF_SUPPORT_SET_HPP

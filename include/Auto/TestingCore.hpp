@@ -3,9 +3,10 @@
 
 #include <cassert> // assert
 
+#include <functional> // function
+
 #include <map> // map
 #include <string> // string
-#include <iosfwd> // ostream
 
 // Test definition
 #define TEST(test_module, test_name)                                                                    \
@@ -40,6 +41,10 @@
 #define TESTING_STAT(...)                                                                               \
     TestingCore::instance().stat()
 
+// Text printer
+#define PRINTER(...)                                                                                    \
+    TestingCore::instance().text_printer = __VA_ARGS__
+
 struct TestingInterface
 {
 public:
@@ -62,8 +67,10 @@ public:
     using TestRegistry      = std::map<TestName, TestingInterface*>;
     using ModuleRegistry    = std::map<ModuleName, TestRegistry>;
 
+    using TextPrinter       = std::function<void(const std::string&)>;
+
 private:
-    TestingCore() = default;
+    TestingCore();
 
 public:
     static TestingCore& instance();
@@ -86,11 +93,14 @@ public:
     void stat();
 
 public:
+    TextPrinter console_printer() const noexcept;
+
+public:
     unsigned passed;
     unsigned failed;
 
-protected:
-    static std::ostream& stream_;
+public:
+    TextPrinter text_printer;
 
 protected:
     ModuleRegistry registry_;

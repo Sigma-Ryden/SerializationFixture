@@ -32,15 +32,36 @@ _SIRAF_IS_STD_MAP_TYPE_META_GENERIC(unordered_map)
 _SIRAF_IS_STD_MAP_TYPE_META_GENERIC(multimap)
 _SIRAF_IS_STD_MAP_TYPE_META_GENERIC(unordered_multimap)
 
-template <class T> constexpr bool is_std_any_map() noexcept
+template <class T> constexpr bool is_std_any_unordered_map() noexcept
 {
-    return is_std_map<T>::value
-        or is_std_unordered_map<T>::value
-        or is_std_multimap<T>::value
+    return is_std_unordered_map<T>::value
         or is_std_unordered_multimap<T>::value;
 }
 
+template <class T> constexpr bool is_std_any_map() noexcept
+{
+    return is_std_map<T>::value
+        or is_std_multimap<T>::value
+        or is_std_any_unordered_map<T>();
+}
+
 } // namespace meta
+
+namespace detail
+{
+
+template <class T,
+          SIREQUIRE(not meta::is_std_any_unordered_map<T>())>
+void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
+
+template <class T,
+          SIREQUIRE(meta::is_std_any_unordered_map<T>())>
+void reserve_unordered(T& unordered, std::size_t size)
+{
+    unordered.reserve(size);
+}
+
+} // namespace detail
 
 inline namespace library
 {
@@ -65,6 +86,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, map, meta::is_std_any_map<T>())
     archive & size;
 
     map.clear();
+    detail::reserve_unordered(map, size);
 
     auto hint = map.begin();
     for (let::u64 i = 0; i < size; ++i)

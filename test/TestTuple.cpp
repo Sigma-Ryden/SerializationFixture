@@ -3,7 +3,7 @@
 #include <Siraf/Support/tuple.hpp>
 #include <Siraf/Support/string.hpp>
 
-TEST(TestSTL, TestTuple)
+TEST(TestUtility, TestTuple)
 {
     enum class Charge { Low, Medium, High };
 

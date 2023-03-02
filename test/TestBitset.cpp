@@ -2,7 +2,7 @@
 
 #include <Siraf/Support/bitset.hpp>
 
-TEST(TestSTL, TestBitset)
+TEST(TestUtility, TestBitset)
 {
     static auto sv_bitset10 = 653;
 

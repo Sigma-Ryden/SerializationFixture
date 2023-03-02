@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -32,6 +32,8 @@ set(SIRAF
 	include/Siraf/Support/bitset.hpp
     include/Siraf/Support/atomic.hpp
     include/Siraf/Support/complex.hpp
+    include/Siraf/Support/optional.hpp
+    include/Siraf/Support/variant.hpp
 
     include/Siraf/Dynamic/FactoryTable.hpp
     include/Siraf/Dynamic/Registry.hpp
@@ -120,6 +122,9 @@ add_executable(${PROJECT_NAME}
 
     test/TestAtomic.cpp
     test/TestComplex.cpp
+
+    test/TestOptional.cpp
+    test/TestVariant.cpp
 
     test/main.cpp
 
