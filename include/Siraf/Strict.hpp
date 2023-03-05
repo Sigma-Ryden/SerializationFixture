@@ -14,28 +14,28 @@ namespace siraf
 template <class WriteArchive, typename T,
           SIREQUIRE(meta::is_write_archive<WriteArchive>() and
                     meta::is_pointer_to_pod<T>())>
-void strict(WriteArchive& archive, T& pod_pointer)
+void strict(WriteArchive& archive, T& pointer)
 {
-    if (pod_pointer == nullptr)
+    if (pointer == nullptr)
         throw "The write pointer must be allocated.";
 
-    archive & (*pod_pointer);
+    archive & (*pointer);
 }
 
 template <class ReadArchive, typename T,
           SIREQUIRE(meta::is_read_archive<ReadArchive>() and
                     meta::is_pointer_to_pod<T>())>
-void strict(ReadArchive& archive, T& pod_pointer, memory::void_ptr<T>& cache)
+void strict(ReadArchive& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     using item_type = typename memory::ptr_trait<T>::item;
 
-    if (pod_pointer != nullptr)
+    if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 
-    memory::allocate<item_type>(pod_pointer);
-    cache = memory::pure(pod_pointer);
+    memory::allocate<item_type>(pointer);
+    cache = memory::pure(pointer);
 
-    archive & (*pod_pointer);
+    archive & (*pointer);
 }
 
 template <class WriteArchive, typename T,
