@@ -38,7 +38,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, vector, meta::is_std_vector<T>::value)
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, vector, meta::is_std_vector<T>::value)
 {
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     vector.resize(size);

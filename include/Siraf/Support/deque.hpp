@@ -38,7 +38,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, deque, meta::is_std_deque<T>::value)
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, deque, meta::is_std_deque<T>::value)
 {
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     deque.resize(size);

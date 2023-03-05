@@ -44,7 +44,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, string, meta::is_std_basic_string<T>::val
 {
     using char_type = typename T::value_type;
 
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     string.resize(size);

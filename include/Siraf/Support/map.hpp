@@ -82,7 +82,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, map, meta::is_std_any_map<T>())
     using key   = typename T::key_type;
     using value = typename T::mapped_type;
 
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     map.clear();

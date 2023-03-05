@@ -38,7 +38,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, forward_list, meta::is_std_forward_list<T
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, forward_list, meta::is_std_forward_list<T>::value)
 {
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     forward_list.resize(size);

@@ -78,7 +78,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>())
 {
     using value_type = typename T::value_type;
 
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     set.clear();

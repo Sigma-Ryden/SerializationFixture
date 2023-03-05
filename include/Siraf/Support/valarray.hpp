@@ -36,7 +36,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, valarray, meta::is_std_valarray<T>::value
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, valarray, meta::is_std_valarray<T>::value)
 {
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     valarray.resize(size);

@@ -5,6 +5,18 @@
 #include <Siraf/Support/optional.hpp>
 #include <Siraf/Support/atomic.hpp>
 
+struct NoDefaultConstruct
+{
+    NoDefaultConstruct(int data) : var(data) {}
+
+    int var;
+};
+
+SERIALIZATION(SaveLoad, NoDefaultConstruct)
+{
+    archive & self.var;
+}
+
 TEST(TestUtility, TestOptional)
 {
     enum class State { Ident, Spotted };
