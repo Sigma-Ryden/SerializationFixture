@@ -22,9 +22,9 @@ public:
     using key_type = PolymorphicTraitCore::key_type;
 
 public:
-    template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIREQUIRE(meta::is_pointer<Pointer>() and Access::is_registered_class<T>())>
-    static void save(core::ArchiveBase& archive, Pointer& pointer, key_type key)
+    template <typename T, typename dT = meta::dereference<T>,
+              SIREQUIRE(meta::is_pointer<T>() and Access::is_registered_class<dT>())>
+    static void save(core::ArchiveBase& archive, T& pointer, key_type key)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -32,11 +32,11 @@ public:
         Access::dynamic_save(archive, pointer);
     }
 
-    template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIREQUIRE(meta::is_pointer<Pointer>() and Access::is_registered_class<T>())>
-    static void load(core::ArchiveBase& archive, Pointer& pointer, key_type key)
+    template <typename T, typename dT = meta::dereference<T>,
+              SIREQUIRE(meta::is_pointer<T>() and Access::is_registered_class<dT>())>
+    static void load(core::ArchiveBase& archive, T& pointer, key_type key, memory::void_ptr<T>& cache)
     {
-        using TraitType = typename memory::ptr_trait<Pointer>::trait;
+        using TraitType = typename memory::ptr_trait<T>::trait;
 
         if (pointer != nullptr)
             throw "The read shared pointer must be initialized to nullptr.";
@@ -48,23 +48,23 @@ public:
             throw "The 'siraf::dynamic::FactoryTable' does not has clone instance with input key.";
     #endif // SIRAF_DEBUG
 
-        pointer = memory::dynamic_pointer_cast<T>(cloned);
+        pointer = memory::dynamic_pointer_cast<dT>(cloned);
+        cache = memory::pure(pointer);
 
         auto raw_pointer = memory::raw(pointer);
         Access::dynamic_load(archive, raw_pointer);
     }
 
-    template <typename Pointer,
-              typename VoidPointer = typename memory::ptr_trait<Pointer>::void_ptr,
-              typename T = meta::dereference<Pointer>,
-              SIREQUIRE(meta::is_pointer<Pointer>() and Access::is_registered_class<T>())>
-    static void assign(Pointer& pointer, const VoidPointer& address, key_type key)
+    template <typename T,
+              typename dT = meta::dereference<T>,
+              SIREQUIRE(meta::is_pointer<T>() and Access::is_registered_class<dT>())>
+    static void assign(T& pointer, const memory::void_ptr<T>& address, key_type key)
     {
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
 
         auto casted = FactoryTable::instance().cast(address, key);
-        pointer = memory::dynamic_pointer_cast<T>(casted);
+        pointer = memory::dynamic_pointer_cast<dT>(casted);
     }
 };
 

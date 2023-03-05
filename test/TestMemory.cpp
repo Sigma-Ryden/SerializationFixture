@@ -220,7 +220,6 @@ TEST(TestMemory, TestWeakPtr)
     }
 }
 
-
 TEST(TestMemory, TestSharedAndWeakPtr)
 {
     static float sv_f = 0.5f;
@@ -256,5 +255,61 @@ TEST(TestMemory, TestSharedAndWeakPtr)
 
         EXPECT("std::shared_ptr<>", *s_f == sv_f);
         EXPECT("std::weak_ptr<>", *w1_f.lock() == sv_f && *w2_f.lock() == sv_f);
+    }
+}
+
+#include <Siraf/Support/string.hpp>
+
+struct Human
+{
+    std::string name;
+    std::weak_ptr<Human> partner;
+
+    Human(const std::string& name = "Unnamed") : name(name) {}
+};
+
+SERIALIZATION(SaveLoad, Human)
+{
+    archive & self.name & self.partner;
+}
+
+TEST(TestMemory, TestReferenceCycles)
+{
+    static std::string sv_h1 = "Tom";
+    static std::string sv_h2 = "Jack";
+    static std::string sv_h3 = "Bruno";
+
+    std::vector<unsigned char> storage;
+    {
+        std::shared_ptr<Human> s_h1 = std::make_shared<Human>(sv_h1);
+        std::shared_ptr<Human> s_h2 = std::make_shared<Human>(sv_h2);
+        std::shared_ptr<Human> s_h3 = std::make_shared<Human>(sv_h3);
+
+        s_h1->partner = s_h2;
+        s_h2->partner = s_h1;
+        s_h3->partner = s_h3; // self
+
+        auto ar = oarchive(storage);
+        ar & s_h1 & s_h2 & s_h3;
+    }
+    {
+        std::shared_ptr<Human> s_h1 = nullptr;
+        std::shared_ptr<Human> s_h2 = nullptr;
+        std::shared_ptr<Human> s_h3 = nullptr;
+
+        {
+            auto ar = iarchive(storage);
+            ar & s_h1 & s_h2 & s_h3;
+        }
+
+        ASSERT("std::shared_ptr<cycle>", s_h1 != nullptr && s_h2 != nullptr);
+        ASSERT("std::shared_ptr<cycle>", !s_h1->partner.expired() && !s_h2->partner.expired());
+
+        EXPECT("std::shared_ptr<cycle>", s_h1.use_count() == 1 && s_h2.use_count() == 1);
+        EXPECT("std::shared_ptr<cycle>", s_h1->partner.lock() == s_h2 && s_h2->partner.lock() == s_h1);
+
+        ASSERT("std::shared_ptr<self>", s_h3 != nullptr && !s_h3->partner.expired());
+        EXPECT("std::shared_ptr<self>", s_h1.use_count() == 1);
+        EXPECT("std::shared_ptr<self>", s_h3->partner.lock() == s_h3);
     }
 }

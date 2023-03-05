@@ -71,6 +71,9 @@ struct ptr_trait<std::unique_ptr<T>>
     using item     = T;
 };
 
+template <typename T>
+using void_ptr = typename ptr_trait<T>::void_ptr;
+
 } // namespace memory
 
 namespace meta

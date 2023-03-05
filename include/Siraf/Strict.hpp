@@ -13,7 +13,7 @@ namespace siraf
 
 template <class WriteArchive, typename T,
           SIREQUIRE(meta::is_write_archive<WriteArchive>() and
-                    meta::is_pod_pointer<T>())>
+                    meta::is_pointer_to_pod<T>())>
 void strict(WriteArchive& archive, T& pod_pointer)
 {
     if (pod_pointer == nullptr)
@@ -24,8 +24,8 @@ void strict(WriteArchive& archive, T& pod_pointer)
 
 template <class ReadArchive, typename T,
           SIREQUIRE(meta::is_read_archive<ReadArchive>() and
-                    meta::is_pod_pointer<T>())>
-void strict(ReadArchive& archive, T& pod_pointer)
+                    meta::is_pointer_to_pod<T>())>
+void strict(ReadArchive& archive, T& pod_pointer, memory::void_ptr<T>& cache)
 {
     using item_type = typename memory::ptr_trait<T>::item;
 
@@ -33,6 +33,7 @@ void strict(ReadArchive& archive, T& pod_pointer)
         throw "The read pointer must be initialized to nullptr.";
 
     memory::allocate<item_type>(pod_pointer);
+    cache = memory::pure(pod_pointer);
 
     archive & (*pod_pointer);
 }
@@ -51,12 +52,12 @@ void strict(WriteArchive& archive, T& pointer)
 template <class ReadArchive, typename T,
           SIREQUIRE(meta::is_read_archive<ReadArchive>() and
                     meta::is_pointer_to_polymorphic<T>())>
-void strict(ReadArchive& archive, T& pointer)
+void strict(ReadArchive& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
     auto id = registry.load_key(archive, pointer);
-    registry.load(archive, pointer, id);
+    registry.load(archive, pointer, id, cache);
 }
 
 namespace detail
@@ -103,10 +104,17 @@ private:
 public:
     StrictFunctor(T& parameter) noexcept : parameter_(parameter) {}
 
-    template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>
+    template <typename Archive, SIREQUIRE(meta::is_write_archive<Archive>())>
     void operator() (Archive& archive)
     {
         ::siraf::strict(archive, parameter_);
+    }
+
+    template <typename Archive, SIREQUIRE(meta::is_read_archive<Archive>())>
+    void operator() (Archive& archive)
+    {
+        memory::void_ptr<T> cache = nullptr;
+        ::siraf::strict(archive, parameter_, cache);
     }
 };
 

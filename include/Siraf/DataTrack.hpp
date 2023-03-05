@@ -72,10 +72,10 @@ void track(WriteArchive& archive, T& pointer)
 
     if (not is_tracking)
     {
+        is_tracking = true;
+
         archive & key;
         strict(archive, pointer); // call the strict serialization of not tracking pointer
-
-        is_tracking = true;
     }
     else
     {
@@ -132,8 +132,8 @@ void track(ReadArchive& archive, T& pointer)
 
     if (item.address == nullptr)
     {
-        strict(archive, pointer); // call the strict serialization of not tracking pointer
-        item.address = memory::pure(pointer);
+        // call the strict serialization of not tracking pointer
+        strict(archive, pointer, item.address);
     }
     else
     {
