@@ -151,7 +151,7 @@ public:
                         meta::is_base_of<Base, Derived>())>
     static void serialize_base(Archive& archive, Derived& object)
     {
-        archive & Access::template cast<Base&>(object);
+        archive & cast<Base&>(object);
     }
 
     template <class T, SIREQUIRE(is_registered_class<T>())>
