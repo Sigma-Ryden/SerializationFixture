@@ -11,14 +11,14 @@ template <template <typename...> class Adapter,
           typename Type, class Container, typename... Args>
 Container& underlying(Adapter<Type, Container, Args...>& adapter)
 {
-    using Base = Adapter<Type, Container, Args...>;
+    using Core = Adapter<Type, Container, Args...>;
 
-    struct base_inner : public Base
+    struct base_inner : public Core
     {
-        static Container& underlying(Base& base)
+        static Container& underlying(Core& core)
         {
             auto underlying_container = &base_inner::c;
-            return base.*underlying_container;
+            return core.*underlying_container;
         }
     };
 

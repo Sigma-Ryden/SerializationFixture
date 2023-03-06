@@ -58,13 +58,7 @@ template <>
 struct deref_impl<void*> { using type = void; };
 
 template <typename T>
-struct deref_impl<std::unique_ptr<T>> { using type = T; };
-
-template <typename T>
 struct deref_impl<std::weak_ptr<T>> { using type = T; };
-
-template <typename T>
-struct deref_impl<std::shared_ptr<T>> { using type = T; };
 
 template <typename T>
 struct deref_impl<T, to_void<decltype(*std::declval<T>())>>

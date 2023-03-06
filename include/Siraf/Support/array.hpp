@@ -5,9 +5,9 @@
 
 #include <array> // array
 
+#include <Siraf/Core/TypeRegistry.hpp>
 #include <Siraf/ExternSerialization.hpp>
 #include <Siraf/Compress.hpp>
-#include <Siraf/TypeRegistry.hpp>
 
 namespace siraf
 {

@@ -5,10 +5,11 @@
 
 #include <list> // list
 
-#include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
+#include <Siraf/Core/TypeCore.hpp>
 
-#include <Siraf/Utility.hpp>
+#include <Siraf/Compress.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 namespace siraf
 {
@@ -30,8 +31,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, list, meta::is_std_list<T>::value)
     let::u64 size = list.size();
     archive & size;
 
-    for (auto& item : list)
-        archive & item;
+    compress::slow(archive, list);
 
     return archive;
 }
@@ -42,9 +42,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, list, meta::is_std_list<T>::value)
     archive & size;
 
     list.resize(size);
-
-    for (auto& item : list)
-        archive & item;
+    compress::slow(archive, list);
 
     return archive;
 }

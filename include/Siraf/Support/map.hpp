@@ -8,13 +8,14 @@
 
 #include <utility> // move
 
+#include <Siraf/Core/TypeRegistry.hpp>
+#include <Siraf/Core/TypeCore.hpp>
+
+#include <Siraf/Compress.hpp>
 #include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
 
-// serialization of base map value_type
+// serialization of core map value_type
 #include <Siraf/Support/pair.hpp>
-
-#include <Siraf/Utility.hpp>
 
 #define _SIRAF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                   \
     template <typename> struct is_std_##map_type : std::false_type {};                                  \
@@ -71,8 +72,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, map, meta::is_std_any_map<T>())
     let::u64 size = map.size();
     archive & size;
 
-    for (auto& item : map)
-        archive & item;
+    compress::slow(archive, map);
 
     return archive;
 }

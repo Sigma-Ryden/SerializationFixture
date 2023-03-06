@@ -5,9 +5,12 @@
 
 #include <valarray> // valarray
 
+#include <Siraf/Core/TypeRegistry.hpp>
+#include <Siraf/Core/TypeCore.hpp>
+
 #include <Siraf/ExternSerialization.hpp>
+
 #include <Siraf/Compress.hpp>
-#include <Siraf/TypeRegistry.hpp>
 
 namespace siraf
 {

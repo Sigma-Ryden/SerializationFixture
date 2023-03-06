@@ -1,7 +1,8 @@
 #ifndef SIRAF_DYNAMIC_REGISTRY_BASE_HPP
 #define SIRAF_DYNAMIC_REGISTRY_BASE_HPP
 
-#include <Siraf/Access.hpp>
+#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/PolymorphicTrait.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
@@ -15,19 +16,19 @@ namespace dynamic
 class RegistryBase
 {
 public:
-    using key_type = PolymorphicTraitCore::key_type;
+    using key_type = core::PolymorphicTraitBase::key_type;
 
 public:
     template <class T>
     static key_type key(T& object) noexcept
     {
-        return Access::trait(object);
+        return core::Access::trait(object);
     }
 
     template <class T>
     static key_type key() noexcept
     {
-        return Access::trait<T>();
+        return core::Access::trait<T>();
     }
 
 public:

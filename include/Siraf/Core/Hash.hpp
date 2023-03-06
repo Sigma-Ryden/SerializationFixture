@@ -1,7 +1,7 @@
-#ifndef SIRAF_HASH_HPP
-#define SIRAF_HASH_HPP
+#ifndef SIRAF_CORE_HASH_HPP
+#define SIRAF_CORE_HASH_HPP
 
-#include <Siraf/Utility.hpp>
+#include <Siraf/Core/TypeCore.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 
@@ -16,20 +16,15 @@
 namespace siraf
 {
 
-namespace utility
+namespace detail
 {
 
 enum class Word { x32, x64 }; // word size: x* - number of bits
-
-namespace detail
-{
 
 template <Word word> struct word_type_impl;
 
 template <> struct word_type_impl<Word::x32> { using type = let::u32; };
 template <> struct word_type_impl<Word::x64> { using type = let::u64; };
-
-} // namespace detail
 
 template <Word word>
 using WordType = typename detail::word_type_impl<word>::type;
@@ -38,9 +33,6 @@ template <typename T> struct WordTrait { static constexpr auto value = Word::x64
 
 template <> struct WordTrait<let::u32> { static constexpr auto value = Word::x32; };
 template <> struct WordTrait<let::u64> { static constexpr auto value = Word::x64; };
-
-namespace detail
-{
 
 template <let::u64 FnvPrime, let::u64 OffsetBasis>
 let::u64 fnv_1a(const char* text)
@@ -65,13 +57,11 @@ constexpr let::u64 static_fnv_1a(const char* text, let::u64 hash = OffsetBasis) 
            : static_fnv_1a<FnvPrime, OffsetBasis>(text + 1, (hash ^ (*text)) * FnvPrime);
 }
 
-} // namespace detail
-
-template <Word word>
+template <detail::Word word>
 struct Hash;
 
 template <>
-struct Hash<Word::x32>
+struct Hash<detail::Word::x32>
 {
 private:
     // For 32 bit machines:
@@ -91,7 +81,7 @@ public:
 };
 
 template <>
-struct Hash<Word::x64>
+struct Hash<detail::Word::x64>
 {
 private:
     // For 64 bit machines:
@@ -110,26 +100,26 @@ public:
     }
 };
 
-} // namespace utility
+} // namespace detail
 
 template <typename key_type = let::u64>
 key_type hash(const char* text)
 {
-    using utility::Hash;
-    using utility::WordTrait;
+    using detail::Hash;
+    using detail::WordTrait;
 
-    return Hash<WordTrait<key_type>::value>::run(text);
+    return Hash<detail::WordTrait<key_type>::value>::run(text);
 }
 
 template <typename key_type = let::u64>
 constexpr key_type static_hash(const char* text) noexcept
 {
-    using utility::Hash;
-    using utility::WordTrait;
+    using detail::Hash;
+    using detail::WordTrait;
 
-    return Hash<WordTrait<key_type>::value>::static_run(text);
+    return Hash<detail::WordTrait<key_type>::value>::static_run(text);
 }
 
 } // namepace siraf
 
-#endif // SIRAF_HASH_HPP
+#endif // SIRAF_CORE_HASH_HPP

@@ -1,3 +1,4 @@
+// You can include given file to other dir level
 #ifndef SIRAF_MEMORY_HPP
 #define SIRAF_MEMORY_HPP
 
@@ -162,7 +163,7 @@ inline typename Trait::template wrapper<To> static_pointer_cast(const Pointer& p
 template <typename Pointer,
           SIREQUIRE(meta::is_pointer<Pointer>() and
                     not meta::is_pointer_to_polymorphic<Pointer>())>
-inline typename ptr_trait<Pointer>::void_ptr pure(const Pointer& pointer)
+inline void_ptr<Pointer> pure(const Pointer& pointer)
 {
     return static_pointer_cast<void>(pointer);
 }
@@ -170,7 +171,7 @@ inline typename ptr_trait<Pointer>::void_ptr pure(const Pointer& pointer)
 template <typename Pointer,
           SIREQUIRE(meta::is_pointer<Pointer>() and
                     meta::is_pointer_to_polymorphic<Pointer>())>
-inline typename ptr_trait<Pointer>::void_ptr pure(const Pointer& pointer_to_polymorphic)
+inline void_ptr<Pointer> pure(const Pointer& pointer_to_polymorphic)
 {
     return dynamic_pointer_cast<void>(pointer_to_polymorphic);
 }
@@ -179,7 +180,7 @@ inline raw_ptr<void> pure(std::nullptr_t pointer) { return nullptr; }
 
 template <typename T, typename Pointer,
           SIREQUIRE(meta::is_pointer<Pointer>())>
-inline void assign(Pointer& pointer, const typename ptr_trait<Pointer>::void_ptr& address)
+inline void assign(Pointer& pointer, const void_ptr<Pointer>& address)
 {
     pointer = static_pointer_cast<T>(address);
 }

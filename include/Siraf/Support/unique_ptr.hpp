@@ -5,8 +5,8 @@
 
 #include <memory> // unique_ptr
 
+#include <Siraf/Core/TypeRegistry.hpp>
 #include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
 
 #include <Siraf/Memory/Memory.hpp>
 

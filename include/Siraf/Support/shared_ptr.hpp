@@ -3,8 +3,9 @@
 
 #include <memory> // shared_ptr
 
+#include <Siraf/Core/TypeRegistry.hpp>
 #include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
+
 #include <Siraf/DataTrack.hpp>
 
 #include <Siraf/Detail/Meta.hpp> // is_std_shared_ptr

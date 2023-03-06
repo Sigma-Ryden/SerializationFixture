@@ -1,6 +1,8 @@
 #ifndef SIRAF_EXTERN_SERIALIZATION_HPP
 #define SIRAF_EXTERN_SERIALIZATION_HPP
 
+#include <Siraf/Core/TypeRegistry.hpp>
+
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 

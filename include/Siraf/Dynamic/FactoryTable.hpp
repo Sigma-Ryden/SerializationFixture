@@ -3,10 +3,9 @@
 
 #include <unordered_map> // unordered_map
 
-#include <Siraf/Dynamic/PolymorphicTrait.hpp>
-
-#include <Siraf/Access.hpp>
-#include <Siraf/Utility.hpp>
+#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/PolymorphicTrait.hpp>
+#include <Siraf/Core/TypeCore.hpp>
 
 #include <Siraf/Memory/Memory.hpp>
 
@@ -14,7 +13,7 @@
     static constexpr key_type __static_trait() noexcept                                                 \
     { return SIRAF_STATIC_HASH(#__VA_ARGS__); }                                                         \
     key_type __trait() const noexcept                                                                   \
-    { return siraf::Access::trait<__VA_ARGS__>(); }
+    { return siraf::core::Access::trait<__VA_ARGS__>(); }
 
 #define _CLONEABLE_INTERFACE_IMPLEMENTATION(type, ...)                                                  \
     siraf::memory::type##_ptr<clone_type> __##type() const                                              \
@@ -47,9 +46,9 @@ namespace dynamic
 
 class Cloneable; // need for type alias
 
-struct FactoryTableCore
+struct FactoryTableBase
 {
-    using key_type   = PolymorphicTraitCore::key_type;
+    using key_type   = core::PolymorphicTraitBase::key_type;
     using clone_type = Cloneable;
 };
 
@@ -60,8 +59,8 @@ class Cloneable
     friend class FactoryTable;
 
 public:
-    using key_type   = FactoryTableCore::key_type;
-    using clone_type = FactoryTableCore::clone_type;
+    using key_type   = FactoryTableBase::key_type;
+    using clone_type = FactoryTableBase::clone_type;
 
     template <typename T>
     using shared_ptr = memory::shared_ptr<T>;
@@ -85,8 +84,8 @@ private:
 class FactoryTable
 {
 public:
-    using key_type   = FactoryTableCore::key_type;
-    using clone_type = FactoryTableCore::clone_type;
+    using key_type   = FactoryTableBase::key_type;
+    using clone_type = FactoryTableBase::clone_type;
 
     using InnerTable = std::unordered_map<key_type, clone_type*>;
 
@@ -115,7 +114,7 @@ public:
 private:
     template <typename T> static constexpr bool is_cloneable() noexcept
     {
-        return Access::is_convertible<T*, Cloneable*>();
+        return core::Access::is_convertible<T*, Cloneable*>();
     }
 
 public:
@@ -187,7 +186,7 @@ private:
         if (lock_) return;
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
-        auto key = Access::template trait<T>();
+        auto key = core::Access::template trait<T>();
 
     #ifdef SIRAF_DEBUG
         if (FactoryTable::instance().has_factory(key))

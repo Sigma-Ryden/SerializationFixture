@@ -9,7 +9,7 @@
 namespace siraf
 {
 
-inline namespace wrapper
+namespace wrapper
 {
 
 using ByteContainer = std::vector<unsigned char>;
@@ -97,7 +97,7 @@ public:
     }
 };
 
-} // inline namespace wrapper
+} // namespace wrapper
 
 } // namespace siraf
 

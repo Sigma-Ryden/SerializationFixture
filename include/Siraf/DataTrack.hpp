@@ -6,9 +6,7 @@
 #include <Siraf/DataTrackBase.hpp>
 
 #include <Siraf/NativeSaveLoad.hpp>
-
 #include <Siraf/ApplyFunctor.hpp>
-
 #include <Siraf/Strict.hpp>
 
 #include <Siraf/Detail/Meta.hpp>

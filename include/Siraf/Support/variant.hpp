@@ -7,10 +7,10 @@
 
 #include <variant> // variant
 
-#include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
+#include <Siraf/Core/TypeCore.hpp>
 
-#include <Siraf/Utility.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 namespace siraf
 {

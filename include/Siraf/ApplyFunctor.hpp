@@ -1,7 +1,7 @@
 #ifndef SIRAF_APPLY_FUNCTOR_HPP
 #define SIRAF_APPLY_FUNCTOR_HPP
 
-#include <Siraf/TypeRegistry.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
@@ -26,6 +26,10 @@ template <typename T> constexpr bool is_apply_functor() noexcept
 
 } // namespace meta
 
+// inline namespace common also used in namespace library
+inline namespace common
+{
+
 template <typename Archive, typename T,
           typename dT = meta::decay<T>, // T can be lvalue
           SIREQUIRE(meta::is_archive<Archive>() and
@@ -36,6 +40,8 @@ Archive& operator& (Archive& archive, T&& apply_functor)
     apply_functor(archive);
     return archive;
 }
+
+} // inline namespace common
 
 } // namespace siraf
 

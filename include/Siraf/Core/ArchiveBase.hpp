@@ -1,7 +1,7 @@
-#ifndef SIRAF_ARCHIVE_BASE_HPP
-#define SIRAF_ARCHIVE_BASE_HPP
+#ifndef SIRAF_CORE_ARCHIVE_BASE_HPP
+#define SIRAF_CORE_ARCHIVE_BASE_HPP
 
-#include <Siraf/Utility.hpp>
+#include <Siraf/Core/TypeCore.hpp>
 
 #ifndef SIRAF_ARCHIVE_MAX_TRAIT_KEY
     #define SIRAF_ARCHIVE_MAX_TRAIT_KEY 4
@@ -18,7 +18,7 @@ namespace siraf
 namespace core
 {
 
-struct ArchiveCore
+struct ArchiveTraitBase
 {
     using key_type = let::u8;
 
@@ -28,13 +28,13 @@ struct ArchiveCore
 
 template <class Archive> struct ArchiveTraitKey
 {
-    static constexpr auto key = ArchiveCore::base_key;
+    static constexpr auto key = ArchiveTraitBase::base_key;
 };
 
 class ArchiveBase
 {
 public:
-    using key_type = ArchiveCore::key_type;
+    using key_type = ArchiveTraitBase::key_type;
 
 protected:
     virtual ~ArchiveBase() = default;
@@ -50,4 +50,4 @@ public:
 
 } // namespace siraf
 
-#endif // SIRAF_ARCHIVE_BASE_HPP
+#endif // SIRAF_CORE_ARCHIVE_BASE_HPP

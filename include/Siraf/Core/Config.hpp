@@ -1,5 +1,5 @@
-#ifndef SIRAF_CONFIG_HPP
-#define SIRAF_CONFIG_HPP
+#ifndef SIRAF_CORE_CONFIG_HPP
+#define SIRAF_CORE_CONFIG_HPP
 
 #if __cplusplus < 201703L
     #define _SIRAF_STATIC_INLINE
@@ -8,6 +8,9 @@
 #endif
 
 namespace siraf
+{
+
+namespace core
 {
 
 #ifndef SIRAF_DEFAULT_DISABLE
@@ -21,6 +24,8 @@ static_assert(sizeof(int) == 4, "Require integer number size.");
 
 #endif // SIRAF_DEFAULT_DISABLE
 
+} // namespace core
+
 } // namespace siraf
 
-#endif // SIRAF_CONFIG_HPP
+#endif // SIRAF_CORE_CONFIG_HPP

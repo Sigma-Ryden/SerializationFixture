@@ -1,7 +1,7 @@
 #ifndef SIRAF_UTILITY_HPP
 #define SIRAF_UTILITY_HPP
 
-#include <cstdint> // int32_t, uint32_t, int64_t, uint64_t
+#include <cstddef> // size_t
 
 #include <memory> // addressof
 #include <valarray> // valarray
@@ -11,19 +11,6 @@
 
 namespace siraf
 {
-
-namespace let
-{
-using i8 = std::int8_t;
-using u8 = std::uint8_t;
-
-using i32 = std::int32_t;
-using u32 = std::uint32_t;
-
-using i64 = std::int64_t;
-using u64 = std::uint64_t;
-
-} // namespace let
 
 namespace utility
 {
@@ -72,8 +59,5 @@ std::size_t size(const CharType* str) noexcept
 } // namespace utility
 
 } // namespace siraf
-
-// clean up
-#undef _NULL_CHARACTER_FUNCTION_GENERIC
 
 #endif // SIRAF_UTILITY_HPP

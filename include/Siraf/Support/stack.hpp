@@ -5,8 +5,8 @@
 
 #include <stack> // stack
 
+#include <Siraf/Core/TypeRegistry.hpp>
 #include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
 
 #include <Siraf/Support/Detail/Meta.hpp>
 

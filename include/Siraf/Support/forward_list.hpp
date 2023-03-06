@@ -5,10 +5,11 @@
 
 #include <forward_list> // forward_list
 
-#include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
+#include <Siraf/Core/TypeCore.hpp>
 
-#include <Siraf/Utility.hpp>
+#include <Siraf/Compress.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 namespace siraf
 {
@@ -30,8 +31,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, forward_list, meta::is_std_forward_list<T
     let::u64 size = std::distance(forward_list.begin(), forward_list.end());
     archive & size;
 
-    for (auto& item : forward_list)
-        archive & item;
+    compress::slow(archive, forward_list);
 
     return archive;
 }
@@ -42,9 +42,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, forward_list, meta::is_std_forward_list<T
     archive & size;
 
     forward_list.resize(size);
-
-    for (auto& item : forward_list)
-        archive & item;
+    compress::slow(archive, forward_list);
 
     return archive;
 }

@@ -5,13 +5,11 @@
 
 #include <bitset> // bitset
 
+#include <Siraf/Core/TypeRegistry.hpp>
 #include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
 
 // default array for bitset convertion
 #include <Siraf/Support/string.hpp>
-
-#include <Siraf/Utility.hpp>
 
 namespace siraf
 {

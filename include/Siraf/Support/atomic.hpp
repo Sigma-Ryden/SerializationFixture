@@ -5,8 +5,8 @@
 
 #include <atomic> // atomic
 
+#include <Siraf/Core/TypeRegistry.hpp>
 #include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
 
 namespace siraf
 {

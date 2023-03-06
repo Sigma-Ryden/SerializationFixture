@@ -5,11 +5,11 @@
 
 #include <string> // basic_string
 
+#include <Siraf/Core/TypeRegistry.hpp>
+#include <Siraf/Core/TypeCore.hpp>
+
 #include <Siraf/ExternSerialization.hpp>
 #include <Siraf/Compress.hpp>
-#include <Siraf/TypeRegistry.hpp>
-
-#include <Siraf/Utility.hpp>
 
 namespace siraf
 {

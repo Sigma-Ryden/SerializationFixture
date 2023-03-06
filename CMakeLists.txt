@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -11,7 +11,47 @@ set(SIRAF
     include/Siraf/Detail/Meta.hpp
     include/Siraf/Detail/MetaMacro.hpp
     include/Siraf/Detail/UndefAllMacro.hpp
+    include/Siraf/Detail/StaticMessage.hpp
 
+    include/Siraf/Core/Access.hpp
+    include/Siraf/Core/ArchiveBase.hpp
+    include/Siraf/Core/ArchiveTrait.hpp
+    include/Siraf/Core/Config.hpp
+    include/Siraf/Core/PolymorphicTrait.hpp
+    include/Siraf/Core/TypeRegistry.hpp
+    include/Siraf/Core/SerializationBridge.hpp
+    include/Siraf/Core/TypeCore.hpp
+    include/Siraf/Core/Hash.hpp
+
+    include/Siraf/Memory/Span.hpp
+    include/Siraf/Memory/Ref.hpp
+    include/Siraf/Memory/Memory.hpp
+
+    include/Siraf/Dynamic/FactoryTable.hpp
+    include/Siraf/Dynamic/Registry.hpp
+    include/Siraf/Dynamic/RegistryBase.hpp
+    include/Siraf/Dynamic/PolymorphicArchive.hpp
+    include/Siraf/Dynamic/Polymorphic.hpp
+
+    include/Siraf/DataTrack.hpp
+    include/Siraf/Compress.hpp
+    include/Siraf/Common.hpp
+    include/Siraf/Utility.hpp
+    include/Siraf/ApplyFunctor.hpp
+    include/Siraf/NativeSaveLoad.hpp
+    include/Siraf/Strict.hpp
+    include/Siraf/ReadArchive.hpp
+    include/Siraf/WriteArchive.hpp
+    include/Siraf/ExternSerialization.hpp
+    include/Siraf/StreamWrapper.hpp
+    include/Siraf/SerializatonBase.hpp
+    include/Siraf/DataTrackBase.hpp
+    include/Siraf/Hierarchy.hpp
+
+    include/Siraf/Core.hpp
+)
+
+set(SIRAF_SUPPORT
     include/Siraf/Support/Detail/Meta.hpp
     include/Siraf/Support/vector.hpp
     include/Siraf/Support/array.hpp
@@ -29,46 +69,11 @@ set(SIRAF
     include/Siraf/Support/stack.hpp
     include/Siraf/Support/queue.hpp
     include/Siraf/Support/valarray.hpp
-	include/Siraf/Support/bitset.hpp
+    include/Siraf/Support/bitset.hpp
     include/Siraf/Support/atomic.hpp
     include/Siraf/Support/complex.hpp
     include/Siraf/Support/optional.hpp
     include/Siraf/Support/variant.hpp
-
-    include/Siraf/Dynamic/FactoryTable.hpp
-    include/Siraf/Dynamic/Registry.hpp
-    include/Siraf/Dynamic/RegistryBase.hpp
-    include/Siraf/Dynamic/PolymorphicArchive.hpp
-    include/Siraf/Dynamic/PolymorphicTrait.hpp
-    include/Siraf/Dynamic/Polymorphic.hpp
-
-    include/Siraf/Memory/Span.hpp
-    include/Siraf/Memory/Ref.hpp
-    include/Siraf/Memory/Memory.hpp
-
-    include/Siraf/Hash.hpp
-    include/Siraf/DataTrack.hpp
-    include/Siraf/Compress.hpp
-    include/Siraf/Common.hpp
-    include/Siraf/Utility.hpp
-    include/Siraf/ApplyFunctor.hpp
-    include/Siraf/NativeSaveLoad.hpp
-    include/Siraf/TypeRegistry.hpp
-    include/Siraf/ArchiveTrait.hpp
-    include/Siraf/Strict.hpp
-    include/Siraf/Access.hpp
-    include/Siraf/Serializable.hpp
-    include/Siraf/ArchiveBase.hpp
-    include/Siraf/ReadArchive.hpp
-    include/Siraf/WriteArchive.hpp
-    include/Siraf/ExternSerialization.hpp
-    include/Siraf/StreamWrapper.hpp
-    include/Siraf/SerializatonBase.hpp
-    include/Siraf/DataTrackBase.hpp
-    include/Siraf/Config.hpp
-    include/Siraf/Detail/StaticMessage.hpp
-
-    include/Siraf/Core.hpp
 )
 
 set(AUTO
@@ -116,5 +121,6 @@ add_executable(${PROJECT_NAME}
     test/main.cpp
 
 	${SIRAF}
+    ${SIRAF_SUPPORT}
     ${AUTO}
 )

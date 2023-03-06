@@ -6,8 +6,6 @@
 #include <tuple> // tuple
 
 #include <Siraf/Memory/Ref.hpp>
-
-#include <Siraf/Utility.hpp>
 #include <Siraf/ApplyFunctor.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -23,7 +21,7 @@ template <typename T, std::size_t N>
 class Span;
 
 template <typename T, std::size_t N>
-class SpanCore
+class SpanBase
 {
 public:
     using size_type         = std::size_t;
@@ -40,10 +38,10 @@ protected:
     Dimension dim_;
 
 protected:
-    SpanCore(pointer& data) noexcept;
+    SpanBase(pointer& data) noexcept;
 
     template <typename D, typename... Dn>
-    SpanCore(pointer& data, D d, Dn... dn) noexcept;
+    SpanBase(pointer& data, D d, Dn... dn) noexcept;
 
 public:
     void init(pointer data) noexcept { data_.get() = data; }
@@ -59,14 +57,14 @@ public:
 };
 
 template <typename T, std::size_t N>
-class Span : public SpanCore<T, N>
+class Span : public SpanBase<T, N>
 {
 protected:
-    using Base = SpanCore<T, N>;
+    using Core = SpanBase<T, N>;
 
 public:
-    using typename Base::size_type;
-    using typename Base::pointer;
+    using typename Core::size_type;
+    using typename Core::pointer;
 
 public:
     using value_type        = Span<T, N - 1>;
@@ -76,7 +74,7 @@ public:
     using const_reference   = const value_type&;
 
 protected:
-    using typename Base::Dimension;
+    using typename Core::Dimension;
 
 private:
     mutable value_type child_scope_;
@@ -94,18 +92,18 @@ public:
     const_reference operator[] (size_type i) const noexcept;
 
 public:
-    using Base::size; // prevent Base function hiding
+    using Core::size; // prevent Core function hiding
 };
 
 template <typename T>
-class Span<T, 1> : public SpanCore<T, 1>
+class Span<T, 1> : public SpanBase<T, 1>
 {
 protected:
-    using Base = SpanCore<T, 1>;
+    using Core = SpanBase<T, 1>;
 
 public:
-    using typename Base::size_type;
-    using typename Base::pointer;
+    using typename Core::size_type;
+    using typename Core::pointer;
 
 public:
     using value_type        = T;
@@ -115,7 +113,7 @@ public:
     using const_reference   = const T&;
 
 protected:
-    using typename Base::Dimension;
+    using typename Core::Dimension;
 
 public:
     Span(pointer& data, Dimension size) noexcept;
@@ -126,7 +124,7 @@ public:
 };
 
 template <typename T, std::size_t N>
-inline SpanCore<T, N>::SpanCore(pointer& data) noexcept
+inline SpanBase<T, N>::SpanBase(pointer& data) noexcept
     : data_(data)
     , dim_()
 {
@@ -134,7 +132,7 @@ inline SpanCore<T, N>::SpanCore(pointer& data) noexcept
 
 template <typename T, std::size_t N>
 template <typename D, typename... Dn>
-SpanCore<T, N>::SpanCore(pointer& data, D d, Dn... dn) noexcept
+SpanBase<T, N>::SpanBase(pointer& data, D d, Dn... dn) noexcept
     : data_(data)
     , dim_{d, dn...}
 {
@@ -142,7 +140,7 @@ SpanCore<T, N>::SpanCore(pointer& data, D d, Dn... dn) noexcept
 
 template <typename T, std::size_t N>
 Span<T, N>::Span(pointer& data, Dimension dim) noexcept
-    : Base(data)
+    : Core(data)
     , child_scope_(data[0], dim + 1)
 {
     for (size_type i = 0; i < N; ++i)
@@ -153,7 +151,7 @@ template <typename T, std::size_t N>
 template <typename D, typename... Dn,
           meta::require<not meta::is_array<D>()>>
 Span<T, N>::Span(pointer& data, D d, Dn... dn) noexcept
-    : Base(data, d, dn...)
+    : Core(data, d, dn...)
     , child_scope_(data[0], dn...)
 {
 }
@@ -174,14 +172,14 @@ inline auto Span<T, N>::operator[] (size_type i) const noexcept -> const_referen
 
 template <typename T>
 inline Span<T, 1>::Span(pointer& data, Dimension dim) noexcept
-    : Base(data)
+    : Core(data)
 {
     this->dim_[0] = dim[0];
 }
 
 template <typename T>
 inline Span<T, 1>::Span(pointer& data, size_type size) noexcept
-    : Base(data, size)
+    : Core(data, size)
 {
 }
 

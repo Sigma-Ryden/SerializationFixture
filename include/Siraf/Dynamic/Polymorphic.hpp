@@ -1,14 +1,14 @@
 #ifndef SIRAF_DYNAMIC_POLYMORPHIC_HPP
 #define SIRAF_DYNAMIC_POLYMORPHIC_HPP
 
-#include <Siraf/Access.hpp> // SERIALIZABLE
+#include <Siraf/Core/SerializationBridge.hpp> // SERIALIZATION_ACCESS
 #include <Siraf/Dynamic/FactoryTable.hpp> // CLONEABLE_BODY
 
 #include <Siraf/Dynamic/PolymorphicArchive.hpp>
 
 #define _POLYMORPHIC_ALIASE_IMPLEMENTATION(...)                                                         \
-    using clone_type = siraf::dynamic::FactoryTableCore::clone_type;                                    \
-    using key_type = siraf::dynamic::FactoryTableCore::key_type;
+    using clone_type = siraf::dynamic::FactoryTableBase::clone_type;                                    \
+    using key_type = siraf::dynamic::FactoryTableBase::key_type;
 
 #define _POLYMORPHIC_INTERFACE_IMPLEMENTATION(function_name)                                            \
     void __##function_name(siraf::core::ArchiveBase& archive)                                           \
@@ -45,7 +45,7 @@ namespace dynamic
 class Polymorphic : public Cloneable
 {
 public:
-    using Archive = siraf::core::ArchiveBase;
+    using Archive = core::ArchiveBase;
 
 private:
     virtual void __save(Archive& archive) = 0;

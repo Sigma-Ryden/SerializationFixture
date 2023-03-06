@@ -1,10 +1,11 @@
 #ifndef SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP
 #define SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP
 
-#include <Siraf/ArchiveBase.hpp>
-#include <Siraf/ArchiveTrait.hpp>
+#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
 
-#include <Siraf/Access.hpp>
+#include <Siraf/Core/ArchiveBase.hpp>
+#include <Siraf/Core/ArchiveTrait.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
@@ -19,9 +20,9 @@ class PolymorphicArchive
 {
 public:
     using Archive  = core::ArchiveBase;
-    using key_type = core::ArchiveCore::key_type;
+    using key_type = core::ArchiveBase::key_type;
 
-    static constexpr key_type max_key = core::ArchiveCore::max_key;
+    static constexpr key_type max_key = core::ArchiveTraitBase::max_key;
 
 public:
     template <class T> static void save(Archive& archive, T& data)
@@ -37,7 +38,7 @@ public:
 private:
     template <class Archive> static constexpr bool is_valid_archive() noexcept
     {
-        return core::ArchiveTraitKey<Archive>::key != core::ArchiveCore::base_key;
+        return core::ArchiveTraitKey<Archive>::key != core::ArchiveTraitBase::base_key;
     }
 
 private:
@@ -83,25 +84,25 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_write_archive<DerivedArchive>() and
-                        (Access::is_save_class<T>() or Access::is_saveload_class<T>()))>
+                        (core::Access::is_save_class<T>() or core::Access::is_saveload_class<T>()))>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        Access::save(archive, object);
+        core::Access::save(archive, object);
     }
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_read_archive<DerivedArchive>() and
-                        (Access::is_load_class<T>() or Access::is_saveload_class<T>()))>
+                        (core::Access::is_load_class<T>() or core::Access::is_saveload_class<T>()))>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        Access::load(archive, object);
+        core::Access::load(archive, object);
     }
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_archive<DerivedArchive>() and
-                        not Access::is_save_class<T>() and
-                        not Access::is_load_class<T>() and
-                        not Access::is_saveload_class<T>())>
+                        not core::Access::is_save_class<T>() and
+                        not core::Access::is_load_class<T>() and
+                        not core::Access::is_saveload_class<T>())>
     static void proccess(DerivedArchive& archive, T& data)
     {
         process_data(archive, data);

@@ -6,16 +6,17 @@
 #include <unordered_map> // unordered_map
 #include <utility> // forward
 
-#include <Siraf/ArchiveBase.hpp>
+#include <Siraf/Core/ArchiveBase.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
+
 #include <Siraf/Dynamic/Registry.hpp>
 
 #include <Siraf/Memory/Memory.hpp>
-#include <Siraf/DataTrackBase.hpp>
 
+#include <Siraf/DataTrackBase.hpp>
 #include <Siraf/StreamWrapper.hpp>
 
 #include <Siraf/Detail/StaticMessage.hpp>
-
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 

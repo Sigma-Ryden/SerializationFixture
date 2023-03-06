@@ -1,10 +1,10 @@
-#ifndef SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
-#define SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
+#ifndef SIRAF_CORE_POLYMORPHIC_TRAIT_HPP
+#define SIRAF_CORE_POLYMORPHIC_TRAIT_HPP
 
-#include <Siraf/Hash.hpp>
+#include <Siraf/Core/Hash.hpp>
 
 #define EXPORT_POLYMORPHIC_KEY(unique_name, ...)                                                        \
-    namespace siraf { namespace dynamic {                                                               \
+    namespace siraf { namespace core {                                                                  \
         template <> struct PolymorphicTraitKey<__VA_ARGS__>                                             \
         { static constexpr auto key = SIRAF_STATIC_HASH(unique_name); };                                \
     }}
@@ -15,10 +15,10 @@
 namespace siraf
 {
 
-namespace dynamic
+namespace core
 {
 
-struct PolymorphicTraitCore
+struct PolymorphicTraitBase
 {
     using key_type = SIRAF_STATIC_HASH_KEY_TYPE;
     
@@ -28,11 +28,11 @@ struct PolymorphicTraitCore
 template <class T>
 struct PolymorphicTraitKey
 {
-    static constexpr auto key = PolymorphicTraitCore::base_key;
+    static constexpr auto key = PolymorphicTraitBase::base_key;
 };
 
-} // namespace dynamic
+} // namespace core
 
 } // namespace siraf
 
-#endif // SIRAF_DYNAMIC_POLYMORPHIC_TRAIT_HPP
+#endif // SIRAF_CORE_POLYMORPHIC_TRAIT_HPP

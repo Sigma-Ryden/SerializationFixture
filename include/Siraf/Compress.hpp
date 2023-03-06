@@ -1,9 +1,6 @@
 #ifndef SIRAF_COMPRESS_HPP
 #define SIRAF_COMPRESS_HPP
 
-#include <Siraf/WriteArchive.hpp>
-#include <Siraf/ReadArchive.hpp>
-
 #include <Siraf/Utility.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -15,6 +12,7 @@ namespace siraf
 namespace compress
 {
 
+// always require compressible type for fast compression
 template <class Archive, typename T,
           SIREQUIRE(meta::is_archive<Archive>() and
                     meta::is_compressible<T>())>
@@ -29,28 +27,27 @@ void fast(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_archive<Archive>() and
-                    not meta::is_compressible<T>())>
-void slow(Archive& archive, T& data)
+          SIREQUIRE(meta::is_archive<Archive>())>
+void slow(Archive& archive, T& object)
 {
-    for (auto& item : data)
+    for (auto& item : object)
         archive & item;
 }
 
 template <class Archive, typename T,
           SIREQUIRE(meta::is_archive<Archive>() and
                     meta::is_compressible<T>())>
-void zip(Archive& archive, T& data)
+void zip(Archive& archive, T& object)
 {
-    fast(archive, data);
+    fast(archive, object);
 }
 
 template <class Archive, typename T,
           SIREQUIRE(meta::is_archive<Archive>() and
                     not meta::is_compressible<T>())>
-void zip(Archive& archive, T& data)
+void zip(Archive& archive, T& object)
 {
-    slow(archive, data);
+    slow(archive, object);
 }
 
 } // namespace compress

@@ -1,24 +1,31 @@
-#ifndef SIRAF_SERIALIZABLE_HPP
-#define SIRAF_SERIALIZABLE_HPP
+#ifndef SIRAF_CORE_SERIALIZATION_BRIDGE_HPP
+#define SIRAF_CORE_SERIALIZATION_BRIDGE_HPP
 
-#include <Siraf/Detail/Meta.hpp>
-#include <Siraf/Detail/MetaMacro.hpp>
+#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/ArchiveBase.hpp>
+
+#include <Siraf/Detail/MetaMacro.hpp> // SIWHEN
+
+#define SERIALIZATION_ACCESS(...)                                                                       \
+    friend class ::SerializationBridge;                                                                 \
+    friend class ::siraf::core::Access;
 
 #define SERIALIZATION(mode, ...)                                                                        \
-    template <> struct Serialization::mode<__VA_ARGS__> {                                               \
+    template <> struct SerializationBridge::mode<__VA_ARGS__> {                                         \
         template <class Archive> static void call(Archive& archive, __VA_ARGS__& self);                 \
     };                                                                                                  \
     template <class Archive>                                                                            \
-    void Serialization::mode<__VA_ARGS__>::call(Archive& archive, __VA_ARGS__& self)
+    void SerializationBridge::mode<__VA_ARGS__>::call(Archive& archive, __VA_ARGS__& self)
 
 #define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
-    template <typename T> struct Serialization::mode<T, SIWHEN(__VA_ARGS__)> {                          \
+    template <typename T> struct SerializationBridge::mode<T, SIWHEN(__VA_ARGS__)> {                    \
         template <class Archive> static void call(Archive& archive, T& self);                           \
     };                                                                                                  \
     template <typename T> template <class Archive>                                                      \
-    void Serialization::mode<T, SIWHEN(__VA_ARGS__)>::call(Archive& archive, T& self)
+    void SerializationBridge::mode<T, SIWHEN(__VA_ARGS__)>::call(Archive& archive, T& self)
 
-class Serialization
+// should be in global namespace
+class SerializationBridge
 {
 public:
     template <typename T, typename enable = void>
@@ -39,4 +46,4 @@ public:
     }
 };
 
-#endif // SIRAF_SERIALIZABLE_HPP
+#endif // SIRAF_CORE_SERIALIZATION_BRIDGE_HPP

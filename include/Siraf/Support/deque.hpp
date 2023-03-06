@@ -5,10 +5,11 @@
 
 #include <deque> // deque
 
-#include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
+#include <Siraf/Core/TypeCore.hpp>
 
-#include <Siraf/Utility.hpp>
+#include <Siraf/Compress.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 namespace siraf
 {
@@ -30,8 +31,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, deque, meta::is_std_deque<T>::value)
     let::u64 size = deque.size();
     archive & size;
 
-    for (auto& item : deque)
-        archive & item;
+    compress::slow(archive, deque);
 
     return archive;
 }
@@ -42,9 +42,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, deque, meta::is_std_deque<T>::value)
     archive & size;
 
     deque.resize(size);
-
-    for (auto& item : deque)
-        archive & item;
+    compress::slow(archive, deque);
 
     return archive;
 }

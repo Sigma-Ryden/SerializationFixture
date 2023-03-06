@@ -8,10 +8,11 @@
 
 #include <utility> // move
 
-#include <Siraf/ExternSerialization.hpp>
-#include <Siraf/TypeRegistry.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
+#include <Siraf/Core/TypeCore.hpp>
 
-#include <Siraf/Utility.hpp>
+#include <Siraf/Compress.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 #define _SIRAF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                   \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
@@ -68,8 +69,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>())
     let::u64 size = set.size();
     archive & size;
 
-    for (const auto& item : set)
-        archive & item;
+    compress::slow(archive, set);
 
     return archive;
 }

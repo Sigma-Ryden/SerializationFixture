@@ -1,7 +1,9 @@
 #ifndef SIRAF_DYNAMIC_REGISTRY_HPP
 #define SIRAF_DYNAMIC_REGISTRY_HPP
 
-#include <Siraf/Access.hpp>
+#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/PolymorphicTrait.hpp>
+
 #include <Siraf/Memory/Memory.hpp>
 
 #include <Siraf/Dynamic/RegistryBase.hpp>
@@ -19,21 +21,21 @@ namespace dynamic
 class ExternRegistry : public RegistryBase
 {
 public:
-    using key_type = PolymorphicTraitCore::key_type;
+    using key_type = core::PolymorphicTraitBase::key_type;
 
 public:
     template <typename T, typename dT = meta::dereference<T>,
-              SIREQUIRE(meta::is_pointer<T>() and Access::is_registered_class<dT>())>
+              SIREQUIRE(meta::is_pointer<T>() and core::Access::is_registered_class<dT>())>
     static void save(core::ArchiveBase& archive, T& pointer, key_type key)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        Access::dynamic_save(archive, pointer);
+        core::Access::dynamic_save(archive, pointer);
     }
 
     template <typename T, typename dT = meta::dereference<T>,
-              SIREQUIRE(meta::is_pointer<T>() and Access::is_registered_class<dT>())>
+              SIREQUIRE(meta::is_pointer<T>() and core::Access::is_registered_class<dT>())>
     static void load(core::ArchiveBase& archive, T& pointer, key_type key, memory::void_ptr<T>& cache)
     {
         using TraitType = typename memory::ptr_trait<T>::trait;
@@ -52,12 +54,12 @@ public:
         cache = memory::pure(pointer);
 
         auto raw_pointer = memory::raw(pointer);
-        Access::dynamic_load(archive, raw_pointer);
+        core::Access::dynamic_load(archive, raw_pointer);
     }
 
     template <typename T,
               typename dT = meta::dereference<T>,
-              SIREQUIRE(meta::is_pointer<T>() and Access::is_registered_class<dT>())>
+              SIREQUIRE(meta::is_pointer<T>() and core::Access::is_registered_class<dT>())>
     static void assign(T& pointer, const memory::void_ptr<T>& address, key_type key)
     {
         if (pointer != nullptr)
