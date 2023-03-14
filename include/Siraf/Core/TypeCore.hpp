@@ -1,7 +1,7 @@
 #ifndef SIRAF_CORE_TYPE_CORE_HPP
 #define SIRAF_CORE_TYPE_CORE_HPP
 
-#include <cstdint> // int32_t, uint32_t, int64_t, uint64_t
+#include <cstdint> // int8_t, uint8_t, int32_t, uint32_t, int64_t, uint64_t
 
 namespace siraf
 {
