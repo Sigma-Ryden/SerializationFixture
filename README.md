@@ -29,10 +29,10 @@ Is a header-only library implemented purely in C++11.
 - Template
 
 ## Auto Tests:
-See library testing here: [main.cpp](https://github.com/Sigma-Ryden/Siraf/tree/master/test/main.cpp)
+See library testing [here](https://github.com/Sigma-Ryden/Siraf/tree/master/test).
 
 ## Quick start:
-Warning! This is a simple example. You can see real applied examples [here](https://github.com/Sigma-Ryden/Siraf/tree/master/test).
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/Siraf/tree/master/test/demo).
 
 Preparing:
 
