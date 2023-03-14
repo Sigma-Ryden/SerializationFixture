@@ -1,7 +1,7 @@
 #ifndef SIRAF_DYNAMIC_POLYMORPHIC_HPP
 #define SIRAF_DYNAMIC_POLYMORPHIC_HPP
 
-#include <Siraf/Core/SerializationBridge.hpp> // SERIALIZATION_ACCESS
+#include <Siraf/Core/Serialization.hpp> // SERIALIZATION_ACCESS
 #include <Siraf/Dynamic/FactoryTable.hpp> // CLONEABLE_BODY
 
 #include <Siraf/Dynamic/PolymorphicArchive.hpp>

@@ -19,7 +19,7 @@ set(SIRAF
     include/Siraf/Core/Config.hpp
     include/Siraf/Core/PolymorphicTrait.hpp
     include/Siraf/Core/TypeRegistry.hpp
-    include/Siraf/Core/SerializationBridge.hpp
+    include/Siraf/Core/Serialization.hpp
     include/Siraf/Core/TypeCore.hpp
     include/Siraf/Core/Hash.hpp
 

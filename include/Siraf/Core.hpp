@@ -9,7 +9,7 @@
 
 #include <Siraf/Core/Access.hpp>
 #include <Siraf/Core/TypeRegistry.hpp>
-#include <Siraf/Core/SerializationBridge.hpp>
+#include <Siraf/Core/Serialization.hpp>
 #include <Siraf/Core/Hash.hpp>
 
 #include <Siraf/Dynamic/FactoryTable.hpp>

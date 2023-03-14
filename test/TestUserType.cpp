@@ -33,6 +33,10 @@ SERIALIZATION(SaveLoad, Box)
 {
     archive & self.Min & self.Max;
 }
+    template <typename T, typename = void>
+    struct has_implementation : std::false_type {};
+    template <typename T>
+    struct has_implementation<T, ::siraf::meta::to_void<decltype(T{})>> : std::true_type {};
 
 TEST(TestCommon, TestUserType)
 {

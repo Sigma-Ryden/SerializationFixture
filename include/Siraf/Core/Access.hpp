@@ -2,7 +2,7 @@
 #ifndef SIRAF_CORE_ACCESS_HPP
 #define SIRAF_CORE_ACCESS_HPP
 
-#include <Siraf/Core/SerializationBridge.hpp>
+#include <Siraf/Core/Serialization.hpp>
 
 #include <Siraf/Core/PolymorphicTrait.hpp>
 #include <Siraf/Core/ArchiveBase.hpp>
@@ -26,43 +26,13 @@ namespace core
 class Access
 {
 private:
-    using SB = ::SerializationBridge;
-
-public:
-    template <typename T>
-    using SaveMode = meta::scope<SB::Save<T>, SB::SaveLoad<T>, SB>;
-
-    template <typename T>
-    using LoadMode = meta::scope<SB::Load<T>, SB::SaveLoad<T>, SB>;
-
-private:
     _SIRAF_HAS_PROPERTY_HELPER(save, __save)
     _SIRAF_HAS_PROPERTY_HELPER(load, __load)
 
     _SIRAF_HAS_PROPERTY_HELPER(static_trait, __static_trait)
     _SIRAF_HAS_PROPERTY_HELPER(trait, __trait)
 
-    _SIRAF_HAS_PROPERTY_HELPER(pure, pure)
-
 public:
-    template <class T>
-    static constexpr bool is_save_class() noexcept
-    {
-        return not has_pure<SB::Save<T>>::value;
-    }
-
-    template <class T>
-    static constexpr bool is_load_class() noexcept
-    {
-        return not has_pure<SB::Load<T>>::value;
-    }
-
-    template <class T>
-    static constexpr bool is_saveload_class() noexcept
-    {
-        return not has_pure<SB::SaveLoad<T>>::value;
-    }
-
     template <class T>
     static constexpr bool is_dynamic_save_class() noexcept
     {
@@ -115,32 +85,24 @@ public:
     template <typename Archive, typename T>
     static void save(Archive& archive, T& data)
     {
-        constexpr auto I = meta::select(is_save_class<T>(), is_saveload_class<T>());
-        using Mode = typename SaveMode<T>::template type<I>;
-
-        Mode::call(archive, data);
+        ::Serialization::SaveMode<T>::call(archive, data);
     }
 
     template <typename Archive, typename T>
     static void load(Archive& archive, T& data)
     {
-        constexpr auto I = meta::select(is_load_class<T>(), is_saveload_class<T>());
-        using Mode = typename LoadMode<T>::template type<I>;
-
-        Mode::call(archive, data);
+        ::Serialization::LoadMode<T>::call(archive, data);
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIREQUIRE(is_dynamic_save_class<T>() and
-                        (is_save_class<T>() or is_saveload_class<T>()))>
+              SIREQUIRE(is_dynamic_save_class<T>() and ::Serialization::has_save_mode<T>())>
     static void dynamic_save(core::ArchiveBase& archive, Pointer& object)
     {
         object->__save(archive);
     }
 
     template <typename Pointer, typename T = meta::dereference<Pointer>,
-              SIREQUIRE(is_dynamic_load_class<T>() and
-                        (is_load_class<T>() or is_saveload_class<T>()))>
+              SIREQUIRE(is_dynamic_load_class<T>() and ::Serialization::has_load_mode<T>())>
     static void dynamic_load(core::ArchiveBase& archive, Pointer& object)
     {
         object->__load(archive);

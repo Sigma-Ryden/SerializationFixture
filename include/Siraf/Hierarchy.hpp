@@ -2,8 +2,6 @@
 #define SIRAF_HIERARCHY_HPP
 
 #include <Siraf/Core/Access.hpp>
-#include <Siraf/Core/TypeRegistry.hpp>
-
 #include <Siraf/ApplyFunctor.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -120,9 +118,6 @@ apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
 }
 
 } // namespace siraf
-
-CONDITIONAL_TYPE_REGISTRY(core::Access::is_save_class<T>() or core::Access::is_load_class<T>())
-CONDITIONAL_TYPE_REGISTRY(core::Access::is_saveload_class<T>())
 
 // clean up
 #undef _SIRAF_APPLY_FUNCTOR_GENERIC

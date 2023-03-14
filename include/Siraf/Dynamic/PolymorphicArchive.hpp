@@ -2,6 +2,7 @@
 #define SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP
 
 #include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/Serialization.hpp>
 #include <Siraf/Core/TypeRegistry.hpp>
 
 #include <Siraf/Core/ArchiveBase.hpp>
@@ -84,7 +85,7 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_write_archive<DerivedArchive>() and
-                        (core::Access::is_save_class<T>() or core::Access::is_saveload_class<T>()))>
+                        ::Serialization::has_save_mode<T>())>
     static void proccess(DerivedArchive& archive, T& object)
     {
         core::Access::save(archive, object);
@@ -92,7 +93,7 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_read_archive<DerivedArchive>() and
-                        (core::Access::is_load_class<T>() or core::Access::is_saveload_class<T>()))>
+                        ::Serialization::has_load_mode<T>())>
     static void proccess(DerivedArchive& archive, T& object)
     {
         core::Access::load(archive, object);
@@ -100,9 +101,8 @@ private:
 
     template <class DerivedArchive, class T,
               SIREQUIRE(meta::is_archive<DerivedArchive>() and
-                        not core::Access::is_save_class<T>() and
-                        not core::Access::is_load_class<T>() and
-                        not core::Access::is_saveload_class<T>())>
+                        not ::Serialization::has_save_mode<T>() and
+                        not ::Serialization::has_load_mode<T>())>
     static void proccess(DerivedArchive& archive, T& data)
     {
         process_data(archive, data);

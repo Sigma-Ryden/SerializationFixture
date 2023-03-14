@@ -1,7 +1,7 @@
 #ifndef SIRAF_COMMON_HPP
 #define SIRAF_COMMON_HPP
 
-#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/Serialization.hpp>
 
 #include <Siraf/WriteArchive.hpp>
 #include <Siraf/ReadArchive.hpp>
@@ -18,15 +18,13 @@ namespace siraf
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, object,
-    core::Access::is_save_class<T>() or core::Access::is_saveload_class<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Save, object, ::Serialization::has_save_mode<T>())
 {
     core::Access::save(archive, object);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, object,
-    core::Access::is_load_class<T>() or core::Access::is_saveload_class<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::Serialization::has_load_mode<T>())
 {
     core::Access::load(archive, object);
     return archive;
