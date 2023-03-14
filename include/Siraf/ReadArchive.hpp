@@ -16,7 +16,6 @@
 #include <Siraf/DataTrackBase.hpp>
 #include <Siraf/StreamWrapper.hpp>
 
-#include <Siraf/Detail/StaticMessage.hpp>
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
@@ -139,7 +138,7 @@ template <class ReadArchive, typename T,
 ReadArchive& operator& (ReadArchive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        STATIC_MESSAGE_UNREGISTERED_TYPE(siraf::ReadArchive, Load));
+        "The 'T' is an unregistered type for the 'siraf::ReadArchive'.");
 
     return archive;
 }

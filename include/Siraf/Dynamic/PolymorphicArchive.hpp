@@ -123,6 +123,22 @@ private:
     }
 };
 
+template <class Archive, typename T,
+          SIREQUIRE(meta::is_base_archive<Archive>())>
+Archive& operator<< (Archive& archive, T& data)
+{
+    PolymorphicArchive::save(archive, data);
+    return archive;
+}
+
+template <class Archive, typename T,
+          SIREQUIRE(meta::is_base_archive<Archive>())>
+Archive& operator>> (Archive& archive, T& data)
+{
+    PolymorphicArchive::load(archive, data);
+    return archive;
+}
+
 } // namespace dynamic
 
 } // namespace siraf

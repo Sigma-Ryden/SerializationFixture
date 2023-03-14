@@ -25,6 +25,8 @@
 #include <Siraf/Hierarchy.hpp>
 #include <Siraf/DataTrack.hpp>
 
+#include <Siraf/Serializable.hpp>
+
 EXPORT_SERIALIZATION_ARCHIVE(0, ReadArchive,
     wrapper::ByteContainer, wrapper::IByteStream<wrapper::ByteContainer>)
 

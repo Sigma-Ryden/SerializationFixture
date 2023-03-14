@@ -9,7 +9,7 @@
 
 #include <memory> // shared_ptr
 
-#include <Siraf/SerializatonBase.hpp>
+#include <Siraf/Core/SerializatonBase.hpp>
 
 #ifndef SIRAF_MAX_TEMPLATE_DEPTH
     #define SIRAF_MAX_TEMPLATE_DEPTH 256
@@ -323,8 +323,8 @@ namespace detail
 
 template <typename> struct is_read_archive : std::false_type {};
 
-template <class InStream, class Registry, class StreamWrapper>
-struct is_read_archive<ReadArchive<InStream, Registry, StreamWrapper>> : std::true_type {};
+template <class InStream, class StreamWrapper, class Registry>
+struct is_read_archive<ReadArchive<InStream, StreamWrapper, Registry>> : std::true_type {};
 
 } // namespace detail
 
@@ -338,7 +338,7 @@ namespace detail
 
 template <typename> struct is_write_archive : std::false_type {};
 
-template <class OutStream, class Registry, class StreamWrapper>
+template <class OutStream, class StreamWrapper, class Registry>
 struct is_write_archive<WriteArchive<OutStream, Registry, StreamWrapper>> : std::true_type {};
 
 } // namespace detail
@@ -346,6 +346,21 @@ struct is_write_archive<WriteArchive<OutStream, Registry, StreamWrapper>> : std:
 template <class T> constexpr bool is_write_archive() noexcept
 {
     return detail::is_write_archive<T>::value;
+}
+
+namespace detail
+{
+
+template <typename> struct is_base_archive : std::false_type {};
+
+template <>
+struct is_base_archive<core::ArchiveBase> : std::true_type {};
+
+} // namespace detail
+
+template <class T> constexpr bool is_base_archive() noexcept
+{
+    return detail::is_base_archive<T>::value;
 }
 
 template <class T> constexpr bool is_archive() noexcept

@@ -14,7 +14,7 @@ namespace wrapper
 
 using ByteContainer = std::vector<unsigned char>;
 
-template <typename OutStream>
+template <typename OutStream = ByteContainer>
 class OByteStream
 {
 protected:
@@ -41,7 +41,7 @@ public:
     }
 };
 
-template <typename InStream>
+template <typename InStream = ByteContainer>
 struct IByteStream
 {
 protected:

@@ -44,13 +44,13 @@ TEST(TestUtility, TestOptional)
         auto ar = iarchive(storage);
         ar & f & ns & s & c;
 
-        EXPECT("std::optional<> nullopt", !ns.has_value());
+        EXPECT("std::optional<>.nullopt", ns == std::nullopt);
 
-        ASSERT("std::optional<>", f.has_value() && s.has_value());
-        EXPECT("std::optional<>", f.value() == sv_f && s.value() == sv_s);
+        ASSERT("std::optional<>.has_value", f.has_value() && s.has_value());
+        EXPECT("std::optional<>.value", f.value() == sv_f && s.value() == sv_s);
 
-        ASSERT("std::optional<atomic>", c.has_value());
-        EXPECT("std::optional<atomic>", c.value() == sv_c);
+        ASSERT("std::optional<atomic>.has_value", c.has_value());
+        EXPECT("std::optional<atomic>.value", c.value() == sv_c);
     }
 }
 

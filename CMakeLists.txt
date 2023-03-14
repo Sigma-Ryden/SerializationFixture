@@ -10,8 +10,7 @@ include_directories(include)
 set(SIRAF
     include/Siraf/Detail/Meta.hpp
     include/Siraf/Detail/MetaMacro.hpp
-    include/Siraf/Detail/UndefAllMacro.hpp
-    include/Siraf/Detail/StaticMessage.hpp
+    include/Siraf/Detail/MacroUndef.hpp
 
     include/Siraf/Core/Access.hpp
     include/Siraf/Core/ArchiveBase.hpp
@@ -20,6 +19,7 @@ set(SIRAF
     include/Siraf/Core/PolymorphicTrait.hpp
     include/Siraf/Core/TypeRegistry.hpp
     include/Siraf/Core/Serialization.hpp
+    include/Siraf/Core/SerializatonBase.hpp
     include/Siraf/Core/TypeCore.hpp
     include/Siraf/Core/Hash.hpp
 
@@ -44,9 +44,9 @@ set(SIRAF
     include/Siraf/WriteArchive.hpp
     include/Siraf/ExternSerialization.hpp
     include/Siraf/StreamWrapper.hpp
-    include/Siraf/SerializatonBase.hpp
     include/Siraf/DataTrackBase.hpp
     include/Siraf/Hierarchy.hpp
+    include/Siraf/Serializable.hpp
 
     include/Siraf/Core.hpp
 )

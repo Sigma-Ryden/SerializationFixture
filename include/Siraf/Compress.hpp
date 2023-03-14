@@ -54,7 +54,4 @@ void zip(Archive& archive, T& object)
 
 } // namespace siraf
 
-// clean up
-#undef _SIRAF_HAS_FUNCTION_HELPER
-
 #endif // SIRAF_COMPRESS_HPP

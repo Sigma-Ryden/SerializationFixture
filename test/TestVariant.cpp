@@ -36,10 +36,10 @@ TEST(TestUtility, TestVariant)
         auto ar = iarchive(storage);
         ar & v & m;
 
-        ASSERT("std::variant<>", v.index() == 1);
-        EXPECT("std::variant<>", std::get<std::string>(v) == sv_v);
+        ASSERT("std::variant<>.index", v.index() == 1);
+        EXPECT("std::variant<>.get", std::get<std::string>(v) == sv_v);
 
-        ASSERT("std::variant<monostate>", m.index() == 0);
+        ASSERT("std::variant<monostate>.index", m.index() == 0);
     }
 }
 

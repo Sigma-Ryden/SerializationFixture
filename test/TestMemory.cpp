@@ -55,15 +55,15 @@ TEST(TestMemory, TestUniquePtr)
         auto ar = iarchive(storage);
         ar & u_i & u_p;
 
-        ASSERT("std::unique_ptr<>", u_i != nullptr);
-        EXPECT("std::unique_ptr<>", *u_i == sv_i);
+        ASSERT("std::unique_ptr<>.inited", u_i != nullptr);
+        EXPECT("std::unique_ptr<>.value", *u_i == sv_i);
         
-        ASSERT("std::unique_ptr<polymorphic>", u_p != nullptr);
+        ASSERT("std::unique_ptr<polymorphic>.inited", u_p != nullptr);
        
         auto raw_u_c = dynamic_cast<Child*>(u_p.get());
         
-        ASSERT("std::unique_ptr<polymorphic>", raw_u_c != nullptr);
-        EXPECT("std::unique_ptr<polymorphic>", *raw_u_c == sv_c);
+        ASSERT("std::unique_ptr<polymorphic>.inited", raw_u_c != nullptr);
+        EXPECT("std::unique_ptr<polymorphic>.value", *raw_u_c == sv_c);
     }
 }
 
@@ -159,14 +159,14 @@ TEST(TestMemory, TestSharedPtr)
 
     	using siraf::memory::pure;
     	
-        ASSERT("std::shared_ptr<polymorphic>",
+        ASSERT("std::shared_ptr<polymorphic>.inited",
             s_a != nullptr && s_b != nullptr && s_c != nullptr && s_d != nullptr);
     	
-        EXPECT("std::shared_ptr<polymorphic>",
+        EXPECT("std::shared_ptr<polymorphic>.use_count",
             s_a.use_count() == 4 && s_b.use_count() == 4 &&
             s_c.use_count() == 4 && s_d.use_count() == 4);
 
-        EXPECT("std::shared_ptr<polymorphic>",
+        EXPECT("std::shared_ptr<polymorphic>.pure",
             pure(s_a) == pure(s_b) && pure(s_b) == pure(s_c) && pure(s_c) == pure(s_d));
     	
     	auto raw_s_d = s_d.get();
@@ -174,10 +174,9 @@ TEST(TestMemory, TestSharedPtr)
     	auto raw_s_c = s_c.get();
     	auto raw_s_a = s_a.get();
     	
-    	EXPECT("std::shared_ptr<polymorphic>", *raw_s_d == sv_d);
-    	EXPECT("std::shared_ptr<polymorphic>", *dynamic_cast<D*>(raw_s_b) == sv_d);
-    	EXPECT("std::shared_ptr<polymorphic>", *dynamic_cast<D*>(raw_s_c) == sv_d);
-    	EXPECT("std::shared_ptr<polymorphic>", *dynamic_cast<D*>(raw_s_a) == sv_d);
+        EXPECT("std::shared_ptr<polymorphic>.value",
+            *raw_s_d == sv_d && *dynamic_cast<D*>(raw_s_b) == sv_d &&
+            *dynamic_cast<D*>(raw_s_c) == sv_d && *dynamic_cast<D*>(raw_s_a) == sv_d);
     }
 }
 
@@ -209,14 +208,14 @@ TEST(TestMemory, TestWeakPtr)
         auto ar = iarchive(storage);
         ar & w_i & w_p;
 
-        ASSERT("std::weak_ptr<>", !w_i.expired());
-        EXPECT("std::weak_ptr<>", *w_i.lock() == sv_i);
+        ASSERT("std::weak_ptr<>.inited", !w_i.expired());
+        EXPECT("std::weak_ptr<>.value", *w_i.lock() == sv_i);
         
-        ASSERT("std::weak_ptr<polymorphic>", !w_p.expired());
+        ASSERT("std::weak_ptr<polymorphic>.inited", !w_p.expired());
 
         auto s_c = std::dynamic_pointer_cast<Child>(w_p.lock());
 
-        EXPECT("std::weak_ptr<polymorphic>", *s_c == sv_c);
+        EXPECT("std::weak_ptr<polymorphic>.value", *s_c == sv_c);
     }
 }
 
@@ -243,18 +242,18 @@ TEST(TestMemory, TestSharedAndWeakPtr)
             ar & w1_f & w2_f & s_f; // one more shuffle
         }
 
-        ASSERT("std::shared_ptr<>", s_f != nullptr);
-        ASSERT("std::weak_ptr<>", !w1_f.expired() && !w2_f.expired());
+        ASSERT("std::shared_ptr<>.inited", s_f != nullptr);
+        ASSERT("std::weak_ptr<>.inited", !w1_f.expired() && !w2_f.expired());
 
-        EXPECT("std::shared_ptr<>", s_f.use_count() == 1);
+        EXPECT("std::shared_ptr<>.use_count", s_f.use_count() == 1);
 
         auto s1_f = w1_f.lock();
         auto s2_f = w2_f.lock();
 
-        EXPECT("std::weak_ptr<>", w1_f.use_count() == 3 && w2_f.use_count() == 3);
+        EXPECT("std::weak_ptr<>.use_count", w1_f.use_count() == 3 && w2_f.use_count() == 3);
 
-        EXPECT("std::shared_ptr<>", *s_f == sv_f);
-        EXPECT("std::weak_ptr<>", *w1_f.lock() == sv_f && *w2_f.lock() == sv_f);
+        EXPECT("std::shared_ptr<>.value", *s_f == sv_f);
+        EXPECT("std::weak_ptr<>.value", *w1_f.lock() == sv_f && *w2_f.lock() == sv_f);
     }
 }
 
@@ -302,14 +301,19 @@ TEST(TestMemory, TestReferenceCycles)
             ar & s_h1 & s_h2 & s_h3;
         }
 
-        ASSERT("std::shared_ptr<cycle>", s_h1 != nullptr && s_h2 != nullptr);
-        ASSERT("std::shared_ptr<cycle>", !s_h1->partner.expired() && !s_h2->partner.expired());
+        ASSERT("std::shared_ptr<cycle>.inited",
+            s_h1 != nullptr && !s_h1->partner.expired() &&
+            s_h2 != nullptr && !s_h2->partner.expired());
 
-        EXPECT("std::shared_ptr<cycle>", s_h1.use_count() == 1 && s_h2.use_count() == 1);
-        EXPECT("std::shared_ptr<cycle>", s_h1->partner.lock() == s_h2 && s_h2->partner.lock() == s_h1);
+        EXPECT("std::shared_ptr<cycle>.use_count", s_h1.use_count() == 1 && s_h2.use_count() == 1);
 
-        ASSERT("std::shared_ptr<self>", s_h3 != nullptr && !s_h3->partner.expired());
-        EXPECT("std::shared_ptr<self>", s_h1.use_count() == 1);
-        EXPECT("std::shared_ptr<self>", s_h3->partner.lock() == s_h3);
+        EXPECT("std::shared_ptr<cycle>.value",
+            s_h1->name == sv_h1 && s_h1->partner.lock() == s_h2 &&
+            s_h2->name == sv_h2 && s_h2->partner.lock() == s_h1);
+
+        ASSERT("std::shared_ptr<self>.inited", s_h3 != nullptr && !s_h3->partner.expired());
+        EXPECT("std::shared_ptr<self>.use_count", s_h1.use_count() == 1);
+
+        EXPECT("std::shared_ptr<self>.value", s_h3->name == sv_h3 && s_h3->partner.lock() == s_h3);
     }
 }

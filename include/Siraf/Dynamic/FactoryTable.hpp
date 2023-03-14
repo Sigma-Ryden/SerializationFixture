@@ -9,28 +9,22 @@
 
 #include <Siraf/Memory/Memory.hpp>
 
-#define _CLONEABLE_TRAIT_IMPLEMENTATION(...)                                                            \
-    static constexpr key_type __static_trait() noexcept                                                 \
-    { return SIRAF_STATIC_HASH(#__VA_ARGS__); }                                                         \
-    key_type __trait() const noexcept                                                                   \
-    { return siraf::core::Access::trait<__VA_ARGS__>(); }
-
-#define _CLONEABLE_INTERFACE_IMPLEMENTATION(type, ...)                                                  \
-    siraf::memory::type##_ptr<clone_type> __##type() const                                              \
-    { return siraf::memory::allocate_##type<clone_type, __VA_ARGS__>(); }                               \
-    siraf::memory::type##_ptr<clone_type> __cast(siraf::memory::type##_ptr<void> address) const         \
-    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }
-
-#define _CLONEABLE_IMPLEMENTATION(...)                                                                  \
-    siraf::dynamic::FactoryRegistry<__VA_ARGS__> __registry;                                            \
-    _CLONEABLE_INTERFACE_IMPLEMENTATION(shared, __VA_ARGS__)                                            \
-    _CLONEABLE_INTERFACE_IMPLEMENTATION(raw, __VA_ARGS__)
-
 #define CLONEABLE_BODY(...)                                                                             \
     friend class ::siraf::dynamic::FactoryTable;                                                        \
     private:                                                                                            \
-    _CLONEABLE_TRAIT_IMPLEMENTATION(__VA_ARGS__)                                                        \
-    _CLONEABLE_IMPLEMENTATION(__VA_ARGS__)                                                              \
+    siraf::dynamic::FactoryRegistry<__VA_ARGS__> __registry;                                            \
+    static constexpr key_type __static_trait() noexcept                                                 \
+    { return SIRAF_STATIC_HASH(#__VA_ARGS__); }                                                         \
+    key_type __trait() const noexcept                                                                   \
+    { return siraf::core::Access::trait<__VA_ARGS__>(); }                                               \
+    std::shared_ptr<clone_type> __shared() const                                                        \
+    { return siraf::memory::allocate_shared<clone_type, __VA_ARGS__>(); }                               \
+    std::shared_ptr<clone_type> __cast(std::shared_ptr<void> address) const                             \
+    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }                    \
+    clone_type* __raw() const                                                                           \
+    { return siraf::memory::allocate_raw<clone_type, __VA_ARGS__>(); }                                  \
+    clone_type* __cast(void* address) const                                                             \
+    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }                    \
     public:
 
 #ifndef CLONEABLE
@@ -62,23 +56,17 @@ public:
     using key_type   = FactoryTableBase::key_type;
     using clone_type = FactoryTableBase::clone_type;
 
-    template <typename T>
-    using shared_ptr = memory::shared_ptr<T>;
-
-    template <typename T>
-    using raw_ptr    = memory::raw_ptr<T>;
-
 public:
     virtual ~Cloneable() = default;
 
 private:
     virtual key_type __trait() const noexcept = 0;
 
-    virtual shared_ptr<clone_type> __shared() const = 0;
-    virtual shared_ptr<clone_type> __cast(shared_ptr<void> address) const = 0;
+    virtual std::shared_ptr<clone_type> __shared() const = 0;
+    virtual std::shared_ptr<clone_type> __cast(std::shared_ptr<void> address) const = 0;
 
-    virtual raw_ptr<clone_type> __raw() const = 0;
-    virtual raw_ptr<clone_type> __cast(raw_ptr<void> address) const = 0;
+    virtual clone_type* __raw() const = 0;
+    virtual clone_type* __cast(void* address) const = 0;
 };
 
 class FactoryTable
@@ -132,14 +120,14 @@ public:
 
     template <typename TraitType,
               SIREQUIRE(meta::is_memory_shared<TraitType>())>
-    memory::shared_ptr<clone_type> clone(key_type key)
+    std::shared_ptr<clone_type> clone(key_type key)
     {
         return has_factory(key) ? factory_[key]->__shared() : nullptr;
     }
 
     template <typename TraitType,
               SIREQUIRE(meta::is_memory_raw<TraitType>())>
-    memory::raw_ptr<clone_type> clone(key_type key)
+    clone_type* clone(key_type key)
     {
         return has_factory(key) ? factory_[key]->__raw() : nullptr;
     }
@@ -149,12 +137,12 @@ public:
         return factory_.find(key) != factory_.end();
     }
 
-    memory::shared_ptr<clone_type> cast(memory::shared_ptr<void> address, key_type key)
+    std::shared_ptr<clone_type> cast(std::shared_ptr<void> address, key_type key)
     {
         return cast<memory::shared_ptr>(address, key);
     }
 
-    memory::raw_ptr<clone_type> cast(memory::raw_ptr<void> address, key_type key)
+    clone_type* cast(void* address, key_type key)
     {
         return cast<memory::raw_ptr>(address, key);
     }

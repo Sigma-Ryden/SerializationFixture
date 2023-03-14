@@ -7,10 +7,6 @@
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp> // SIWHEN
 
-#define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class ::Serialization;                                                                       \
-    friend class ::siraf::core::Access;
-
 #define SERIALIZATION(mode, ...)                                                                        \
     template <> struct Serialization::mode<__VA_ARGS__> {                                               \
         template <class Archive> static void call(Archive& archive, __VA_ARGS__& self);                 \

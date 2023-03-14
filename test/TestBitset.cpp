@@ -26,7 +26,7 @@ TEST(TestUtility, TestBitset)
         auto ar = iarchive(storage);
         ar & b_10 & b_128;
 
-        EXPECT("std::bitset<>", b_128.test(s_position) == s_value);
+        EXPECT("std::bitset<>.test", b_128.test(s_position) == s_value);
         EXPECT("std::bitset<>", b_10 == sv_bitset10);
     }
 }
