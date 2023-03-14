@@ -2,7 +2,6 @@
 #define SIRAF_CORE_SERIALIZATION_HPP
 
 #include <Siraf/Core/ArchiveBase.hpp>
-#include <Siraf/Core/TypeRegistry.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp> // SIWHEN
@@ -99,8 +98,5 @@ public:
     template <typename T> using SaveMode = typename SaveModeMeta<T>::mode;
     template <typename T> using LoadMode = typename LoadModeMeta<T>::mode;
 };
-
-CONDITIONAL_TYPE_REGISTRY(::Serialization::is_save_class<T>() or ::Serialization::is_load_class<T>())
-CONDITIONAL_TYPE_REGISTRY(::Serialization::is_saveload_class<T>())
 
 #endif // SIRAF_CORE_SERIALIZATION_HPP

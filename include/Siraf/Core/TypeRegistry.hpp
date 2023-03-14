@@ -38,10 +38,6 @@ template <typename T> constexpr bool is_registered() noexcept
 
 } // namespace siraf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_arithmetic<T>())
-CONDITIONAL_TYPE_REGISTRY(meta::is_enum<T>())
-CONDITIONAL_TYPE_REGISTRY(meta::is_array<T>())
-CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>())
 CONDITIONAL_TYPE_REGISTRY(meta::is_unsupported<T>())
 
 #endif // SIRAF_CORE_TYPE_REGISTRY_HPP

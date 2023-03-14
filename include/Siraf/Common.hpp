@@ -2,6 +2,7 @@
 #define SIRAF_COMMON_HPP
 
 #include <Siraf/Core/Serialization.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
 
 #include <Siraf/WriteArchive.hpp>
 #include <Siraf/ReadArchive.hpp>
@@ -71,5 +72,13 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_po
 } // inline namespace common
 
 } // namespace siraf
+
+CONDITIONAL_TYPE_REGISTRY(::Serialization::is_save_class<T>() or ::Serialization::is_load_class<T>())
+CONDITIONAL_TYPE_REGISTRY(::Serialization::is_saveload_class<T>())
+
+CONDITIONAL_TYPE_REGISTRY(meta::is_arithmetic<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_enum<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_array<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>())
 
 #endif // SIRAF_COMMON_HPP
