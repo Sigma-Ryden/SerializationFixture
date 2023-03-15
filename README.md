@@ -19,9 +19,11 @@ Is a header-only library implemented purely in C++11.
 - Enum or scoped enum
 - Static or dynamic array
 - Raw & Smart pointers (with data tracking)
-### Serialization of library types:
-- STL: string, vector, array, and other
-- Any usage types
+### Serialization of standard library types:
+- C++11: string, vector, map, and many others
+- C++17: any, optional, variant
+
+See full list [here](https://github.com/Sigma-Ryden/Siraf/tree/master/include/Siraf/Support).
 ### Serialization of users class:
 - Common
 - Hierarchy
