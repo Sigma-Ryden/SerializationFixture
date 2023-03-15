@@ -11,9 +11,9 @@
 #include <Siraf/Core/TypeCore.hpp>
 #include <Siraf/Core/Hash.hpp>
 
-#include <Siraf/ExternSerialization.hpp>
+#include <Siraf/Dynamic/AnyRegistry.hpp>
 
-#include <Siraf/Support/Detail/AnyRegistry.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 namespace siraf
 {
@@ -30,12 +30,13 @@ struct is_std_any<std::any> : std::true_type {};
 inline namespace library
 {
 
+// please, use 'siraf::spy' for type any registry before std::any serialization
 EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
 {
     let::u64 hash = SIRAF_TYPE_HASH(any.type());
     archive & hash;
 
-    AnyRegistry::instance().save(archive, any);
+    dynamic::AnyRegistry::instance().save(archive, any);
 
     return archive;
 }
@@ -45,7 +46,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, any, meta::is_std_any<T>::value)
     let::u64 hash{};
     archive & hash;
 
-    AnyRegistry::instance().load(archive, any, hash);
+    dynamic::AnyRegistry::instance().load(archive, any, hash);
 
     return archive;
 }

@@ -1,6 +1,8 @@
 #ifndef SIRAF_TESTING_BASE_HPP
 #define SIRAF_TESTING_BASE_HPP
 
+#define SIRAF_DEBUG
+
 #include <Siraf/Core.hpp>
 #include <Auto/TestingCore.hpp>
 

@@ -1,21 +1,23 @@
-#ifndef SIRAF_SUPPORT_DETAIL_ANY_REGISTRY_HPP
-#define SIRAF_SUPPORT_DETAIL_ANY_REGISTRY_HPP
+#ifndef SIRAF_DYNAMIC_ANY_REGISTRY_HPP
+#define SIRAF_DYNAMIC_ANY_REGISTRY_HPP
 
 #if __cplusplus >= 201703L
 
-#include <functional> // function
 #include <unordered_map> // unordered_map
-
 #include <any> // any
 
 #include <typeinfo> // typeid, type_info
 
 #include <Siraf/Core/PolymorphicArchive.hpp>
 #include <Siraf/Core/TypeCore.hpp>
+#include <Siraf/Core/TypeRegistry.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 
 namespace siraf
+{
+
+namespace dynamic
 {
 
 class AnyRegistry
@@ -23,14 +25,15 @@ class AnyRegistry
 private:
     struct AnySerialization
     {
-        using Function = std::function<void(core::ArchiveBase&, std::any&)>;
+        // we use raw function ptr instead std::function to reach perfomance
+        using Function = void(*)(core::ArchiveBase&, std::any&);
 
         Function save = nullptr;
         Function load = nullptr;
     };
 
 private:
-    using InnerTable = std::unordered_map<std::size_t, AnySerialization>;
+    using InnerTable = std::unordered_map<let::u64, AnySerialization>;
 
 private:
     InnerTable registry_;
@@ -72,13 +75,13 @@ public:
         return serialization(hash).save(archive, any);
     }
 
-    void load(core::ArchiveBase& archive, std::any& any, std::size_t hash)
+    void load(core::ArchiveBase& archive, std::any& any, let::u64 hash)
     {
         serialization(hash).load(archive, any);
     }
 
 private:
-    const AnySerialization& serialization(std::size_t hash)
+    const AnySerialization& serialization(let::u64 hash)
     {
         auto it = registry_.find(hash);
         if (it == registry_.end())
@@ -88,15 +91,20 @@ private:
     }
 };
 
-// Type registry for any serialization
-template <typename T> void serializable()
+} // namespace dynamic
+
+// Type registry for any serialization, allowed registered and supported types only
+template <typename T> void spy()
 {
-    AnyRegistry::instance().update<meta::decay<T>>();
+    static_assert(not meta::is_unsupported<T>(), "The 'T' is an unsupported type for serialization.");
+    static_assert(meta::is_registered<T>(), "The 'T' is an unregistered for serialization.");
+
+    dynamic::AnyRegistry::instance().update<T>();
 }
 
-template <typename T> T&& serializable(T&& object)
+template <typename T> T&& spy(T&& object)
 {
-    serializable<T>();
+    spy<meta::decay<T>>();
     return std::forward<T>(object);
 }
 
@@ -104,5 +112,5 @@ template <typename T> T&& serializable(T&& object)
 
 #endif // if
 
-#endif // SIRAF_SUPPORT_DETAIL_ANY_REGISTRY_HPP
+#endif // SIRAF_DYNAMIC_ANY_REGISTRY_HPP
 

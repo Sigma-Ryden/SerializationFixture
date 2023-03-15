@@ -122,19 +122,16 @@ public:
               SIREQUIRE(meta::is_memory_shared<TraitType>())>
     std::shared_ptr<clone_type> clone(key_type key)
     {
-        return has_factory(key) ? factory_[key]->__shared() : nullptr;
+        auto it = factory_.find(key);
+        return it != factory_.end() ? it->second->__shared() : nullptr;
     }
 
     template <typename TraitType,
               SIREQUIRE(meta::is_memory_raw<TraitType>())>
     clone_type* clone(key_type key)
     {
-        return has_factory(key) ? factory_[key]->__raw() : nullptr;
-    }
-
-    bool has_factory(key_type key) const noexcept
-    {
-        return factory_.find(key) != factory_.end();
+        auto it = factory_.find(key);
+        return it != factory_.end() ? it->second->__raw() : nullptr;
     }
 
     std::shared_ptr<clone_type> cast(std::shared_ptr<void> address, key_type key)
@@ -147,11 +144,17 @@ public:
         return cast<memory::raw_ptr>(address, key);
     }
 
+    bool has_factory(key_type key)
+    {
+        return factory_.find(key) != factory_.end();
+    }
+
 private:
     template <template <typename...> class PointerWrapper>
     PointerWrapper<clone_type> cast(PointerWrapper<void> address, key_type key)
     {
-        return has_factory(key) ? factory_[key]->__cast(address) : nullptr;
+        auto it = factory_.find(key);
+        return it != factory_.end() ? it->second->__cast(address) : nullptr;
     }
 };
 
