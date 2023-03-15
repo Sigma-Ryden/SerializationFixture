@@ -1,6 +1,8 @@
 #ifndef SIRAF_CORE_HASH_HPP
 #define SIRAF_CORE_HASH_HPP
 
+#include <typeinfo> // type_info
+
 #include <Siraf/Core/TypeCore.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -12,6 +14,10 @@
     
     #define SIRAF_STATIC_HASH(string) ::siraf::static_hash<SIRAF_STATIC_HASH_KEY_TYPE>((string))
 #endif // SIRAF_STATIC_HASH
+
+#ifndef SIRAF_TYPE_HASH
+    #define SIRAF_TYPE_HASH(type_info) type_hash(type_info)
+#endif // SIRAF_TYPE_HASH
 
 namespace siraf
 {
@@ -103,7 +109,7 @@ public:
 } // namespace detail
 
 template <typename key_type = let::u64>
-key_type hash(const char* text)
+inline key_type hash(const char* text)
 {
     using detail::Hash;
     using detail::WordTrait;
@@ -118,6 +124,12 @@ constexpr key_type static_hash(const char* text) noexcept
     using detail::WordTrait;
 
     return Hash<detail::WordTrait<key_type>::value>::static_run(text);
+}
+
+inline let::u64 type_hash(const std::type_info& type) noexcept
+{
+    // not portable impl - will be changed
+    return type.hash_code();
 }
 
 } // namepace siraf

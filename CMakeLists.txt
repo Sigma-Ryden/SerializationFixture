@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -53,6 +53,7 @@ set(SIRAF
 
 set(SIRAF_SUPPORT
     include/Siraf/Support/Detail/Meta.hpp
+    include/Siraf/Support/Detail/AnyRegistry.hpp
     include/Siraf/Support/vector.hpp
     include/Siraf/Support/array.hpp
     include/Siraf/Support/string.hpp
@@ -74,6 +75,7 @@ set(SIRAF_SUPPORT
     include/Siraf/Support/complex.hpp
     include/Siraf/Support/optional.hpp
     include/Siraf/Support/variant.hpp
+    include/Siraf/Support/any.hpp
 )
 
 set(AUTO
@@ -116,6 +118,7 @@ add_executable(${PROJECT_NAME}
     test/TestMemory.cpp
     test/TestAtomic.cpp
     test/TestComplex.cpp
+    test/TestAny.cpp
 
     test/SirafTestingBase.hpp
     test/main.cpp

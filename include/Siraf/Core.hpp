@@ -1,10 +1,6 @@
 #ifndef SIRAF_CORE_HPP
 #define SIRAF_CORE_HPP
 
-#ifndef SIRAF_SMART_DISABLE
-    #define SIRAF_SMART // Use additional macro defs
-#endif // SIRAF_SMART_DISABLE
-
 #include <Siraf/Core/Config.hpp>
 
 #include <Siraf/Core/Access.hpp>
