@@ -3,8 +3,8 @@
 
 #include <Siraf/Core/ArchiveBase.hpp>
 
+#include <Siraf/Core/PolymorphicArchive.hpp> // operator <<, operator >>
 #include <Siraf/Dynamic/FactoryTable.hpp> // Cloneable
-#include <Siraf/Dynamic/PolymorphicArchive.hpp> // operator <<, operator >>
 
 // override will implicit add, when class inherit Polymorphic
 #define POLYMORPHIC_BODY(...)                                                                           \
@@ -26,12 +26,9 @@ namespace dynamic
 
 class Polymorphic : public Cloneable
 {
-public:
-    using Archive = core::ArchiveBase;
-
 private:
-    virtual void __save(Archive& archive) = 0;
-    virtual void __load(Archive& archive) = 0;
+    virtual void __save(core::ArchiveBase& archive) = 0;
+    virtual void __load(core::ArchiveBase& archive) = 0;
 };
 
 } // namespace dynamic

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Serialization LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -17,6 +17,7 @@ set(SIRAF
     include/Siraf/Core/ArchiveTrait.hpp
     include/Siraf/Core/Config.hpp
     include/Siraf/Core/PolymorphicTrait.hpp
+    include/Siraf/Core/PolymorphicArchive.hpp
     include/Siraf/Core/TypeRegistry.hpp
     include/Siraf/Core/Serialization.hpp
     include/Siraf/Core/SerializatonBase.hpp
@@ -30,7 +31,6 @@ set(SIRAF
     include/Siraf/Dynamic/FactoryTable.hpp
     include/Siraf/Dynamic/Registry.hpp
     include/Siraf/Dynamic/RegistryBase.hpp
-    include/Siraf/Dynamic/PolymorphicArchive.hpp
     include/Siraf/Dynamic/Polymorphic.hpp
 
     include/Siraf/DataTrack.hpp

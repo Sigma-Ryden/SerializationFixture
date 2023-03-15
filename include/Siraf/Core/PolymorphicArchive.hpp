@@ -1,5 +1,5 @@
-#ifndef SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP
-#define SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP
+#ifndef SIRAF_CORE_POLYMORPHIC_ARCHIVE_HPP
+#define SIRAF_CORE_POLYMORPHIC_ARCHIVE_HPP
 
 #include <Siraf/Core/Access.hpp>
 #include <Siraf/Core/Serialization.hpp>
@@ -14,7 +14,7 @@
 namespace siraf
 {
 
-namespace dynamic
+namespace core
 {
 
 class PolymorphicArchive
@@ -139,8 +139,8 @@ Archive& operator>> (Archive& archive, T& data)
     return archive;
 }
 
-} // namespace dynamic
+} // namespace core
 
 } // namespace siraf
 
-#endif // SIRAF_DYNAMIC_POLYMORPHIC_ARCHIVE_HPP
+#endif // SIRAF_CORE_POLYMORPHIC_ARCHIVE_HPP

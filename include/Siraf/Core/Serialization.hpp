@@ -7,15 +7,19 @@
 #include <Siraf/Detail/MetaMacro.hpp> // SIWHEN
 
 #define SERIALIZATION(mode, ...)                                                                        \
-    template <> struct Serialization::mode<__VA_ARGS__> {                                               \
-        template <class Archive> static void call(Archive& archive, __VA_ARGS__& self);                 \
+    template <>                                                                                         \
+    struct Serialization::mode<__VA_ARGS__> {                                                           \
+        template <class Archive>                                                                        \
+        static void call(Archive& archive, __VA_ARGS__& self);                                          \
     };                                                                                                  \
     template <class Archive>                                                                            \
     void Serialization::mode<__VA_ARGS__>::call(Archive& archive, __VA_ARGS__& self)
 
 #define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
-    template <typename T> struct Serialization::mode<T, SIWHEN(__VA_ARGS__)> {                          \
-        template <class Archive> static void call(Archive& archive, T& self);                           \
+    template <typename T>                                                                               \
+    struct Serialization::mode<T, SIWHEN(__VA_ARGS__)> {                                                \
+        template <class Archive>                                                                        \
+        static void call(Archive& archive, T& self);                                                    \
     };                                                                                                  \
     template <typename T> template <class Archive>                                                      \
     void Serialization::mode<T, SIWHEN(__VA_ARGS__)>::call(Archive& archive, T& self)

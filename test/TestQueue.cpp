@@ -14,6 +14,7 @@ TEST(TestSTLAdapter, TestQueue)
     std::vector<unsigned char> storage;
     {
         std::queue<bool> q = s_q;
+
         auto ar = oarchive(storage);
         ar & q;
     }
