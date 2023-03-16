@@ -65,7 +65,12 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, array, meta::is_array<T>())
 
 EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_pointer<T>())
 {
+#ifdef SIRAF_PTRTRACK_DISABLE
+    tracking::raw(archive, pointer);
+#else
     tracking::track(archive, pointer);
+#endif // SIRAF_PTRTRACK_DISABLE
+
     return archive;
 }
 
@@ -73,8 +78,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_po
 
 } // namespace siraf
 
-CONDITIONAL_TYPE_REGISTRY(::Serialization::is_save_class<T>() and ::Serialization::is_load_class<T>())
-CONDITIONAL_TYPE_REGISTRY(::Serialization::is_saveload_class<T>())
+CONDITIONAL_TYPE_REGISTRY(::Serialization::has_save_mode<T>() and ::Serialization::has_load_mode<T>())
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_arithmetic<T>())
 CONDITIONAL_TYPE_REGISTRY(meta::is_enum<T>())

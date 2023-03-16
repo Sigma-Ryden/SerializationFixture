@@ -60,6 +60,16 @@ void strict(ReadArchive& archive, T& pointer, memory::void_ptr<T>& cache)
     registry.load(archive, pointer, id, cache);
 }
 
+// verison without cache using
+template <class ReadArchive, typename T,
+          SIREQUIRE(meta::is_read_archive<ReadArchive>() and
+                    meta::is_serializable_pointer<T>())>
+void strict(ReadArchive& archive, T& pointer)
+{
+    memory::void_ptr<T> cache = nullptr;
+    strict(archive, pointer, cache);
+}
+
 namespace detail
 {
 
@@ -104,17 +114,10 @@ private:
 public:
     StrictFunctor(T& parameter) noexcept : parameter_(parameter) {}
 
-    template <typename Archive, SIREQUIRE(meta::is_write_archive<Archive>())>
+    template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>
     void operator() (Archive& archive)
     {
         ::siraf::strict(archive, parameter_);
-    }
-
-    template <typename Archive, SIREQUIRE(meta::is_read_archive<Archive>())>
-    void operator() (Archive& archive)
-    {
-        memory::void_ptr<T> cache = nullptr;
-        ::siraf::strict(archive, parameter_, cache);
     }
 };
 

@@ -231,10 +231,9 @@ Span<Type, N> make_span(Pointer& data, D d, Dn... dn)
 namespace detail
 {
 
-template <class WriteArchive, typename T,
-          SIREQUIRE(meta::is_write_archive<WriteArchive>()
-                    and not meta::is_span<T>())>
-void raw_span(WriteArchive& archive, T& data)
+template <class Archive, typename T,
+          SIREQUIRE(meta::is_archive<Archive>() and not meta::is_span<T>())>
+void raw_span(Archive& archive, T& data)
 {
     archive & data;
 }
@@ -251,15 +250,6 @@ void raw_span(WriteArchive& archive, T& array)
         raw_span(archive, array[i]);
 }
 
-template <class ReadArchive, typename T,
-          SIREQUIRE(meta::is_read_archive<ReadArchive>()
-                    and not meta::is_span<T>())>
-void raw_span(ReadArchive& archive, T& data)
-{
-    archive & data; // will improve
-}
-
-// serialization of scoped data with previous dimension initialization
 template <class ReadArchive, typename T,
           SIREQUIRE(meta::is_read_archive<ReadArchive>()
                     and meta::is_span<T>())>
