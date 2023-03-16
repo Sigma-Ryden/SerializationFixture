@@ -10,7 +10,6 @@
 #include <Siraf/Memory/Memory.hpp>
 
 #define CLONEABLE_BODY(...)                                                                             \
-    friend class ::siraf::dynamic::FactoryTable;                                                        \
     private:                                                                                            \
     siraf::dynamic::FactoryRegistry<__VA_ARGS__> __registry;                                            \
     static constexpr key_type __static_trait() noexcept                                                 \
@@ -53,8 +52,8 @@ class Cloneable
     friend class FactoryTable;
 
 public:
-    using key_type   = FactoryTableBase::key_type;
     using clone_type = FactoryTableBase::clone_type;
+    using key_type   = FactoryTableBase::key_type;
 
 public:
     virtual ~Cloneable() = default;
@@ -72,8 +71,8 @@ private:
 class FactoryTable
 {
 public:
-    using key_type   = FactoryTableBase::key_type;
     using clone_type = FactoryTableBase::clone_type;
+    using key_type   = FactoryTableBase::key_type;
 
     using InnerTable = std::unordered_map<key_type, clone_type*>;
 

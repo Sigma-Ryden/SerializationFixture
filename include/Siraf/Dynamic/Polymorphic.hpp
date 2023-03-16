@@ -26,6 +26,9 @@ namespace dynamic
 
 class Polymorphic : public Cloneable
 {
+public:
+    virtual ~Polymorphic() = default;
+
 private:
     virtual void __save(core::ArchiveBase& archive) = 0;
     virtual void __load(core::ArchiveBase& archive) = 0;

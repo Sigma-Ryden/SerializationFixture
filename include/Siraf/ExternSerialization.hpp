@@ -13,6 +13,7 @@
                         (bool)(__VA_ARGS__))>                                                           \
     Archive& operator& (Archive& archive, T& parameter)
 
+// require TYPE_REGISTRY before use
 #define EXTERN_SERIALIZATION(mode, parameter, ...)                                                      \
     template <class Archive,                                                                            \
               SIREQUIRE(::siraf::meta::is_##mode<Archive>() and                                         \
