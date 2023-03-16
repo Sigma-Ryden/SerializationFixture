@@ -73,7 +73,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_po
 
 } // namespace siraf
 
-CONDITIONAL_TYPE_REGISTRY(::Serialization::is_save_class<T>() or ::Serialization::is_load_class<T>())
+CONDITIONAL_TYPE_REGISTRY(::Serialization::is_save_class<T>() and ::Serialization::is_load_class<T>())
 CONDITIONAL_TYPE_REGISTRY(::Serialization::is_saveload_class<T>())
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_arithmetic<T>())
