@@ -94,7 +94,7 @@ private:
 } // namespace dynamic
 
 // Type registry for any serialization, allowed registered and supported types only
-template <typename T> void spy()
+template <typename T> void serializable()
 {
     static_assert(not meta::is_unsupported<T>(), "The 'T' is an unsupported type for serialization.");
     static_assert(meta::is_registered<T>(), "The 'T' is an unregistered for serialization.");
@@ -102,9 +102,9 @@ template <typename T> void spy()
     dynamic::AnyRegistry::instance().update<T>();
 }
 
-template <typename T> T&& spy(T&& object)
+template <typename T> T&& serializable(T&& object)
 {
-    spy<meta::decay<T>>();
+    serializable<meta::decay<T>>();
     return std::forward<T>(object);
 }
 

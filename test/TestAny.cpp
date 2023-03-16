@@ -9,7 +9,7 @@
 
 TEST(TestUtility, TestAny)
 {
-    using siraf::spy; // do possible serialize data assigned to any
+    using siraf::serializable; // do possible serialize data assigned to any
 
     enum class Property { Speed, Force, Intelige };
 
@@ -20,14 +20,14 @@ TEST(TestUtility, TestAny)
     std::vector<unsigned char> storage;
     {
         std::vector<std::any> va = {
-            "Jack", // spy can be omitted, see type registry (0)
-            spy(sv_va_1), // (1)
-            spy(Property::Force) // (2)
+            "Jack", // serializable can be omitted, see type registry (0)
+            serializable(sv_va_1), // (1)
+            serializable(Property::Force) // (2)
         };
 
-        // spy<int>(); spy with explicit type can be ommitted, see previous type ristry (1)
-        va[0] = spy(sv_va_0); // (0)
-        va[2] = sv_va_2; // spy can be omitted, see previous type registry (2)
+        // serializable<int>(); serializable with explicit type can be omitted, see previous type ristry (1)
+        va[0] = serializable(sv_va_0); // (0)
+        va[2] = sv_va_2; // serializable can be omitted, see previous type registry (2)
 
         auto ar = oarchive(storage);
         ar & va;

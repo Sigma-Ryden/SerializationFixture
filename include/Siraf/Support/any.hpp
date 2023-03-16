@@ -30,7 +30,7 @@ struct is_std_any<std::any> : std::true_type {};
 inline namespace library
 {
 
-// please, use 'siraf::spy' for type any registry before std::any serialization
+// please, use 'siraf::serializable' for type any registry before std::any serialization
 EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
 {
     let::u64 hash = SIRAF_TYPE_HASH(any.type());
