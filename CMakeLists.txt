@@ -89,7 +89,6 @@ add_executable(${PROJECT_NAME}
     # test/demo/demo.cpp
     # test/demo/tracking.cpp
     # test/demo/inheritance.cpp
-    # test/demo/multi_array.cpp
     # test/demo/tracking_virtual.cpp
     # test/demo/ref_tracking.cpp
     # test/demo/tracking_shared_ptr.cpp
@@ -119,6 +118,7 @@ add_executable(${PROJECT_NAME}
     test/TestAtomic.cpp
     test/TestComplex.cpp
     test/TestAny.cpp
+    test/TestDynamicArray.cpp
 
     test/SirafTestingBase.hpp
     test/main.cpp

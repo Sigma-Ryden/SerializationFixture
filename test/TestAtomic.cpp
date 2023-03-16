@@ -14,7 +14,7 @@ TEST(TestConcurrency, TestAtomic)
         ar & a;
     }
     {
-         std::atomic<unsigned> a;
+        std::atomic<unsigned> a;
 
         auto ar = iarchive(storage);
         ar & a;
