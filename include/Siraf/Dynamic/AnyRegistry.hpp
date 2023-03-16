@@ -97,7 +97,7 @@ private:
 template <typename T> void serializable()
 {
     static_assert(not meta::is_unsupported<T>(), "The 'T' is an unsupported type for serialization.");
-    static_assert(meta::is_registered<T>(), "The 'T' is an unregistered for serialization.");
+    static_assert(meta::is_registered<T>(), "The 'T' is an unregistered type for serialization.");
 
     dynamic::AnyRegistry::instance().update<T>();
 }
