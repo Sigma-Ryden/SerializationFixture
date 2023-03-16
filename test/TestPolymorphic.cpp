@@ -20,15 +20,11 @@ template <typename T> struct is_base<Base<T>> : std::true_type {};
 
 SERIALIZATION(Save, Base<std::string>)
 {
+    // more specialize version
     archive & self.data;
 }
 
-CONDITIONAL_SERIALIZATION(Save, is_base<T>::value)
-{
-    archive & self.data;
-}
-
-CONDITIONAL_SERIALIZATION(Load, is_base<T>::value)
+CONDITIONAL_SERIALIZATION(SaveLoad, is_base<T>::value)
 {
     archive & self.data;
 }
