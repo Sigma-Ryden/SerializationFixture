@@ -84,7 +84,6 @@ set(AUTO
 )
 
 add_executable(${PROJECT_NAME}
-    # test/demo/polymorphic.cpp
     # test/demo/virtual_base.cpp
     # test/demo/demo.cpp
     # test/demo/tracking.cpp
@@ -119,6 +118,7 @@ add_executable(${PROJECT_NAME}
     test/TestComplex.cpp
     test/TestAny.cpp
     test/TestDynamicArray.cpp
+    test/TestPolymorphic.cpp
 
     test/SirafTestingBase.hpp
     test/main.cpp
