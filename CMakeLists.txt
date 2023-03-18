@@ -33,6 +33,7 @@ set(SIRAF
     include/Siraf/Dynamic/RegistryBase.hpp
     include/Siraf/Dynamic/Polymorphic.hpp
     include/Siraf/Dynamic/AnyRegistry.hpp
+    include/Siraf/Dynamic/Cloneable.hpp
 
     include/Siraf/DataTrack.hpp
     include/Siraf/Compress.hpp
@@ -86,7 +87,6 @@ set(AUTO
 add_executable(${PROJECT_NAME}
     # test/demo/virtual_base.cpp
     # test/demo/demo.cpp
-    # test/demo/tracking.cpp
     # test/demo/inheritance.cpp
     # test/demo/tracking_virtual.cpp
     # test/demo/ref_tracking.cpp
@@ -119,6 +119,8 @@ add_executable(${PROJECT_NAME}
     test/TestAny.cpp
     test/TestDynamicArray.cpp
     test/TestPolymorphic.cpp
+    test/TestTracking.cpp
+    test/TestValidation.cpp
 
     test/SirafTestingBase.hpp
     test/main.cpp

@@ -91,14 +91,14 @@ void track(WriteArchive& archive, T& data)
     auto address = memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
 
+    archive & key; // we should write key before check to sync reading
+
     auto& is_tracking = archive.tracking()[key];
 
     if (is_tracking)
         throw "The write tracking data is already tracked.";
 
     is_tracking = true;
-
-    archive & key;
     archive & data;
 }
 

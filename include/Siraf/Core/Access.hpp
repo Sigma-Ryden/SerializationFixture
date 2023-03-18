@@ -133,9 +133,13 @@ public:
     }
 
     template <class T, SIREQUIRE(is_registered_class<T>())>
+#ifdef SIRAF_EXPORT_POLYMORPHIC_DISABLE
+    static constexpr PolymorphicTraitBase::key_type trait() noexcept
+#else
     static PolymorphicTraitBase::key_type trait() noexcept
+#endif // SIRAF_EXPORT_POLYMORPHIC_DISABLE
     {
-        static constexpr auto trait_key = PolymorphicTraitKey<T>::key;
+        constexpr auto trait_key = PolymorphicTraitKey<T>::key;
 
         return trait_key == PolymorphicTraitBase::base_key
              ? static_trait<T>()

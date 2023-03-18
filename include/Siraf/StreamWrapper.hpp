@@ -6,6 +6,10 @@
 
 #include <Siraf/Memory/Memory.hpp>
 
+#ifndef SIRAF_BYTE_STREAM_RESERVE_SIZE
+    #define SIRAF_BYTE_STREAM_RESERVE_SIZE std::size_t(1024)
+#endif // SIRAF_BYTE_STREAM_RESERVE_SIZE
+
 namespace siraf
 {
 
@@ -26,7 +30,8 @@ public:
 public:
     OByteStream(OutStream& stream) : storage(stream)
     {
-        storage.reserve(1024); // default reserve memory
+        storage.clear();
+        storage.reserve(SIRAF_BYTE_STREAM_RESERVE_SIZE); // default reserve memory
     }
 
     template <typename T>

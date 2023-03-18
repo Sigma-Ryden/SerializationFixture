@@ -55,6 +55,7 @@ SERIALIZATION(SaveLoad, internal::Derived)
 // we can overload polymorphic key for each class (or full template specialization)
 
 // smae as EXPORT_POLYMORPHIC_KEY("Base<double>", Base<double>)
+EXPORT_POLYMORPHIC(Base<double>)
 EXPORT_POLYMORPHIC(Base<std::string>)
 
 // EXPORT_POLYMORPHIC(internal::Derived) // - not required, but allow
@@ -79,6 +80,7 @@ TEST(TestCommon, TestPolymorphic)
 
         auto ar = oarchive(storage);
         ar & p & c;
+
     }
     {
         Parent* p = nullptr;
