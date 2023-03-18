@@ -23,8 +23,10 @@ struct is_std_tuple<std::tuple<Tn...>> : std::true_type {};
 namespace detail
 {
 
-template <class Archive, class Tuple, std::size_t... I>
-void expand_impl(Archive& archive, Tuple& tuple, meta::index_sequence<I...>)
+template <class Archive, class T, std::size_t... I,
+          SIREQUIRE(meta::is_archive<Archive>() and
+                    meta::is_std_tuple<T>::value)>
+void expand(Archive& archive, T& tuple, meta::index_sequence<I...>)
 {
     archive(std::get<I>(tuple)...);
 }
@@ -34,18 +36,11 @@ void expand_impl(Archive& archive, Tuple& tuple, meta::index_sequence<I...>)
 inline namespace library
 {
 
-template <class Archive, class T,
-          SIREQUIRE(meta::is_archive<Archive>() and
-                    meta::is_std_tuple<T>::value)>
-void expand(Archive& archive, T& tuple)
-{
-    constexpr auto N = std::tuple_size<T>::value;
-    detail::expand_impl(archive, tuple, meta::make_index_sequence<N>{});
-}
-
 EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, tuple, meta::is_std_tuple<T>::value)
 {
-    expand(archive, tuple);
+    constexpr std::size_t size = std::tuple_size<T>::value;
+    detail::expand(archive, tuple, meta::make_index_sequence<size>{});
+
     return archive;
 }
 
