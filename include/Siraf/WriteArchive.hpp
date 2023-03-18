@@ -35,7 +35,10 @@ public:
 
 private:
     StreamWrapper archive_;
-    TrackingTable track_common_;
+
+    TrackingTable track_shared_;
+    TrackingTable track_raw_;
+
     Registry registry_;
 
 public:
@@ -43,9 +46,13 @@ public:
 
     auto stream() noexcept -> StreamWrapper& { return archive_; }
 
-    template <typename TrackType = tracking::Common,
-              SIREQUIRE(meta::is_track_common<TrackType>())>
-    auto tracking() noexcept -> TrackingTable& { return track_common_; }
+    template <typename TrackType,
+              SIREQUIRE(meta::is_track_shared<TrackType>())>
+    auto tracking() noexcept -> TrackingTable& { return track_shared_; }
+
+    template <typename TrackType,
+              SIREQUIRE(meta::is_track_raw<TrackType>())>
+    auto tracking() noexcept -> TrackingTable& { return track_raw_; }
 
     auto registry() noexcept -> Registry& { return registry_; }
 
@@ -83,7 +90,7 @@ WriteArchive<OutStream, StreamWrapper, Registry> oarchive(OutStream& stream)
 
 template <class OutStream, class StreamWrapper, class Registry>
 WriteArchive<OutStream, StreamWrapper, Registry>::WriteArchive(OutStream& stream)
-    : archive_{stream}, track_common_(), registry_()
+    : archive_{stream}, track_shared_(), track_raw_(), registry_()
 {
 }
 

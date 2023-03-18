@@ -46,7 +46,7 @@ template <typename TrackType, class Archive, typename key_type,
           SIREQUIRE(meta::is_archive<Archive>())>
 bool is_mixed(Archive& archive, key_type key)
 {
-    using reverse_track_type = typename reverse_trait<TrackType>::trait;
+    using reverse_track_type = typename reverse_trait<TrackType>::type;
 
     return is_track<reverse_track_type>(archive, key);
 }
@@ -56,7 +56,8 @@ template <class WriteArchive, typename T,
                     and meta::is_pointer<T>())>
 void track(WriteArchive& archive, T& pointer)
 {
-    using key_type = typename WriteArchive::TrackingKeyType;
+    using key_type   = typename WriteArchive::TrackingKeyType;
+    using track_type = typename tracking::track_trait<T>::type;
 
 #ifndef SIRAF_NULLPTR_DISABLE
     const auto success = detail::is_refer(archive, pointer); // serialize refer info
@@ -66,7 +67,12 @@ void track(WriteArchive& archive, T& pointer)
     auto pure = memory::pure(pointer);
     auto key = reinterpret_cast<key_type>(memory::raw(pure));
 
-    auto& is_tracking = archive.tracking()[key];
+#ifdef SIRAF_DEBUG
+    if (is_mixed<track_type>(archive, key))
+        throw "Mixed pointer tracking is not allowed.";
+#endif // SIRAF_DEBUG
+
+    auto& is_tracking = archive.template tracking<track_type>()[key];
 
     if (not is_tracking)
     {
@@ -91,14 +97,14 @@ void track(WriteArchive& archive, T& data)
     auto address = memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
 
-    archive & key; // we should write key before check to sync reading
-
-    auto& is_tracking = archive.tracking()[key];
+    auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
 
     if (is_tracking)
         throw "The write tracking data is already tracked.";
 
     is_tracking = true;
+
+    archive & key;
     archive & data;
 }
 
@@ -108,7 +114,7 @@ template <class ReadArchive, typename T,
 void track(ReadArchive& archive, T& pointer)
 {
     using key_type   = typename ReadArchive::TrackingKeyType;
-    using track_type = typename tracking::track_trait<T>::trait;
+    using track_type = typename tracking::track_trait<T>::type;
 
     if (pointer != nullptr)
         throw "The read track pointer must be initialized to nullptr.";
@@ -120,11 +126,6 @@ void track(ReadArchive& archive, T& pointer)
 
     key_type key;
     archive & key;
-
-#ifdef SIRAF_DEBUG
-    if (is_mixed<track_type>(archive, key))
-        throw "Mixed pointer tracking is not allowed.";
-#endif // SIRAF_DEBUG
 
     auto& item = archive.template tracking<track_type>()[key];
 
@@ -144,13 +145,12 @@ template <class ReadArchive, typename T,
                     and not meta::is_pointer<T>())>
 void track(ReadArchive& archive, T& data)
 {
-    using key_type   = typename ReadArchive::TrackingKeyType;
-    using track_type = tracking::Raw;
+    using key_type = typename ReadArchive::TrackingKeyType;
 
     key_type key;
     archive & key;
 
-    auto& item = archive.template tracking<track_type>()[key];
+    auto& item = archive.template tracking<tracking::Raw>()[key];
 
     if (item.address != nullptr)
         throw  "The read tracking data is already tracked.";

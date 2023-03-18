@@ -21,13 +21,13 @@ struct track_trait;
 template <typename T>
 struct track_trait<memory::shared_ptr<T>>
 {
-    using trait = tracking::Shared;
+    using type = tracking::Shared;
 };
 
 template <typename T>
 struct track_trait<memory::raw_ptr<T>>
 {
-    using trait = tracking::Raw;
+    using type = tracking::Raw;
 };
 
 template <typename T>
@@ -36,19 +36,19 @@ struct reverse_trait;
 template <>
 struct reverse_trait<Shared>
 {
-    using trait = Raw;
+    using type = Raw;
 };
 
 template <>
 struct reverse_trait<Raw>
 {
-    using trait = Shared;
+    using type = Shared;
 };
 
 template <>
 struct reverse_trait<Common>
 {
-    using trait = Common;
+    using type = Common;
 };
 
 } // namespace tracking

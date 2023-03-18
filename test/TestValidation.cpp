@@ -19,20 +19,7 @@ TEST(TestLibrary, TestValidation)
         auto success = false;
         try { ar & track(j); } catch(...) { success = true; }
 
-        EXPECT("bad data track.write", success);
-    }
-    {
-        auto ar = iarchive(storage);
-
-        int j;
-        int* p_j = nullptr;
-
-        ar & p_j;
-
-        bool success = false;
-        try { ar & track(j); } catch(...) { success = true; }
-
-        EXPECT("bad data track.read", success);
+        EXPECT("bad data track", success);
     }
 
     storage.clear();
@@ -62,14 +49,6 @@ TEST(TestLibrary, TestValidation)
         int* r = m; // good
         std::shared_ptr<int> s(m); // bad - mixed tracking
 
-        ar & r & s;
-    }
-    {
-        auto ar = iarchive(storage);
-
-        int* r = nullptr;
-        std::shared_ptr<int> s = nullptr;
-
         ar & r;
 
         auto success = false;
@@ -86,14 +65,6 @@ TEST(TestLibrary, TestValidation)
 
         std::shared_ptr<int> s(m); // god
         int* r = m; // bad - mixed tracking
-
-        ar & s & r;
-    }
-    {
-        auto ar = iarchive(storage);
-
-        std::shared_ptr<int> s = nullptr;
-        int* r = nullptr;
 
         ar & s;
 
