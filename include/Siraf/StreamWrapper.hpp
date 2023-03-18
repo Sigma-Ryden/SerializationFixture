@@ -30,7 +30,6 @@ public:
 public:
     OByteStream(OutStream& stream) : storage(stream)
     {
-        storage.clear();
         storage.reserve(SIRAF_BYTE_STREAM_RESERVE_SIZE); // default reserve memory
     }
 

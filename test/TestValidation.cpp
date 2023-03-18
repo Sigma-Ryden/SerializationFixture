@@ -35,6 +35,7 @@ TEST(TestLibrary, TestValidation)
         EXPECT("bad data track.read", success);
     }
 
+    storage.clear();
     {
         auto ar = oarchive(storage);
 
@@ -52,6 +53,7 @@ TEST(TestLibrary, TestValidation)
         EXPECT("garbage ptr.read", success);
     }
 
+    storage.clear();
     {
         auto ar = oarchive(storage);
 
@@ -76,6 +78,7 @@ TEST(TestLibrary, TestValidation)
         EXPECT("mixed track.raw shared", success);
     }
 
+    storage.clear();
     {
         auto ar = oarchive(storage);
 
