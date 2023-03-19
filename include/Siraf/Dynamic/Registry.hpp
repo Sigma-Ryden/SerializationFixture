@@ -41,7 +41,7 @@ public:
         using TraitType = typename memory::ptr_trait<T>::trait;
 
         if (pointer != nullptr)
-            throw "The read shared pointer must be initialized to nullptr.";
+            throw "The read pointer must be initialized to nullptr.";
 
         auto cloned = FactoryTable::instance().clone<TraitType>(key);
 
