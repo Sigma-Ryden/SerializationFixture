@@ -8,6 +8,9 @@
 
 #define CLONEABLE_BODY(...)                                                                             \
     private:                                                                                            \
+    using clone_type = siraf::dynamic::Cloneable::clone_type;                                           \
+    using key_type = siraf::dynamic::Cloneable::key_type;                                               \
+    private:                                                                                            \
     siraf::dynamic::FactoryRegistry<__VA_ARGS__> __registry;                                            \
     static constexpr key_type __static_trait() noexcept                                                 \
     { return SIRAF_STATIC_HASH(#__VA_ARGS__); }                                                         \

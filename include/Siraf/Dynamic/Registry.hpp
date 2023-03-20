@@ -45,11 +45,6 @@ public:
 
         auto cloned = FactoryTable::instance().clone<TraitType>(key);
 
-    #ifdef SIRAF_DEBUG
-        if (cloned == nullptr)
-            throw "The 'siraf::dynamic::FactoryTable' does not has clone instance with input key.";
-    #endif // SIRAF_DEBUG
-
         pointer = memory::dynamic_pointer_cast<dT>(cloned);
         cache = memory::pure(pointer);
 

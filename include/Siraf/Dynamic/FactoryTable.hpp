@@ -68,16 +68,14 @@ public:
               SIREQUIRE(meta::is_memory_shared<TraitType>())>
     std::shared_ptr<clone_type> clone(key_type key)
     {
-        auto it = factory_.find(key);
-        return it != factory_.end() ? it->second->__shared() : nullptr;
+        return factory(key)->__shared();
     }
 
     template <typename TraitType,
               SIREQUIRE(meta::is_memory_raw<TraitType>())>
     clone_type* clone(key_type key)
     {
-        auto it = factory_.find(key);
-        return it != factory_.end() ? it->second->__raw() : nullptr;
+        return factory(key)->__raw();
     }
 
     std::shared_ptr<clone_type> cast(std::shared_ptr<void> address, key_type key)
@@ -99,8 +97,16 @@ private:
     template <template <typename...> class PointerWrapper>
     PointerWrapper<clone_type> cast(PointerWrapper<void> address, key_type key)
     {
+        return factory(key)->__cast(address);
+    }
+
+    clone_type* factory(key_type key)
+    {
         auto it = factory_.find(key);
-        return it != factory_.end() ? it->second->__cast(address) : nullptr;
+        if (it == factory_.end())
+            throw "The 'siraf::dynamic::FactoryTable' does not has clone instance with input key.";
+
+        return it->second;
     }
 };
 

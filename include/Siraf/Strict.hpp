@@ -13,7 +13,7 @@ namespace siraf
 
 template <class WriteArchive, typename T,
           SIREQUIRE(meta::is_write_archive<WriteArchive>() and
-                    meta::is_pointer_to_pod<T>())>
+                    meta::is_pointer_to_standard_layout<T>())>
 void strict(WriteArchive& archive, T& pointer)
 {
     if (pointer == nullptr)
@@ -24,7 +24,7 @@ void strict(WriteArchive& archive, T& pointer)
 
 template <class ReadArchive, typename T,
           SIREQUIRE(meta::is_read_archive<ReadArchive>() and
-                    meta::is_pointer_to_pod<T>())>
+                    meta::is_pointer_to_standard_layout<T>())>
 void strict(ReadArchive& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     using item_type = typename memory::ptr_trait<T>::item;

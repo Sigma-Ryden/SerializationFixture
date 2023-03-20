@@ -7,11 +7,11 @@
 
 #include <Siraf/Detail/Meta.hpp>
 
+#ifndef SIRAF_STATIC_HASH_KEY_TYPE
+    #define SIRAF_STATIC_HASH_KEY_TYPE ::siraf::let::u64
+#endif // SIRAF_STATIC_HASH_KEY_TYPE
+
 #ifndef SIRAF_STATIC_HASH
-    #ifndef SIRAF_STATIC_HASH_KEY_TYPE
-        #define SIRAF_STATIC_HASH_KEY_TYPE ::siraf::let::u64
-    #endif // SIRAF_STATIC_HASH_KEY_TYPE
-    
     #define SIRAF_STATIC_HASH(string) ::siraf::static_hash<SIRAF_STATIC_HASH_KEY_TYPE>((string))
 #endif // SIRAF_STATIC_HASH
 

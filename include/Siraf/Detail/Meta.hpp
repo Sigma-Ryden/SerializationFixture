@@ -514,7 +514,7 @@ template <typename T> constexpr bool is_function_pointer() noexcept
     return detail::is_function_pointer<T>();
 }
 
-template <typename T> constexpr bool is_pointer_to_pod() noexcept
+template <typename T> constexpr bool is_pointer_to_standard_layout() noexcept
 {
     return is_pointer<T>() and
        not is_void_pointer<T>() and
@@ -526,7 +526,7 @@ template <typename T> constexpr bool is_pointer_to_pod() noexcept
 
 template <typename T> constexpr bool is_serializable_pointer() noexcept
 {
-    return is_pointer_to_pod<T>() or is_pointer_to_polymorphic<T>();
+    return is_pointer_to_standard_layout<T>() or is_pointer_to_polymorphic<T>();
 }
 
 template <typename T> constexpr bool is_serializable_raw_pointer() noexcept

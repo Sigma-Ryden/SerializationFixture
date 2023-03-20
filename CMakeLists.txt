@@ -120,7 +120,7 @@ add_executable(${PROJECT_NAME}
     test/TestDynamicArray.cpp
     test/TestPolymorphic.cpp
     test/TestTracking.cpp
-    test/TestValidation.cpp
+    test/TestLibrary.cpp
 
     test/SirafTestingBase.hpp
     test/main.cpp
