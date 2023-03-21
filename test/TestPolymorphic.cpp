@@ -2,6 +2,8 @@
 
 #include <Siraf/Support/string.hpp>
 
+// POLYMORPHIC() - the same as siraf::dynamic::Polymorphic
+
 template <class SomeType>
 struct Base : POLYMORPHIC()
 {

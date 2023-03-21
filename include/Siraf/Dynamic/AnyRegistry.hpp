@@ -22,14 +22,15 @@ namespace dynamic
 
 class AnyRegistry
 {
-private:
+public:
+    // we use raw function ptr instead std::function to reach perfomance
+    using SerializationFunction = void(*)(core::ArchiveBase&, std::any&);
+
+public:
     struct AnySerialization
     {
-        // we use raw function ptr instead std::function to reach perfomance
-        using Function = void(*)(core::ArchiveBase&, std::any&);
-
-        Function save = nullptr;
-        Function load = nullptr;
+        SerializationFunction save = nullptr;
+        SerializationFunction load = nullptr;
     };
 
 private:
@@ -69,18 +70,6 @@ public:
     }
 
 public:
-    void save(core::ArchiveBase& archive, std::any& any)
-    {
-        auto hash = SIRAF_TYPE_HASH(any.type());
-        return serialization(hash).save(archive, any);
-    }
-
-    void load(core::ArchiveBase& archive, std::any& any, let::u64 hash)
-    {
-        serialization(hash).load(archive, any);
-    }
-
-private:
     const AnySerialization& serialization(let::u64 hash)
     {
         auto it = registry_.find(hash);
@@ -90,6 +79,11 @@ private:
         return it->second;
     }
 };
+
+inline const AnyRegistry::AnySerialization& any_serialization(let::u64 hash)
+{
+    return AnyRegistry::instance().serialization(hash);
+}
 
 } // namespace dynamic
 

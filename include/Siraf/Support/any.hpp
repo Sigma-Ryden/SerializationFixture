@@ -36,7 +36,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
     let::u64 hash = SIRAF_TYPE_HASH(any.type());
     archive & hash;
 
-    dynamic::AnyRegistry::instance().save(archive, any);
+    dynamic::any_serialization(hash).save(archive, any);
 
     return archive;
 }
@@ -46,7 +46,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, any, meta::is_std_any<T>::value)
     let::u64 hash{};
     archive & hash;
 
-    dynamic::AnyRegistry::instance().load(archive, any, hash);
+    dynamic::any_serialization(hash).load(archive, any);
 
     return archive;
 }
