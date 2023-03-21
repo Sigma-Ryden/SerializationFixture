@@ -24,6 +24,9 @@ class OByteStream
 protected:
     using item_type = typename OutStream::value_type;
 
+protected:
+    static_assert(sizeof(item_type) == 1, "Require byte size for 'siraf::wrapper::OByteStream'.");
+
 public:
     OutStream& storage;
 
@@ -50,6 +53,9 @@ struct IByteStream
 {
 protected:
     using item_type = typename InStream::value_type;
+
+protected:
+    static_assert(sizeof(item_type) == 1, "Require byte size for 'siraf::wrapper::IByteStream'.");
 
 public:
     InStream& storage;
