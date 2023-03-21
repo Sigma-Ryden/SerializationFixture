@@ -208,3 +208,52 @@ TEST(TestLibrary, TestExportPolymorphic)
             Access::static_trait<MyCustomType>() == sv_ct);
     }
 }
+
+#include <Siraf/Support/string.hpp>
+
+TEST(TestLibrary, TestStreamWrapper)
+{
+    static std::string s_s = "Hello, World!";
+
+    std::vector<char> storage;
+    {
+        std::string s = s_s;
+
+        auto ar = oarchive(storage);
+        ar & s;
+    }
+    {
+        std::string s;
+
+        auto ar = iarchive(storage);
+        ar & s;
+
+        EXPECT("char storage", s == s_s);
+    }
+
+    storage.clear();
+    {
+        std::string s = s_s;
+
+        auto ar = oarchive(storage);
+        ar & s;
+
+        std::ofstream file("test.bin", std::ios::binary);
+
+        // if we use unsigned char - we should use reinterpret_cast to const char
+        // or 'siraf::memory::const_byte_cast' function
+        file.write(storage.data(), storage.size());
+
+        file.close();
+    }
+    {
+        std::string s;
+
+        std::ifstream file("test.bin", std::ios::binary);
+
+        auto ar = iarchive<siraf::wrapper::IFileStream>(file);
+        ar & s;
+
+        EXPECT("storage converting", s == s_s);
+    }
+}

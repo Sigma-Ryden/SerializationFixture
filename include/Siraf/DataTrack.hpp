@@ -19,9 +19,8 @@
         T& parameter_;                                                                                  \
     public:                                                                                             \
         class_name(T& parameter) noexcept : parameter_(parameter) {}                                    \
-        template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>                             \
-        void operator() (Archive& archive)                                                              \
-        { ::siraf::tracking::function_name(archive, parameter_); }                                      \
+        template <class Archive>                                                                        \
+        void operator() (Archive& archive) { ::siraf::tracking::function_name(archive, parameter_); }   \
     };
 
 #define _SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(class_name, function_name)                        \

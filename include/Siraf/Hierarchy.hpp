@@ -14,9 +14,8 @@
         Derived& object_;                                                                               \
     public:                                                                                             \
         class_name(Derived& object) : object_(object) {}                                                \
-        template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>                             \
-        void operator() (Archive& archive)                                                              \
-        { function_name<Base>(archive, object_); }                                                      \
+        template <typename Archive>                                                                     \
+        void operator() (Archive& archive) { function_name<Base>(archive, object_); }                   \
     };
 
 #define _SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(class_name, function_name)                        \
