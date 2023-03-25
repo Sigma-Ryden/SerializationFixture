@@ -14,6 +14,7 @@
 #include <Siraf/Memory/Memory.hpp>
 
 #include <Siraf/DataTrackBase.hpp>
+#include <Siraf/HierarchyTrack.hpp>
 #include <Siraf/StreamWrapper.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -43,11 +44,15 @@ public:
     template <typename TrackData>
     using TrackingTable = std::unordered_map<TrackingKeyType, TrackData>;
 
+    using HierarchyTrackingTable = tracking::HierarchyTrack<TrackingKeyType>;
+
 private:
     StreamWrapper archive_;
 
     TrackingTable<Shared> track_shared_;
     TrackingTable<Raw> track_raw_;
+
+    HierarchyTrackingTable track_hierarchy_;
 
     Registry registry_;
 
@@ -63,6 +68,10 @@ public:
     template <typename TrackType,
               SIREQUIRE(meta::is_track_raw<TrackType>())>
     auto tracking() noexcept -> TrackingTable<Raw>& { return track_raw_; }
+
+    template <typename TrackType,
+              SIREQUIRE(meta::is_track_hierarchy<TrackType>())>
+    auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
 
     auto registry() noexcept -> Registry& { return registry_; }
 
@@ -100,7 +109,7 @@ ReadArchive<InStream, StreamWrapper, Registry> iarchive(InStream& stream)
 
 template <class InStream, class StreamWrapper, class Registry>
 ReadArchive<InStream, StreamWrapper, Registry>::ReadArchive(InStream& stream)
-    : archive_{stream}, track_shared_(), track_raw_(), registry_()
+    : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 

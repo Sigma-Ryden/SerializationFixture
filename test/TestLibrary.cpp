@@ -257,3 +257,122 @@ TEST(TestLibrary, TestStreamWrapper)
         EXPECT("storage converting", s == s_s);
     }
 }
+
+// if you won't serialize object just omit SERIlALIZABLE(type)
+// but if you are going to serialize it in the future -
+// write SERIALIZABLE(type) and omit SERIALIZATION(mode, type)
+
+struct WorldObject : siraf::dynamic::Polymorphic
+{
+    SERIALIZABLE(WorldObject)
+    int wo = 0;
+};
+
+SERIALIZATION(SaveLoad, WorldObject)
+{
+    ++self.wo;
+}
+
+struct EnvironmentObject : virtual WorldObject
+{
+    SERIALIZABLE(EnvironmentObject)
+    int eo = 0;
+};
+
+SERIALIZATION(SaveLoad, EnvironmentObject)
+{
+    ++self.eo;
+    archive & hierarchy<WorldObject>(self);
+}
+
+struct MoveableObject : virtual EnvironmentObject
+{
+    SERIALIZABLE(MoveableObject)
+    int mo = 0;
+};
+
+SERIALIZATION(SaveLoad, MoveableObject)
+{
+    ++self.mo;
+    archive & hierarchy<EnvironmentObject>(self);
+}
+
+struct DestructibleObject : virtual EnvironmentObject
+{
+    SERIALIZABLE(DestructibleObject)
+    int dso = 0;
+};
+
+SERIALIZATION(SaveLoad, DestructibleObject)
+{
+    ++self.dso;
+    archive & hierarchy<EnvironmentObject>(self);
+}
+
+struct DecorativeObject : DestructibleObject, MoveableObject
+{
+    SERIALIZABLE(DecorativeObject)
+    int dco = 0;
+};
+
+SERIALIZATION(SaveLoad, DecorativeObject)
+{
+    ++self.dco;
+    archive & hierarchy<DestructibleObject, MoveableObject>(self);
+}
+
+struct FoliageObject : virtual WorldObject
+{
+    SERIALIZABLE(FoliageObject)
+    int fo = 0;
+};
+
+struct FoliageObjectInstance : FoliageObject {};
+
+SERIALIZATION(SaveLoad, FoliageObject)
+{
+    ++self.fo;
+    archive & hierarchy<WorldObject>(self);
+}
+
+struct DecorativeFoliageObject : DecorativeObject, FoliageObjectInstance
+{
+    SERIALIZABLE(DecorativeFoliageObject)
+    int dcfo = 0;
+};
+
+SERIALIZATION(SaveLoad, DecorativeFoliageObject)
+{
+    ++self.dcfo;
+    archive & hierarchy<DecorativeObject, FoliageObject>(self);
+}
+
+TEST(TestLibrary, TestInheritance)
+{
+    auto check_hierarchy_count = [](std::shared_ptr<DecorativeFoliageObject>& d)
+    {
+        return d->wo == 1 && d->eo == 1 && d->mo == 1 && d->dso == 1 && d->dco == 1 && d->dcfo == 1;
+    };
+
+    std::vector<unsigned char> storage;
+    {
+        auto d = std::make_shared<DecorativeFoliageObject>();
+        std::shared_ptr<WorldObject> b = d;
+
+        auto ar = oarchive(storage);
+        ar & b;
+
+        EXPECT("write.hierarchy count", check_hierarchy_count(d));
+    }
+    {
+        std::shared_ptr<WorldObject> b = nullptr;
+
+        auto ar = iarchive(storage);
+        ar & b;
+
+        auto d = std::dynamic_pointer_cast<DecorativeFoliageObject>(b);
+
+        ASSERT("read.inited", d != nullptr);
+        EXPECT("read.hierarchy count", check_hierarchy_count(d));
+    }
+}

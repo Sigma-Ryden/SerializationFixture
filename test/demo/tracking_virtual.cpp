@@ -66,7 +66,7 @@ SERIALIZATION(SaveLoad, X)
 
 void test_tracking_virtual()
 {
-    siraf::ByteContainer storage;
+    siraf::wrapper::ByteContainer storage;
     {
         auto ar = oarchive(storage);
 

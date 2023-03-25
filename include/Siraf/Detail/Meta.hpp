@@ -23,7 +23,6 @@ namespace meta
 
 struct shared_type {};
 struct raw_type {};
-struct common_type {};
 
 struct dummy_type {};
 

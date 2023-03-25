@@ -13,7 +13,6 @@ namespace tracking
 
 using Shared = meta::shared_type;
 using Raw = meta::raw_type;
-using Common = meta::common_type;
 
 template <typename T>
 struct track_trait;
@@ -45,12 +44,6 @@ struct reverse_trait<Raw>
     using type = Shared;
 };
 
-template <>
-struct reverse_trait<Common>
-{
-    using type = Common;
-};
-
 } // namespace tracking
 
 namespace meta
@@ -64,11 +57,6 @@ template <typename T> constexpr bool is_track_shared() noexcept
 template <typename T> constexpr bool is_track_raw() noexcept
 {
     return std::is_same<T, tracking::Raw>::value;
-}
-
-template <typename T> constexpr bool is_track_common() noexcept
-{
-    return std::is_same<T, tracking::Common>::value;
 }
 
 } // namespace meta

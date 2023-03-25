@@ -4,6 +4,10 @@
 #include <Siraf/Core/Access.hpp>
 #include <Siraf/ApplyFunctor.hpp>
 
+#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/DataTrackBase.hpp>
+#include <Siraf/HierarchyTrack.hpp>
+
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
@@ -36,12 +40,30 @@ void base(Archive& archive, Derived& object)
     core::Access::serialize_base<Base>(archive, object);
 }
 
-template <typename Core, class Archive, typename Derived,
-          SIREQUIRE(meta::is_base_of<Core, Derived>())>
+template <typename Base, class Archive, typename Derived,
+          SIREQUIRE(meta::is_base_of<Base, Derived>())>
 void virtual_base(Archive& archive, Derived& object)
 {
+#ifdef SIRAF_PTRTRACK_DISABLE
     if (core::Access::trait(object) == core::Access::template trait<Derived>())
-        base<Core>(archive, object);
+        base<Base>(archive, object);
+#else
+    using key_type = typename Archive::TrackingKeyType;
+
+    auto address = memory::pure(std::addressof(object));
+
+    auto key = reinterpret_cast<key_type>(address);
+    auto trait = core::Access::trait<Base>();
+
+    auto& hierarchy_tracking = archive.template tracking<tracking::Hierarchy>();
+
+    auto& is_tracking = hierarchy_tracking[{key, trait}];
+    if (not is_tracking)
+    {
+        is_tracking = true;
+        base<Base>(archive, object);
+    }
+#endif // SIRAF_PTRTRACK_DISABLE
 }
 
 namespace detail

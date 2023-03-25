@@ -132,6 +132,12 @@ inline let::u64 type_hash(const std::type_info& type) noexcept
     return type.hash_code();
 }
 
+inline let::u64 hash_combine(let::u64 lhs, let::u64 rhs) noexcept
+{
+    lhs ^= rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
+    return lhs;
+}
+
 } // namepace siraf
 
 #endif // SIRAF_CORE_HASH_HPP

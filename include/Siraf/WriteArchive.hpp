@@ -14,6 +14,7 @@
 #include <Siraf/Memory/Memory.hpp>
 
 #include <Siraf/DataTrackBase.hpp>
+#include <Siraf/HierarchyTrack.hpp>
 #include <Siraf/StreamWrapper.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -31,7 +32,8 @@ class WriteArchive : public core::ArchiveBase
 
 public:
     using TrackingKeyType = std::uintptr_t;
-    using TrackingTable   = std::unordered_map<TrackingKeyType, bool>;
+    using TrackingTable = std::unordered_map<TrackingKeyType, bool>;
+    using HierarchyTrackingTable = tracking::HierarchyTrack<TrackingKeyType>;
 
 private:
     StreamWrapper archive_;
@@ -39,9 +41,11 @@ private:
     TrackingTable track_shared_;
     TrackingTable track_raw_;
 
+    HierarchyTrackingTable track_hierarchy_;
+
     Registry registry_;
 
-public:
+public:    
     WriteArchive(OutStream& stream);
 
     auto stream() noexcept -> StreamWrapper& { return archive_; }
@@ -53,6 +57,10 @@ public:
     template <typename TrackType,
               SIREQUIRE(meta::is_track_raw<TrackType>())>
     auto tracking() noexcept -> TrackingTable& { return track_raw_; }
+
+    template <typename TrackType,
+              SIREQUIRE(meta::is_track_hierarchy<TrackType>())>
+    auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
 
     auto registry() noexcept -> Registry& { return registry_; }
 
@@ -90,7 +98,7 @@ WriteArchive<OutStream, StreamWrapper, Registry> oarchive(OutStream& stream)
 
 template <class OutStream, class StreamWrapper, class Registry>
 WriteArchive<OutStream, StreamWrapper, Registry>::WriteArchive(OutStream& stream)
-    : archive_{stream}, track_shared_(), track_raw_(), registry_()
+    : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 

@@ -49,6 +49,7 @@ set(SIRAF
     include/Siraf/DataTrackBase.hpp
     include/Siraf/Hierarchy.hpp
     include/Siraf/Serializable.hpp
+    include/Siraf/HierarchyTrack.hpp
 
     include/Siraf/Core.hpp
 )
