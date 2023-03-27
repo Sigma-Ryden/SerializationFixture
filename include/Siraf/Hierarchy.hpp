@@ -18,7 +18,7 @@
         Derived& object_;                                                                               \
     public:                                                                                             \
         class_name(Derived& object) : object_(object) {}                                                \
-        template <typename Archive>                                                                     \
+        template <class Archive, SIREQUIRE(meta::is_archive<Archive>())>                                \
         void operator() (Archive& archive) { function_name<Base>(archive, object_); }                   \
     };
 
@@ -41,7 +41,8 @@ void base(Archive& archive, Derived& object)
 }
 
 template <typename Base, class Archive, typename Derived,
-          SIREQUIRE(meta::is_base_of<Base, Derived>())>
+          SIREQUIRE(meta::is_archive<Archive>() and
+                    meta::is_base_of<Base, Derived>())>
 void virtual_base(Archive& archive, Derived& object)
 {
 #ifdef SIRAF_PTRTRACK_DISABLE
@@ -104,7 +105,8 @@ void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
 
 // Variadic native_base function
 template <class Base, class... Base_n, class Archive, class Derived,
-          SIREQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
+          SIREQUIRE(meta::is_archive<Archive>() and
+                    meta::is_derived_of<Derived, Base, Base_n...>())>
 void hierarchy(Archive& archive, Derived& object)
 {
     detail::native_base<Base>(archive, object);

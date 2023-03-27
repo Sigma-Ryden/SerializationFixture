@@ -116,7 +116,7 @@ SERIALIZATION(SaveLoad, C)
 
 SERIALIZATION(SaveLoad, D)
 {
-    archive & hierarchy<A, B, C>(self) // type order does not matter
+    archive & hierarchy<B, C>(self) // type order does not matter
             & self.d;
 }
 

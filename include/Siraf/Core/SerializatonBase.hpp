@@ -11,6 +11,7 @@ class ArchiveBase;
 
 } // namespace core
 
+// forward declaration - only for meta - dont use as implementation require class
 template <class InStream, class StreamWrapper, class Registry>
 class ReadArchive;
 

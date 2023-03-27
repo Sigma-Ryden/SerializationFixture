@@ -19,7 +19,7 @@
         T& parameter_;                                                                                  \
     public:                                                                                             \
         class_name(T& parameter) noexcept : parameter_(parameter) {}                                    \
-        template <class Archive>                                                                        \
+        template <class Archive, SIREQUIRE(meta::is_archive<Archive>())>                                \
         void operator() (Archive& archive) { ::siraf::tracking::function_name(archive, parameter_); }   \
     };
 

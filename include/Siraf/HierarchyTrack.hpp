@@ -1,7 +1,6 @@
 #ifndef SIRAF_HIERARCHY_TRACK_HPP
 #define SIRAF_HIERARCHY_TRACK_HPP
 
-#include <cstdint> // uintptr_t
 #include <utility> // pair
 #include <unordered_map> // unordered_map
 

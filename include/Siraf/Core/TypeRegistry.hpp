@@ -31,11 +31,7 @@ namespace meta
 
 template <typename T> constexpr bool is_registered() noexcept
 {
-#ifdef SIRAF_TYPE_REGISTRY_DISABLE
-    return true;
-#else
     return core::TypeRegistry<T>::value;
-#endif // SIRAF_TYPE_REGISTRY_DISABLE
 }
 
 } // namespace meta
