@@ -34,6 +34,16 @@ template <typename T> constexpr bool is_registered() noexcept
     return core::TypeRegistry<T>::value;
 }
 
+// use this function only for extern type registry check
+template <typename T> constexpr bool is_registered_extern() noexcept
+{
+#ifdef SIRAF_TYPE_REGISTRY_DISABLE
+    return true;
+#else
+    return is_registered<T>();
+#endif // SIRAF_TYPE_REGISTRY_DISABLE
+}
+
 } // namespace meta
 
 } // namespace siraf

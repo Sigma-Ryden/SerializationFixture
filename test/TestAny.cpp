@@ -118,7 +118,7 @@ TEST(TestUtility, TestAny)
 
         ASSERT("std::any.polymorphic.inited", ab.has_value() && ag.has_value());
 
-        ASSERT("std::any.polymorphic,any_cast",
+        ASSERT("std::any.polymorphic.any_cast",
             std::any_cast<std::shared_ptr<Entity>>(&ab) != nullptr &&
             std::any_cast<std::shared_ptr<Entity>>(&ag) != nullptr);
 
