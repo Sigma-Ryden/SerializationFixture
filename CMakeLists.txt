@@ -86,12 +86,8 @@ set(AUTO
 )
 
 add_executable(${PROJECT_NAME}
-    # test/demo/virtual_base.cpp
     # test/demo/demo.cpp
-    # test/demo/inheritance.cpp
-    # test/demo/tracking_virtual.cpp
     # test/demo/ref_tracking.cpp
-    # test/demo/tracking_shared_ptr.cpp
     # test/demo/example.cpp
 
     test/TestNumber.cpp

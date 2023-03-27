@@ -60,3 +60,62 @@ TEST(TestCommon, TestUserType)
         EXPECT("Struct", equal(box.Min, s_min) && equal(box.Max, s_max));
     }
 }
+
+#include <Siraf/Support/string.hpp>
+#include <Siraf/Support/any.hpp>
+
+struct Product
+{
+    SERIALIZABLE(Product)
+
+    std::string name;
+    std::size_t series;
+    std::size_t price;
+};
+
+SERIALIZATION(SaveLoad, Product)
+{
+    archive & self.name & self.series & self.price;
+}
+
+struct Printer : Product
+{
+    SERIALIZABLE(Printer)
+
+    std::any owner;
+};
+
+SERIALIZATION(SaveLoad, Printer)
+{
+    archive & hierarchy<Product>(self) & self.owner;
+}
+
+TEST(TestCommon, TestInheritance)
+{
+    static std::string s_owner = "Jen";
+
+    static Printer s_p;
+    s_p.name = "Canon";
+    s_p.series = 37868723;
+    s_p.price = 1000;
+    s_p.owner = siraf::serializable(s_owner);
+
+    std::vector<unsigned char> storage;
+    {
+        Printer p = s_p;
+
+        auto ar = oarchive(storage);
+        ar & p;
+    }
+    {
+        Printer p = s_p;
+
+        auto ar = iarchive(storage);
+        ar & p;
+
+        auto owner = std::any_cast<std::string>(&p.owner);
+        EXPECT("inheritance.value",
+            p.name == s_p.name && p.series == s_p.series && p.price == s_p.price &&
+            owner != nullptr && *owner == s_owner);
+    }
+}

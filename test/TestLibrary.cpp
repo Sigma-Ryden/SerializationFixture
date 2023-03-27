@@ -376,3 +376,64 @@ TEST(TestLibrary, TestInheritance)
         EXPECT("read.hierarchy count", check_hierarchy_count(d));
     }
 }
+
+class StackBaseImpl
+{
+    SERIALIZABLE(StackBaseImpl)
+
+public:
+    StackBaseImpl() = default;
+    StackBaseImpl(int data) : data_(data) {}
+
+protected:
+    int data_;
+};
+
+SERIALIZATION(SaveLoad, StackBaseImpl)
+{
+    archive & self.data_;
+}
+
+class Stack : StackBaseImpl // private inheritance
+{
+    SERIALIZABLE(Stack)
+
+public:
+    Stack() = default;
+    Stack(int data) : StackBaseImpl(data), inner_data_(data/2) {}
+
+public:
+    bool operator== (const Stack& s)
+    {
+        return data_ == s.data_ && inner_data_ == s.inner_data_;
+    };
+
+private:
+    int inner_data_;
+};
+
+SERIALIZATION(SaveLoad, Stack)
+{
+    archive & hierarchy<StackBaseImpl>(self) & self.inner_data_;
+}
+
+TEST(TestLibrary, TestAccess)
+{
+    static Stack s_s(123);
+
+    std::vector<unsigned char> storage;
+    {
+        Stack s = s_s;
+
+        auto ar = oarchive(storage);
+        ar & s;
+    }
+    {
+        Stack s;
+
+        auto ar = iarchive(storage);
+        ar & s;
+
+        EXPECT("access.non-public inheritance", s == s_s);
+    }
+}
