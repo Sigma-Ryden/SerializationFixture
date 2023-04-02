@@ -3,7 +3,7 @@
 
 #include <type_traits> // is_same
 
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/Core/Memory.hpp>
 
 namespace siraf
 {
@@ -18,13 +18,13 @@ template <typename T>
 struct track_trait;
 
 template <typename T>
-struct track_trait<memory::shared_ptr<T>>
+struct track_trait<Memory::shared_ptr<T>>
 {
     using type = tracking::Shared;
 };
 
 template <typename T>
-struct track_trait<memory::raw_ptr<T>>
+struct track_trait<Memory::raw_ptr<T>>
 {
     using type = tracking::Raw;
 };

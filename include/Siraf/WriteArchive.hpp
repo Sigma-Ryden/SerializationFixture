@@ -11,7 +11,7 @@
 
 #include <Siraf/Dynamic/Registry.hpp>
 
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/Core/Memory.hpp>
 
 #include <Siraf/DataTrackBase.hpp>
 #include <Siraf/HierarchyTrack.hpp>

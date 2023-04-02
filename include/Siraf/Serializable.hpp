@@ -1,9 +1,16 @@
 #ifndef SIRAF_SERIALIZABLE_HPP
 #define SIRAF_SERIALIZABLE_HPP
 
-#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/Serialization.hpp>
+#include <Siraf/Core/Memory.hpp>
+
 #include <Siraf/Dynamic/FactoryTable.hpp>
 #include <Siraf/Dynamic/Polymorphic.hpp>
+
+#define SERIALIZATION_ACCESS(...)                                                                       \
+    friend class ::Serialization;                                                                       \
+    friend class ::siraf::Memory;                                                                       \
+    friend class ::siraf::dynamic::FactoryTable;
 
 #ifndef SERIALIZABLE
     #define SERIALIZABLE(...)                                                                           \

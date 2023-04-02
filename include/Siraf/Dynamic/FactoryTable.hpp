@@ -3,11 +3,10 @@
 
 #include <unordered_map> // unordered_map
 
-#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/Serialization.hpp>
+#include <Siraf/Core/Memory.hpp>
 
 #include <Siraf/Dynamic/Cloneable.hpp>
-
-#include <Siraf/Memory/Memory.hpp>
 
 namespace siraf
 {
@@ -48,7 +47,7 @@ public:
 private:
     template <typename T> static constexpr bool is_cloneable() noexcept
     {
-        return core::Access::is_convertible<T*, Cloneable*>();
+        return ::Serialization::is_pointer_cast_allowed<T, Cloneable>();
     }
 
 public:
@@ -61,7 +60,7 @@ public:
     template <class T, SIREQUIRE(is_cloneable<T>())>
     void update(key_type key)
     {
-        if (not has_factory(key)) factory_[key] = memory::allocate_raw<T>();
+        if (not has_factory(key)) factory_[key] = Memory::allocate_raw<T>();
     }
 
     template <typename TraitType,
@@ -80,12 +79,12 @@ public:
 
     std::shared_ptr<clone_type> cast(std::shared_ptr<void> address, key_type key)
     {
-        return cast<memory::shared_ptr>(address, key);
+        return cast<Memory::shared_ptr>(address, key);
     }
 
     clone_type* cast(void* address, key_type key)
     {
-        return cast<memory::raw_ptr>(address, key);
+        return cast<Memory::raw_ptr>(address, key);
     }
 
     bool has_factory(key_type key)
@@ -129,7 +128,7 @@ private:
         if (lock_) return;
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
-        auto key = core::Access::template trait<T>();
+        auto key = ::Serialization::template trait<T>();
 
     #ifdef SIRAF_DEBUG
         if (FactoryTable::instance().has_factory(key))

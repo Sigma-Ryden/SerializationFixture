@@ -58,11 +58,11 @@ TEST(TestMemory, TestUniquePtr)
         ASSERT("std::unique_ptr<>.inited", u_i != nullptr);
         EXPECT("std::unique_ptr<>.value", *u_i == sv_i);
         
-        ASSERT("std::unique_ptr<polymorphic>.inited", u_p != nullptr);
+        ASSERT("std::unique_ptr<polymorphic>.inited parent", u_p != nullptr);
        
         auto raw_u_c = dynamic_cast<Child*>(u_p.get());
         
-        ASSERT("std::unique_ptr<polymorphic>.inited", raw_u_c != nullptr);
+        ASSERT("std::unique_ptr<polymorphic>.inited child", raw_u_c != nullptr);
         EXPECT("std::unique_ptr<polymorphic>.value", *raw_u_c == sv_c);
     }
 }
@@ -157,7 +157,7 @@ TEST(TestMemory, TestSharedPtr)
             ar & s_c & s_a & s_d & s_b; // one more shuffle
         }
 
-    	using siraf::memory::pure;
+        using siraf::Memory;
     	
         ASSERT("std::shared_ptr<polymorphic>.inited",
             s_a != nullptr && s_b != nullptr && s_c != nullptr && s_d != nullptr);
@@ -167,7 +167,9 @@ TEST(TestMemory, TestSharedPtr)
             s_c.use_count() == 4 && s_d.use_count() == 4);
 
         EXPECT("std::shared_ptr<polymorphic>.pure",
-            pure(s_a) == pure(s_b) && pure(s_b) == pure(s_c) && pure(s_c) == pure(s_d));
+            Memory::pure(s_a) == Memory::pure(s_b) &&
+            Memory::pure(s_b) == Memory::pure(s_c) &&
+            Memory::pure(s_c) == Memory::pure(s_d));
     	
     	auto raw_s_d = s_d.get();
     	auto raw_s_b = s_b.get();

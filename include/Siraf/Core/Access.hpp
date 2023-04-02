@@ -10,10 +10,6 @@
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
-#define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class ::Serialization;                                                                       \
-    friend class ::siraf::core::Access;
-
 #define _SIRAF_HAS_PROPERTY_HELPER(extern_name, inner_name)                                             \
     template <typename C, typename = void>                                                              \
     struct has_##extern_name : std::false_type {};                                                      \

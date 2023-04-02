@@ -6,9 +6,9 @@
 #include <memory> // unique_ptr
 
 #include <Siraf/Core/TypeRegistry.hpp>
-#include <Siraf/ExternSerialization.hpp>
+#include <Siraf/Core/Memory.hpp>
 
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 namespace siraf
 {
@@ -35,7 +35,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::v
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
-    using item_type = typename memory::ptr_trait<T>::item;
+    using item_type = typename Memory::ptr_trait<T>::item;
 
     item_type* data = nullptr;
     archive & data;

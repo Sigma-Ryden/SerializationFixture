@@ -3,7 +3,7 @@
 
 #include <Siraf/ApplyFunctor.hpp>
 
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/Core/Memory.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
@@ -25,15 +25,15 @@ void strict(WriteArchive& archive, T& pointer)
 template <class ReadArchive, typename T,
           SIREQUIRE(meta::is_read_archive<ReadArchive>() and
                     meta::is_pointer_to_standard_layout<T>())>
-void strict(ReadArchive& archive, T& pointer, memory::void_ptr<T>& cache)
+void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
-    using item_type = typename memory::ptr_trait<T>::item;
+    using item_type = typename Memory::ptr_trait<T>::item;
 
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 
-    memory::allocate<item_type>(pointer);
-    cache = memory::pure(pointer);
+    Memory::allocate<item_type>(pointer);
+    cache = Memory::pure(pointer);
 
     archive & (*pointer);
 }
@@ -52,7 +52,7 @@ void strict(WriteArchive& archive, T& pointer)
 template <class ReadArchive, typename T,
           SIREQUIRE(meta::is_read_archive<ReadArchive>() and
                     meta::is_pointer_to_polymorphic<T>())>
-void strict(ReadArchive& archive, T& pointer, memory::void_ptr<T>& cache)
+void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
@@ -66,7 +66,7 @@ template <class ReadArchive, typename T,
                     meta::is_serializable_pointer<T>())>
 void strict(ReadArchive& archive, T& pointer)
 {
-    memory::void_ptr<T> cache = nullptr;
+    Memory::void_ptr<T> cache = nullptr;
     strict(archive, pointer, cache);
 }
 

@@ -2,6 +2,7 @@
 #include <fstream> // ifstream, ofstream
 
 #include <Siraf/Core.hpp> // ReadArchive, WriteArchive
+
 #include <Siraf/Memory/Ref.hpp>
 
 using siraf::oarchive;

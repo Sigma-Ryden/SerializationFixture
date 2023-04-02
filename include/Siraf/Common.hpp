@@ -21,13 +21,13 @@ inline namespace common
 
 EXTERN_CONDITIONAL_SERIALIZATION(Save, object, ::Serialization::has_save_mode<T>())
 {
-    core::Access::save(archive, object);
+    ::Serialization::save(archive, object);
     return archive;
 }
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::Serialization::has_load_mode<T>())
 {
-    core::Access::load(archive, object);
+    ::Serialization::load(archive, object);
     return archive;
 }
 

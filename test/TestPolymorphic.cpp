@@ -65,8 +65,6 @@ EXPORT_POLYMORPHIC(Base<std::string>)
 
 TEST(TestCommon, TestPolymorphic)
 {
-    using siraf::core::Access; // need for trait validation
-
     using Parent = Base<std::string>;
     using Child  = internal::Derived;
 
@@ -92,14 +90,14 @@ TEST(TestCommon, TestPolymorphic)
         ar & p & c;
 
         ASSERT("polymorphic.inited", p != nullptr);
-        ASSERT("polymorphic.trait", Access::trait<Parent>() == Access::trait(*p));
+        ASSERT("polymorphic.trait", Serialization::trait<Parent>() == Serialization::trait(*p));
 
         EXPECT("polymorphic.value", p->data == sv_p_d);
 
         auto d = dynamic_cast<Child*>(c);
 
         ASSERT("polymorphic.derived inited", d != nullptr);
-        ASSERT("polymorphic.derived trait", Access::trait<Child>() == Access::trait(*c));
+        ASSERT("polymorphic.derived trait", Serialization::trait<Child>() == Serialization::trait(*c));
 
         EXPECT("polymorphic.derived value", d->data == sv_c_d && d->value == sv_c_v);
     }

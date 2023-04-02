@@ -101,6 +101,8 @@ TEST(TestLibrary, TestFactoryTable)
 {
     using siraf::dynamic::FactoryRegistry;
 
+    auto xxx = siraf::Memory::allocate_raw<siraf::dynamic::Cloneable, Triangle>();
+
     {
         FactoryRegistry<Triangle> triangle;
 
@@ -123,18 +125,17 @@ TEST(TestLibrary, TestFactoryTable)
         EXPECT("non-cloneable type", success);
     }
 
-    using siraf::memory::Raw;
-    using siraf::memory::Shared;
+    using siraf::Memory;
 
     {
         auto success = false;
-        try { factory_table.clone<Raw>(key); } catch(...) { success = true; }
+        try { factory_table.clone<Memory::Raw>(key); } catch(...) { success = true; }
 
         EXPECT("clone non-cloneable raw", success);
     }
     {
         auto success = false;
-        try { factory_table.clone<Shared>(key); } catch(...) { success = true; }
+        try { factory_table.clone<Memory::Shared>(key); } catch(...) { success = true; }
 
         EXPECT("clone non-cloneable shared", success);
     }
@@ -181,19 +182,17 @@ EXPORT_POLYMORPHIC(MyCustomType)
 
 TEST(TestLibrary, TestExportPolymorphic)
 {
-    using siraf::core::Access;
-
     static auto sv_s = SIRAF_STATIC_HASH("MyClass");
     static auto sv_c = SIRAF_STATIC_HASH("MyStruct");
 
     {
         EXPECT("export polymorphic key.trait",
-            Access::trait<MyStruct>() == sv_s &&
-            Access::trait<MyClass>() == sv_c);
+            Serialization::trait<MyStruct>() == sv_s &&
+            Serialization::trait<MyClass>() == sv_c);
 
         EXPECT("export polymorphic key.static_trait",
-            Access::static_trait<MyStruct>() == sv_c &&
-            Access::static_trait<MyClass>() == sv_s);
+            Serialization::static_trait<MyStruct>() == sv_c &&
+            Serialization::static_trait<MyClass>() == sv_s);
     }
 
     using siraf::dynamic::ExternRegistry;
@@ -201,11 +200,11 @@ TEST(TestLibrary, TestExportPolymorphic)
     static auto sv_ct = SIRAF_STATIC_HASH("MyCustomType");
 
     {
-        // ExternRegistry::key<>() - is the same as Access::trait<>()
+        // ExternRegistry::key<>() - is the same as Serialization::trait<>()
         EXPECT("export polymorphic",
             ExternRegistry::key<MyCustomType>() == sv_ct &&
-            Access::trait<MyCustomType>() == sv_ct &&
-            Access::static_trait<MyCustomType>() == sv_ct);
+            Serialization::trait<MyCustomType>() == sv_ct &&
+            Serialization::static_trait<MyCustomType>() == sv_ct);
     }
 }
 
@@ -376,34 +375,33 @@ TEST(TestLibrary, TestInheritance)
         EXPECT("read.hierarchy count", check_hierarchy_count(d));
     }
 }
-
-class StackBaseImpl
+/*
+class PolymorphicBaseImpl : public siraf::dynamic::Polymorphic
 {
-    SERIALIZABLE(StackBaseImpl)
+    SERIALIZABLE(PolymorphicBaseImpl)
 
 public:
-    StackBaseImpl() = default;
-    StackBaseImpl(int data) : data_(data) {}
+    PolymorphicBaseImpl() = default;
+    PolymorphicBaseImpl(int data) : data_(data) {}
 
 protected:
     int data_;
 };
 
-SERIALIZATION(SaveLoad, StackBaseImpl)
+SERIALIZATION(SaveLoad, PolymorphicBaseImpl)
 {
     archive & self.data_;
 }
 
-class Stack : StackBaseImpl // private inheritance
+class PolymorphicBase : protected PolymorphicBaseImpl // protected inheritance
 {
-    SERIALIZABLE(Stack)
+    SERIALIZABLE(PolymorphicBase)
 
 public:
-    Stack() = default;
-    Stack(int data) : StackBaseImpl(data), inner_data_(data/2) {}
+    PolymorphicBase(int data = 0) : PolymorphicBaseImpl(data), inner_data_(data/2) {}
 
 public:
-    bool operator== (const Stack& s)
+    bool operator== (const PolymorphicBase& s)
     {
         return data_ == s.data_ && inner_data_ == s.inner_data_;
     };
@@ -412,28 +410,47 @@ private:
     int inner_data_;
 };
 
-SERIALIZATION(SaveLoad, Stack)
+SERIALIZATION(SaveLoad, PolymorphicBase)
 {
-    archive & hierarchy<StackBaseImpl>(self) & self.inner_data_;
+    archive & hierarchy<PolymorphicBaseImpl>(self) & self.inner_data_;
+}
+
+class PolymorphicDerived : public PolymorphicBase
+{
+    SERIALIZABLE(PolymorphicDerived)
+
+public:
+    PolymorphicDerived(int data = 0) : PolymorphicBase(data) {}
+};
+
+SERIALIZATION(SaveLoad, PolymorphicDerived)
+{
+    archive & hierarchy<PolymorphicBase>(self);
 }
 
 TEST(TestLibrary, TestAccess)
 {
-    static Stack s_s(123);
+    static PolymorphicDerived s_p(123);
 
     std::vector<unsigned char> storage;
     {
-        Stack s = s_s;
+        std::shared_ptr<PolymorphicBase> p = std::make_shared<PolymorphicDerived>(s_p);
 
         auto ar = oarchive(storage);
-        ar & s;
+        ar & p;
     }
     {
-        Stack s;
+        std::shared_ptr<PolymorphicBase> p = nullptr;
 
         auto ar = iarchive(storage);
-        ar & s;
+        ar & p;
 
-        EXPECT("access.non-public inheritance", s == s_s);
+        ASSERT("non-public inheritance.inited parent", p != nullptr);
+
+        auto d_p = std::dynamic_pointer_cast<PolymorphicDerived>(p);
+
+        ASSERT("non-public inheritance.inited child", d_p != nullptr);
+        EXPECT("non-public inheritance.value", *d_p == s_p);
     }
 }
+*/

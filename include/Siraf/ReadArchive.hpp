@@ -11,7 +11,7 @@
 
 #include <Siraf/Dynamic/Registry.hpp>
 
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/Core/Memory.hpp>
 
 #include <Siraf/DataTrackBase.hpp>
 #include <Siraf/HierarchyTrack.hpp>
@@ -35,8 +35,8 @@ private:
     struct TrackData { VoidPointer address = nullptr; };
 
 public:
-    using Shared = TrackData<memory::shared_ptr<void>>;
-    using Raw = TrackData<memory::raw_ptr<void>>;
+    using Shared = TrackData<Memory::shared_ptr<void>>;
+    using Raw = TrackData<Memory::raw_ptr<void>>;
 
 public:
     using TrackingKeyType = std::uintptr_t;

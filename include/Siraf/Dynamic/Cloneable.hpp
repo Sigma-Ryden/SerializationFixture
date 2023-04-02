@@ -1,10 +1,10 @@
 #ifndef SIRAF_DYNAMIC_CLONEABLE_HPP
 #define SIRAF_DYNAMIC_CLONEABLE_HPP
 
-#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/Serialization.hpp>
+#include <Siraf/Core/PolymorphicTrait.hpp>
 #include <Siraf/Core/Hash.hpp>
-
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/Core/Memory.hpp>
 
 #define CLONEABLE_BODY(...)                                                                             \
     private:                                                                                            \
@@ -15,15 +15,15 @@
     static constexpr key_type __static_trait() noexcept                                                 \
     { return SIRAF_STATIC_HASH(#__VA_ARGS__); }                                                         \
     key_type __trait() const noexcept                                                                   \
-    { return siraf::core::Access::trait<__VA_ARGS__>(); }                                               \
+    { return ::Serialization::trait<__VA_ARGS__>(); }                                                   \
     std::shared_ptr<clone_type> __shared() const                                                        \
-    { return siraf::memory::allocate_shared<clone_type, __VA_ARGS__>(); }                               \
+    { return siraf::Memory::allocate_shared<clone_type, __VA_ARGS__>(); }                               \
     std::shared_ptr<clone_type> __cast(std::shared_ptr<void> address) const                             \
-    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }                    \
+    { return siraf::Memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }                    \
     clone_type* __raw() const                                                                           \
-    { return siraf::memory::allocate_raw<clone_type, __VA_ARGS__>(); }                                  \
+    { return siraf::Memory::allocate_raw<clone_type, __VA_ARGS__>(); }                                  \
     clone_type* __cast(void* address) const                                                             \
-    { return siraf::memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }                    \
+    { return siraf::Memory::static_pointer_cast<clone_type, __VA_ARGS__>(address); }                    \
     public:
 
 #ifndef CLONEABLE

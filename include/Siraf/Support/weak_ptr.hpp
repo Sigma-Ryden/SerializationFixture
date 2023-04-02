@@ -6,9 +6,9 @@
 #include <memory> // weak_ptr
 
 #include <Siraf/Core/TypeRegistry.hpp>
-#include <Siraf/ExternSerialization.hpp>
+#include <Siraf/Core/Memory.hpp>
 
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/ExternSerialization.hpp>
 
 // serialization of shared_ptr
 #include <Siraf/Support/shared_ptr.hpp>
@@ -38,7 +38,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
-    using item_type = typename memory::ptr_trait<T>::item;
+    using item_type = typename Memory::ptr_trait<T>::item;
 
     std::shared_ptr<item_type> sptr;
     archive & sptr;

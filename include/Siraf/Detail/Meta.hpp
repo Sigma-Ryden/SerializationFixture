@@ -417,7 +417,7 @@ template <typename From, typename To> constexpr bool can_static_cast() noexcept
     return detail::can_static_cast_impl<From, To>::value;
 }
 
-template <typename From, typename To> constexpr bool is_convertible() noexcept
+template <typename From, typename To> constexpr bool is_cast_allowed() noexcept
 {
     return can_static_cast<From, To>() or std::is_convertible<From, To>::value;
 }

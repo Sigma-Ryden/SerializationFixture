@@ -1,10 +1,10 @@
 #ifndef SIRAF_HIERARCHY_HPP
 #define SIRAF_HIERARCHY_HPP
 
-#include <Siraf/Core/Access.hpp>
-#include <Siraf/ApplyFunctor.hpp>
+#include <Siraf/Core/Serialization.hpp>
+#include <Siraf/Core/Memory.hpp>
 
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/ApplyFunctor.hpp>
 #include <Siraf/DataTrackBase.hpp>
 #include <Siraf/HierarchyTrack.hpp>
 
@@ -31,13 +31,12 @@
 namespace siraf
 {
 
-// Declaration friend function template for the Access class
 template <typename Base, class Archive, typename Derived,
           SIREQUIRE(meta::is_archive<Archive>() and
                     meta::is_base_of<Base, Derived>())>
 void base(Archive& archive, Derived& object)
 {
-    core::Access::serialize_base<Base>(archive, object);
+    ::Serialization::serialize_base<Base>(archive, object);
 }
 
 template <typename Base, class Archive, typename Derived,
@@ -46,15 +45,15 @@ template <typename Base, class Archive, typename Derived,
 void virtual_base(Archive& archive, Derived& object)
 {
 #ifdef SIRAF_PTRTRACK_DISABLE
-    if (core::Access::trait(object) == core::Access::template trait<Derived>())
+    if (::Serialization::trait(object) == ::Serialization::template trait<Derived>())
         base<Base>(archive, object);
 #else
     using key_type = typename Archive::TrackingKeyType;
 
-    auto address = memory::pure(std::addressof(object));
+    auto address = Memory::pure(std::addressof(object));
 
     auto key = reinterpret_cast<key_type>(address);
-    auto trait = core::Access::trait<Base>();
+    auto trait = ::Serialization::trait<Base>();
 
     auto& hierarchy_tracking = archive.template tracking<tracking::Hierarchy>();
 
@@ -71,7 +70,7 @@ namespace detail
 {
 
 template <class Base, class Archive, class Derived,
-          SIREQUIRE(core::Access::can_static_cast<Base*, Derived*>() and
+          SIREQUIRE(::Serialization::can_static_cast<Base*, Derived*>() and
                     meta::is_base_of<Base, Derived>())>
 void native_base(Archive& archive, Derived& object_with_base)
 {
@@ -79,7 +78,7 @@ void native_base(Archive& archive, Derived& object_with_base)
 }
 
 template <class Base, class Archive, class Derived,
-          SIREQUIRE(not core::Access::can_static_cast<Base*, Derived*>() and
+          SIREQUIRE(not ::Serialization::can_static_cast<Base*, Derived*>() and
                     meta::is_base_of<Base, Derived>())>
 void native_base(Archive& archive, Derived& object_with_virtual_base)
 {

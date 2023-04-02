@@ -4,7 +4,7 @@
 #include <cstddef> // size_t
 #include <vector> // vector
 
-#include <Siraf/Memory/Memory.hpp>
+#include <Siraf/Core/Memory.hpp>
 
 #ifndef SIRAF_BYTE_STREAM_RESERVE_SIZE
     #define SIRAF_BYTE_STREAM_RESERVE_SIZE std::size_t(1024)
@@ -39,7 +39,7 @@ public:
     template <typename T>
     void call(const T* data, std::size_t size)
     {
-        auto it = memory::const_byte_cast<item_type>(data);
+        auto it = Memory::const_byte_cast<item_type>(data);
         while (size > 0)
         {
             storage.emplace_back(*it++);
@@ -66,7 +66,7 @@ public:
     template <typename T>
     void call(T* data, std::size_t size)
     {
-        auto it = memory::byte_cast<item_type>(data);
+        auto it = Memory::byte_cast<item_type>(data);
         while (size > 0)
         {
             *it++ = storage[offset++];
@@ -87,7 +87,7 @@ public:
     template <typename T>
     void call(const T* data, std::size_t memory_size)
     {
-        file.write(memory::const_byte_cast(data), memory_size);
+        file.write(Memory::const_byte_cast(data), memory_size);
     }
 };
 
@@ -103,7 +103,7 @@ public:
     template <typename T>
     void call(T* data, std::size_t memory_size)
     {
-        file.read(memory::byte_cast(data), memory_size);
+        file.read(Memory::byte_cast(data), memory_size);
     }
 };
 

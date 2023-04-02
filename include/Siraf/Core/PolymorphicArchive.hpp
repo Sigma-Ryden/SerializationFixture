@@ -1,7 +1,6 @@
 #ifndef SIRAF_CORE_POLYMORPHIC_ARCHIVE_HPP
 #define SIRAF_CORE_POLYMORPHIC_ARCHIVE_HPP
 
-#include <Siraf/Core/Access.hpp>
 #include <Siraf/Core/Serialization.hpp>
 #include <Siraf/Core/TypeRegistry.hpp>
 
@@ -88,7 +87,7 @@ private:
                         ::Serialization::has_save_mode<T>())>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        core::Access::save(archive, object);
+        ::Serialization::save(archive, object);
     }
 
     template <class DerivedArchive, class T,
@@ -96,7 +95,7 @@ private:
                         ::Serialization::has_load_mode<T>())>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        core::Access::load(archive, object);
+        ::Serialization::load(archive, object);
     }
 
     template <class DerivedArchive, class T,

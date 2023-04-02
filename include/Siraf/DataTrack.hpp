@@ -63,8 +63,8 @@ void track(WriteArchive& archive, T& pointer)
     if (not success) return;
 #endif // SIRAF_NULLPTR_DISABLE
 
-    auto pure = memory::pure(pointer);
-    auto key = reinterpret_cast<key_type>(memory::raw(pure));
+    auto pure = Memory::pure(pointer);
+    auto key = reinterpret_cast<key_type>(Memory::raw(pure));
 
 #ifdef SIRAF_DEBUG
     if (is_mixed<track_type>(archive, key))
@@ -93,7 +93,7 @@ void track(WriteArchive& archive, T& data)
 {
     using key_type = typename WriteArchive::TrackingKeyType;
 
-    auto address = memory::pure(std::addressof(data));
+    auto address = Memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
 
     auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
@@ -154,7 +154,7 @@ void track(ReadArchive& archive, T& data)
     if (item.address != nullptr)
         throw  "The read tracking data is already tracked.";
 
-    item.address = memory::pure(std::addressof(data));
+    item.address = Memory::pure(std::addressof(data));
 
     archive & data;
 }

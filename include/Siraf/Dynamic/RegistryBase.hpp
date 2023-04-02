@@ -1,7 +1,7 @@
 #ifndef SIRAF_DYNAMIC_REGISTRY_BASE_HPP
 #define SIRAF_DYNAMIC_REGISTRY_BASE_HPP
 
-#include <Siraf/Core/Access.hpp>
+#include <Siraf/Core/Serialization.hpp>
 #include <Siraf/Core/PolymorphicTrait.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -22,13 +22,13 @@ public:
     template <class T>
     static key_type key(T& object) noexcept
     {
-        return core::Access::trait(object);
+        return ::Serialization::trait(object);
     }
 
     template <class T>
     static key_type key() noexcept
     {
-        return core::Access::trait<T>();
+        return ::Serialization::trait<T>();
     }
 
 public:

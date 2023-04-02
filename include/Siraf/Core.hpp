@@ -3,7 +3,6 @@
 
 #include <Siraf/Core/Config.hpp>
 
-#include <Siraf/Core/Access.hpp>
 #include <Siraf/Core/TypeRegistry.hpp>
 #include <Siraf/Core/Serialization.hpp>
 #include <Siraf/Core/Hash.hpp>

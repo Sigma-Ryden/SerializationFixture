@@ -12,7 +12,6 @@ set(SIRAF
     include/Siraf/Detail/MetaMacro.hpp
     include/Siraf/Detail/MacroUndef.hpp
 
-    include/Siraf/Core/Access.hpp
     include/Siraf/Core/ArchiveBase.hpp
     include/Siraf/Core/ArchiveTrait.hpp
     include/Siraf/Core/Config.hpp
@@ -21,12 +20,9 @@ set(SIRAF
     include/Siraf/Core/TypeRegistry.hpp
     include/Siraf/Core/Serialization.hpp
     include/Siraf/Core/SerializatonBase.hpp
+    include/Siraf/Core/Memory.hpp
     include/Siraf/Core/TypeCore.hpp
     include/Siraf/Core/Hash.hpp
-
-    include/Siraf/Memory/Span.hpp
-    include/Siraf/Memory/Ref.hpp
-    include/Siraf/Memory/Memory.hpp
 
     include/Siraf/Dynamic/FactoryTable.hpp
     include/Siraf/Dynamic/Registry.hpp
@@ -50,6 +46,9 @@ set(SIRAF
     include/Siraf/Hierarchy.hpp
     include/Siraf/Serializable.hpp
     include/Siraf/HierarchyTrack.hpp
+
+    include/Siraf/Span.hpp
+    include/Siraf/Ref.hpp
 
     include/Siraf/Core.hpp
 )
@@ -91,21 +90,21 @@ add_executable(${PROJECT_NAME}
     # test/demo/example.cpp
 
     test/TestNumber.cpp
-	test/TestEnum.cpp
-	test/TestUserType.cpp
-	test/TestVector.cpp
-	test/TestArray.cpp
+    test/TestEnum.cpp
+    test/TestUserType.cpp
+    test/TestVector.cpp
+    test/TestArray.cpp
     test/TestValarray.cpp
-	test/TestString.cpp
-	test/TestDeque.cpp
-	test/TestQueue.cpp
+    test/TestString.cpp
+    test/TestDeque.cpp
+    test/TestQueue.cpp
     test/TestPriorityQueue.cpp
-	test/TestStack.cpp
-	test/TestBitset.cpp
-	test/TestList.cpp
-	test/TestForwardList.cpp
-	test/TestMap.cpp
-	test/TestSet.cpp
+    test/TestStack.cpp
+    test/TestBitset.cpp
+    test/TestList.cpp
+    test/TestForwardList.cpp
+    test/TestMap.cpp
+    test/TestSet.cpp
     test/TestVariant.cpp
     test/TestOptional.cpp
     test/TestPair.cpp
@@ -122,7 +121,7 @@ add_executable(${PROJECT_NAME}
     test/SirafTestingBase.hpp
     test/main.cpp
 
-	${SIRAF}
+    ${SIRAF}
     ${SIRAF_SUPPORT}
     ${AUTO}
 )
