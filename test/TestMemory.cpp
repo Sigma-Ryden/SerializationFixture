@@ -2,7 +2,7 @@
 
 #include <Siraf/Support/unique_ptr.hpp>
 
-struct Parent : POLYMORPHIC()
+struct Parent : Instantiable
 {
     SERIALIZABLE(Parent)
 
@@ -69,7 +69,7 @@ TEST(TestMemory, TestUniquePtr)
 
 #include <Siraf/Support/shared_ptr.hpp>
 
-struct A : POLYMORPHIC()
+struct A : Instantiable
 {
     SERIALIZABLE(A)
 

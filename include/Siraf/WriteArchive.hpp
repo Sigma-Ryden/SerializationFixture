@@ -9,7 +9,7 @@
 #include <Siraf/Core/ArchiveBase.hpp>
 #include <Siraf/Core/TypeRegistry.hpp>
 
-#include <Siraf/Dynamic/Registry.hpp>
+#include <Siraf/Dynamic/ExternRegistry.hpp>
 
 #include <Siraf/Core/Memory.hpp>
 

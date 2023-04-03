@@ -5,7 +5,7 @@
 // POLYMORPHIC() - the same as siraf::dynamic::Polymorphic
 
 template <class SomeType>
-struct Base : POLYMORPHIC()
+struct Base : Instantiable
 {
     SERIALIZABLE(Base)
 

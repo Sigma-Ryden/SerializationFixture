@@ -78,12 +78,12 @@ TEST(TestLibrary, TestValidation)
     }
 }
 
-class Triangle : POLYMORPHIC()
+class Triangle : Instantiable
 {
     SERIALIZABLE(Triangle)
 };
 
-class Cyrcle : POLYMORPHIC()
+class Cyrcle : Instantiable
 {
     SERIALIZABLE(Triangle) // oops - polymorphic key is already use
 };
@@ -92,61 +92,59 @@ class Cyrcle : POLYMORPHIC()
 //EXPORT_POLYMORPHIC_KEY("Triangle", Triangle) // good
 //EXPORT_POLYMORPHIC_KEY("Triangle", Cyrcle) // bad - same keys
 
-class Square // non cloneable
+class Square // non instantiable
 {
     SERIALIZABLE(Square)
 };
 
 TEST(TestLibrary, TestFactoryTable)
 {
-    using siraf::dynamic::FactoryRegistry;
-
-    auto xxx = siraf::Memory::allocate_raw<siraf::dynamic::Cloneable, Triangle>();
+    using siraf::dynamic::InstantiableFixture;
 
     {
-        FactoryRegistry<Triangle> triangle;
+        InstantiableFixture<Triangle> triangle;
 
         auto success = false;
-        try { FactoryRegistry<Cyrcle> cyrcle; } catch(...) { success = true; }
+        try { InstantiableFixture<Cyrcle> cyrcle; } catch(...) { success = true; }
 
         EXPECT("same polymorphic key", success);
     }
 
-    using siraf::dynamic::FactoryTable;
+    using siraf::dynamic::InstantiableRegistry;
     using siraf::dynamic::ExternRegistry;
 
-    auto& factory_table = FactoryTable::instance();
+    auto& registry = InstantiableRegistry::instance();
     auto key = ExternRegistry::key<Square>();
 
     {
         auto success = false;
-        try { factory_table.update<Square>(key); } catch(...) { success = true; }
+        try { registry.update<Square>(key); } catch(...) { success = true; }
 
-        EXPECT("non-cloneable type", success);
+        EXPECT("non-instantiable type", success);
     }
 
     using siraf::Memory;
 
     {
         auto success = false;
-        try { factory_table.clone<Memory::Raw>(key); } catch(...) { success = true; }
+        try { registry.clone<Memory::Raw>(key); } catch(...) { success = true; }
 
-        EXPECT("clone non-cloneable raw", success);
+        EXPECT("clone non-instantiable raw", success);
     }
     {
         auto success = false;
-        try { factory_table.clone<Memory::Shared>(key); } catch(...) { success = true; }
+        try { registry.clone<Memory::Shared>(key); } catch(...) { success = true; }
 
-        EXPECT("clone non-cloneable shared", success);
+        EXPECT("clone non-instantiable shared", success);
     }
 
     {
         auto r = new Square;
 
         auto success = false;
-        try { (void)factory_table.cast(r, key); } catch(...) { success = true; }
+        try { (void)registry.cast(r, key); } catch(...) { success = true; }
 
-        EXPECT("cast non-cloneable raw", success);
+        EXPECT("cast non-instantiable raw", success);
 
         delete r; // clean up
     }
@@ -154,23 +152,23 @@ TEST(TestLibrary, TestFactoryTable)
         auto s = std::make_shared<Square>();
 
         auto success = false;
-        try { (void)factory_table.cast(s, key); } catch(...) { success = true; }
+        try { (void)registry.cast(s, key); } catch(...) { success = true; }
 
-        EXPECT("cast non-cloneable shared", success);
+        EXPECT("cast non-instantiable shared", success);
     }
 }
 
-struct MyStruct : POLYMORPHIC()
+struct MyStruct : Instantiable
 {
     SERIALIZABLE(MyStruct)
 };
 
-class MyClass : POLYMORPHIC()
+class MyClass : siraf::Instantiable // is same as Instantiable
 {
     SERIALIZABLE(MyClass)
 };
 
-struct MyCustomType : POLYMORPHIC()
+struct MyCustomType : Instantiable
 {
     SERIALIZABLE(MyCustomType)
 };
@@ -261,7 +259,7 @@ TEST(TestLibrary, TestStreamWrapper)
 // but if you are going to serialize it in the future -
 // write SERIALIZABLE(type) and omit SERIALIZATION(mode, type)
 
-struct WorldObject : siraf::dynamic::Polymorphic
+struct WorldObject : Instantiable
 {
     SERIALIZABLE(WorldObject)
     int wo = 0;
@@ -375,8 +373,8 @@ TEST(TestLibrary, TestInheritance)
         EXPECT("read.hierarchy count", check_hierarchy_count(d));
     }
 }
-/*
-class PolymorphicBaseImpl : public siraf::dynamic::Polymorphic
+//
+class PolymorphicBaseImpl : public siraf::Instantiable
 {
     SERIALIZABLE(PolymorphicBaseImpl)
 
@@ -393,7 +391,7 @@ SERIALIZATION(SaveLoad, PolymorphicBaseImpl)
     archive & self.data_;
 }
 
-class PolymorphicBase : protected PolymorphicBaseImpl // protected inheritance
+class PolymorphicBase : public PolymorphicBaseImpl // try protected inheritance
 {
     SERIALIZABLE(PolymorphicBase)
 
@@ -453,4 +451,4 @@ TEST(TestLibrary, TestAccess)
         EXPECT("non-public inheritance.value", *d_p == s_p);
     }
 }
-*/
+//

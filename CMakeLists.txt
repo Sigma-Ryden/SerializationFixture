@@ -24,12 +24,11 @@ set(SIRAF
     include/Siraf/Core/TypeCore.hpp
     include/Siraf/Core/Hash.hpp
 
-    include/Siraf/Dynamic/FactoryTable.hpp
-    include/Siraf/Dynamic/Registry.hpp
+    include/Siraf/Dynamic/Instantiable.hpp
+    include/Siraf/Dynamic/InstantiableRegistry.hpp
+    include/Siraf/Dynamic/ExternRegistry.hpp
     include/Siraf/Dynamic/RegistryBase.hpp
-    include/Siraf/Dynamic/Polymorphic.hpp
     include/Siraf/Dynamic/AnyRegistry.hpp
-    include/Siraf/Dynamic/Cloneable.hpp
 
     include/Siraf/DataTrack.hpp
     include/Siraf/Compress.hpp

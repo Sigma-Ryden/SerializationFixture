@@ -6,7 +6,7 @@
 #include <Siraf/Core/Memory.hpp>
 
 #include <Siraf/Dynamic/RegistryBase.hpp>
-#include <Siraf/Dynamic/FactoryTable.hpp>
+#include <Siraf/Dynamic/InstantiableRegistry.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
@@ -30,7 +30,8 @@ public:
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        ::Serialization::dynamic_save(archive, pointer);
+        auto raw_pointer = Memory::raw(pointer);
+        InstantiableRegistry::instance().save(archive, raw_pointer);
     }
 
     template <typename T, typename dT = meta::dereference<T>,
@@ -42,13 +43,15 @@ public:
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
 
-        auto cloned = FactoryTable::instance().clone<TraitType>(key);
+        auto& registry = InstantiableRegistry::instance();
+
+        auto cloned = registry.clone<TraitType>(key);
 
         pointer = Memory::dynamic_pointer_cast<dT>(cloned);
         cache = Memory::pure(pointer);
 
         auto raw_pointer = Memory::raw(pointer);
-        ::Serialization::dynamic_load(archive, raw_pointer);
+        registry.load(archive, raw_pointer);
     }
 
     template <typename T,
@@ -59,7 +62,7 @@ public:
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
 
-        auto casted = FactoryTable::instance().cast(address, key);
+        auto casted = InstantiableRegistry::instance().cast(address, key);
         pointer = Memory::dynamic_pointer_cast<dT>(casted);
     }
 };

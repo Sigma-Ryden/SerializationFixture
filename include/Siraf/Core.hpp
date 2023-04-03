@@ -7,9 +7,8 @@
 #include <Siraf/Core/Serialization.hpp>
 #include <Siraf/Core/Hash.hpp>
 
-#include <Siraf/Dynamic/FactoryTable.hpp>
-#include <Siraf/Dynamic/Polymorphic.hpp>
-#include <Siraf/Dynamic/Registry.hpp>
+#include <Siraf/Dynamic/InstantiableRegistry.hpp>
+#include <Siraf/Dynamic/ExternRegistry.hpp>
 
 #include <Siraf/WriteArchive.hpp>
 #include <Siraf/ReadArchive.hpp>

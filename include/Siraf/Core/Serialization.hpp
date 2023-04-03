@@ -111,25 +111,10 @@ public:
     template <typename T> using LoadMode = typename LoadModeMeta<T>::mode;
 
 private:
-    _SIRAF_HAS_PROPERTY_HELPER(save, __save)
-    _SIRAF_HAS_PROPERTY_HELPER(load, __load)
-
     _SIRAF_HAS_PROPERTY_HELPER(static_trait, __static_trait)
     _SIRAF_HAS_PROPERTY_HELPER(trait, __trait)
 
 public:
-    template <class T>
-    static constexpr bool is_dynamic_save_class() noexcept
-    {
-        return has_save<T>::value;
-    }
-
-    template <class T>
-    static constexpr bool is_dynamic_load_class() noexcept
-    {
-        return has_load<T>::value;
-    }
-
     template <class T>
     static constexpr bool is_registered_class() noexcept
     {
@@ -190,20 +175,6 @@ public:
         LoadMode<T>::call(archive, data);
     }
 
-    template <typename Pointer, typename T = siraf::meta::dereference<Pointer>,
-              SIREQUIRE(is_dynamic_save_class<T>() and has_save_mode<T>())>
-    static void dynamic_save(ArchiveBase& archive, Pointer& object)
-    {
-        object->__save(archive);
-    }
-
-    template <typename Pointer, typename T = siraf::meta::dereference<Pointer>,
-              SIREQUIRE(is_dynamic_load_class<T>() and has_load_mode<T>())>
-    static void dynamic_load(ArchiveBase& archive, Pointer& object)
-    {
-        object->__load(archive);
-    }
-
     template <typename Base, class Archive, typename Derived,
               SIREQUIRE(siraf::meta::is_archive<Archive>() and
                         siraf::meta::is_base_of<Base, Derived>())>
@@ -238,7 +209,7 @@ public:
              : trait_key;
     }
 
-private:
+public:
     template <class To, class From>
     static To cast(From& from) noexcept
     {

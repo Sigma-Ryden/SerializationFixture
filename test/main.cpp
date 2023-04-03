@@ -1,5 +1,7 @@
 #include <Auto/TestingCore.hpp>
 
+#include <iostream>
+
 int main()
 {
     EXECUTE_ALL();

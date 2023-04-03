@@ -8,7 +8,7 @@
 #include <Siraf/Support/vector.hpp>
 #include <Siraf/Support/shared_ptr.hpp>
 
-struct Entity : POLYMORPHIC()
+struct Entity : Instantiable
 {
     SERIALIZABLE(Entity)
 

@@ -11,4 +11,6 @@ using siraf::iarchive;
 
 using siraf::hierarchy;
 
+using siraf::Instantiable;
+
 #endif // SIRAF_TESTING_BASE_HPP
