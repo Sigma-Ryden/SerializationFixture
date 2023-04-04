@@ -1,11 +1,11 @@
-#ifndef SIRAF_SPAN_HPP
-#define SIRAF_SPAN_HPP
+#ifndef SIRAF_UTILITY_SPAN_HPP
+#define SIRAF_UTILITY_SPAN_HPP
 
 #include <cstddef> // size_t
 #include <initializer_list> // initializer_list
 #include <tuple> // tuple
 
-#include <Siraf/Ref.hpp>
+#include <Siraf/Utility/Ref.hpp>
 #include <Siraf/ApplyFunctor.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
@@ -352,4 +352,4 @@ apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_
 
 } // namespace siraf
 
-#endif // SIRAF_SPAN_HPP
+#endif // SIRAF_UTILITY_SPAN_HPP

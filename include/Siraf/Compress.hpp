@@ -1,7 +1,7 @@
 #ifndef SIRAF_COMPRESS_HPP
 #define SIRAF_COMPRESS_HPP
 
-#include <Siraf/Utility.hpp>
+#include <Siraf/Utility/Utility.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>

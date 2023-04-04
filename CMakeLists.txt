@@ -30,10 +30,13 @@ set(SIRAF
     include/Siraf/Dynamic/RegistryBase.hpp
     include/Siraf/Dynamic/AnyRegistry.hpp
 
+    include/Siraf/Utility/Utility.hpp
+    include/Siraf/Utility/Span.hpp
+    include/Siraf/Utility/Ref.hpp
+
     include/Siraf/DataTrack.hpp
     include/Siraf/Compress.hpp
     include/Siraf/Common.hpp
-    include/Siraf/Utility.hpp
     include/Siraf/ApplyFunctor.hpp
     include/Siraf/NativeSaveLoad.hpp
     include/Siraf/Strict.hpp
@@ -45,9 +48,6 @@ set(SIRAF
     include/Siraf/Hierarchy.hpp
     include/Siraf/Serializable.hpp
     include/Siraf/HierarchyTrack.hpp
-
-    include/Siraf/Span.hpp
-    include/Siraf/Ref.hpp
 
     include/Siraf/Core.hpp
 )

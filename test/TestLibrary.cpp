@@ -78,12 +78,12 @@ TEST(TestLibrary, TestValidation)
     }
 }
 
-class Triangle : Instantiable
+class Triangle : public Instantiable
 {
     SERIALIZABLE(Triangle)
 };
 
-class Cyrcle : Instantiable
+class Cyrcle : public Instantiable
 {
     SERIALIZABLE(Triangle) // oops - polymorphic key is already use
 };
@@ -97,7 +97,7 @@ class Square // non instantiable
     SERIALIZABLE(Square)
 };
 
-TEST(TestLibrary, TestFactoryTable)
+TEST(TestLibrary, TestInstantiableRegistry)
 {
     using siraf::dynamic::InstantiableFixture;
 
@@ -373,33 +373,33 @@ TEST(TestLibrary, TestInheritance)
         EXPECT("read.hierarchy count", check_hierarchy_count(d));
     }
 }
-//
-class PolymorphicBaseImpl : public siraf::Instantiable
+
+class SomeObjectImpl
 {
-    SERIALIZABLE(PolymorphicBaseImpl)
+    SERIALIZABLE(SomeObjectImpl)
 
 public:
-    PolymorphicBaseImpl() = default;
-    PolymorphicBaseImpl(int data) : data_(data) {}
+    SomeObjectImpl() = default;
+    SomeObjectImpl(int data) : data_(data) {}
 
 protected:
     int data_;
 };
 
-SERIALIZATION(SaveLoad, PolymorphicBaseImpl)
+SERIALIZATION(SaveLoad, SomeObjectImpl)
 {
     archive & self.data_;
 }
 
-class PolymorphicBase : public PolymorphicBaseImpl // try protected inheritance
+class SomeObject : protected SomeObjectImpl // try protected inheritance
 {
-    SERIALIZABLE(PolymorphicBase)
+    SERIALIZABLE(SomeObject)
 
 public:
-    PolymorphicBase(int data = 0) : PolymorphicBaseImpl(data), inner_data_(data/2) {}
+    SomeObject(int data = 0) : SomeObjectImpl(data), inner_data_(data/2) {}
 
 public:
-    bool operator== (const PolymorphicBase& s)
+    bool operator== (const SomeObject& s)
     {
         return data_ == s.data_ && inner_data_ == s.inner_data_;
     };
@@ -408,17 +408,31 @@ private:
     int inner_data_;
 };
 
-SERIALIZATION(SaveLoad, PolymorphicBase)
+SERIALIZATION(SaveLoad, SomeObject)
 {
-    archive & hierarchy<PolymorphicBaseImpl>(self) & self.inner_data_;
+    archive & hierarchy<SomeObjectImpl>(self) & self.inner_data_;
 }
 
-class PolymorphicDerived : public PolymorphicBase
+struct PolymorphicBaseImpl : public siraf::Instantiable
+{
+    SERIALIZABLE(PolymorphicBaseImpl)
+};
+
+SERIALIZATION(SaveLoad, PolymorphicBaseImpl) {}
+
+struct PolymorphicBase : protected PolymorphicBaseImpl // not allowed!
+{
+    SERIALIZABLE(PolymorphicBase)
+};
+
+SERIALIZATION(SaveLoad, PolymorphicBase)
+{
+    archive & hierarchy<PolymorphicBaseImpl>(self);
+}
+
+struct PolymorphicDerived : public PolymorphicBase
 {
     SERIALIZABLE(PolymorphicDerived)
-
-public:
-    PolymorphicDerived(int data = 0) : PolymorphicBase(data) {}
 };
 
 SERIALIZATION(SaveLoad, PolymorphicDerived)
@@ -428,27 +442,37 @@ SERIALIZATION(SaveLoad, PolymorphicDerived)
 
 TEST(TestLibrary, TestAccess)
 {
-    static PolymorphicDerived s_p(123);
+    static SomeObject s_so(123);
 
     std::vector<unsigned char> storage;
     {
-        std::shared_ptr<PolymorphicBase> p = std::make_shared<PolymorphicDerived>(s_p);
+        SomeObject so = s_so;
 
         auto ar = oarchive(storage);
-        ar & p;
+        ar & so;
     }
     {
-        std::shared_ptr<PolymorphicBase> p = nullptr;
+        SomeObject so;
 
         auto ar = iarchive(storage);
-        ar & p;
+        ar & so;
 
-        ASSERT("non-public inheritance.inited parent", p != nullptr);
+        EXPECT("non-public inheritance.value", so == s_so);
+    }
 
-        auto d_p = std::dynamic_pointer_cast<PolymorphicDerived>(p);
+    using siraf::dynamic::InstantiableRegistry;
 
-        ASSERT("non-public inheritance.inited child", d_p != nullptr);
-        EXPECT("non-public inheritance.value", *d_p == s_p);
+    {
+        // since PolymorphicBase protected inherited from PolymorphicBaseImpl, where
+        // PolymorphicBaseImpl is instantiable type - we cannot use dynamic_cast for serialization
+        // since we get nullptr after apply casting
+
+        auto& registry = InstantiableRegistry::instance();
+
+        EXPECT("public instantiable", registry.is_instantiable<PolymorphicBaseImpl>());
+
+        EXPECT("non-public instantiable",
+            !registry.is_instantiable<PolymorphicBase>() &&
+            !registry.is_instantiable<PolymorphicDerived>());
     }
 }
-//

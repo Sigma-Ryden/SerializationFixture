@@ -209,7 +209,7 @@ public:
              : trait_key;
     }
 
-public:
+private:
     template <class To, class From>
     static To cast(From& from) noexcept
     {

@@ -67,7 +67,8 @@ public:
 public:
     template <typename dT> static constexpr bool is_instantiable() noexcept
     {
-        return ::Serialization::is_pointer_cast_allowed<dT, instantiable_type>();
+        // we should use external check
+        return meta::is_cast_allowed<dT*, instantiable_type*>();
     }
 
 public:
@@ -164,6 +165,8 @@ public:
 private:
     InstantiableProxy& registry(key_type key)
     {
+        // It happens if the class with the given key has not beed public inherited
+        // from the instantiable class or not registered with fixture object.
         auto it = registry_.find(key);
         if (it == registry_.end())
             throw "The 'siraf::dynamic::InstantiableRegistry' does not has instance with input key.";

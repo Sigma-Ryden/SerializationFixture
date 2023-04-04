@@ -1,5 +1,5 @@
-#ifndef SIRAF_REF_HPP
-#define SIRAF_REF_HPP
+#ifndef SIRAF_UTILITY_REF_HPP
+#define SIRAF_UTILITY_REF_HPP
 
 #include <memory> // addressof
 
@@ -131,4 +131,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, ref, meta::is_ref<T>())
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_ref<T>())
 
-#endif // SIRAF_MEMORY_REF_HPP
+#endif // SIRAF_UTILITY_REF_HPP

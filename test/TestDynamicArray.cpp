@@ -1,6 +1,6 @@
 #include "SirafTestingBase.hpp"
 
-#include <Siraf/Span.hpp>
+#include <Siraf/Utility/Span.hpp>
 
 TEST(TestCommon, TestDynamicArray)
 {
