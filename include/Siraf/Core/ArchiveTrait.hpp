@@ -5,10 +5,12 @@
 
 #define EXPORT_SERIALIZATION_ARCHIVE(archive_key, archive_type, ...)                                    \
     namespace siraf { namespace core {                                                                  \
-        template <> struct ArchiveTraitKey<archive_type<__VA_ARGS__>>                                   \
-        { static constexpr ArchiveBase::key_type key = archive_key; };                                  \
-        template <> struct archive_type##Trait<ArchiveTraitKey<archive_type<__VA_ARGS__>>::key>         \
-        { using type = archive_type<__VA_ARGS__>; };                                                    \
+        template <> struct ArchiveTraitKey<archive_type<__VA_ARGS__>> {                                 \
+            static constexpr ArchiveBase::key_type key = archive_key;                                   \
+        };                                                                                              \
+        template <> struct archive_type##Trait<ArchiveTraitKey<archive_type<__VA_ARGS__>>::key> {       \
+            using type = archive_type<__VA_ARGS__>;                                                     \
+        };                                                                                              \
     }}
 
 namespace siraf

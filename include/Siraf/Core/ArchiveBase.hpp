@@ -8,9 +8,9 @@
 #endif // SIRAF_ARCHIVE_MAX_TRAIT_KEY
 
 #define SERIALIZATION_ARCHIVE(...)                                                                      \
-    public:                                                                                             \
-    virtual auto trait() const noexcept -> key_type override                                            \
-    { return ::siraf::core::ArchiveTraitKey<__VA_ARGS__>::key; }
+    virtual key_type trait() const noexcept override {                                                  \
+        return ::siraf::core::ArchiveTraitKey<__VA_ARGS__>::key;                                        \
+    }
 
 namespace siraf
 {

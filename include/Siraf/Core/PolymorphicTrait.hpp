@@ -5,8 +5,9 @@
 
 #define EXPORT_POLYMORPHIC_KEY(unique_name, ...)                                                        \
     namespace siraf { namespace core {                                                                  \
-        template <> struct PolymorphicTraitKey<__VA_ARGS__>                                             \
-        { static constexpr auto key = SIRAF_STATIC_HASH(unique_name); };                                \
+        template <> struct PolymorphicTraitKey<__VA_ARGS__> {                                           \
+            static constexpr auto key = SIRAF_STATIC_HASH(unique_name);                                 \
+        };                                                                                              \
     }}
 
 #define EXPORT_POLYMORPHIC(...)                                                                         \
