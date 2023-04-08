@@ -27,7 +27,6 @@ set(SIRAF
     include/Siraf/Dynamic/Instantiable.hpp
     include/Siraf/Dynamic/InstantiableRegistry.hpp
     include/Siraf/Dynamic/ExternRegistry.hpp
-    include/Siraf/Dynamic/RegistryBase.hpp
     include/Siraf/Dynamic/AnyRegistry.hpp
 
     include/Siraf/Utility/Utility.hpp

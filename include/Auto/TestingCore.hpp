@@ -37,13 +37,17 @@
 #define EXECUTE_ALL(...)                                                                                \
     TestingCore::instance().execute_all()
 
-// Stat info
+// Show stat info
 #define TESTING_STAT(...)                                                                               \
     TestingCore::instance().stat()
 
-// Text printer
+// Set own text printer
 #define PRINTER(...)                                                                                    \
     TestingCore::instance().text_printer = __VA_ARGS__
+
+// Will catch exception and show by text printer
+#define TRY_CATCH(...)                                                                                  \
+    TestingCore::instance().try_catch([]{ (void)(__VA_ARGS__); })
 
 struct TestingInterface
 {
@@ -91,6 +95,9 @@ public:
 
 public:
     void stat();
+
+public:
+    void try_catch(std::function<void()>&& call) const noexcept;
 
 public:
     TextPrinter console_printer() const noexcept;

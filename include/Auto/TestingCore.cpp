@@ -95,6 +95,14 @@ void TestingCore::stat()
     text_printer(stat_format(passed, failed));
 }
 
+void TestingCore::try_catch(std::function<void()>&& call) const noexcept
+{
+    try { call(); }
+    catch(const char* e) { text_printer(e); }
+    catch(std::exception& e) { text_printer(e.what()); }
+    catch(...) { text_printer("Unexpected error."); }
+}
+
 auto TestingCore::console_printer() const noexcept -> TextPrinter
 {
     return [](const std::string& str) { std::cout << str; };

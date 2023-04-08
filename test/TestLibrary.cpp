@@ -114,7 +114,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
     using siraf::dynamic::ExternRegistry;
 
     auto& registry = InstantiableRegistry::instance();
-    auto key = ExternRegistry::key<Square>();
+    auto key = Serialization::trait<Square>();
 
     {
         auto success = false;
@@ -198,9 +198,7 @@ TEST(TestLibrary, TestExportPolymorphic)
     static auto sv_ct = SIRAF_STATIC_HASH("MyCustomType");
 
     {
-        // ExternRegistry::key<>() - is the same as Serialization::trait<>()
         EXPECT("export polymorphic",
-            ExternRegistry::key<MyCustomType>() == sv_ct &&
             Serialization::trait<MyCustomType>() == sv_ct &&
             Serialization::static_trait<MyCustomType>() == sv_ct);
     }
@@ -474,5 +472,59 @@ TEST(TestLibrary, TestAccess)
         EXPECT("non-public instantiable",
             !registry.is_instantiable<PolymorphicBase>() &&
             !registry.is_instantiable<PolymorphicDerived>());
+    }
+}
+
+struct NoTraitBase : siraf::Instantiable
+{
+    int b = 0;
+};
+
+struct NoTraitDerived : NoTraitBase
+{
+    int d = 0;
+};
+
+SERIALIZATION(SaveLoad, NoTraitBase)
+{
+    archive & self.b;
+}
+
+SERIALIZATION(SaveLoad, NoTraitDerived)
+{
+    archive & hierarchy<NoTraitBase>(self) & self.d;
+}
+
+// if user does not SERIALIZABLE macro, then library will use typeid for type hashing,
+// mixed usage SERIALIZABLE and typeid does not allowed!
+// You also can specify hashing behavior with macro SIRAF_TYPE_HASH - see Core/Hash.hpp
+
+TEST(TestLibrary, TestNoTrait)
+{
+    using siraf::serializable;
+
+    static NoTraitDerived s_d;
+    s_d.b = 246253;
+    s_d.d = 4895792;
+
+    std::vector<unsigned char> storage;
+    {
+        serializable<NoTraitDerived>();
+
+        std::shared_ptr<NoTraitBase> b = std::make_shared<NoTraitDerived>(s_d);
+
+        auto ar = oarchive(storage);
+        ar & b;
+    }
+    {
+        std::shared_ptr<NoTraitBase> b = nullptr;
+
+        auto ar = iarchive(storage);
+        ar & b;
+
+        auto d = std::dynamic_pointer_cast<NoTraitDerived>(b);
+
+        ASSERT("no-trait.inited", d != nullptr);
+        EXPECT("no-trait.value", d->b == s_d.b && d->d == s_d.d);
     }
 }

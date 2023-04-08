@@ -5,8 +5,8 @@
 #include <Siraf/Core/PolymorphicTrait.hpp>
 #include <Siraf/Core/Memory.hpp>
 
-#include <Siraf/Dynamic/RegistryBase.hpp>
 #include <Siraf/Dynamic/InstantiableRegistry.hpp>
+#include <Siraf/Dynamic/AnyRegistry.hpp>
 
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
@@ -17,14 +17,41 @@ namespace siraf
 namespace dynamic
 {
 
-class ExternRegistry : public RegistryBase
+class ExternRegistry
 {
 public:
     using key_type = core::PolymorphicTraitBase::key_type;
 
 public:
+    template <class Archive, class Pointer,
+              SIREQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
+    static key_type save_key(Archive& archive, Pointer& pointer)
+    {
+        if (pointer == nullptr)
+            throw "The write pointer was not allocated.";
+
+        auto key = ::Serialization::trait(*pointer);
+        archive & key;
+
+        return key;
+    }
+
+    template <class Archive, class Pointer,
+              SIREQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
+    static key_type load_key(Archive& archive, Pointer& pointer)
+    {
+        if (pointer != nullptr)
+            throw "The read pointer must be initialized to nullptr.";
+
+        key_type key;
+        archive & key;
+
+        return key;
+    }
+
+public:
     template <typename T, typename dT = meta::dereference<T>,
-              SIREQUIRE(meta::is_pointer<T>() and ::Serialization::is_registered_class<dT>())>
+              SIREQUIRE(meta::is_pointer<T>())>
     static void save(core::ArchiveBase& archive, T& pointer, key_type key)
     {
         if (pointer == nullptr)
@@ -35,7 +62,7 @@ public:
     }
 
     template <typename T, typename dT = meta::dereference<T>,
-              SIREQUIRE(meta::is_pointer<T>() and ::Serialization::is_registered_class<dT>())>
+              SIREQUIRE(meta::is_pointer<T>())>
     static void load(core::ArchiveBase& archive, T& pointer, key_type key, Memory::void_ptr<T>& cache)
     {
         using TraitType = typename Memory::ptr_trait<T>::trait;
@@ -56,7 +83,7 @@ public:
 
     template <typename T,
               typename dT = meta::dereference<T>,
-              SIREQUIRE(meta::is_pointer<T>() and ::Serialization::is_registered_class<dT>())>
+              SIREQUIRE(meta::is_pointer<T>())>
     static void assign(T& pointer, const Memory::void_ptr<T>& address, key_type key)
     {
         if (pointer != nullptr)

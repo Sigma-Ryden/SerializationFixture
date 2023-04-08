@@ -2,7 +2,7 @@
 
 int main()
 {
-    EXECUTE_ALL();
+    TRY_CATCH(EXECUTE_ALL());
     TESTING_STAT();
 
     return 0;

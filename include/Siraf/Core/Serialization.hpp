@@ -4,6 +4,8 @@
 #include <Siraf/Core/ArchiveBase.hpp>
 #include <Siraf/Core/PolymorphicTrait.hpp>
 
+#include <Siraf/Core/Hash.hpp>
+
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp> // SIWHEN
 
@@ -116,7 +118,7 @@ private:
 
 public:
     template <class T>
-    static constexpr bool is_registered_class() noexcept
+    static constexpr bool has_inner_trait() noexcept
     {
         return has_static_trait<T>::value and has_trait<T>::value;
     }
@@ -183,19 +185,39 @@ public:
         archive & cast<Base&>(object);
     }
 
-    template <class T, SIREQUIRE(is_registered_class<T>())>
-    static auto trait(T& object) noexcept -> decltype(object.__trait())
+    template <class T, SIREQUIRE(not has_inner_trait<T>())>
+    static PolymorphicTraitBase::key_type trait(T& object) noexcept
+    {
+    #ifdef SIRAF_EXTERN_RUNTIME_TRAIT
+        return SIRAF_EXTERN_RUNTIME_TRAIT(object);
+    #else
+        return SIRAF_TYPE_HASH(typeid(object));
+    #endif // SIRAF_EXTERN_RUNTIME_TRAIT
+    }
+
+    template <class T, SIREQUIRE(has_inner_trait<T>())>
+    static PolymorphicTraitBase::key_type trait(T& object) noexcept
     {
         return object.__trait();
     }
 
-    template <class T, SIREQUIRE(is_registered_class<T>())>
+    template <class T, SIREQUIRE(not has_inner_trait<T>())>
+    static PolymorphicTraitBase::key_type static_trait() noexcept
+    {
+    #ifdef SIRAF_EXTERN_TRAIT
+        return SIRAF_EXTERN_TRAIT(T);
+    #else
+        return SIRAF_TYPE_HASH(typeid(T));
+    #endif // SIRAF_EXTERN_TRAIT
+    }
+
+    template <class T, SIREQUIRE(has_inner_trait<T>())>
     static constexpr PolymorphicTraitBase::key_type static_trait() noexcept
     {
         return T::__static_trait();
     }
 
-    template <class T, SIREQUIRE(is_registered_class<T>())>
+    template <class T>
 #ifdef SIRAF_EXPORT_POLYMORPHIC_DISABLE
     static constexpr PolymorphicTraitBase::key_type trait() noexcept
 #else

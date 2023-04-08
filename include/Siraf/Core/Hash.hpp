@@ -16,7 +16,7 @@
 #endif // SIRAF_STATIC_HASH
 
 #ifndef SIRAF_TYPE_HASH
-    #define SIRAF_TYPE_HASH(type_info) type_hash(type_info)
+    #define SIRAF_TYPE_HASH(type_info) ::siraf::type_hash(type_info)
 #endif // SIRAF_TYPE_HASH
 
 namespace siraf

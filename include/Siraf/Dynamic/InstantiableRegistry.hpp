@@ -81,8 +81,6 @@ public:
     template <class T, SIREQUIRE(is_instantiable<T>())>
     void update(key_type key)
     {
-        using I = instantiable_type;
-
         if (is_registered(key)) return;
 
         InstantiableProxy proxy;
@@ -162,7 +160,9 @@ public:
         return registry_.find(key) != registry_.end();
     }
 
+#ifdef SIRAF_REGISTRY_ACCESS
 private:
+#endif // SIRAF_REGISTRY_ACCESS
     InstantiableProxy& registry(key_type key)
     {
         // It happens if the class with the given key has not beed public inherited
@@ -184,10 +184,10 @@ private:
 public:
     InstantiableFixture() { call<T>(); }
 
-private:
+public:
     template <typename dT = T,
               SIREQUIRE(InstantiableRegistry::is_instantiable<dT>())>
-    void call()
+    static void call()
     {
         if (lock_) return;
         lock_ = true; // lock before creating clone instance to prevent recursive call
@@ -205,7 +205,7 @@ private:
 
     template <typename dT = T,
               SIREQUIRE(not InstantiableRegistry::is_instantiable<dT>())>
-    void call() { /*pass*/ }
+    static void call() { /*pass*/ }
 };
 
 template <class T>

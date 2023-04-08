@@ -1,7 +1,7 @@
 #ifndef SIRAF_SUPPORT_ANY_HPP
 #define SIRAF_SUPPORT_ANY_HPP
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L && !defined(SIRAF_ANY_SUPPORT_DISABLE)
 
 #include <type_traits> // true_type, false_type
 
@@ -36,7 +36,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
     let::u64 hash = SIRAF_TYPE_HASH(any.type());
     archive & hash;
 
-    dynamic::any_serialization(hash).save(archive, any);
+    dynamic::AnyRegistry::instance().save(archive, any, hash);
 
     return archive;
 }
@@ -46,7 +46,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, any, meta::is_std_any<T>::value)
     let::u64 hash{};
     archive & hash;
 
-    dynamic::any_serialization(hash).load(archive, any);
+    dynamic::AnyRegistry::instance().load(archive, any, hash);
 
     return archive;
 }
