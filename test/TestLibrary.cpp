@@ -475,6 +475,9 @@ TEST(TestLibrary, TestAccess)
     }
 }
 
+// since we dont use SERIALIZABLE remember that:
+// SERIALIZABLE contains SERIALIZATION_ACCESS() and INSTANTIABLE_BODY() macros
+
 struct NoTraitBase : siraf::Instantiable
 {
     int b = 0;
