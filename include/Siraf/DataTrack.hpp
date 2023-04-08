@@ -12,21 +12,6 @@
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
-#define _SIRAF_APPLY_FUNCTOR_GENERIC(class_name, function_name)                                         \
-    template <typename T>                                                                               \
-    class class_name : public ApplyFunctor {                                                            \
-    private:                                                                                            \
-        T& parameter_;                                                                                  \
-    public:                                                                                             \
-        class_name(T& parameter) noexcept : parameter_(parameter) {}                                    \
-        template <class Archive, SIREQUIRE(meta::is_archive<Archive>())>                                \
-        void operator() (Archive& archive) { ::siraf::tracking::function_name(archive, parameter_); }   \
-    };
-
-#define _SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(class_name, function_name)                        \
-    template <typename T>                                                                               \
-    apply::class_name<T> function_name(T& data) { return { data }; }
-
 namespace siraf
 {
 
@@ -175,23 +160,34 @@ void raw(Archive& archive, T& pointer)
 namespace apply
 {
 
-_SIRAF_APPLY_FUNCTOR_GENERIC(TrackFunctor, track)
-_SIRAF_APPLY_FUNCTOR_GENERIC(RawFunctor, raw)
+template <typename T>
+struct TrackFunctor : ApplyFunctor
+{
+    T& data;
+
+    template <class Archive>
+    void operator() (Archive& archive) { tracking::track(archive, data); }
+};
+
+template <typename T>
+struct RawFunctor : ApplyFunctor
+{
+    T& data;
+
+    template <class Archive>
+    void operator() (Archive& archive) { tracking::raw(archive, data); }
+};
 
 } // namespace apply
 
 namespace tracking
 {
 
-_SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(TrackFunctor, track)
-_SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(RawFunctor, raw)
+template <typename T> apply::TrackFunctor<T> track(T& data) { return { {}, data }; }
+template <typename T> apply::RawFunctor<T> raw(T& data) { return { {}, data }; }
 
 } // namespace tracking
 
 } // namespace siraf
-
-// clean up
-#undef _SIRAF_APPLY_FUNCTOR_GENERIC
-#undef _SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC
 
 #endif // SIRAF_DATA_TRACK_HPP

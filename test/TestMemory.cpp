@@ -152,6 +152,7 @@ TEST(TestMemory, TestSharedPtr)
         std::shared_ptr<C> s_c;
         std::shared_ptr<A> s_a;
     	
+        constexpr auto xxx = ::Serialization::is_cast_allowed<B*, D*>();
         {
             auto ar = iarchive(storage);
             ar & s_c & s_a & s_d & s_b; // one more shuffle

@@ -11,23 +11,6 @@
 #include <Siraf/Detail/Meta.hpp>
 #include <Siraf/Detail/MetaMacro.hpp>
 
-#define _SIRAF_APPLY_FUNCTOR_GENERIC(class_name, function_name)                                         \
-    template <typename Derived, typename Base>                                                          \
-    class class_name : public ApplyFunctor {                                                            \
-    private:                                                                                            \
-        Derived& object_;                                                                               \
-    public:                                                                                             \
-        class_name(Derived& object) : object_(object) {}                                                \
-        template <class Archive, SIREQUIRE(meta::is_archive<Archive>())>                                \
-        void operator() (Archive& archive) { function_name<Base>(archive, object_); }                   \
-    };
-
-#define _SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(class_name, function_name)                        \
-    template <typename Base, typename Derived,                                                          \
-              SIREQUIRE(meta::is_base_of<Base, Derived>())>                                             \
-    apply::class_name<Derived, Base> function_name(Derived& object)                                     \
-    { return { object }; }
-
 namespace siraf
 {
 
@@ -70,16 +53,14 @@ namespace detail
 {
 
 template <class Base, class Archive, class Derived,
-          SIREQUIRE(::Serialization::can_static_cast<Base*, Derived*>() and
-                    meta::is_base_of<Base, Derived>())>
+          SIREQUIRE(::Serialization::is_virtual_base_of<Base, Derived>())>
 void native_base(Archive& archive, Derived& object_with_base)
 {
     base<Base>(archive, object_with_base);
 }
 
 template <class Base, class Archive, class Derived,
-          SIREQUIRE(not ::Serialization::can_static_cast<Base*, Derived*>() and
-                    meta::is_base_of<Base, Derived>())>
+          SIREQUIRE(not ::Serialization::is_virtual_base_of<Base, Derived>())>
 void native_base(Archive& archive, Derived& object_with_virtual_base)
 {
     virtual_base<Base>(archive, object_with_virtual_base);
@@ -90,13 +71,33 @@ void native_base(Archive& archive, Derived& object_with_virtual_base)
 namespace apply
 {
 
-_SIRAF_APPLY_FUNCTOR_GENERIC(BaseFunctor, base)
-_SIRAF_APPLY_FUNCTOR_GENERIC(VirtualBaseFunctor, virtual_base)
+template <typename Derived, typename Base>
+struct BaseFunctor : ApplyFunctor
+{
+    Derived& object;
+
+    template <class Archive>
+    void operator() (Archive& archive) { base<Base>(archive, object); }
+};
+
+template <typename Derived, typename Base>
+struct VirtualBaseFunctor : ApplyFunctor
+{
+    Derived& object;
+
+    template <class Archive>
+    void operator() (Archive& archive) { virtual_base<Base>(archive, object); }
+};
 
 } // namespace apply
 
-_SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(BaseFunctor, base)
-_SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC(VirtualBaseFunctor, virtual_base)
+template <typename Base, typename Derived,
+          SIREQUIRE(meta::is_base_of<Base, Derived>())>
+apply::BaseFunctor<Derived, Base> base(Derived& object) { return { {}, object }; }
+
+template <typename Base, typename Derived,
+          SIREQUIRE(meta::is_base_of<Base, Derived>())>
+apply::VirtualBaseFunctor<Derived, Base> virtual_base(Derived& object) { return { {}, object }; }
 
 // default empty impl
 template <class Archive, class Derived>
@@ -116,19 +117,12 @@ namespace apply
 {
 
 template <typename Derived, typename Base, typename... Base_n>
-class HierarchyFunctor : public ApplyFunctor
+struct HierarchyFunctor : ApplyFunctor
 {
-private:
-    Derived& object_;
+    Derived& object;
 
-public:
-    HierarchyFunctor(Derived& object) : object_(object) {}
-
-    template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>
-    void operator() (Archive& archive)
-    {
-        hierarchy<Base, Base_n...>(archive, object_);
-    }
+    template <typename Archive>
+    void operator() (Archive& archive) { hierarchy<Base, Base_n...>(archive, object); }
 };
 
 } // namespace apply
@@ -137,13 +131,9 @@ template <class Base, class... Base_n, class Derived,
           SIREQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
 apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
 {
-    return { object };
+    return { {}, object };
 }
 
 } // namespace siraf
-
-// clean up
-#undef _SIRAF_APPLY_FUNCTOR_GENERIC
-#undef _SIRAF_APPLY_FUNCTOR_FACTORY_FUNCTION_GENERIC
 
 #endif // SIRAF_HIERARCHY_HPP

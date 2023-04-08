@@ -309,19 +309,13 @@ namespace apply
 {
 
 template <typename T, typename D, typename... Dn>
-class SpanFunctor : public ApplyFunctor
+struct SpanFunctor : ApplyFunctor
 {
-private:
     using Pack = std::tuple<T&, D&, Dn&...>;
 
-    Pack pack_;
+    Pack pack;
 
-public:
-    SpanFunctor(T& pointer, D& dimension, Dn&... dimension_n) noexcept
-        : pack_(pointer, dimension, dimension_n...) {}
-
-    template <typename Archive,
-              SIREQUIRE(meta::is_archive<Archive>())>
+    template <typename Archive>
     void operator() (Archive& archive)
     {
         invoke(archive, meta::make_index_sequence<std::tuple_size<Pack>::value>{});
@@ -331,7 +325,7 @@ private:
     template <typename Archive, std::size_t... I>
     void invoke(Archive& archive, meta::index_sequence<I...>)
     {
-        span(archive, std::get<I>(pack_)...);
+        span(archive, std::get<I>(pack)...);
     }
 };
 
@@ -345,7 +339,7 @@ template <typename T, typename D, typename... Dn,
           SIREQUIRE(meta::is_span_set<T, D, Dn...>())>
 apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n)
 {
-    return { pointer, dimension, dimension_n... };
+    return { {}, { pointer, dimension, dimension_n... } };
 }
 
 } // inline namespace common

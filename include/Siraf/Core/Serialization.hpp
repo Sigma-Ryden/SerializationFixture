@@ -27,6 +27,7 @@
     template <typename T> template <class Archive>                                                      \
     void Serialization::mode<T, SIWHEN(__VA_ARGS__)>::call(Archive& archive, T& self)
 
+// private
 #define _SIRAF_HAS_PROPERTY_HELPER(extern_name, inner_name)                                             \
     template <typename C, typename = void>                                                              \
     struct has_##extern_name : std::false_type {};                                                      \
@@ -125,10 +126,10 @@ public:
 
 private:
     template <typename From, typename To, typename = void>
-    struct can_static_cast_impl : std::false_type {};
+    struct can_static_cast : std::false_type {};
 
     template <typename From, typename To>
-    struct can_static_cast_impl<From, To,
+    struct can_static_cast<From, To,
         siraf::meta::to_void<decltype( static_cast<To>(std::declval<From>()) )>>
     : std::true_type {};
 
@@ -140,10 +141,11 @@ private:
     );
 
 public:
-    template <class From, class To>
-    static constexpr bool can_static_cast() noexcept
+    template <class Base, class Derived>
+    static constexpr bool is_virtual_base_of() noexcept
     {
-        return can_static_cast_impl<From, To>::value;
+        return siraf::meta::is_base_of<Base, Derived>() and
+               can_static_cast<Base*, Derived*>::value;
     }
 
     template <class From, class To>
