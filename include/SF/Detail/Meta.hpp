@@ -11,6 +11,8 @@
 
 #include <SF/Core/SerializatonBase.hpp>
 
+#include <SF/Detail/MetaMacro.hpp> // SFVOID
+
 #ifndef SF_MAX_TEMPLATE_DEPTH
     #define SF_MAX_TEMPLATE_DEPTH 256
 #endif // SF_MAX_TEMPLATE_DEPTH
@@ -51,16 +53,16 @@ namespace detail
 {
 
 template <typename T, typename = void>
-struct deref_impl { using type = T; };
+struct deref_implementation { using type = T; };
 
 template <>
-struct deref_impl<void*> { using type = void; };
+struct deref_implementation<void*> { using type = void; };
 
 template <typename T>
-struct deref_impl<std::weak_ptr<T>> { using type = T; };
+struct deref_implementation<std::weak_ptr<T>> { using type = T; };
 
 template <typename T>
-struct deref_impl<T, to_void<decltype(*std::declval<T>())>>
+struct deref_implementation<T, SFVOID(*std::declval<T>())>
 {
     using type = remove_ref<decltype(*std::declval<T>())>;
 };
@@ -68,29 +70,27 @@ struct deref_impl<T, to_void<decltype(*std::declval<T>())>>
 } // namespace detail
 
 template <typename It>
-using dereference = typename detail::deref_impl<It>::type;
+using dereference = typename detail::deref_implementation<It>::type;
 
 template <bool condition, typename if_true, typename if_false>
-using if_ = typename std::conditional<condition, if_true, if_false>::type;
+using conditional = typename std::conditional<condition, if_true, if_false>::type;
 
 template <typename T>
 using decay = typename std::decay<T>::type;
 
-template <typename...> struct scope;
+template <typename...> struct type_array;
 
-template <> struct scope<>
+template <> struct type_array<>
 {
-public:
     template <int I> struct arg { using type = void; };
 };
 
 template <typename T, typename... Tn>
-struct scope<T, Tn...>
+struct type_array<T, Tn...>
 {
-public:
     template <int I, typename overload = void> struct arg
     {
-        using type = typename scope<Tn...>::template arg<I - 1>::type;
+        using type = typename type_array<Tn...>::template arg<I - 1>::type;
     };
 
     template <typename overload> struct arg<0, overload>
@@ -98,46 +98,43 @@ public:
         using type = T;
     };
 
-public:
     template <int I> using type = typename arg<I>::type;
 };
 
 namespace detail
 {
 
-template <class...> struct and_ : std::true_type {};
-template <class B1> struct and_<B1> : B1 {};
+template <class...> struct all : std::true_type {};
+template <class B1> struct all<B1> : B1 {};
 template <class B1, class... Bn>
-struct and_<B1, Bn...>
-    : if_<bool(B1::value), and_<Bn...>, B1> {};
+struct all<B1, Bn...> : conditional<bool(B1::value), all<Bn...>, B1> {};
 
-template <class...> struct or_ : std::false_type {};
-template <class B1> struct or_<B1> : B1 {};
+template <class...> struct one : std::false_type {};
+template <class B1> struct one<B1> : B1 {};
 template <class B1, class... Bn>
-struct or_<B1, Bn...>
-    : if_<bool(B1::value), B1, or_<Bn...>> {};
+struct one<B1, Bn...> : conditional<bool(B1::value), B1, one<Bn...>> {};
 
 } // namespace detaiil
 
 template <typename... Bn> constexpr bool all() noexcept
 {
-    return detail::and_<Bn...>::value;
+    return detail::all<Bn...>::value;
 }
 
 template <typename... Bn> constexpr bool one() noexcept
 {
-    return detail::or_<Bn...>::value;
+    return detail::one<Bn...>::value;
 }
 
 namespace detail
 {
 
 template <typename From, typename To, typename = void>
-struct can_static_cast_impl : std::false_type {};
+struct can_static_cast_implementation : std::false_type {};
 
 template <typename From, typename To>
-struct can_static_cast_impl<From, To,
-    to_void<decltype( static_cast<To*>(std::declval<From*>()) )>>
+struct can_static_cast_implementation<From, To,
+    SFVOID( static_cast<To*>(std::declval<From*>()) )>
 : std::true_type {};
 
 } // namespace detail
@@ -157,36 +154,36 @@ namespace detail
 {
 
 template <typename, std::size_t N>
-struct remove_ptr_n_impl;
+struct remove_ptr_n_implementation;
 
 template <typename T>
-struct remove_ptr_n_impl<T*, 1>
+struct remove_ptr_n_implementation<T*, 1>
 {
     using type = T;
 };
 
 template <typename T, std::size_t N>
-struct remove_ptr_n_impl<T*, N>
+struct remove_ptr_n_implementation<T*, N>
 {
-    using type = typename remove_ptr_n_impl<T, N - 1>::type;
+    using type = typename remove_ptr_n_implementation<T, N - 1>::type;
 };
 
 } // namespace detail
 
 template <typename T, std::size_t N = 1>
-using remove_ptr_n = typename detail::remove_ptr_n_impl<T, N>::type;
+using remove_ptr_n = typename detail::remove_ptr_n_implementation<T, N>::type;
 
 namespace detail
 {
 
 template <typename T, std::size_t N>
-struct pointer_impl
+struct pointer_implementation
 {
-    using type = typename pointer_impl<T, N - 1>::type*;
+    using type = typename pointer_implementation<T, N - 1>::type*;
 };
 
 template <typename T>
-struct pointer_impl<T, 0>
+struct pointer_implementation<T, 0>
 {
     using type = T;
 };
@@ -194,7 +191,7 @@ struct pointer_impl<T, 0>
 } // namespace detail
 
 template <typename T, std::size_t N>
-using pointer = typename detail::pointer_impl<T, N>::type;
+using pointer = typename detail::pointer_implementation<T, N>::type;
 
 template <typename> struct is_std_shared_ptr : std::false_type {};
 template <typename T>
@@ -204,21 +201,21 @@ namespace detail
 {
 
 template <typename>
-struct is_character_impl : std::false_type {};
+struct is_character_implementation : std::false_type {};
 
-template <> struct is_character_impl<char> : std::true_type {};
-template <> struct is_character_impl<signed char> : std::true_type {};
-template <> struct is_character_impl<unsigned char> : std::true_type {};
+template <> struct is_character_implementation<char> : std::true_type {};
+template <> struct is_character_implementation<signed char> : std::true_type {};
+template <> struct is_character_implementation<unsigned char> : std::true_type {};
 
-template <> struct is_character_impl<wchar_t> : std::true_type {};
-template <> struct is_character_impl<char16_t> : std::true_type {};
-template <> struct is_character_impl<char32_t> : std::true_type {};
+template <> struct is_character_implementation<wchar_t> : std::true_type {};
+template <> struct is_character_implementation<char16_t> : std::true_type {};
+template <> struct is_character_implementation<char32_t> : std::true_type {};
 
 template <typename T>
-struct is_character : is_character_impl<typename std::remove_cv<T>::type> {};
+struct is_character : is_character_implementation<typename std::remove_cv<T>::type> {};
 
 template <typename T, typename... Tn>
-struct is_same_all : and_<std::is_same<T, Tn>...> {};
+struct is_same_all : all<std::is_same<T, Tn>...> {};
 
 template <typename T>
 struct is_same_all<T> : std::true_type {};
@@ -258,57 +255,57 @@ namespace detail
 {
 
 template <class T, typename enable = meta::to_void<>>
-struct object_value_type_impl
+struct object_value_type_implementation
 {
     using type = dummy_type;
 };
 
 template <class T>
-struct object_value_type_impl<T, meta::to_void<typename T::value_type>>
+struct object_value_type_implementation<T, meta::to_void<typename T::value_type>>
 {
     using type = typename T::value_type;
 };
 
 template <typename T>
-struct array_value_type_impl
+struct array_value_type_implementation
 {
     using type = dummy_type;
 };
 
 template <typename T>
-struct array_value_type_impl<T[]>
+struct array_value_type_implementation<T[]>
 {
     using type = T;
 };
 
 template <typename T, std::size_t N>
-struct array_value_type_impl<T[N]>
+struct array_value_type_implementation<T[N]>
 {
     using type = T;
 };
 
 template <typename T, typename enable = void>
-struct value_type_impl
+struct value_type_implementation
 {
     using type = dummy_type;
 };
 
 template <typename T>
-struct value_type_impl<T, when<std::is_class<T>::value>>
+struct value_type_implementation<T, when<std::is_class<T>::value>>
 {
-    using type = typename object_value_type_impl<T>::type;
+    using type = typename object_value_type_implementation<T>::type;
 };
 
 template <typename T>
-struct value_type_impl<T, when<std::is_array<T>::value>>
+struct value_type_implementation<T, when<std::is_array<T>::value>>
 {
-    using type = typename array_value_type_impl<T>::type;
+    using type = typename array_value_type_implementation<T>::type;
 };
 
 } // namespace detail
 
 template <typename T>
-using value_type = typename detail::value_type_impl<T>::type;
+using value_type = typename detail::value_type_implementation<T>::type;
 
 template <typename T> constexpr std::size_t pointer_count() noexcept
 {
@@ -371,33 +368,15 @@ template <class T> constexpr bool is_Save() noexcept { return is_write_archive<T
 template <class T> constexpr bool is_Load() noexcept { return is_read_archive<T>(); }
 template <class T> constexpr bool is_SaveLoad() noexcept { return is_archive<T>(); }
 
-namespace detail
-{
-
-template <typename T> auto is_returnable_impl(int) noexcept -> decltype
-(
-    (void) static_cast<T(*)()>(nullptr),
-    std::true_type{}
-);
-
-template <typename> std::false_type is_returnable_impl(...);
-
-} // namespace detail
-
-template <typename T> constexpr bool is_returnable() noexcept
-{
-    return decltype(detail::is_returnable_impl<T>(0))::value;
-}
-
-template <std::size_t I> constexpr std::size_t select() noexcept
+template <std::size_t I> constexpr std::size_t with() noexcept
 {
     return I;
 }
 
 template <std::size_t I = 0, typename B, typename... Bn>
-constexpr std::size_t select(B b, Bn... bn) noexcept
+constexpr std::size_t with(B b, Bn... bn) noexcept
 {
-    return b ? I : select<I + 1>(bn...);
+    return b ? I : with<I + 1>(bn...);
 }
 
 template <typename... Tn> constexpr bool to_false() noexcept { return false; }
@@ -414,7 +393,7 @@ template <class T> constexpr bool is_compressible() noexcept
 
 template <typename From, typename To> constexpr bool can_static_cast() noexcept
 {
-    return detail::can_static_cast_impl<From, To>::value;
+    return detail::can_static_cast_implementation<From, To>::value;
 }
 
 template <typename From, typename To> constexpr bool is_cast_allowed() noexcept

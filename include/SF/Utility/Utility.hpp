@@ -47,7 +47,7 @@ constexpr std::size_t size(const T (&array)[N]) noexcept
 }
 
 template <typename CharType,
-          SIREQUIRE(meta::is_character<CharType>())>
+          SFREQUIRE(meta::is_character<CharType>())>
 std::size_t size(const CharType* str) noexcept
 {
     std::size_t count = 0;

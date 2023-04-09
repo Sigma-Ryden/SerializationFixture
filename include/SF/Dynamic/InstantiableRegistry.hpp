@@ -73,13 +73,13 @@ public:
     }
 
 public:
-    template <class T, SIREQUIRE(not is_instantiable<T>())>
+    template <class T, SFREQUIRE(not is_instantiable<T>())>
     void update(key_type key)
     {
         throw "The polymorphic 'T' type is not convertible to 'Instantiable'.";
     }
 
-    template <class T, SIREQUIRE(is_instantiable<T>())>
+    template <class T, SFREQUIRE(is_instantiable<T>())>
     void update(key_type key)
     {
         if (is_registered(key)) return;
@@ -116,14 +116,14 @@ public:
     }
 
     template <typename TraitType,
-              SIREQUIRE(meta::is_memory_shared<TraitType>())>
+              SFREQUIRE(meta::is_memory_shared<TraitType>())>
     std::shared_ptr<instantiable_type> clone(key_type key)
     {
         return registry(key).__shared();
     }
 
     template <typename TraitType,
-              SIREQUIRE(meta::is_memory_raw<TraitType>())>
+              SFREQUIRE(meta::is_memory_raw<TraitType>())>
     instantiable_type* clone(key_type key)
     {
         return registry(key).__raw();
@@ -140,7 +140,7 @@ public:
     }
 
     template <typename Pointer, typename T = sf::meta::dereference<Pointer>,
-              SIREQUIRE(::Serialization::has_save_mode<T>())>
+              SFREQUIRE(::Serialization::has_save_mode<T>())>
     void save(archive_type& archive, Pointer& pointer)
     {
         auto key = ::Serialization::trait(*pointer);
@@ -148,7 +148,7 @@ public:
     }
 
     template <typename Pointer, typename T = sf::meta::dereference<Pointer>,
-              SIREQUIRE(::Serialization::has_load_mode<T>())>
+              SFREQUIRE(::Serialization::has_load_mode<T>())>
     void load(archive_type& archive, Pointer& pointer)
     {
         auto key = ::Serialization::trait(*pointer);
@@ -187,7 +187,7 @@ public:
 
 public:
     template <typename dT = T,
-              SIREQUIRE(InstantiableRegistry::is_instantiable<dT>())>
+              SFREQUIRE(InstantiableRegistry::is_instantiable<dT>())>
     static void call()
     {
         if (lock_) return;
@@ -205,7 +205,7 @@ public:
     }
 
     template <typename dT = T,
-              SIREQUIRE(not InstantiableRegistry::is_instantiable<dT>())>
+              SFREQUIRE(not InstantiableRegistry::is_instantiable<dT>())>
     static void call() { /*pass*/ }
 };
 

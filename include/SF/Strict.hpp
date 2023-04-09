@@ -1,9 +1,10 @@
 #ifndef SF_STRICT_HPP
 #define SF_STRICT_HPP
 
-#include <SF/ApplyFunctor.hpp>
-
 #include <SF/Core/Memory.hpp>
+
+#include <SF/Dynamic/InstantiableRegistry.hpp>
+#include <SF/ApplyFunctor.hpp>
 
 #include <SF/Detail/Meta.hpp>
 #include <SF/Detail/MetaMacro.hpp>
@@ -12,7 +13,7 @@ namespace sf
 {
 
 template <class WriteArchive, typename T,
-          SIREQUIRE(meta::is_write_archive<WriteArchive>() and
+          SFREQUIRE(meta::is_write_archive<WriteArchive>() and
                     meta::is_pointer_to_standard_layout<T>())>
 void strict(WriteArchive& archive, T& pointer)
 {
@@ -23,7 +24,7 @@ void strict(WriteArchive& archive, T& pointer)
 }
 
 template <class ReadArchive, typename T,
-          SIREQUIRE(meta::is_read_archive<ReadArchive>() and
+          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
                     meta::is_pointer_to_standard_layout<T>())>
 void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
@@ -39,7 +40,7 @@ void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 }
 
 template <class WriteArchive, typename T,
-          SIREQUIRE(meta::is_write_archive<WriteArchive>() and
+          SFREQUIRE(meta::is_write_archive<WriteArchive>() and
                     meta::is_pointer_to_polymorphic<T>())>
 void strict(WriteArchive& archive, T& pointer)
 {
@@ -50,7 +51,7 @@ void strict(WriteArchive& archive, T& pointer)
 }
 
 template <class ReadArchive, typename T,
-          SIREQUIRE(meta::is_read_archive<ReadArchive>() and
+          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
                     meta::is_pointer_to_polymorphic<T>())>
 void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
@@ -62,7 +63,7 @@ void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 
 // verison without cache using
 template <class ReadArchive, typename T,
-          SIREQUIRE(meta::is_read_archive<ReadArchive>() and
+          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
                     meta::is_serializable_pointer<T>())>
 void strict(ReadArchive& archive, T& pointer)
 {
@@ -74,7 +75,7 @@ namespace detail
 {
 
 template <class WriteArchive, typename T,
-          SIREQUIRE(meta::is_write_archive<WriteArchive>() and
+          SFREQUIRE(meta::is_write_archive<WriteArchive>() and
                     meta::is_serializable_pointer<T>() )>
 bool is_refer(WriteArchive& archive, T& pointer)
 {
@@ -85,7 +86,7 @@ bool is_refer(WriteArchive& archive, T& pointer)
 }
 
 template <class ReadArchive, typename T,
-          SIREQUIRE(meta::is_read_archive<ReadArchive>() and
+          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
                     meta::is_serializable_pointer<T>())>
 bool is_refer(ReadArchive& archive, T& pointer)
 {
@@ -106,19 +107,14 @@ namespace apply
 {
 
 template <typename T>
-class StrictFunctor : public ApplyFunctor
+struct StrictFunctor : public ApplyFunctor
 {
-private:
-    T& parameter_;
+    T& data;
 
-public:
-    StrictFunctor(T& parameter) noexcept : parameter_(parameter) {}
+    StrictFunctor(T& data) noexcept : data(data) {}
 
-    template <typename Archive, SIREQUIRE(meta::is_archive<Archive>())>
-    void operator() (Archive& archive)
-    {
-        ::sf::strict(archive, parameter_);
-    }
+    template <typename Archive>
+    void operator() (Archive& archive) { strict(archive, data); }
 };
 
 } // namespace apply

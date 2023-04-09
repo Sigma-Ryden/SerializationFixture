@@ -60,7 +60,7 @@ namespace sf
 inline namespace library
 {
 
-// slow impl
+// slow implementation
 EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
 {
     let::u64 size = vector.size();

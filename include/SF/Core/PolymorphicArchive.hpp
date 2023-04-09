@@ -45,14 +45,14 @@ private:
 
 private:
     template <template <key_type> class ArchiveTrait,
-              key_type Key, class T, SIREQUIRE(Key == max_key)>
+              key_type Key, class T, SFREQUIRE(Key == max_key)>
     static void call(Archive& archive, T& data)
     {
         throw "The read/write archive has invalid type key.";
     }
 
     template <template <key_type> class ArchiveTrait,
-              key_type Key = 0, class T, SIREQUIRE(Key < max_key)>
+              key_type Key = 0, class T, SFREQUIRE(Key < max_key)>
     static void call(Archive& archive, T& data)
     {
         using DerivedArchive = typename ArchiveTrait<Key>::type;
@@ -64,14 +64,14 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(not is_valid_archive<DerivedArchive>())>
+              SFREQUIRE(not is_valid_archive<DerivedArchive>())>
     static void try_call(Archive& archive, T& data)
     {
         throw "The read/write archive was not registered.";
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(is_valid_archive<DerivedArchive>())>
+              SFREQUIRE(is_valid_archive<DerivedArchive>())>
     static void try_call(Archive& archive, T& data)
     {
         auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
@@ -85,7 +85,7 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(meta::is_write_archive<DerivedArchive>() and
+              SFREQUIRE(meta::is_write_archive<DerivedArchive>() and
                         ::Serialization::has_save_mode<T>())>
     static void proccess(DerivedArchive& archive, T& object)
     {
@@ -93,7 +93,7 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(meta::is_read_archive<DerivedArchive>() and
+              SFREQUIRE(meta::is_read_archive<DerivedArchive>() and
                         ::Serialization::has_load_mode<T>())>
     static void proccess(DerivedArchive& archive, T& object)
     {
@@ -101,7 +101,7 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(meta::is_archive<DerivedArchive>() and
+              SFREQUIRE(meta::is_archive<DerivedArchive>() and
                         not ::Serialization::has_save_mode<T>() and
                         not ::Serialization::has_load_mode<T>())>
     static void proccess(DerivedArchive& archive, T& data)
@@ -110,14 +110,14 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(meta::is_registered<T>())>
+              SFREQUIRE(meta::is_registered<T>())>
     static void process_data(DerivedArchive& archive, T& data)
     {
         archive & data;
     }
 
     template <class DerivedArchive, class T,
-              SIREQUIRE(not meta::is_registered<T>())>
+              SFREQUIRE(not meta::is_registered<T>())>
     static void process_data(DerivedArchive& archive, T& data)
     {
         throw "The 'T' type is unregistered.";
@@ -125,7 +125,7 @@ private:
 };
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_base_archive<Archive>())>
+          SFREQUIRE(meta::is_base_archive<Archive>())>
 Archive& operator<< (Archive& archive, T&& data)
 {
     PolymorphicArchive::save(archive, data);
@@ -133,7 +133,7 @@ Archive& operator<< (Archive& archive, T&& data)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_base_archive<Archive>())>
+          SFREQUIRE(meta::is_base_archive<Archive>())>
 Archive& operator>> (Archive& archive, T&& data)
 {
     PolymorphicArchive::load(archive, data);

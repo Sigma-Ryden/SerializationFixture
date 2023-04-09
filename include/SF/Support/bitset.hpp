@@ -26,7 +26,7 @@ struct is_std_bitset<std::bitset<N>> : std::true_type {};
 inline namespace library
 {
 
-// slow impl
+// slow implementation
 EXTERN_CONDITIONAL_SERIALIZATION(Save, bitset, meta::is_std_bitset<T>::value)
 {
     auto data = bitset.to_string();

@@ -13,7 +13,7 @@ namespace detail
 {
 
 template <class Archive, typename T, typename key_type,
-          SIREQUIRE(meta::is_write_archive<Archive>() and
+          SFREQUIRE(meta::is_write_archive<Archive>() and
                     not meta::is_pointer_to_polymorphic<T>())>
 void native_save(Archive& archive, T& pointer, key_type track_key)
 {
@@ -21,7 +21,7 @@ void native_save(Archive& archive, T& pointer, key_type track_key)
 }
 
 template <class Archive, typename T, typename key_type,
-          SIREQUIRE(meta::is_write_archive<Archive>() and
+          SFREQUIRE(meta::is_write_archive<Archive>() and
                     meta::is_pointer_to_polymorphic<T>())>
 void native_save(Archive& archive, T& pointer, key_type track_key)
 {
@@ -30,7 +30,7 @@ void native_save(Archive& archive, T& pointer, key_type track_key)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_read_archive<Archive>() and
+          SFREQUIRE(meta::is_read_archive<Archive>() and
                     not meta::is_pointer_to_polymorphic<T>())>
 void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address)
 {
@@ -39,7 +39,7 @@ void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_read_archive<Archive>() and
+          SFREQUIRE(meta::is_read_archive<Archive>() and
                     meta::is_pointer_to_polymorphic<T>())>
 void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address)
 {

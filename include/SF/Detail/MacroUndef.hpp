@@ -44,6 +44,6 @@
 // #undef SF_ANY_SUPPORT_DISABLE
 // #undef SF_REGISTRY_ACCESS
 
-#undef SIREQUIRE
-#undef SIWHEN
-#undef SIWITH
+#undef SFREQUIRE
+#undef SFWHEN
+#undef SFVOID

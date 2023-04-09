@@ -2,7 +2,6 @@
 #define BASE_OBJECT_HPP
 
 #include <string>
-#include <any>
 
 #include "SFTestingBase.hpp"
 

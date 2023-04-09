@@ -2,8 +2,6 @@
 
 struct Vector
 {
-    //SERIALIZABLE(Vector) // not required
-
     Vector(float x = 0.f, float y = 0.f, float z = 0.f)
         : X(x), Y(y), Z(z) {}
 
@@ -14,8 +12,6 @@ struct Vector
 
 struct Box
 {
-    //SERIALIZABLE(Box) // not required
-
     Box() {}
     Box(const Vector& min, const Vector& max)
         : Min(min), Max(max) {}
@@ -66,8 +62,6 @@ TEST(TestCommon, TestUserType)
 
 struct Product
 {
-    SERIALIZABLE(Product)
-
     std::string name;
     std::size_t series;
     std::size_t price;
@@ -80,14 +74,17 @@ SERIALIZATION(SaveLoad, Product)
 
 struct Printer : Product
 {
-    SERIALIZABLE(Printer)
-
+#if __cplusplus >= 201703L
     std::any owner;
+#endif // if
 };
 
 SERIALIZATION(SaveLoad, Printer)
 {
-    archive & hierarchy<Product>(self) & self.owner;
+    archive & hierarchy<Product>(self);
+#if __cplusplus >= 201703L
+    archive & self.owner;
+#endif // if
 }
 
 TEST(TestCommon, TestInheritance)
@@ -98,7 +95,10 @@ TEST(TestCommon, TestInheritance)
     s_p.name = "Canon";
     s_p.series = 37868723;
     s_p.price = 1000;
+
+#if __cplusplus >= 201703L
     s_p.owner = sf::serializable(s_owner);
+#endif // if
 
     std::vector<unsigned char> storage;
     {
@@ -113,9 +113,12 @@ TEST(TestCommon, TestInheritance)
         auto ar = iarchive(storage);
         ar & p;
 
+    #if __cplusplus >= 201703L
         auto owner = std::any_cast<std::string>(&p.owner);
+        EXPECT("inheritance.inited", owner != nullptr && *owner == s_owner);
+    #endif // if
+
         EXPECT("inheritance.value",
-            p.name == s_p.name && p.series == s_p.series && p.price == s_p.price &&
-            owner != nullptr && *owner == s_owner);
+            p.name == s_p.name && p.series == s_p.series && p.price == s_p.price);
     }
 }

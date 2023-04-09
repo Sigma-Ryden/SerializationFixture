@@ -51,15 +51,15 @@ public:
     auto stream() noexcept -> StreamWrapper& { return archive_; }
 
     template <typename TrackType,
-              SIREQUIRE(meta::is_track_shared<TrackType>())>
+              SFREQUIRE(meta::is_track_shared<TrackType>())>
     auto tracking() noexcept -> TrackingTable& { return track_shared_; }
 
     template <typename TrackType,
-              SIREQUIRE(meta::is_track_raw<TrackType>())>
+              SFREQUIRE(meta::is_track_raw<TrackType>())>
     auto tracking() noexcept -> TrackingTable& { return track_raw_; }
 
     template <typename TrackType,
-              SIREQUIRE(meta::is_track_hierarchy<TrackType>())>
+              SFREQUIRE(meta::is_track_hierarchy<TrackType>())>
     auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
 
     auto registry() noexcept -> Registry& { return registry_; }
@@ -120,7 +120,7 @@ auto WriteArchive<OutStream, StreamWrapper, Registry>::operator() (
 }
 
 template <class WriteArchive, typename T,
-          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+          SFREQUIRE(meta::is_write_archive<WriteArchive>()
                     and meta::is_unsupported<T>())>
 WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 {
@@ -131,7 +131,7 @@ WriteArchive& operator& (WriteArchive& archive, T& unsupported)
 }
 
 template <class WriteArchive, typename T,
-          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+          SFREQUIRE(meta::is_write_archive<WriteArchive>()
                     and not meta::is_registered<T>())>
 WriteArchive& operator& (WriteArchive& archive, T& unregistered)
 {

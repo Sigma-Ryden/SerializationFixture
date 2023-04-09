@@ -52,11 +52,11 @@ namespace detail
 {
 
 template <class T,
-          SIREQUIRE(not meta::is_std_any_unordered_map<T>())>
+          SFREQUIRE(not meta::is_std_any_unordered_map<T>())>
 void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
 
 template <class T,
-          SIREQUIRE(meta::is_std_any_unordered_map<T>())>
+          SFREQUIRE(meta::is_std_any_unordered_map<T>())>
 void reserve_unordered(T& unordered, std::size_t size)
 {
     unordered.reserve(size);

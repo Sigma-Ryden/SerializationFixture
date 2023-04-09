@@ -28,26 +28,26 @@ namespace detail
 {
 
 template <typename Type, class Variant,
-          SIREQUIRE(not std::is_constructible<Type>::value)>
+          SFREQUIRE(not std::is_constructible<Type>::value)>
 void variant_emplace(Variant& variant)
 {
     throw "Require default constructor for specify type.";
 }
 
 template <typename Type, class Variant,
-          SIREQUIRE(std::is_constructible<Type>::value)>
+          SFREQUIRE(std::is_constructible<Type>::value)>
 void variant_emplace(Variant& variant)
 {
     variant.template emplace<Type>();
 }
 
 template <let::u64 I, class Variant,
-          SIREQUIRE(I == std::variant_size<Variant>::value)>
+          SFREQUIRE(I == std::variant_size<Variant>::value)>
 void variant_construct(Variant& variant, let::u64 index) noexcept
 { /*pass*/ }
 
 template <let::u64 I = 0, class Variant,
-          SIREQUIRE(I < std::variant_size<Variant>::value)>
+          SFREQUIRE(I < std::variant_size<Variant>::value)>
 void variant_construct(Variant& variant, let::u64 index)
 {
     if (I < index) return variant_construct<I + 1>(variant, index);

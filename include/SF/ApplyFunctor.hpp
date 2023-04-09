@@ -32,7 +32,7 @@ inline namespace common
 
 template <typename Archive, typename T,
           typename dT = meta::decay<T>, // T can be lvalue
-          SIREQUIRE(meta::is_archive<Archive>() and
+          SFREQUIRE(meta::is_archive<Archive>() and
                     meta::is_registered<dT>() and
                     meta::is_apply_functor<dT>())>
 Archive& operator& (Archive& archive, T&& apply_functor)

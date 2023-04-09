@@ -554,9 +554,7 @@ TEST(TestLibrary, TestPartition)
     static DerivedObject s_d;
     s_d.id = 1894981;
     s_d.name = "Unit";
-
-    static float sv_data = 3.14f;
-    s_d.data = serializable(sv_data);
+    s_d.data = 3.14f;
 
     std::vector<unsigned char> storage;
     {
@@ -574,10 +572,7 @@ TEST(TestLibrary, TestPartition)
         auto d = std::dynamic_pointer_cast<DerivedObject>(b);
 
         ASSERT("saveload partition.inited", d != nullptr);
-
-        auto data = std::any_cast<float>(&d->data);
-
         EXPECT("saveload partition.value",
-            d->id == s_d.id && d->name == s_d.name && data != nullptr && *data == sv_data);
+            d->id == s_d.id && d->name == s_d.name && d->data == s_d.data);
     }
 }

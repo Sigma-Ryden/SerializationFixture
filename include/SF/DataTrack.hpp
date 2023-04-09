@@ -19,7 +19,7 @@ namespace tracking
 {
 
 template <typename TrackType, class Archive, typename key_type,
-          SIREQUIRE(meta::is_archive<Archive>())>
+          SFREQUIRE(meta::is_archive<Archive>())>
 bool is_track(Archive& archive, key_type key)
 {
     auto& item = archive.template tracking<TrackType>();
@@ -27,7 +27,7 @@ bool is_track(Archive& archive, key_type key)
 }
 
 template <typename TrackType, class Archive, typename key_type,
-          SIREQUIRE(meta::is_archive<Archive>())>
+          SFREQUIRE(meta::is_archive<Archive>())>
 bool is_mixed(Archive& archive, key_type key)
 {
     using reverse_track_type = typename reverse_trait<TrackType>::type;
@@ -36,7 +36,7 @@ bool is_mixed(Archive& archive, key_type key)
 }
 
 template <class WriteArchive, typename T,
-          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+          SFREQUIRE(meta::is_write_archive<WriteArchive>()
                     and meta::is_pointer<T>())>
 void track(WriteArchive& archive, T& pointer)
 {
@@ -72,7 +72,7 @@ void track(WriteArchive& archive, T& pointer)
 }
 
 template <class WriteArchive, typename T,
-          SIREQUIRE(meta::is_write_archive<WriteArchive>()
+          SFREQUIRE(meta::is_write_archive<WriteArchive>()
                     and not meta::is_pointer<T>())>
 void track(WriteArchive& archive, T& data)
 {
@@ -93,7 +93,7 @@ void track(WriteArchive& archive, T& data)
 }
 
 template <class ReadArchive, typename T,
-          SIREQUIRE(meta::is_read_archive<ReadArchive>()
+          SFREQUIRE(meta::is_read_archive<ReadArchive>()
                     and meta::is_pointer<T>())>
 void track(ReadArchive& archive, T& pointer)
 {
@@ -125,7 +125,7 @@ void track(ReadArchive& archive, T& pointer)
 }
 
 template <class ReadArchive, typename T,
-          SIREQUIRE(meta::is_read_archive<ReadArchive>()
+          SFREQUIRE(meta::is_read_archive<ReadArchive>()
                     and not meta::is_pointer<T>())>
 void track(ReadArchive& archive, T& data)
 {
@@ -145,7 +145,7 @@ void track(ReadArchive& archive, T& data)
 }
 
 template <class Archive, typename T,
-          SIREQUIRE(meta::is_archive<T>() and
+          SFREQUIRE(meta::is_archive<T>() and
                     meta::is_serializable_raw_pointer<T>())>
 void raw(Archive& archive, T& pointer)
 {
@@ -165,6 +165,8 @@ struct TrackFunctor : ApplyFunctor
 {
     T& data;
 
+    TrackFunctor(T& data) noexcept : data(data) {}
+
     template <class Archive>
     void operator() (Archive& archive) { tracking::track(archive, data); }
 };
@@ -173,6 +175,8 @@ template <typename T>
 struct RawFunctor : ApplyFunctor
 {
     T& data;
+
+    RawFunctor(T& data) noexcept : data(data) {}
 
     template <class Archive>
     void operator() (Archive& archive) { tracking::raw(archive, data); }
@@ -183,8 +187,8 @@ struct RawFunctor : ApplyFunctor
 namespace tracking
 {
 
-template <typename T> apply::TrackFunctor<T> track(T& data) { return { {}, data }; }
-template <typename T> apply::RawFunctor<T> raw(T& data) { return { {}, data }; }
+template <typename T> apply::TrackFunctor<T> track(T& data) { return { data }; }
+template <typename T> apply::RawFunctor<T> raw(T& data) { return { data }; }
 
 } // namespace tracking
 

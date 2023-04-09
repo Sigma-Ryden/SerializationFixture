@@ -8,7 +8,7 @@
 
 #define EXTERN_CONDITIONAL_SERIALIZATION(mode, parameter, ...)                                          \
     template <class Archive, typename T,                                                                \
-              SIREQUIRE(::sf::meta::is_##mode<Archive>() and                                            \
+              SFREQUIRE(::sf::meta::is_##mode<Archive>() and                                            \
                         ::sf::meta::is_registered_extern<T>() and                                       \
                         (bool)(__VA_ARGS__))>                                                           \
     Archive& operator& (Archive& archive, T& parameter)
@@ -16,7 +16,7 @@
 // require TYPE_REGISTRY before use if not def SF_TYPE_REGISTRY_DISABLE
 #define EXTERN_SERIALIZATION(mode, parameter, ...)                                                      \
     template <class Archive,                                                                            \
-              SIREQUIRE(::sf::meta::is_##mode<Archive>() and                                            \
+              SFREQUIRE(::sf::meta::is_##mode<Archive>() and                                            \
                         ::sf::meta::is_registered_extern<__VA_ARGS__>())>                               \
     Archive& operator& (Archive& archive, __VA_ARGS__& parameter)
 

@@ -7,7 +7,7 @@
 #include <SF/Core/Hash.hpp>
 
 #include <SF/Detail/Meta.hpp>
-#include <SF/Detail/MetaMacro.hpp> // SIWHEN
+#include <SF/Detail/MetaMacro.hpp> // SFWHEN, SFVOID
 
 #define SERIALIZATION(mode, ...)                                                                        \
     template <>                                                                                         \
@@ -20,14 +20,14 @@
 
 #define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
     template <typename T>                                                                               \
-    struct Serialization::mode<T, SIWHEN(__VA_ARGS__)> {                                                \
+    struct Serialization::mode<T, SFWHEN(__VA_ARGS__)> {                                                \
         template <class Archive>                                                                        \
         static void call(Archive& archive, T& self);                                                    \
     };                                                                                                  \
     template <typename T> template <class Archive>                                                      \
-    void Serialization::mode<T, SIWHEN(__VA_ARGS__)>::call(Archive& archive, T& self)
+    void Serialization::mode<T, SFWHEN(__VA_ARGS__)>::call(Archive& archive, T& self)
 
-// Allow to hide implementation to translation unit, and declare interface in header
+// Allow to hide implementationementation to translation unit, and declare interface in header
 #define SERIALIZATION_INTERFACE(mode, ...)                                                              \
     template <>                                                                                         \
     struct Serialization::mode<__VA_ARGS__> {                                                           \
@@ -43,7 +43,7 @@ class Serialization
 private:
     // specificaly check for construction without arguments
     template <typename T, typename = void> struct has_implementation : std::false_type {};
-    template <typename T> struct has_implementation<T, SIVOID(T{})> : std::true_type {};
+    template <typename T> struct has_implementation<T, SFVOID(T{})> : std::true_type {};
 
 public:
     template <class T> static constexpr bool is_save_class() noexcept
@@ -81,7 +81,7 @@ public:
 public:
     template <class Archive, typename T> static void call(Archive& archive, T& self)
     {
-        // default implementation
+        // default implementationementation
         throw "The 'T' type cannot be saved/loaded.";
     }
 
@@ -89,19 +89,19 @@ private:
     template <typename T>
     struct SaveModeMeta
     {
-        using scope = sf::meta::scope<Save<T>, SaveLoad<T>, Serialization>;
-        static constexpr auto index = sf::meta::select(is_save_class<T>(), is_saveload_class<T>());
+        using array = sf::meta::type_array<Save<T>, SaveLoad<T>, Serialization>;
+        static constexpr auto index = sf::meta::with(is_save_class<T>(), is_saveload_class<T>());
 
-        using mode = typename scope::template type<index>;
+        using mode = typename array::template type<index>;
     };
 
     template <typename T>
     struct LoadModeMeta
     {
-        using scope = sf::meta::scope<Load<T>, SaveLoad<T>, Serialization>;
-        static constexpr auto index = sf::meta::select(is_load_class<T>(), is_saveload_class<T>());
+        using array = sf::meta::type_array<Load<T>, SaveLoad<T>, Serialization>;
+        static constexpr auto index = sf::meta::with(is_load_class<T>(), is_saveload_class<T>());
 
-        using mode = typename scope::template type<index>;
+        using mode = typename array::template type<index>;
     };
 
 public:
@@ -110,10 +110,10 @@ public:
 
 private:
     template <typename C, typename = void> struct has_static_trait : std::false_type {};
-    template <typename C> struct has_static_trait<C, SIVOID(&C::__static_trait)> : std::true_type {};
+    template <typename C> struct has_static_trait<C, SFVOID(&C::__static_trait)> : std::true_type {};
 
     template <typename C, typename = void> struct has_trait : std::false_type {};
-    template <typename C> struct has_trait<C, SIVOID(&C::__trait)> : std::true_type {};
+    template <typename C> struct has_trait<C, SFVOID(&C::__trait)> : std::true_type {};
 
 public:
     template <class T> static constexpr bool has_inner_trait() noexcept
@@ -126,8 +126,15 @@ private:
     struct can_static_cast : std::false_type {};
 
     template <typename From, typename To>
-    struct can_static_cast<From, To, SIVOID(static_cast<To>(std::declval<From>()))>
+    struct can_static_cast<From, To, SFVOID(static_cast<To>(std::declval<From>()))>
     : std::true_type {};
+
+    template <typename> static std::false_type is_returnable(...);
+    template <typename T> static auto is_returnable(int) noexcept -> decltype
+    (
+        (void) static_cast<T(*)()>(nullptr),
+        std::true_type{}
+    );
 
     template <class, class> static std::false_type try_cast(...);
     template <class From, class To> static auto try_cast(int) -> decltype
@@ -145,7 +152,7 @@ public:
 
     template <class From, class To> static constexpr bool is_cast_allowed() noexcept
     {
-        return (sf::meta::is_returnable<To>() and decltype(try_cast<From, To>(0))::value)
+        return (decltype(is_returnable<To>(0))::value and decltype(try_cast<From, To>(0))::value)
             or (sf::meta::is_same_all<void, From, To>());
     }
 
@@ -173,14 +180,14 @@ public:
     }
 
     template <typename Base, class Archive, typename Derived,
-              SIREQUIRE(sf::meta::is_archive<Archive>() and
+              SFREQUIRE(sf::meta::is_archive<Archive>() and
                         sf::meta::is_base_of<Base, Derived>())>
     static void serialize_base(Archive& archive, Derived& object)
     {
         archive & cast<Base&>(object);
     }
 
-    template <class T, SIREQUIRE(not has_inner_trait<T>())>
+    template <class T, SFREQUIRE(not has_inner_trait<T>())>
     static InstantiableTraitBase::key_type trait(T& object) noexcept
     {
     #ifdef SF_EXTERN_RUNTIME_TRAIT
@@ -190,13 +197,13 @@ public:
     #endif // SF_EXTERN_RUNTIME_TRAIT
     }
 
-    template <class T, SIREQUIRE(has_inner_trait<T>())>
+    template <class T, SFREQUIRE(has_inner_trait<T>())>
     static InstantiableTraitBase::key_type trait(T& object) noexcept
     {
         return object.__trait();
     }
 
-    template <class T, SIREQUIRE(not has_inner_trait<T>())>
+    template <class T, SFREQUIRE(not has_inner_trait<T>())>
     static InstantiableTraitBase::key_type static_trait() noexcept
     {
     #ifdef SF_EXTERN_TRAIT
@@ -206,13 +213,13 @@ public:
     #endif // SF_EXTERN_TRAIT
     }
 
-    template <class T, SIREQUIRE(has_inner_trait<T>())>
+    template <class T, SFREQUIRE(has_inner_trait<T>())>
     static constexpr InstantiableTraitBase::key_type static_trait() noexcept
     {
         return T::__static_trait();
     }
 
-    template <class T, SIREQUIRE(not has_inner_trait<T>())>
+    template <class T, SFREQUIRE(not has_inner_trait<T>())>
     static InstantiableTraitBase::key_type trait() noexcept
     {
         constexpr auto trait_key = sf::core::InstantiableTraitKey<T>::key;
@@ -223,7 +230,7 @@ public:
         return static_trait<T>();
     }
 
-    template <class T, SIREQUIRE(has_inner_trait<T>())>
+    template <class T, SFREQUIRE(has_inner_trait<T>())>
 #ifdef SF_EXPORT_INSTANTIABLE_DISABLE
     static constexpr InstantiableTraitBase::key_type trait() noexcept
 #else
