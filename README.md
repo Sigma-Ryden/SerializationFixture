@@ -1,4 +1,4 @@
-# SF (Serialization Fixture) - Simple serialization library
+# SF (SerializationFixture) - Simple serialization library
 
 `SF` is a flexible and extensible C++ library with many features, that will allow you to easily
 and quickly turn your objects into a sequence of bits.
@@ -23,7 +23,7 @@ Is a header-only library implemented purely in C++11.
 - C++11: string, vector, map, and many others
 - C++17: any, optional, variant
 
-See full list [here](https://github.com/Sigma-Ryden/SF/tree/master/include/SF/Support).
+See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/include/SF/Support).
 ### Serialization of users class:
 - Common
 - Hierarchy
@@ -31,10 +31,10 @@ See full list [here](https://github.com/Sigma-Ryden/SF/tree/master/include/SF/Su
 - Template
 
 ## Auto Tests:
-See library testing [here](https://github.com/Sigma-Ryden/SF/tree/master/test).
+See library testing [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test).
 
 ## Quick start:
-Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SF/tree/master/test/demo).
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/demo).
 
 Preparing:
 
@@ -122,7 +122,7 @@ Handbook db; // some other clear db
 auto ar = sf::iarchive(storage);
 ar & db;
 ```
-See full code here: [example.cpp](https://github.com/Sigma-Ryden/SF/tree/master/test/demo/example.cpp)
+See full code here: [example.cpp](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/demo/example.cpp)
 
 ### Notes:
 For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
