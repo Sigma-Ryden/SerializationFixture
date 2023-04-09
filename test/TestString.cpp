@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/string.hpp>
+#include <SF/Support/string.hpp>
 
 TEST(TestSTL, TestString)
 {

@@ -1,0 +1,49 @@
+// If you want to undef all external lib's macros
+// you should include given file only after library files
+// note that: MACRO - is public macro, _MACRO - is private
+
+// clean up
+#undef SERIALIZATION_ACCESS
+
+#undef SERIALIZATION_ARCHIVE
+#undef EXPORT_SERIALIZATION_ARCHIVE
+
+#undef INSTANTIABLE_BODY
+#undef INSTANTIABLE_TYPE
+
+#undef SRIALIZABLE
+
+#undef EXPORT_INSTANTIABLE_KEY
+#undef EXPORT_INSTANTIABLE
+
+#undef EXTERN_CONDITIONAL_SERIALIZATION
+#undef EXTERN_SERIALIZATION
+
+#undef CONDITIONAL_SERIALIZATION
+#undef SERIALIZATION
+
+#undef CONDITIONAL_TYPE_REGISTRY
+#undef TYPE_REGISTRY
+
+#undef SF_STATIC_HASH
+#undef SF_STATIC_HASH_KEY_TYPE
+#undef SF_TYPE_HASH
+
+#undef SF_MAX_TEMPLATE_DEPTH
+#undef SF_ARCHIVE_MAX_TRAIT_KEY
+#undef SF_BYTE_STREAM_RESERVE_SIZE
+
+// possible to undef
+// #undef SF_NULLPTR_DISABLE
+// #undef SF_PTRTRACK_DISABLE
+// #undef SF_TYPE_REGISTRY_DISABLE
+// #undef SF_DEFAULT_DISABLE
+// #undef SF_EXTERN_RUNTIME_TRAIT
+// #undef SF_EXTERN_TRAIT
+// #undef SF_EXPORT_INSTANTIABLE_DISABLE
+// #undef SF_ANY_SUPPORT_DISABLE
+// #undef SF_REGISTRY_ACCESS
+
+#undef SIREQUIRE
+#undef SIWHEN
+#undef SIWITH

@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/set.hpp>
+#include <SF/Support/set.hpp>
 
 TEST(TestSTL, TestSet)
 {

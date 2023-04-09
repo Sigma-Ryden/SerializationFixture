@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/stack.hpp>
+#include <SF/Support/stack.hpp>
 
 TEST(TestSTLAdapter, TestStack)
 {

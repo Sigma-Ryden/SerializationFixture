@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/complex.hpp>
+#include <SF/Support/complex.hpp>
 
 TEST(TestNumeric, TestComplex)
 {

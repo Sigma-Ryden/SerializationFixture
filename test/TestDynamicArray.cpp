@@ -1,11 +1,11 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Utility/Span.hpp>
+#include <SF/Utility/Span.hpp>
 
 TEST(TestCommon, TestDynamicArray)
 {
     // allow to serialize multi dimension raw dynamic array
-    using siraf::span;
+    using sf::span;
 
     static const unsigned sv_h = 3;
     static const unsigned sv_w = 5;

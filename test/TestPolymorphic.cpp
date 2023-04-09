@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/string.hpp>
+#include <SF/Support/string.hpp>
 
 template <class SomeType>
 struct Base : Instantiable
@@ -54,12 +54,12 @@ SERIALIZATION(SaveLoad, internal::Derived)
 
 // we can overload polymorphic key for each class (or full template specialization)
 
-// smae as EXPORT_POLYMORPHIC_KEY("Base<double>", Base<double>)
-EXPORT_POLYMORPHIC(Base<double>)
-EXPORT_POLYMORPHIC(Base<std::string>)
+// smae as EXPORT_INSTANTIABLE_KEY("Base<double>", Base<double>)
+EXPORT_INSTANTIABLE(Base<double>)
+EXPORT_INSTANTIABLE(Base<std::string>)
 
-// EXPORT_POLYMORPHIC(internal::Derived) // - not required, but allow
-// EXPORT_POLYMORPHIC_KEY("Other Derived", "internal::Derived) // - possible use
+// EXPORT_INSTANTIABLE(internal::Derived) // - not required, but allow
+// EXPORT_INSTANTIABLE_KEY("Other Derived", "internal::Derived) // - possible use
 
 TEST(TestCommon, TestPolymorphic)
 {

@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/vector.hpp>
+#include <SF/Support/vector.hpp>
 
 TEST(TestSTL, TestVector)
 {

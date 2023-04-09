@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/unique_ptr.hpp>
+#include <SF/Support/unique_ptr.hpp>
 
 struct Parent : Instantiable
 {
@@ -67,7 +67,7 @@ TEST(TestMemory, TestUniquePtr)
     }
 }
 
-#include <Siraf/Support/shared_ptr.hpp>
+#include <SF/Support/shared_ptr.hpp>
 
 struct A : Instantiable
 {
@@ -158,7 +158,7 @@ TEST(TestMemory, TestSharedPtr)
             ar & s_c & s_a & s_d & s_b; // one more shuffle
         }
 
-        using siraf::Memory;
+        using sf::Memory;
     	
         ASSERT("std::shared_ptr<polymorphic>.inited",
             s_a != nullptr && s_b != nullptr && s_c != nullptr && s_d != nullptr);
@@ -183,7 +183,7 @@ TEST(TestMemory, TestSharedPtr)
     }
 }
 
-#include <Siraf/Support/weak_ptr.hpp>
+#include <SF/Support/weak_ptr.hpp>
 
 TEST(TestMemory, TestWeakPtr)
 {
@@ -260,7 +260,7 @@ TEST(TestMemory, TestSharedAndWeakPtr)
     }
 }
 
-#include <Siraf/Support/string.hpp>
+#include <SF/Support/string.hpp>
 
 struct Human
 {

@@ -1,7 +1,7 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/tuple.hpp>
-#include <Siraf/Support/string.hpp>
+#include <SF/Support/tuple.hpp>
+#include <SF/Support/string.hpp>
 
 TEST(TestUtility, TestTuple)
 {

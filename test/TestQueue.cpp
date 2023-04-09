@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/queue.hpp>
+#include <SF/Support/queue.hpp>
 
 TEST(TestSTLAdapter, TestQueue)
 {

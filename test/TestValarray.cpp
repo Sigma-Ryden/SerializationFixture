@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/valarray.hpp>
+#include <SF/Support/valarray.hpp>
 
 template <typename T>
 bool is_equal(const std::valarray<T>& lhs, const std::valarray<T>& rhs)

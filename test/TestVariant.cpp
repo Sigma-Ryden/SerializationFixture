@@ -1,9 +1,9 @@
 #if __cplusplus >= 201703L
 
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/variant.hpp>
-#include <Siraf/Support/string.hpp>
+#include <SF/Support/variant.hpp>
+#include <SF/Support/string.hpp>
 
 struct OwnType
 {

@@ -1,6 +1,6 @@
-# Siraf - Simple serialization library
+# SF (Serialization Fixture) - Simple serialization library
 
-`Siraf` is a flexible and extensible C++ library with many features, that will allow you to easily
+`SF` is a flexible and extensible C++ library with many features, that will allow you to easily
 and quickly turn your objects into a sequence of bits.
 The library has a small code base, but enough to use it.
 
@@ -23,7 +23,7 @@ Is a header-only library implemented purely in C++11.
 - C++11: string, vector, map, and many others
 - C++17: any, optional, variant
 
-See full list [here](https://github.com/Sigma-Ryden/Siraf/tree/master/include/Siraf/Support).
+See full list [here](https://github.com/Sigma-Ryden/SF/tree/master/include/SF/Support).
 ### Serialization of users class:
 - Common
 - Hierarchy
@@ -31,22 +31,22 @@ See full list [here](https://github.com/Sigma-Ryden/Siraf/tree/master/include/Si
 - Template
 
 ## Auto Tests:
-See library testing [here](https://github.com/Sigma-Ryden/Siraf/tree/master/test).
+See library testing [here](https://github.com/Sigma-Ryden/SF/tree/master/test).
 
 ## Quick start:
-Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/Siraf/tree/master/test/demo).
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SF/tree/master/test/demo).
 
 Preparing:
 
 ```C++
-#include <Siraf/Core.hpp>
+#include <SF/Core.hpp>
 ```
 Let's include serialization support of common STL types:
 ```C++
-#include <Siraf/Support/string.hpp>
-#include <Siraf/Support/vector.hpp>
-#include <Siraf/Support/map.hpp>
-#include <Siraf/Support/shared_ptr.hpp>
+#include <SF/Support/string.hpp>
+#include <SF/Support/vector.hpp>
+#include <SF/Support/map.hpp>
+#include <SF/Support/shared_ptr.hpp>
 ```
 And let's write own serializable types:
 ```C++
@@ -60,16 +60,12 @@ enum class Property
 
 struct Prototype
 {
-    SERIALIZABLE(Prototype)
-
     std::string name;
     std::vector<Property> properties;
 };
 
 struct Handbook
 {
-    SERIALIZABLE(Handbook)
-
     std::map<int, std::shared_ptr<Prototype>> prototypes;
 };
 
@@ -84,7 +80,6 @@ SERIALIZATION(SaveLoad, Handbook)
 }
 ```
 Explaining of using macros above:
-- ```SERIALIZABLE(<type>)``` - Provide us with secure saving and loading of objects.
 - ```SERIALIZATION(<mode>, <type>)``` - Generate Save/Load/SaveLoad serialization functions for given class.
 
 ### Using of serialization library:
@@ -116,7 +111,7 @@ db.prototypes[2] = ifly;
 
 Serialization prepared data:
 ```C++
-auto ar = siraf::oarchive(storage);
+auto ar = sf::oarchive(storage);
 ar & db;
 ```
 
@@ -124,10 +119,10 @@ Deserialization from storage:
 ```C++
 Handbook db; // some other clear db
 
-auto ar = siraf::iarchive(storage);
+auto ar = sf::iarchive(storage);
 ar & db;
 ```
-See full code here: [example.cpp](https://github.com/Sigma-Ryden/Siraf/tree/master/test/demo/example.cpp)
+See full code here: [example.cpp](https://github.com/Sigma-Ryden/SF/tree/master/test/demo/example.cpp)
 
 ### Notes:
 For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```

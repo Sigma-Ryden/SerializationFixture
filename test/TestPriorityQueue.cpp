@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/queue.hpp>
+#include <SF/Support/queue.hpp>
 
 TEST(TestSTLAdapter, TestPriorityQueue)
 {
@@ -24,8 +24,8 @@ TEST(TestSTLAdapter, TestPriorityQueue)
         auto ar = iarchive(storage);
         ar & pq;
 
-        auto c = siraf::meta::underlying(pq);
-        auto s_c = siraf::meta::underlying(s_pq);
+        auto c = sf::meta::underlying(pq);
+        auto s_c = sf::meta::underlying(s_pq);
 
         EXPECT("std::priority_queue<>", c == s_c);
     }

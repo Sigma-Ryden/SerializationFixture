@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/array.hpp>
+#include <SF/Support/array.hpp>
 
 TEST(TestSTL, TestArray)
 {

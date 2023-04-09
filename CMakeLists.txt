@@ -7,74 +7,74 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
 
-set(SIRAF
-    include/Siraf/Detail/Meta.hpp
-    include/Siraf/Detail/MetaMacro.hpp
-    include/Siraf/Detail/MacroUndef.hpp
+set(SF
+    include/SF/Detail/Meta.hpp
+    include/SF/Detail/MetaMacro.hpp
+    include/SF/Detail/MacroUndef.hpp
 
-    include/Siraf/Core/ArchiveBase.hpp
-    include/Siraf/Core/ArchiveTrait.hpp
-    include/Siraf/Core/Config.hpp
-    include/Siraf/Core/PolymorphicTrait.hpp
-    include/Siraf/Core/PolymorphicArchive.hpp
-    include/Siraf/Core/TypeRegistry.hpp
-    include/Siraf/Core/Serialization.hpp
-    include/Siraf/Core/SerializatonBase.hpp
-    include/Siraf/Core/Memory.hpp
-    include/Siraf/Core/TypeCore.hpp
-    include/Siraf/Core/Hash.hpp
+    include/SF/Core/ArchiveBase.hpp
+    include/SF/Core/ArchiveTrait.hpp
+    include/SF/Core/Config.hpp
+    include/SF/Core/InstantiableTrait.hpp
+    include/SF/Core/PolymorphicArchive.hpp
+    include/SF/Core/TypeRegistry.hpp
+    include/SF/Core/Serialization.hpp
+    include/SF/Core/SerializatonBase.hpp
+    include/SF/Core/Memory.hpp
+    include/SF/Core/TypeCore.hpp
+    include/SF/Core/Hash.hpp
 
-    include/Siraf/Dynamic/Instantiable.hpp
-    include/Siraf/Dynamic/InstantiableRegistry.hpp
-    include/Siraf/Dynamic/ExternRegistry.hpp
-    include/Siraf/Dynamic/AnyRegistry.hpp
+    include/SF/Dynamic/Instantiable.hpp
+    include/SF/Dynamic/InstantiableRegistry.hpp
+    include/SF/Dynamic/ExternRegistry.hpp
+    include/SF/Dynamic/AnyRegistry.hpp
 
-    include/Siraf/Utility/Utility.hpp
-    include/Siraf/Utility/Span.hpp
-    include/Siraf/Utility/Ref.hpp
+    include/SF/Utility/Utility.hpp
+    include/SF/Utility/Span.hpp
+    include/SF/Utility/Ref.hpp
 
-    include/Siraf/DataTrack.hpp
-    include/Siraf/Compress.hpp
-    include/Siraf/Common.hpp
-    include/Siraf/ApplyFunctor.hpp
-    include/Siraf/NativeSaveLoad.hpp
-    include/Siraf/Strict.hpp
-    include/Siraf/ReadArchive.hpp
-    include/Siraf/WriteArchive.hpp
-    include/Siraf/ExternSerialization.hpp
-    include/Siraf/StreamWrapper.hpp
-    include/Siraf/DataTrackBase.hpp
-    include/Siraf/Hierarchy.hpp
-    include/Siraf/Serializable.hpp
-    include/Siraf/HierarchyTrack.hpp
+    include/SF/DataTrack.hpp
+    include/SF/Compress.hpp
+    include/SF/Common.hpp
+    include/SF/ApplyFunctor.hpp
+    include/SF/NativeSaveLoad.hpp
+    include/SF/Strict.hpp
+    include/SF/ReadArchive.hpp
+    include/SF/WriteArchive.hpp
+    include/SF/ExternSerialization.hpp
+    include/SF/StreamWrapper.hpp
+    include/SF/DataTrackBase.hpp
+    include/SF/Hierarchy.hpp
+    include/SF/Serializable.hpp
+    include/SF/HierarchyTrack.hpp
 
-    include/Siraf/Core.hpp
+    include/SF/Core.hpp
 )
 
-set(SIRAF_SUPPORT
-    include/Siraf/Support/Detail/Meta.hpp
-    include/Siraf/Support/vector.hpp
-    include/Siraf/Support/array.hpp
-    include/Siraf/Support/string.hpp
-    include/Siraf/Support/pair.hpp
-    include/Siraf/Support/tuple.hpp
-    include/Siraf/Support/list.hpp
-    include/Siraf/Support/forward_list.hpp
-    include/Siraf/Support/set.hpp
-    include/Siraf/Support/unique_ptr.hpp
-    include/Siraf/Support/shared_ptr.hpp
-    include/Siraf/Support/weak_ptr.hpp
-    include/Siraf/Support/map.hpp
-    include/Siraf/Support/deque.hpp
-    include/Siraf/Support/stack.hpp
-    include/Siraf/Support/queue.hpp
-    include/Siraf/Support/valarray.hpp
-    include/Siraf/Support/bitset.hpp
-    include/Siraf/Support/atomic.hpp
-    include/Siraf/Support/complex.hpp
-    include/Siraf/Support/optional.hpp
-    include/Siraf/Support/variant.hpp
-    include/Siraf/Support/any.hpp
+set(SF_SUPPORT
+    include/SF/Support/Detail/Meta.hpp
+    include/SF/Support/vector.hpp
+    include/SF/Support/array.hpp
+    include/SF/Support/string.hpp
+    include/SF/Support/pair.hpp
+    include/SF/Support/tuple.hpp
+    include/SF/Support/list.hpp
+    include/SF/Support/forward_list.hpp
+    include/SF/Support/set.hpp
+    include/SF/Support/unique_ptr.hpp
+    include/SF/Support/shared_ptr.hpp
+    include/SF/Support/weak_ptr.hpp
+    include/SF/Support/map.hpp
+    include/SF/Support/deque.hpp
+    include/SF/Support/stack.hpp
+    include/SF/Support/queue.hpp
+    include/SF/Support/valarray.hpp
+    include/SF/Support/bitset.hpp
+    include/SF/Support/atomic.hpp
+    include/SF/Support/complex.hpp
+    include/SF/Support/optional.hpp
+    include/SF/Support/variant.hpp
+    include/SF/Support/any.hpp
 )
 
 set(AUTO
@@ -82,10 +82,11 @@ set(AUTO
     include/Auto/TestingCore.cpp
 )
 
+include_directories(test)
+
 add_executable(${PROJECT_NAME}
-    # test/demo/demo.cpp
-    # test/demo/ref_tracking.cpp
     # test/demo/example.cpp
+    # test/demo/demo.cpp
 
     test/TestNumber.cpp
     test/TestEnum.cpp
@@ -114,12 +115,17 @@ add_executable(${PROJECT_NAME}
     test/TestDynamicArray.cpp
     test/TestPolymorphic.cpp
     test/TestTracking.cpp
-    test/TestLibrary.cpp
 
-    test/SirafTestingBase.hpp
+    test/TestLibrary/BaseObject.hpp
+    test/TestLibrary/BaseObject.cpp
+    test/TestLibrary/DerivedObject.hpp
+    test/TestLibrary/DerivedObject.cpp
+    test/TestLibrary/TestLibrary.cpp
+
+    test/SFTestingBase.hpp
     test/main.cpp
 
-    ${SIRAF}
-    ${SIRAF_SUPPORT}
+    ${SF}
+    ${SF_SUPPORT}
     ${AUTO}
 )

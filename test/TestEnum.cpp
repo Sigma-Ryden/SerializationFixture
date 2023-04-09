@@ -1,4 +1,4 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
 TEST(TestCommon, TestEnum)
 {

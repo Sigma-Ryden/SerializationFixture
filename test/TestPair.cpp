@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/pair.hpp>
+#include <SF/Support/pair.hpp>
 
 struct IntPoint
 {

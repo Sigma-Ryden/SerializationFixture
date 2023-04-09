@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/deque.hpp>
+#include <SF/Support/deque.hpp>
 
 TEST(TestSTL, TestDeque)
 {

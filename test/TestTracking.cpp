@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-using siraf::tracking::track;
+using sf::tracking::track;
 
 TEST(TestLibrary, TestTracking)
 {

@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/atomic.hpp>
+#include <SF/Support/atomic.hpp>
 
 TEST(TestConcurrency, TestAtomic)
 {

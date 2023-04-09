@@ -1,9 +1,9 @@
 #if __cplusplus >= 201703L
 
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/optional.hpp>
-#include <Siraf/Support/atomic.hpp>
+#include <SF/Support/optional.hpp>
+#include <SF/Support/atomic.hpp>
 
 TEST(TestUtility, TestOptional)
 {

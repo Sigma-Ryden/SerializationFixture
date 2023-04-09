@@ -1,12 +1,12 @@
 #if __cplusplus >= 201703L
 
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/any.hpp>
+#include <SF/Support/any.hpp>
 
-#include <Siraf/Support/string.hpp>
-#include <Siraf/Support/vector.hpp>
-#include <Siraf/Support/shared_ptr.hpp>
+#include <SF/Support/string.hpp>
+#include <SF/Support/vector.hpp>
+#include <SF/Support/shared_ptr.hpp>
 
 struct Entity : Instantiable
 {
@@ -46,7 +46,7 @@ SERIALIZATION(SaveLoad, Entity)
 
 TEST(TestUtility, TestAny)
 {
-    using siraf::serializable; // do possible serialize data assigned to any
+    using sf::serializable; // do possible serialize data assigned to any
 
     enum class Property { Speed, Force, Intelige };
 

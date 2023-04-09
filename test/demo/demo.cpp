@@ -1,12 +1,12 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <Siraf/Core.hpp>// WriteArchive
+#include <SF/Core.hpp>// WriteArchive
 
-#include <Siraf/Support/string.hpp>
-#include <Siraf/Support/array.hpp>
+#include <SF/Support/string.hpp>
+#include <SF/Support/array.hpp>
 
-using siraf::WriteArchive;
+using sf::WriteArchive;
 
 // Impl of user wrapper for iostream
 class FormatOutStream
@@ -38,7 +38,7 @@ enum class Color { Red, Green, Blue, Alpha };
 
 class B
 {
-    SERIALIZABLE(B)
+    SERIALIZATION_ACCESS()
 
 private:
     float pi_;
@@ -72,7 +72,7 @@ SERIALIZATION(Load, B)
 
 class A
 {
-    SERIALIZABLE(A)
+    SERIALIZATION_ACCESS()
 
 private:
     int x, y;
@@ -103,7 +103,7 @@ auto operator& (FormatWriteArchive& ar, B& b) -> decltype(ar)
 
 void test_common()
 {
-    auto ar = siraf::oarchive<FormatOutStream>(std::cout);
+    auto ar = sf::oarchive<FormatOutStream>(std::cout);
 
     constexpr auto xxx = sizeof(A);
 

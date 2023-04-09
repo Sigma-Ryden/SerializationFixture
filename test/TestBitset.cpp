@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/bitset.hpp>
+#include <SF/Support/bitset.hpp>
 
 TEST(TestUtility, TestBitset)
 {

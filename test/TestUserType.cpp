@@ -1,4 +1,4 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
 struct Vector
 {
@@ -61,8 +61,8 @@ TEST(TestCommon, TestUserType)
     }
 }
 
-#include <Siraf/Support/string.hpp>
-#include <Siraf/Support/any.hpp>
+#include <SF/Support/string.hpp>
+#include <SF/Support/any.hpp>
 
 struct Product
 {
@@ -98,7 +98,7 @@ TEST(TestCommon, TestInheritance)
     s_p.name = "Canon";
     s_p.series = 37868723;
     s_p.price = 1000;
-    s_p.owner = siraf::serializable(s_owner);
+    s_p.owner = sf::serializable(s_owner);
 
     std::vector<unsigned char> storage;
     {

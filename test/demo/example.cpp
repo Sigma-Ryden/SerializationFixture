@@ -1,9 +1,9 @@
-#include <Siraf/Core.hpp>
+#include <SF/Core.hpp>
 
-#include <Siraf/Support/string.hpp>
-#include <Siraf/Support/vector.hpp>
-#include <Siraf/Support/map.hpp>
-#include <Siraf/Support/shared_ptr.hpp>
+#include <SF/Support/string.hpp>
+#include <SF/Support/vector.hpp>
+#include <SF/Support/map.hpp>
+#include <SF/Support/shared_ptr.hpp>
 
 enum class Property
 {
@@ -15,16 +15,12 @@ enum class Property
 
 struct Prototype
 {
-    SERIALIZABLE(Prototype)
-
     std::string name;
     std::vector<Property> properties;
 };
 
 struct Handbook
 {
-    SERIALIZABLE(Handbook)
-
     std::map<int, std::shared_ptr<Prototype>> prototypes;
 };
 
@@ -62,14 +58,14 @@ int main()
         db.prototypes[3] = rew;
         db.prototypes[2] = ifly;
 
-        auto ar = siraf::oarchive(storage);
+        auto ar = sf::oarchive(storage);
         ar & db;
     }
     // load
     {
         Handbook db;
 
-        auto ar = siraf::iarchive(storage);
+        auto ar = sf::iarchive(storage);
         ar & db;
     }
 

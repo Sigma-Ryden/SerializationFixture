@@ -1,6 +1,6 @@
-#include "SirafTestingBase.hpp"
+#include "SFTestingBase.hpp"
 
-#include <Siraf/Support/map.hpp>
+#include <SF/Support/map.hpp>
 
 template <typename Tree>
 static bool is_tree_equal(const Tree& lhs, const Tree& rhs)
