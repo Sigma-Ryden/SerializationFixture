@@ -132,11 +132,16 @@ inline let::u64 type_hash(const std::type_info& type) noexcept
     return type.hash_code();
 }
 
-inline let::u64 hash_combine(let::u64 lhs, let::u64 rhs) noexcept
+namespace detail
 {
-    lhs ^= rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
-    return lhs;
+
+template <typename T>
+inline void hash_combine(let::u64& seed, const T& object) noexcept
+{
+    seed ^= std::hash<T>{}(object) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
+
+} // namespace detail
 
 } // namepace sf
 

@@ -22,8 +22,8 @@ struct PairHash
     {
         let::u64 seed = 0;
 
-        hash_combine(seed, pair.first);
-        hash_combine(seed, pair.second);
+        detail::hash_combine(seed, pair.first);
+        detail::hash_combine(seed, pair.second);
 
         return seed;
     }

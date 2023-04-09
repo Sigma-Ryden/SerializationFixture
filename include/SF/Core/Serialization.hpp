@@ -250,7 +250,7 @@ private:
         return static_cast<To>(from);
     }
 
-    template <class To, class From> static To runtime_cast(From& from) // maybe throw exception
+    template <class To, class From> static To runtime_cast(From& from) // may throw exception
     {
         return dynamic_cast<To>(from);
     }

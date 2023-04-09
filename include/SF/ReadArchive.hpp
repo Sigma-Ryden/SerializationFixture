@@ -130,10 +130,9 @@ auto ReadArchive<InStream, StreamWrapper, Registry>::operator() (
     return (*this)(data_n...);
 }
 
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>()
-                    and meta::is_unsupported<T>())>
-ReadArchive& operator& (ReadArchive& archive, T& unsupported)
+template <class Archive, typename T,
+          SFREQUIRE(meta::is_read_archive<Archive>() and meta::is_unsupported<T>())>
+Archive& operator& (Archive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
         "The 'T' is an unsupported type for the 'sf::ReadArchive'.");
@@ -141,10 +140,9 @@ ReadArchive& operator& (ReadArchive& archive, T& unsupported)
     return archive;
 }
 
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>()
-                    and not meta::is_registered<T>())>
-ReadArchive& operator& (ReadArchive& archive, T& unregistered)
+template <class Archive, typename T,
+          SFREQUIRE(meta::is_read_archive<Archive>() and not meta::is_registered<T>())>
+Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
         "The 'T' is an unregistered type for the 'sf::ReadArchive'.");
