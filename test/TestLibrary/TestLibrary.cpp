@@ -181,6 +181,8 @@ struct MyCustomType : Instantiable
 EXPORT_INSTANTIABLE_KEY("MyClass", MyStruct)
 EXPORT_INSTANTIABLE_KEY("MyStruct", MyClass)
 
+EXPORT_INSTANTIABLE_KEY("MyDerived", MyDerivedClass)
+
 EXPORT_INSTANTIABLE(MyCustomType)
 
 TEST(TestLibrary, TestExportInstantiable)
@@ -208,10 +210,11 @@ TEST(TestLibrary, TestExportInstantiable)
             Serialization::static_trait<MyCustomType>() == sv_ct);
     }
 
+    static auto sv_dc = SF_STATIC_HASH("MyDerived");
+
     {
         std::shared_ptr<MyClass> b = std::make_shared<MyDerivedClass>();
-        EXPECT("instantiable runtime key.trait",
-            Serialization::trait(*b) == Serialization::trait<MyDerivedClass>());
+        EXPECT("instantiable runtime key.trait", Serialization::trait(*b) == sv_dc);
     }
 }
 
