@@ -1,25 +1,16 @@
 #ifndef SF_SUPPORT_ARRAY_HPP
 #define SF_SUPPORT_ARRAY_HPP
 
-#include <type_traits> // true_type, false_type
-
 #include <array> // array
 
 #include <SF/Core/TypeRegistry.hpp>
 #include <SF/ExternSerialization.hpp>
 #include <SF/Compress.hpp>
 
+#include <SF/Detail/Meta.hpp> // // is_std_array
+
 namespace sf
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_array : std::false_type {};
-template <typename T, std::size_t N>
-struct is_std_array<std::array<T, N>> : std::true_type {};
-
-} // namespace meta
 
 inline namespace library
 {

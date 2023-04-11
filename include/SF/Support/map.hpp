@@ -17,7 +17,7 @@
 // serialization of core map value_type
 #include <SF/Support/pair.hpp>
 
-#define _SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                   \
+#define _SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                      \
     template <typename> struct is_std_##map_type : std::false_type {};                                  \
     template <typename Key, typename Type, typename Compare, typename Alloc>                            \
     struct is_std_##map_type<std::map_type<Key, Type, Compare, Alloc>> : std::true_type {};

@@ -7,7 +7,12 @@
 // is_enum, is_arithmetic, is_array, is_pointer,
 // enable_if, is_same, true_type, false_type
 
+#if __cplusplus >= 201703L
+#include <any> // any
+#endif // if
+
 #include <memory> // shared_ptr
+#include <array> // array
 
 #include <SF/Core/SerializatonBase.hpp>
 
@@ -23,19 +28,23 @@ namespace sf
 namespace meta
 {
 
-struct shared_type {};
-struct raw_type {};
-
-struct dummy_type {};
-
-template <std::size_t N>
-struct constant_index : std::integral_constant<std::size_t, N> {};
-
 template <bool condition, typename T = void>
 using when = typename std::enable_if<condition, T>::type;
 
 template <bool condition>
 using require = when<condition, int>;
+
+struct shared_type {};
+struct raw_type {};
+
+struct dummy_type
+{
+#if __cplusplus >= 201703L
+    template <typename T, SFREQUIRE(not std::is_same<T, std::any>::value)> operator T();
+#else
+    template <typename T> operator T();
+#endif // if
+};
 
 template <typename... Args>
 using to_void = void;
@@ -197,6 +206,10 @@ template <typename> struct is_std_shared_ptr : std::false_type {};
 template <typename T>
 struct is_std_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
+template <typename> struct is_std_array : std::false_type {};
+template <typename T, std::size_t N>
+struct is_std_array<std::array<T, N>> : std::true_type {};
+
 namespace detail
 {
 
@@ -245,6 +258,41 @@ struct index_sequence_helper<0, In...>
 
 template <std::size_t N>
 using make_index_sequence = typename detail::index_sequence_helper<N>::type;
+
+template <typename T, std::size_t I = 0>
+auto declval() noexcept -> decltype(std::declval<T>()) { return std::declval<T>(); }
+
+#if __cplusplus >= 201703L
+namespace detail
+{
+
+template <class C, typename S = index_sequence<>, typename overload = void>
+struct aggregate_size_implementation : S {};
+
+template <class C, std::size_t... I>
+struct aggregate_size_implementation<C, index_sequence<I...>,
+    SFVOID(C{ declval<dummy_type>(), declval<dummy_type, I>()... })>
+    : aggregate_size_implementation<C, index_sequence<I..., sizeof...(I)>> {};
+
+template <class T, bool condition = std::is_aggregate<T>::value>
+struct aggregate_size
+{
+    static constexpr auto value = aggregate_size_implementation<T>::size();
+};
+
+template <class T>
+struct aggregate_size<T, false>
+{
+    static constexpr auto value = 0;
+};
+
+} // namespace detail
+
+template <class T> constexpr std::size_t aggregate_size() noexcept
+{
+    return detail::aggregate_size<T>::value;
+}
+#endif // if
 
 constexpr std::size_t max_template_depth() noexcept
 {
@@ -516,6 +564,15 @@ template <typename T> constexpr bool is_serializable_shared_pointer() noexcept
 {
     return is_shared_pointer<T>() and is_serializable_pointer<T>();
 }
+
+#if __cplusplus >= 201703L
+template <typename T> constexpr bool is_aggregate() noexcept
+{
+    return std::is_aggregate<T>::value and
+       not meta::is_std_array<T>::value and
+       not meta::is_array<T>();
+}
+#endif // if
 
 template <typename T> constexpr bool is_unsupported() noexcept
 {

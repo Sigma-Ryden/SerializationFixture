@@ -14,7 +14,7 @@
 #include <SF/Compress.hpp>
 #include <SF/ExternSerialization.hpp>
 
-#define _SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                   \
+#define _SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                      \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
     template <typename Key, typename Compare, typename Alloc>                                           \
     struct is_std_##set_type<std::set_type<Key, Compare, Alloc>> : std::true_type {};

@@ -38,7 +38,7 @@ inline namespace library
 
 EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, tuple, meta::is_std_tuple<T>::value)
 {
-    constexpr std::size_t size = std::tuple_size<T>::value;
+    constexpr auto size = std::tuple_size<T>::value;
     detail::expand(archive, tuple, meta::make_index_sequence<size>{});
 
     return archive;
