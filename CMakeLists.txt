@@ -11,6 +11,7 @@ set(SF
     include/SF/Detail/Meta.hpp
     include/SF/Detail/MetaMacro.hpp
     include/SF/Detail/MacroUndef.hpp
+    include/SF/Detail/Preprocessor.hpp
 
     include/SF/Core/ArchiveBase.hpp
     include/SF/Core/ArchiveTrait.hpp
@@ -30,7 +31,6 @@ set(SF
     include/SF/Dynamic/AnyRegistry.hpp
 
     include/SF/Utility/Utility.hpp
-    include/SF/Utility/Expanding.hpp
     include/SF/Utility/Span.hpp
     include/SF/Utility/Ref.hpp
 
@@ -87,7 +87,6 @@ set(AUTO
 include_directories(test)
 
 add_executable(${PROJECT_NAME}
-    # test/demo/example.cpp
     # test/demo/demo.cpp
 
     test/TestNumber.cpp
@@ -124,6 +123,8 @@ add_executable(${PROJECT_NAME}
     test/TestLibrary/DerivedObject.hpp
     test/TestLibrary/DerivedObject.cpp
     test/TestLibrary/TestLibrary.cpp
+
+    test/demo/TestExample.cpp
 
     test/SFTestingBase.hpp
     test/main.cpp

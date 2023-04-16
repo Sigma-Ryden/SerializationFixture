@@ -552,8 +552,6 @@ TEST(TestLibrary, TestNoTrait)
 
 TEST(TestLibrary, TestPartition)
 {
-    using sf::serializable;
-
     static DerivedObject s_d;
     s_d.id = 1894981;
     s_d.name = "Unit";

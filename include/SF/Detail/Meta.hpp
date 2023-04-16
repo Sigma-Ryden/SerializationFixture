@@ -46,6 +46,9 @@ struct dummy_type
 #endif // if
 };
 
+template <std::size_t I>
+using dispatch = std::integral_constant<std::size_t, I>;
+
 template <typename... Args>
 using to_void = void;
 

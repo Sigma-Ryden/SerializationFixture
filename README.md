@@ -25,10 +25,11 @@ Is a header-only library implemented purely in C++11.
 
 See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/include/SF/Support).
 ### Serialization of users class:
-- Common
+- Aggregate
+- Common/Template
 - Hierarchy
-- Polymorphic/Abstract
-- Template
+- Polymorphic
+- Virtual Inheritance
 
 ## Auto Tests:
 See library testing [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test).
@@ -122,7 +123,7 @@ Handbook db; // some other clear db
 auto ar = sf::iarchive(storage);
 ar & db;
 ```
-See full code here: [example.cpp](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/demo/example.cpp)
+See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/demo/TestExample.cpp)
 
 ### Notes:
 For ```WriteArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
