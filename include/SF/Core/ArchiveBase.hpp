@@ -40,7 +40,7 @@ protected:
     virtual ~ArchiveBase() = default;
 
 public:
-    virtual auto trait() const noexcept -> key_type
+    virtual key_type trait() const noexcept
     {
         return ArchiveTraitKey<ArchiveBase>::key;
     }

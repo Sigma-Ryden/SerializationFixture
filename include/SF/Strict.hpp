@@ -114,7 +114,7 @@ struct StrictFunctor : public ApplyFunctor
 
     StrictFunctor(T& data) noexcept : data(data) {}
 
-    template <typename Archive>
+    template <class Archive>
     void operator() (Archive& archive) { strict(archive, data); }
 };
 

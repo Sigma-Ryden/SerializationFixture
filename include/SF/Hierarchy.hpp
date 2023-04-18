@@ -128,7 +128,7 @@ struct HierarchyFunctor : ApplyFunctor
 
     HierarchyFunctor(Derived& object) noexcept : object(object) {}
 
-    template <typename Archive>
+    template <class Archive>
     void operator() (Archive& archive) { hierarchy<Base, Base_n...>(archive, object); }
 };
 
