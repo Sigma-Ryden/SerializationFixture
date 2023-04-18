@@ -22,8 +22,7 @@ namespace meta
 {
 
 template <typename> struct is_std_any : std::false_type {};
-template <>
-struct is_std_any<std::any> : std::true_type {};
+template <> struct is_std_any<std::any> : std::true_type {};
 
 } // namespace meta
 

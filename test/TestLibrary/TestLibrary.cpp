@@ -479,13 +479,11 @@ TEST(TestLibrary, TestAccess)
         // PolymorphicBaseImpl is instantiable type - we cannot use dynamic_cast for serialization
         // since we get nullptr after apply casting
 
-        auto& registry = InstantiableRegistry::instance();
-
-        EXPECT("public instantiable", registry.is_instantiable<PolymorphicBaseImpl>());
+        EXPECT("public instantiable", InstantiableRegistry::is_instantiable<PolymorphicBaseImpl>::value);
 
         EXPECT("non-public instantiable",
-            !registry.is_instantiable<PolymorphicBase>() &&
-            !registry.is_instantiable<PolymorphicDerived>());
+            !InstantiableRegistry::is_instantiable<PolymorphicBase>::value &&
+            !InstantiableRegistry::is_instantiable<PolymorphicDerived>::value);
     }
 }
 

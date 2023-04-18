@@ -63,15 +63,15 @@ public:
     auto stream() noexcept -> StreamWrapper& { return archive_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_shared<TrackType>())>
+              SFREQUIRE(meta::is_track_shared<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable<Shared>& { return track_shared_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_raw<TrackType>())>
+              SFREQUIRE(meta::is_track_raw<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable<Raw>& { return track_raw_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_hierarchy<TrackType>())>
+              SFREQUIRE(meta::is_track_hierarchy<TrackType>::value)>
     auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
 
     auto registry() noexcept -> Registry& { return registry_; }
@@ -132,7 +132,8 @@ auto ReadArchive<InStream, StreamWrapper, Registry>::operator() (
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_read_archive<Archive>() and meta::is_unsupported<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<Archive>,
+                              meta::is_unsupported<T>>::value)>
 Archive& operator& (Archive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
@@ -142,7 +143,8 @@ Archive& operator& (Archive& archive, T& unsupported)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_read_archive<Archive>() and not meta::is_registered<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<Archive>,
+                              meta::negation<meta::is_registered<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),

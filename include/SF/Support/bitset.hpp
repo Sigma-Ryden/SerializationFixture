@@ -18,8 +18,7 @@ namespace meta
 {
 
 template <typename> struct is_std_bitset : std::false_type {};
-template <std::size_t N>
-struct is_std_bitset<std::bitset<N>> : std::true_type {};
+template <std::size_t N> struct is_std_bitset<std::bitset<N>> : std::true_type {};
 
 } // namespace meta
 

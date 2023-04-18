@@ -16,16 +16,16 @@ namespace sf
 {
 
 template <typename Base, class Archive, typename Derived,
-          SFREQUIRE(meta::is_archive<Archive>() and
-                    meta::is_base_of<Base, Derived>())>
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+                              std::is_base_of<Base, Derived>>::value)>
 void base(Archive& archive, Derived& object)
 {
     ::Serialization::serialize_base<Base>(archive, object);
 }
 
 template <typename Base, class Archive, typename Derived,
-          SFREQUIRE(meta::is_archive<Archive>() and
-                    meta::is_base_of<Base, Derived>())>
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+                              std::is_base_of<Base, Derived>>::value)>
 void virtual_base(Archive& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
@@ -54,14 +54,14 @@ namespace detail
 {
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(::Serialization::is_virtual_base_of<Base, Derived>())>
+          SFREQUIRE(::Serialization::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_base)
 {
     base<Base>(archive, object_with_base);
 }
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(not ::Serialization::is_virtual_base_of<Base, Derived>())>
+          SFREQUIRE(not ::Serialization::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_virtual_base)
 {
     virtual_base<Base>(archive, object_with_virtual_base);
@@ -97,11 +97,11 @@ struct VirtualBaseFunctor : ApplyFunctor
 } // namespace apply
 
 template <typename Base, typename Derived,
-          SFREQUIRE(meta::is_base_of<Base, Derived>())>
+          SFREQUIRE(std::is_base_of<Base, Derived>::value)>
 apply::BaseFunctor<Derived, Base> base(Derived& object) { return { object }; }
 
 template <typename Base, typename Derived,
-          SFREQUIRE(meta::is_base_of<Base, Derived>())>
+          SFREQUIRE(std::is_base_of<Base, Derived>::value)>
 apply::VirtualBaseFunctor<Derived, Base> virtual_base(Derived& object) { return { object }; }
 
 // default empty implementation
@@ -110,8 +110,8 @@ void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
 
 // Variadic native_base function
 template <class Base, class... Base_n, class Archive, class Derived,
-          SFREQUIRE(meta::is_archive<Archive>() and
-                    meta::is_derived_of<Derived, Base, Base_n...>())>
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+                              meta::is_derived_of<Derived, Base, Base_n...>>::value)>
 void hierarchy(Archive& archive, Derived& object)
 {
     detail::native_base<Base>(archive, object);
@@ -135,7 +135,7 @@ struct HierarchyFunctor : ApplyFunctor
 } // namespace apply
 
 template <class Base, class... Base_n, class Derived,
-          SFREQUIRE(meta::is_derived_of<Derived, Base, Base_n...>())>
+          SFREQUIRE(meta::is_derived_of<Derived, Base, Base_n...>::value)>
 apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
 {
     return { object };

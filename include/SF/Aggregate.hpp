@@ -23,12 +23,10 @@ namespace sf
 namespace meta
 {
 
-template <typename T> constexpr bool is_serializable_aggregate() noexcept
-{
-    return meta::is_aggregate<T>() and
-       not ::Serialization::has_load_mode<T>() and
-       not ::Serialization::has_load_mode<T>();
-}
+template <typename T> struct is_serializable_aggregate
+    : all<is_aggregate<T>,
+          negation<::Serialization::has_save_mode<T>>,
+          negation<::Serialization::has_save_mode<T>>> {};
 
 } // namespace meta
 
@@ -45,7 +43,7 @@ SFREPEAT(_SF_AGGREGATE_SERIALIZATION_GENERIC, 64)
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, aggregate, meta::is_serializable_aggregate<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, aggregate, meta::is_serializable_aggregate<T>::value)
 {
     constexpr auto size = meta::aggregate_size<T>();
     detail::aggregate_serialization(archive, aggregate, meta::dispatch<size>{});
@@ -57,7 +55,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, aggregate, meta::is_serializable_aggr
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_aggregate<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_aggregate<T>::value)
 
 #undef _SF_AGGREGATE_SERIALIZATION_GENERIC
 

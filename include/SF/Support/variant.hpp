@@ -19,8 +19,7 @@ namespace meta
 {
 
 template <typename> struct is_std_variant : std::false_type {};
-template <typename... Tn>
-struct is_std_variant<std::variant<Tn...>> : std::true_type {};
+template <typename... Tn> struct is_std_variant<std::variant<Tn...>> : std::true_type {};
 
 } // namespace meta
 

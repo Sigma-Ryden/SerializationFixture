@@ -20,8 +20,7 @@ namespace meta
 {
 
 template <typename> struct is_std_weak_ptr : std::false_type {};
-template <typename T>
-struct is_std_weak_ptr<std::weak_ptr<T>> : std::true_type {};
+template <typename T> struct is_std_weak_ptr<std::weak_ptr<T>> : std::true_type {};
 
 } // namespace meta
 

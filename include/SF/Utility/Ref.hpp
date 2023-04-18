@@ -57,19 +57,9 @@ utility::Ref<T> ref(T& data) noexcept { return { data }; }
 namespace meta
 {
 
-namespace detail
-{
-
 template <typename> struct is_ref : std::false_type {};
 template <typename T>
 struct is_ref<sf::utility::Ref<T>> : std::true_type {};
-
-} // namespcae detail
-
-template <class T> constexpr bool is_ref() noexcept
-{
-    return detail::is_ref<T>::value;
-}
 
 } // namespace meta
 
@@ -77,7 +67,7 @@ template <class T> constexpr bool is_ref() noexcept
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, ref, meta::is_ref<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Save, ref, meta::is_ref<T>::value)
 {
     using key_type = typename Archive::TrackingKeyType;
 
@@ -99,7 +89,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, ref, meta::is_ref<T>())
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, ref, meta::is_ref<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Load, ref, meta::is_ref<T>::value)
 {
     using key_type   = typename Archive::TrackingKeyType;
     using value_type = typename T::type;
@@ -130,6 +120,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, ref, meta::is_ref<T>())
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_ref<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_ref<T>::value)
 
 #endif // SF_UTILITY_REF_HPP

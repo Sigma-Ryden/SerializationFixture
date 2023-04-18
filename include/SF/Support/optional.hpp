@@ -17,8 +17,7 @@ namespace meta
 {
 
 template <typename> struct is_std_optional : std::false_type {};
-template <typename T>
-struct is_std_optional<std::optional<T>> : std::true_type {};
+template <typename T> struct is_std_optional<std::optional<T>> : std::true_type {};
 
 } // namespace meta
 

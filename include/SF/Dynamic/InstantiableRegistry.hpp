@@ -66,20 +66,17 @@ public:
     }
 
 public:
-    template <typename dT> static constexpr bool is_instantiable() noexcept
-    {
-        // we should use external check
-        return meta::is_cast_allowed<dT*, instantiable_type*>();
-    }
+    // we should use external check
+    template <typename dT> struct is_instantiable : meta::is_cast_allowed<dT*, instantiable_type*> {};
 
 public:
-    template <class T, SFREQUIRE(not is_instantiable<T>())>
+    template <class T, SFREQUIRE(not is_instantiable<T>::value)>
     void update(key_type key)
     {
         throw "The polymorphic 'T' type is not convertible to 'Instantiable'.";
     }
 
-    template <class T, SFREQUIRE(is_instantiable<T>())>
+    template <class T, SFREQUIRE(is_instantiable<T>::value)>
     void update(key_type key)
     {
         if (is_registered(key)) return;
@@ -140,7 +137,7 @@ public:
     }
 
     template <typename Pointer, typename T = sf::meta::dereference<Pointer>,
-              SFREQUIRE(::Serialization::has_save_mode<T>())>
+              SFREQUIRE(::Serialization::has_save_mode<T>::value)>
     void save(archive_type& archive, Pointer& pointer)
     {
         auto key = ::Serialization::trait(*pointer);
@@ -148,7 +145,7 @@ public:
     }
 
     template <typename Pointer, typename T = sf::meta::dereference<Pointer>,
-              SFREQUIRE(::Serialization::has_load_mode<T>())>
+              SFREQUIRE(::Serialization::has_load_mode<T>::value)>
     void load(archive_type& archive, Pointer& pointer)
     {
         auto key = ::Serialization::trait(*pointer);
@@ -187,7 +184,7 @@ public:
 
 public:
     template <typename dT = T,
-              SFREQUIRE(InstantiableRegistry::is_instantiable<dT>())>
+              SFREQUIRE(InstantiableRegistry::is_instantiable<dT>::value)>
     static void call()
     {
         if (lock_) return;
@@ -205,7 +202,7 @@ public:
     }
 
     template <typename dT = T,
-              SFREQUIRE(not InstantiableRegistry::is_instantiable<dT>())>
+              SFREQUIRE(not InstantiableRegistry::is_instantiable<dT>::value)>
     static void call() { /*pass*/ }
 };
 

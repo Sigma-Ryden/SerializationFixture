@@ -15,17 +15,10 @@ namespace meta
 {
 
 template <typename> struct is_std_atomic : std::false_type {};
-template <typename T>
-struct is_std_atomic<std::atomic<T>> : std::true_type {};
+template <typename T> struct is_std_atomic<std::atomic<T>> : std::true_type {};
 
-template <typename T>
-struct atomic_trait;
-
-template <typename T>
-struct atomic_trait<std::atomic<T>>
-{
-    using value_type = T;
-};
+template <typename T> struct atomic_trait;
+template <typename T> struct atomic_trait<std::atomic<T>> { using value_type = T; };
 
 } // namespace meta
 

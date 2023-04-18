@@ -20,10 +20,7 @@ struct ApplyFunctor {};
 namespace meta
 {
 
-template <typename T> constexpr bool is_apply_functor() noexcept
-{
-    return std::is_base_of<apply::ApplyFunctor, T>::value;
-}
+template <typename T> struct is_apply_functor : std::is_base_of<apply::ApplyFunctor, T> {};
 
 } // namespace meta
 
@@ -33,9 +30,9 @@ inline namespace common
 
 template <typename Archive, typename T,
           typename dT = meta::decay<T>, // T can be lvalue
-          SFREQUIRE(meta::is_archive<Archive>() and
-                    meta::is_registered<dT>() and
-                    meta::is_apply_functor<dT>())>
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+                              meta::is_registered<dT>,
+                              meta::is_apply_functor<dT>>::value)>
 Archive& operator& (Archive& archive, T&& apply_functor)
 {
     apply_functor(archive);
@@ -46,6 +43,6 @@ Archive& operator& (Archive& archive, T&& apply_functor)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_apply_functor<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_apply_functor<T>::value)
 
 #endif // SF_APPLY_FUNCTOR_HPP

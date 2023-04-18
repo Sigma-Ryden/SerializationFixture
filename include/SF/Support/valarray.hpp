@@ -19,8 +19,7 @@ namespace meta
 {
 
 template <typename> struct is_std_valarray : std::false_type {};
-template <typename T>
-struct is_std_valarray<std::valarray<T>> : std::true_type {};
+template <typename T> struct is_std_valarray<std::valarray<T>> : std::true_type {};
 
 } // namespace meta
 

@@ -24,8 +24,8 @@ namespace sf
 // Type registry for instantiable & any serialization, allowed registered and supported types only
 template <typename T> void serializable()
 {
-    static_assert(not meta::is_unsupported<T>(), "The 'T' is an unsupported type for serialization.");
-    static_assert(meta::is_registered<T>(), "The 'T' is an unregistered type for serialization.");
+    static_assert(not meta::is_unsupported<T>::value, "The 'T' is an unsupported type for serialization.");
+    static_assert(meta::is_registered<T>::value, "The 'T' is an unregistered type for serialization.");
 
     dynamic::InstantiableFixture<T>::call();
 

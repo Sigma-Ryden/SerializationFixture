@@ -24,7 +24,7 @@ public:
 
 public:
     template <class Archive, class Pointer,
-              SFREQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
+              SFREQUIRE(meta::is_pointer_to_polymorphic<Pointer>::value)>
     static key_type save_key(Archive& archive, Pointer& pointer)
     {
         if (pointer == nullptr)
@@ -37,7 +37,7 @@ public:
     }
 
     template <class Archive, class Pointer,
-              SFREQUIRE(meta::is_pointer_to_polymorphic<Pointer>())>
+              SFREQUIRE(meta::is_pointer_to_polymorphic<Pointer>::value)>
     static key_type load_key(Archive& archive, Pointer& pointer)
     {
         if (pointer != nullptr)
@@ -50,14 +50,12 @@ public:
     }
 
 private:
-    template <typename T> static constexpr bool is_pointer_to_instantiable() noexcept
-    {
-        return InstantiableRegistry::is_instantiable<meta::dereference<T>>()
-           and meta::is_pointer_to_polymorphic<T>();
-    }
+    template <typename T> struct is_pointer_to_instantiable
+        : meta::all<InstantiableRegistry::is_instantiable<meta::dereference<T>>,
+                    meta::is_pointer_to_polymorphic<T>> {};
 
 public:
-    template <typename T, SFREQUIRE(is_pointer_to_instantiable<T>())>
+    template <typename T, SFREQUIRE(is_pointer_to_instantiable<T>::value)>
     static void save(core::ArchiveBase& archive, T& pointer, key_type key)
     {
         if (pointer == nullptr)
@@ -67,7 +65,7 @@ public:
         InstantiableRegistry::instance().save(archive, raw_pointer);
     }
 
-    template <typename T, SFREQUIRE(meta::is_pointer_to_polymorphic<T>())>
+    template <typename T, SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
     static void load(core::ArchiveBase& archive, T& pointer, key_type key, Memory::void_ptr<T>& cache)
     {
         using TraitType = typename Memory::ptr_trait<T>::trait;
@@ -87,7 +85,7 @@ public:
         registry.load(archive, raw_pointer);
     }
 
-    template <typename T, SFREQUIRE(meta::is_pointer_to_polymorphic<T>())>
+    template <typename T, SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
     static void assign(T& pointer, const Memory::void_ptr<T>& address, key_type key)
     {
         using dT = meta::dereference<T>;

@@ -21,7 +21,7 @@ namespace tracking
 {
 
 template <typename TrackType, class Archive, typename key_type,
-          SFREQUIRE(meta::is_archive<Archive>())>
+          SFREQUIRE(meta::is_archive<Archive>::value)>
 bool is_track(Archive& archive, key_type key)
 {
     auto& item = archive.template tracking<TrackType>();
@@ -29,7 +29,7 @@ bool is_track(Archive& archive, key_type key)
 }
 
 template <typename TrackType, class Archive, typename key_type,
-          SFREQUIRE(meta::is_archive<Archive>())>
+          SFREQUIRE(meta::is_archive<Archive>::value)>
 bool is_mixed(Archive& archive, key_type key)
 {
     using reverse_track_type = typename reverse_trait<TrackType>::type;
@@ -38,8 +38,8 @@ bool is_mixed(Archive& archive, key_type key)
 }
 
 template <class WriteArchive, typename T,
-          SFREQUIRE(meta::is_write_archive<WriteArchive>()
-                    and meta::is_pointer<T>())>
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::is_pointer<T>>::value)>
 void track(WriteArchive& archive, T& pointer)
 {
     using key_type   = typename WriteArchive::TrackingKeyType;
@@ -74,8 +74,8 @@ void track(WriteArchive& archive, T& pointer)
 }
 
 template <class WriteArchive, typename T,
-          SFREQUIRE(meta::is_write_archive<WriteArchive>()
-                    and not meta::is_pointer<T>())>
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::negation<meta::is_pointer<T>>>::value)>
 void track(WriteArchive& archive, T& data)
 {
     using key_type = typename WriteArchive::TrackingKeyType;
@@ -95,8 +95,8 @@ void track(WriteArchive& archive, T& data)
 }
 
 template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>()
-                    and meta::is_pointer<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::is_pointer<T>>::value)>
 void track(ReadArchive& archive, T& pointer)
 {
     using key_type   = typename ReadArchive::TrackingKeyType;
@@ -127,8 +127,8 @@ void track(ReadArchive& archive, T& pointer)
 }
 
 template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>()
-                    and not meta::is_pointer<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::negation<meta::is_pointer<T>>>::value)>
 void track(ReadArchive& archive, T& data)
 {
     using key_type = typename ReadArchive::TrackingKeyType;
@@ -147,8 +147,8 @@ void track(ReadArchive& archive, T& data)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<T>() and
-                    meta::is_serializable_raw_pointer<T>())>
+          SFREQUIRE(meta::all<meta::is_archive<T>,
+                              meta::is_serializable_raw_pointer<T>>::value)>
 void raw(Archive& archive, T& pointer)
 {
 #ifndef SF_NULLPTR_DISABLE

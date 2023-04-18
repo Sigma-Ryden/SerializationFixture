@@ -15,21 +15,10 @@ namespace sf
 namespace meta
 {
 
-template <typename T> constexpr bool is_memory_shared() noexcept
-{
-    return std::is_same<T, shared_type>::value;
-}
+template <typename T> struct is_memory_shared : std::is_same<T, shared_type> {};
+template <typename T> struct is_memory_raw : std::is_same<T, raw_type> {};
 
-template <typename T> constexpr bool is_memory_raw() noexcept
-{
-    return std::is_same<T, raw_type>::value;
-}
-
-template <typename T> constexpr bool is_memory() noexcept
-{
-    return is_memory_shared<T>()
-        or is_memory_raw<T>();
-}
+template <typename T> struct is_memory : one<is_memory_shared<T>, is_memory_raw<T>> {};
 
 } // namespace meta
 
@@ -98,9 +87,13 @@ public:
     template <typename T>
     using void_ptr = typename ptr_trait<T>::void_ptr;
 
+private:
+    template <class From, class To> struct is_pointer_cas_allowed
+        : ::Serialization::is_pointer_cast_allowed<From, To> {};
+
 public:
     template <typename To, typename Pointer,
-              SFREQUIRE(meta::is_shared_pointer<Pointer>())>
+              SFREQUIRE(meta::is_shared_pointer<Pointer>::value)>
     static shared_ptr<To> dynamic_pointer_cast(const Pointer& pointer)
     {
         auto address = dynamic_pointer_cast<To>(pointer.get());
@@ -108,7 +101,7 @@ public:
     }
 
     template <typename To, typename Pointer,
-              SFREQUIRE(meta::is_raw_pointer<Pointer>())>
+              SFREQUIRE(meta::is_raw_pointer<Pointer>::value)>
     static raw_ptr<To> dynamic_pointer_cast(const Pointer& pointer)
     {
         return dynamic_cast<raw_ptr<To>>(pointer);
@@ -116,17 +109,17 @@ public:
 
     template <typename To, typename Pointer,
               typename Trait = ptr_trait<Pointer>,
-              SFREQUIRE(meta::is_null_pointer<Pointer>() or
-                        meta::is_pointer<Pointer>() and
-                        not ::Serialization::is_pointer_cast_allowed<typename Trait::item, To>())>
+              SFREQUIRE(meta::one<meta::is_null_pointer<Pointer>,
+                                  meta::all<meta::is_pointer<Pointer>,
+                                            meta::negation<is_pointer_cas_allowed<typename Trait::item, To>>>>::value)>
     static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
     {
         return nullptr;
     }
 
     template <typename To, typename Pointer,
-              SFREQUIRE(meta::is_shared_pointer<Pointer>() and
-                        ::Serialization::is_pointer_cast_allowed<typename ptr_trait<Pointer>::item, To>())>
+              SFREQUIRE(meta::all<meta::is_shared_pointer<Pointer>,
+                                  is_pointer_cas_allowed<typename ptr_trait<Pointer>::item, To>>::value)>
     static shared_ptr<To> static_pointer_cast(const Pointer& pointer)
     {
         auto address = static_pointer_cast<To>(pointer.get());
@@ -134,8 +127,8 @@ public:
     }
 
     template <typename To, typename Pointer,
-              SFREQUIRE(meta::is_raw_pointer<Pointer>() and
-                        ::Serialization::is_pointer_cast_allowed<typename ptr_trait<Pointer>::item, To>())>
+              SFREQUIRE(meta::all<meta::is_raw_pointer<Pointer>,
+                                  is_pointer_cas_allowed<typename ptr_trait<Pointer>::item, To>>::value)>
     static raw_ptr<To> static_pointer_cast(const Pointer& pointer)
     {
         return static_cast<raw_ptr<To>>(pointer);
@@ -143,8 +136,8 @@ public:
 
     template <typename To, typename From, typename Pointer,
               typename Trait = ptr_trait<Pointer>,
-              SFREQUIRE(meta::is_pointer<Pointer>() and
-                        not ::Serialization::is_pointer_cast_allowed<From, To>())>
+              SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
+                                  meta::negation<is_pointer_cas_allowed<From, To>>>::value)>
     static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
     {
         return nullptr;
@@ -152,9 +145,9 @@ public:
 
     template <typename To, typename From, typename Pointer,
               typename Trait = ptr_trait<Pointer>,
-              SFREQUIRE(meta::is_pointer<Pointer>() and
-                        ::Serialization::is_pointer_cast_allowed<typename Trait::item, From>() and
-                        ::Serialization::is_pointer_cast_allowed<From, To>())>
+              SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
+                                  is_pointer_cas_allowed<typename Trait::item, From>,
+                                  is_pointer_cas_allowed<From, To>>::value)>
     static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
     {
         return static_pointer_cast<To>(static_pointer_cast<From>(pointer));
@@ -170,8 +163,8 @@ public:
     }
 
     template <typename Pointer,
-              SFREQUIRE(meta::is_pointer<Pointer>() and
-                        meta::is_pointer_to_polymorphic<Pointer>())>
+              SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
+                                  meta::is_pointer_to_polymorphic<Pointer>>::value)>
     static void_ptr<Pointer> pure(const Pointer& pointer_to_polymorphic)
     {
         return dynamic_pointer_cast<void>(pointer_to_polymorphic);
@@ -180,7 +173,7 @@ public:
     static raw_ptr<void> pure(std::nullptr_t pointer) { return nullptr; }
 
     template <typename T, typename Pointer,
-              SFREQUIRE(meta::is_pointer<Pointer>())>
+              SFREQUIRE(meta::is_pointer<Pointer>::value)>
     static void assign(Pointer& pointer, const void_ptr<Pointer>& address)
     {
         pointer = static_pointer_cast<T>(address);
@@ -188,16 +181,16 @@ public:
 
 public:
     template <typename To, typename From = To, typename TraitType,
-              SFREQUIRE(meta::is_memory<TraitType>() and
-                        not ::Serialization::is_pointer_cast_allowed<From, To>())>
+              SFREQUIRE(meta::all<meta::is_memory<TraitType>,
+                                  meta::negation<is_pointer_cas_allowed<From, To>>>::value)>
     static std::nullptr_t allocate()
     {
         return nullptr;
     }
 
     template <typename To, typename From = To, typename TraitType,
-              SFREQUIRE(meta::is_memory_shared<TraitType>() and
-                        ::Serialization::is_pointer_cast_allowed<From, To>())>
+              SFREQUIRE(meta::all<meta::is_memory_shared<TraitType>,
+                                  is_pointer_cas_allowed<From, To>>::value)>
     static shared_ptr<To> allocate()
     {
         auto instance = std::make_shared<From>();
@@ -205,8 +198,8 @@ public:
     }
 
     template <typename To, typename From = To, typename TraitType,
-              SFREQUIRE(meta::is_memory_raw<TraitType>() and
-                        ::Serialization::is_pointer_cast_allowed<From, To>())>
+              SFREQUIRE(meta::all<meta::is_memory_raw<TraitType>,
+                                  is_pointer_cas_allowed<From, To>>::value)>
     static raw_ptr<To> allocate()
     {
         auto instance = new From;
@@ -226,7 +219,7 @@ public:
     }
 
     template <typename To, typename From = To, typename Pointer,
-              SFREQUIRE(meta::is_pointer<Pointer>())>
+              SFREQUIRE(meta::is_pointer<Pointer>::value)>
     static void allocate(Pointer& pointer)
     {
         pointer = allocate<To, From, typename ptr_trait<Pointer>::trait>();
@@ -234,11 +227,11 @@ public:
 
 public:
     template <typename Pointer, typename T = typename ptr_trait<Pointer>::item,
-              SFREQUIRE(meta::is_raw_pointer<Pointer>())>
+              SFREQUIRE(meta::is_raw_pointer<Pointer>::value)>
     static raw_ptr<T> raw(const Pointer& pointer) { return pointer; }
 
     template <typename Pointer, typename T = typename ptr_trait<Pointer>::item,
-              SFREQUIRE(meta::is_shared_pointer<Pointer>())>
+              SFREQUIRE(meta::is_shared_pointer<Pointer>::value)>
     static raw_ptr<T> raw(const Pointer& pointer) { return pointer.get(); }
 
 public:

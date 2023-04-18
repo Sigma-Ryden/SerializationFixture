@@ -29,20 +29,15 @@ struct TypeRegistry : std::false_type {};
 namespace meta
 {
 
-template <typename T> constexpr bool is_registered() noexcept
-{
-    return core::TypeRegistry<T>::value;
-}
+template <typename T> struct is_registered : boolean<core::TypeRegistry<T>::value> {};
 
 // use this function only for extern type registry check
-template <typename T> constexpr bool is_registered_extern() noexcept
-{
+template <typename T> struct is_registered_extern
 #ifdef SF_TYPE_REGISTRY_DISABLE
-    return true;
+    : std::true_type {};
 #else
-    return is_registered<T>();
+    : is_registered<T> {};
 #endif // SF_TYPE_REGISTRY_DISABLE
-}
 
 } // namespace meta
 

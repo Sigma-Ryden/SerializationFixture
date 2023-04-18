@@ -49,15 +49,8 @@ struct reverse_trait<Raw>
 namespace meta
 {
 
-template <typename T> constexpr bool is_track_shared() noexcept
-{
-    return std::is_same<T, tracking::Shared>::value;
-}
-
-template <typename T> constexpr bool is_track_raw() noexcept
-{
-    return std::is_same<T, tracking::Raw>::value;
-}
+template <typename T> struct is_track_shared : std::is_same<T, tracking::Shared> {};
+template <typename T> struct is_track_raw : std::is_same<T, tracking::Raw> {};
 
 } // namespace meta
 

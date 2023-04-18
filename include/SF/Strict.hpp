@@ -14,8 +14,8 @@ namespace sf
 {
 
 template <class WriteArchive, typename T,
-          SFREQUIRE(meta::is_write_archive<WriteArchive>() and
-                    meta::is_pointer_to_standard_layout<T>())>
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::is_pointer_to_standard_layout<T>>::value)>
 void strict(WriteArchive& archive, T& pointer)
 {
     if (pointer == nullptr)
@@ -25,8 +25,8 @@ void strict(WriteArchive& archive, T& pointer)
 }
 
 template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
-                    meta::is_pointer_to_standard_layout<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::is_pointer_to_standard_layout<T>>::value)>
 void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     using item_type = typename Memory::ptr_trait<T>::item;
@@ -41,8 +41,8 @@ void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 }
 
 template <class WriteArchive, typename T,
-          SFREQUIRE(meta::is_write_archive<WriteArchive>() and
-                    meta::is_pointer_to_polymorphic<T>())>
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::is_pointer_to_polymorphic<T>>::value)>
 void strict(WriteArchive& archive, T& pointer)
 {
     auto& registry = archive.registry();
@@ -52,8 +52,8 @@ void strict(WriteArchive& archive, T& pointer)
 }
 
 template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
-                    meta::is_pointer_to_polymorphic<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::is_pointer_to_polymorphic<T>>::value)>
 void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
@@ -64,8 +64,8 @@ void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 
 // verison without cache using
 template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
-                    meta::is_serializable_pointer<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::is_serializable_pointer<T>>::value)>
 void strict(ReadArchive& archive, T& pointer)
 {
     Memory::void_ptr<T> cache = nullptr;
@@ -76,8 +76,8 @@ namespace detail
 {
 
 template <class WriteArchive, typename T,
-          SFREQUIRE(meta::is_write_archive<WriteArchive>() and
-                    meta::is_serializable_pointer<T>() )>
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::is_serializable_pointer<T>>::value)>
 bool is_refer(WriteArchive& archive, T& pointer)
 {
     auto info = static_cast<bool>(pointer);
@@ -87,8 +87,8 @@ bool is_refer(WriteArchive& archive, T& pointer)
 }
 
 template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
-                    meta::is_serializable_pointer<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::is_serializable_pointer<T>>::value)>
 bool is_refer(ReadArchive& archive, T& pointer)
 {
 #ifdef SF_DEBUG

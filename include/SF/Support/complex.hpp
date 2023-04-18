@@ -15,8 +15,7 @@ namespace meta
 {
 
 template <typename> struct is_std_complex : std::false_type {};
-template <typename T>
-struct is_std_complex<std::complex<T>> : std::true_type {};
+template <typename T> struct is_std_complex<std::complex<T>> : std::true_type {};
 
 } // namespace meta
 

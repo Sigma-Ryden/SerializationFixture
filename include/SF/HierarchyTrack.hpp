@@ -44,10 +44,7 @@ using HierarchyTrack = std::unordered_map<std::pair<KeyType, TraitType>, bool, d
 namespace meta
 {
 
-template <typename T> constexpr bool is_track_hierarchy() noexcept
-{
-    return std::is_same<T, tracking::Hierarchy>::value;
-}
+template <typename T> struct is_track_hierarchy : std::is_same<T, tracking::Hierarchy> {};
 
 } // namespace meta
 

@@ -1,7 +1,7 @@
 #ifndef SF_SERIALIZATON_BASE_HPP
 #define SF_SERIALIZATON_BASE_HPP
 
-#include <type_traits> // is_base_of
+#include <SF/Detail/Meta.hpp>
 
 namespace sf
 {
@@ -19,29 +19,17 @@ struct WriteArchiveType {};
 namespace meta
 {
 
-template <class T> constexpr bool is_base_archive() noexcept
-{
-    return std::is_base_of<core::ArchiveBase, T>::value;
-}
+template <class T> struct is_base_archive : std::is_base_of<core::ArchiveBase, T> {};
 
-template <class T> constexpr bool is_read_archive() noexcept
-{
-    return std::is_base_of<core::ReadArchiveType, T>::value;
-}
+template <class T> struct is_read_archive : std::is_base_of<core::ReadArchiveType, T> {};
+template <class T> struct is_write_archive : std::is_base_of<core::WriteArchiveType, T> {};
 
-template <class T> constexpr bool is_write_archive() noexcept
-{
-    return std::is_base_of<core::WriteArchiveType, T>::value;
-}
+template <class T> struct is_archive : one<is_read_archive<T>, is_write_archive<T>> {};
 
-template <class T> constexpr bool is_archive() noexcept
-{
-    return is_read_archive<T>() or is_write_archive<T>();
-}
+template <class T> struct is_Save : is_write_archive<T> {};
+template <class T> struct is_Load : is_read_archive<T> {};
 
-template <class T> constexpr bool is_Save() noexcept { return is_write_archive<T>(); }
-template <class T> constexpr bool is_Load() noexcept { return is_read_archive<T>(); }
-template <class T> constexpr bool is_SaveLoad() noexcept { return is_archive<T>(); }
+template <class T> struct is_SaveLoad : is_archive<T> {};
 
 } // namespace meta
 

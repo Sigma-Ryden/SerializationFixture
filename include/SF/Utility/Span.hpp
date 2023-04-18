@@ -85,7 +85,7 @@ public:
     Span(pointer& data, Dimension dim_) noexcept;
 
     template <typename D, typename... Dn,
-              meta::require<not meta::is_array<D>()> = 0>
+              meta::require<not std::is_array<D>::value> = 0>
     Span(pointer& data, D d, Dn... dn) noexcept;
 
     void size(size_type value) noexcept { this->dim_[0] = value; }
@@ -151,7 +151,7 @@ Span<T, N>::Span(pointer& data, Dimension dim) noexcept
 
 template <typename T, std::size_t N>
 template <typename D, typename... Dn,
-          meta::require<not meta::is_array<D>()>>
+          meta::require<not std::is_array<D>::value>>
 Span<T, N>::Span(pointer& data, D d, Dn... dn) noexcept
     : Core(data, d, dn...)
     , child_scope_(data[0], dn...)
@@ -190,28 +190,15 @@ inline Span<T, 1>::Span(pointer& data, size_type size) noexcept
 namespace meta
 {
 
-namespace detail
-{
-
 template <typename> struct is_span : std::false_type {};
 template <typename T, std::size_t N>
 struct is_span<utility::Span<T, N>> : std::true_type {};
 
-} // namespcae detail
-
-template <class T> constexpr bool is_span() noexcept
-{
-    return detail::is_span<T>::value;
-}
-
-template <typename Pointer, typename D, typename... Dn,
-          std::size_t DimentionSize = sizeof...(Dn) + 1>
-constexpr bool is_span_set() noexcept
-{
-    return meta::pointer_count<Pointer>() >= DimentionSize
-       and meta::all<std::is_arithmetic<D>,
-                     std::is_arithmetic<Dn>...>();
-}
+template <typename Pointer, typename D, typename... Dn>
+struct is_span_set
+    : meta::all<meta::boolean<meta::pointer_count<Pointer>() >= sizeof...(Dn) + 1>,
+                meta::all<std::is_arithmetic<D>,
+                          std::is_arithmetic<Dn>...>> {};
 
 } // namespace meta
 
@@ -221,7 +208,7 @@ namespace utility
 template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
           typename Type = meta::remove_ptr_n<Pointer, N>,
-          SFREQUIRE(meta::is_span_set<Pointer, D, Dn...>())>
+          SFREQUIRE(meta::is_span_set<Pointer, D, Dn...>::value)>
 Span<Type, N> make_span(Pointer& data, D d, Dn... dn)
 {
     using size_type = typename Span<Type, N>::size_type;
@@ -234,7 +221,8 @@ namespace detail
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<Archive>() and not meta::is_span<T>())>
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+                              meta::negation<meta::is_span<T>>>::value)>
 void raw_span(Archive& archive, T& data)
 {
     archive & data;
@@ -242,8 +230,8 @@ void raw_span(Archive& archive, T& data)
 
 // serialization of scoped data with previous dimension initialization
 template <class WriteArchive, typename T,
-          SFREQUIRE(meta::is_write_archive<WriteArchive>()
-                    and meta::is_span<T>())>
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::is_span<T>>::value)>
 void raw_span(WriteArchive& archive, T& array)
 {
     using size_type = typename T::size_type;
@@ -253,8 +241,8 @@ void raw_span(WriteArchive& archive, T& array)
 }
 
 template <class ReadArchive, typename T,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>()
-                    and meta::is_span<T>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::is_span<T>>::value)>
 void raw_span(ReadArchive& archive, T& array)
 {
     using size_type        = typename T::size_type;
@@ -277,8 +265,8 @@ inline namespace common
 
 template <class WriteArchive, typename T,
           typename D, typename... Dn,
-          SFREQUIRE(meta::is_write_archive<WriteArchive>() and
-                    meta::is_span_set<T, D, Dn...>())>
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::is_span_set<T, D, Dn...>>::value)>
 void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (pointer == nullptr)
@@ -292,8 +280,8 @@ void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 
 template <class ReadArchive, typename T,
           typename D, typename... Dn,
-          SFREQUIRE(meta::is_read_archive<ReadArchive>() and
-                    meta::is_span_set<T, D, Dn...>())>
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::is_span_set<T, D, Dn...>>::value)>
 void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (pointer != nullptr)
@@ -319,14 +307,14 @@ struct SpanFunctor : ApplyFunctor
 
     SpanFunctor(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
 
-    template <typename Archive>
+    template <class Archive>
     void operator() (Archive& archive)
     {
         invoke(archive, meta::make_index_sequence<std::tuple_size<Pack>::value>{});
     }
 
 private:
-    template <typename Archive, std::size_t... I>
+    template <class Archive, std::size_t... I>
     void invoke(Archive& archive, meta::index_sequence<I...>)
     {
         span(archive, std::get<I>(pack)...);
@@ -340,7 +328,7 @@ inline namespace common
 {
 
 template <typename T, typename D, typename... Dn,
-          SFREQUIRE(meta::is_span_set<T, D, Dn...>())>
+          SFREQUIRE(meta::is_span_set<T, D, Dn...>::value)>
 apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n)
 {
     return { pointer, dimension, dimension_n... };

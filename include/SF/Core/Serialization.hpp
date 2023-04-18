@@ -47,37 +47,18 @@ private:
     template <typename T> struct has_implementation<T, SFVOID(T{})> : std::true_type {};
 
 public:
-    template <class T> static constexpr bool is_save_class() noexcept
-    {
-        return has_implementation<Save<T>>::value;
-    }
-
-    template <class T> static constexpr bool is_load_class() noexcept
-    {
-        return has_implementation<Load<T>>::value;
-    }
-
-    template <class T>
-    static constexpr bool is_saveload_class() noexcept
-    {
-        return has_implementation<SaveLoad<T>>::value;
-    }
-
-public:
-    template <class T> static constexpr bool has_save_mode() noexcept
-    {
-        return is_save_class<T>() or is_saveload_class<T>();
-    }
-
-    template <class T> static constexpr bool has_load_mode() noexcept
-    {
-        return is_load_class<T>() or is_saveload_class<T>();
-    }
-
-public:
     template <typename T, typename enable = void> struct SaveLoad;
     template <typename T, typename enable = void> struct Save;
     template <typename T, typename enable = void> struct Load;
+
+public:
+    template <class T> struct is_save_class : has_implementation<Save<T>> {};
+    template <class T> struct is_load_class : has_implementation<Load<T>> {};
+    template <class T> struct is_saveload_class : has_implementation<SaveLoad<T>> {};
+
+public:
+    template <class T> struct has_save_mode : sf::meta::one<is_save_class<T>, is_saveload_class<T>> {};
+    template <class T> struct has_load_mode : sf::meta::one<is_load_class<T>, is_saveload_class<T>> {};
 
 public:
     template <class Archive, typename T> static void call(Archive& archive, T& self)
@@ -91,7 +72,7 @@ private:
     struct SaveModeMeta
     {
         using array = sf::meta::type_array<Save<T>, SaveLoad<T>, Serialization>;
-        static constexpr auto index = sf::meta::with(is_save_class<T>(), is_saveload_class<T>());
+        static constexpr auto index = sf::meta::with(is_save_class<T>::value, is_saveload_class<T>::value);
 
         using mode = typename array::template type<index>;
     };
@@ -100,7 +81,7 @@ private:
     struct LoadModeMeta
     {
         using array = sf::meta::type_array<Load<T>, SaveLoad<T>, Serialization>;
-        static constexpr auto index = sf::meta::with(is_load_class<T>(), is_saveload_class<T>());
+        static constexpr auto index = sf::meta::with(is_load_class<T>::value, is_saveload_class<T>::value);
 
         using mode = typename array::template type<index>;
     };
@@ -109,7 +90,7 @@ public:
     template <typename T> using SaveMode = typename SaveModeMeta<T>::mode;
     template <typename T> using LoadMode = typename LoadModeMeta<T>::mode;
 
-private:
+public:
     template <typename C, typename = void> struct has_static_trait : std::false_type {};
     template <typename C> struct has_static_trait<C, SFVOID(&C::__static_trait)> : std::true_type {};
 
@@ -117,6 +98,7 @@ private:
     template <typename C> struct has_trait<C, SFVOID(&C::__trait)> : std::true_type {};
 
 public:
+    // delayed
     template <class T> static constexpr bool has_inner_trait() noexcept
     {
         return has_static_trait<T>::value and has_trait<T>::value;
@@ -145,23 +127,17 @@ private:
     );
 
 public:
-    template <class Base, class Derived> static constexpr bool is_virtual_base_of() noexcept
-    {
-        return sf::meta::is_base_of<Base, Derived>() and
-               can_static_cast<Base*, Derived*>::value;
-    }
+    template <class Base, class Derived> struct is_virtual_base_of
+        : sf::meta::all<std::is_base_of<Base, Derived>,
+                        sf::meta::can_static_cast<Base*, Derived*>> {};
 
-    template <class From, class To> static constexpr bool is_cast_allowed() noexcept
-    {
-        return (decltype(is_returnable<To>(0))::value and decltype(try_cast<From, To>(0))::value)
-            or (sf::meta::is_same_all<void, From, To>());
-    }
+    template <class From, class To> struct is_cast_allowed
+        : sf::meta::one<sf::meta::all<decltype(is_returnable<To>(0)),
+                                      decltype(try_cast<From, To>(0))>,
+                        sf::meta::is_same_all<void, From, To>> {};
 
-    template <class From, class To> static constexpr bool is_pointer_cast_allowed() noexcept
-    {
-        return is_cast_allowed<From*, To*>()
-            or sf::meta::is_void<From>();
-    }
+    template <class From, class To> struct is_pointer_cast_allowed
+        : sf::meta::one<is_cast_allowed<From*, To*>, sf::meta::is_void<From>> {};
 
 public:
     using ArchiveBase = sf::core::ArchiveBase;
@@ -181,8 +157,8 @@ public:
     }
 
     template <typename Base, class Archive, typename Derived,
-              SFREQUIRE(sf::meta::is_archive<Archive>() and
-                        sf::meta::is_base_of<Base, Derived>())>
+              SFREQUIRE(sf::meta::all<sf::meta::is_archive<Archive>,
+                                      std::is_base_of<Base, Derived>>::value)>
     static void serialize_base(Archive& archive, Derived& object)
     {
         archive & cast<Base&>(object);
