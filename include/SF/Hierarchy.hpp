@@ -1,6 +1,7 @@
 #ifndef SF_HIERARCHY_HPP
 #define SF_HIERARCHY_HPP
 
+#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/Serialization.hpp>
 #include <SF/Core/Memory.hpp>
 

@@ -3,6 +3,8 @@
 
 #include <memory> // addressof
 
+#include <SF/Core/SerializatonBase.hpp>
+
 #include <SF/DataTrackBase.hpp>
 
 #include <SF/NativeSaveLoad.hpp>

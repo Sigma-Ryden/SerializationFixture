@@ -3,6 +3,7 @@
 
 #include <memory> // addressof
 
+#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/TypeRegistry.hpp>
 
 #include <SF/ExternSerialization.hpp>

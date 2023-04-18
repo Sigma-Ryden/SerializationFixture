@@ -6,6 +6,7 @@
 #include <unordered_map> // unordered_map
 #include <utility> // forward
 
+#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/ArchiveBase.hpp>
 #include <SF/Core/TypeRegistry.hpp>
 
@@ -26,7 +27,7 @@ namespace sf
 template <class InStream,
           class StreamWrapper,
           class Registry = dynamic::ExternRegistry>
-class ReadArchive : public core::ArchiveBase
+class ReadArchive : public core::Archive<core::ReadArchiveType>
 {
     SERIALIZATION_ARCHIVE(ReadArchive)
 

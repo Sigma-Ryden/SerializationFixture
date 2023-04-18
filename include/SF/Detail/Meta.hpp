@@ -14,8 +14,6 @@
 #include <memory> // shared_ptr
 #include <array> // array
 
-#include <SF/Core/SerializatonBase.hpp>
-
 #include <SF/Detail/MetaMacro.hpp> // SFVOID
 
 #ifndef SF_MAX_TEMPLATE_DEPTH
@@ -364,60 +362,6 @@ template <typename T> constexpr std::size_t pointer_count() noexcept
          ? 1 + pointer_count<meta::remove_ptr<T>>()
          : 0;
 }
-
-namespace detail
-{
-
-template <typename> struct is_read_archive : std::false_type {};
-
-template <class InStream, class StreamWrapper, class Registry>
-struct is_read_archive<ReadArchive<InStream, StreamWrapper, Registry>> : std::true_type {};
-
-} // namespace detail
-
-template <class T> constexpr bool is_read_archive() noexcept
-{
-    return detail::is_read_archive<T>::value;
-}
-
-namespace detail
-{
-
-template <typename> struct is_write_archive : std::false_type {};
-
-template <class OutStream, class StreamWrapper, class Registry>
-struct is_write_archive<WriteArchive<OutStream, Registry, StreamWrapper>> : std::true_type {};
-
-} // namespace detail
-
-template <class T> constexpr bool is_write_archive() noexcept
-{
-    return detail::is_write_archive<T>::value;
-}
-
-namespace detail
-{
-
-template <typename> struct is_base_archive : std::false_type {};
-
-template <>
-struct is_base_archive<core::ArchiveBase> : std::true_type {};
-
-} // namespace detail
-
-template <class T> constexpr bool is_base_archive() noexcept
-{
-    return detail::is_base_archive<T>::value;
-}
-
-template <class T> constexpr bool is_archive() noexcept
-{
-    return is_read_archive<T>() or is_write_archive<T>();
-}
-
-template <class T> constexpr bool is_Save() noexcept { return is_write_archive<T>(); }
-template <class T> constexpr bool is_Load() noexcept { return is_read_archive<T>(); }
-template <class T> constexpr bool is_SaveLoad() noexcept { return is_archive<T>(); }
 
 template <std::size_t I> constexpr std::size_t with() noexcept
 {

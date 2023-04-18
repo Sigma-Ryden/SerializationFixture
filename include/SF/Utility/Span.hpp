@@ -5,6 +5,8 @@
 #include <initializer_list> // initializer_list
 #include <tuple> // tuple
 
+#include <SF/Core/SerializatonBase.hpp>
+
 #include <SF/Utility/Ref.hpp>
 #include <SF/ApplyFunctor.hpp>
 

@@ -1,6 +1,7 @@
 #ifndef SF_APPLY_FUNCTOR_HPP
 #define SF_APPLY_FUNCTOR_HPP
 
+#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/TypeRegistry.hpp>
 
 #include <SF/Detail/Meta.hpp>

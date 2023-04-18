@@ -1,11 +1,12 @@
 #ifndef SF_CORE_POLYMORPHIC_ARCHIVE_HPP
 #define SF_CORE_POLYMORPHIC_ARCHIVE_HPP
 
-#include <SF/Core/Serialization.hpp>
-#include <SF/Core/TypeRegistry.hpp>
-
+#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/ArchiveBase.hpp>
 #include <SF/Core/ArchiveTrait.hpp>
+
+#include <SF/Core/Serialization.hpp>
+#include <SF/Core/TypeRegistry.hpp>
 
 #include <SF/Core/Memory.hpp>
 

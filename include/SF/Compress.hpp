@@ -1,6 +1,8 @@
 #ifndef SF_COMPRESS_HPP
 #define SF_COMPRESS_HPP
 
+#include <SF/Core/SerializatonBase.hpp>
+
 #include <SF/Utility/Utility.hpp>
 
 #include <SF/Detail/Meta.hpp>

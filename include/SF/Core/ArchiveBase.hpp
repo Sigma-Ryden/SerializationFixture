@@ -46,6 +46,10 @@ public:
     }
 };
 
+
+template <class ArchiveType>
+struct Archive : ArchiveBase, ArchiveType {};
+
 } // namespace core
 
 } // namespace sf

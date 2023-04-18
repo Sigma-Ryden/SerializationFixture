@@ -1,6 +1,7 @@
 #ifndef SF_EXTERN_SERIALIZATION_HPP
 #define SF_EXTERN_SERIALIZATION_HPP
 
+#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/TypeRegistry.hpp>
 
 #include <SF/Detail/Meta.hpp>
