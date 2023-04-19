@@ -37,7 +37,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, atomic, meta::is_std_atomic<T>::value)
 {
     using object_type = typename meta::atomic_trait<T>::value_type;
 
-    object_type object;
+    object_type object{};
     archive & object;
 
     atomic.store(object);

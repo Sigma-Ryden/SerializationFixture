@@ -207,7 +207,7 @@ namespace utility
 
 template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
-          typename Type = meta::remove_ptr_n<Pointer, N>,
+          typename Type = meta::remove_pointer<Pointer, N>,
           SFREQUIRE(meta::is_span_set<Pointer, D, Dn...>::value)>
 Span<Type, N> make_span(Pointer& data, D d, Dn... dn)
 {

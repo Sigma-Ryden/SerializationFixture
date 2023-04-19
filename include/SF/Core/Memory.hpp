@@ -88,7 +88,7 @@ public:
     using void_ptr = typename ptr_trait<T>::void_ptr;
 
 private:
-    template <class From, class To> struct is_pointer_cas_allowed
+    template <class From, class To> struct is_pointer_cast_allowed
         : ::Serialization::is_pointer_cast_allowed<From, To> {};
 
 public:
@@ -111,7 +111,7 @@ public:
               typename Trait = ptr_trait<Pointer>,
               SFREQUIRE(meta::one<meta::is_null_pointer<Pointer>,
                                   meta::all<meta::is_pointer<Pointer>,
-                                            meta::negation<is_pointer_cas_allowed<typename Trait::item, To>>>>::value)>
+                                            meta::negation<is_pointer_cast_allowed<typename Trait::item, To>>>>::value)>
     static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
     {
         return nullptr;
@@ -119,7 +119,7 @@ public:
 
     template <typename To, typename Pointer,
               SFREQUIRE(meta::all<meta::is_shared_pointer<Pointer>,
-                                  is_pointer_cas_allowed<typename ptr_trait<Pointer>::item, To>>::value)>
+                                  is_pointer_cast_allowed<typename ptr_trait<Pointer>::item, To>>::value)>
     static shared_ptr<To> static_pointer_cast(const Pointer& pointer)
     {
         auto address = static_pointer_cast<To>(pointer.get());
@@ -128,7 +128,7 @@ public:
 
     template <typename To, typename Pointer,
               SFREQUIRE(meta::all<meta::is_raw_pointer<Pointer>,
-                                  is_pointer_cas_allowed<typename ptr_trait<Pointer>::item, To>>::value)>
+                                  is_pointer_cast_allowed<typename ptr_trait<Pointer>::item, To>>::value)>
     static raw_ptr<To> static_pointer_cast(const Pointer& pointer)
     {
         return static_cast<raw_ptr<To>>(pointer);
@@ -137,7 +137,7 @@ public:
     template <typename To, typename From, typename Pointer,
               typename Trait = ptr_trait<Pointer>,
               SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
-                                  meta::negation<is_pointer_cas_allowed<From, To>>>::value)>
+                                  meta::negation<is_pointer_cast_allowed<From, To>>>::value)>
     static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
     {
         return nullptr;
@@ -146,8 +146,8 @@ public:
     template <typename To, typename From, typename Pointer,
               typename Trait = ptr_trait<Pointer>,
               SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
-                                  is_pointer_cas_allowed<typename Trait::item, From>,
-                                  is_pointer_cas_allowed<From, To>>::value)>
+                                  is_pointer_cast_allowed<typename Trait::item, From>,
+                                  is_pointer_cast_allowed<From, To>>::value)>
     static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
     {
         return static_pointer_cast<To>(static_pointer_cast<From>(pointer));
@@ -182,7 +182,7 @@ public:
 public:
     template <typename To, typename From = To, typename TraitType,
               SFREQUIRE(meta::all<meta::is_memory<TraitType>,
-                                  meta::negation<is_pointer_cas_allowed<From, To>>>::value)>
+                                  meta::negation<is_pointer_cast_allowed<From, To>>>::value)>
     static std::nullptr_t allocate()
     {
         return nullptr;
@@ -190,7 +190,7 @@ public:
 
     template <typename To, typename From = To, typename TraitType,
               SFREQUIRE(meta::all<meta::is_memory_shared<TraitType>,
-                                  is_pointer_cas_allowed<From, To>>::value)>
+                                  is_pointer_cast_allowed<From, To>>::value)>
     static shared_ptr<To> allocate()
     {
         auto instance = std::make_shared<From>();
@@ -199,7 +199,7 @@ public:
 
     template <typename To, typename From = To, typename TraitType,
               SFREQUIRE(meta::all<meta::is_memory_raw<TraitType>,
-                                  is_pointer_cas_allowed<From, To>>::value)>
+                                  is_pointer_cast_allowed<From, To>>::value)>
     static raw_ptr<To> allocate()
     {
         auto instance = new From;

@@ -30,18 +30,16 @@ template <typename> struct is_std_priority_queue : std::false_type {};
 template <typename T, class Container, class Compare>
 struct is_std_priority_queue<std::priority_queue<T, Container, Compare>> : std::true_type {};
 
-template <class T> constexpr bool is_std_any_queue() noexcept
-{
-    return is_std_queue<T>::value
-        or is_std_priority_queue<T>::value;
-}
+template <class T> struct is_std_any_queue
+    : one<is_std_queue<T>,
+          is_std_priority_queue<T>> {};
 
 } // namespace meta
 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, queue, meta::is_std_any_queue<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, queue, meta::is_std_any_queue<T>::value)
 {
     archive & meta::underlying(queue);
     return archive;
@@ -51,6 +49,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, queue, meta::is_std_any_queue<T>())
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_queue<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_queue<T>::value)
 
 #endif // SF_SUPPORT_QUEUE_HPP

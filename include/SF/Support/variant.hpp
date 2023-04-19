@@ -42,8 +42,7 @@ void variant_emplace(Variant& variant)
 
 template <let::u64 I, class Variant,
           SFREQUIRE(I == std::variant_size<Variant>::value)>
-void variant_construct(Variant& variant, let::u64 index) noexcept
-{ /*pass*/ }
+void variant_construct(Variant& variant, let::u64 index) noexcept { /*pass*/ }
 
 template <let::u64 I = 0, class Variant,
           SFREQUIRE(I < std::variant_size<Variant>::value)>

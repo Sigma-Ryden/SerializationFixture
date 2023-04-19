@@ -30,18 +30,14 @@ _SF_IS_STD_SET_TYPE_META_GENERIC(unordered_set)
 _SF_IS_STD_SET_TYPE_META_GENERIC(multiset)
 _SF_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
 
-template <class T> constexpr bool is_std_any_unordered_set() noexcept
-{
-    return is_std_unordered_set<T>::value
-        or is_std_unordered_multiset<T>::value;
-}
+template <class T> struct is_std_any_unordered_set
+    : one<is_std_unordered_set<T>,
+          is_std_unordered_multiset<T>> {};
 
-template <class T> constexpr bool is_std_any_set() noexcept
-{
-    return is_std_set<T>::value
-        or is_std_multiset<T>::value
-        or is_std_any_unordered_set<T>();
-}
+template <class T> struct is_std_any_set
+    : one<is_std_set<T>,
+          is_std_multiset<T>,
+          is_std_any_unordered_set<T>> {};
 
 } // namespace meta
 
@@ -49,11 +45,11 @@ namespace detail
 {
 
 template <class T,
-          SFREQUIRE(not meta::is_std_any_unordered_set<T>())>
+          SFREQUIRE(not meta::is_std_any_unordered_set<T>::value)>
 void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
 
 template <class T,
-          SFREQUIRE(meta::is_std_any_unordered_set<T>())>
+          SFREQUIRE(meta::is_std_any_unordered_set<T>::value)>
 void reserve_unordered(T& unordered, std::size_t size)
 {
     unordered.reserve(size);
@@ -64,7 +60,7 @@ void reserve_unordered(T& unordered, std::size_t size)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>::value)
 {
     let::u64 size = set.size();
     archive & size;
@@ -74,7 +70,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>())
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>())
+EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>::value)
 {
     using value_type = typename T::value_type;
 
@@ -100,7 +96,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>())
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_set<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_set<T>::value)
 
 // clean up
 #undef _SF_IS_STD_SET_TYPE_META_GENERIC

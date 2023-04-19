@@ -113,14 +113,14 @@ public:
     }
 
     template <typename TraitType,
-              SFREQUIRE(meta::is_memory_shared<TraitType>())>
+              SFREQUIRE(meta::is_memory_shared<TraitType>::value)>
     std::shared_ptr<instantiable_type> clone(key_type key)
     {
         return registry(key).__shared();
     }
 
     template <typename TraitType,
-              SFREQUIRE(meta::is_memory_raw<TraitType>())>
+              SFREQUIRE(meta::is_memory_raw<TraitType>::value)>
     instantiable_type* clone(key_type key)
     {
         return registry(key).__raw();

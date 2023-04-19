@@ -72,7 +72,7 @@ private:
     struct SaveModeMeta
     {
         using array = sf::meta::type_array<Save<T>, SaveLoad<T>, Serialization>;
-        static constexpr auto index = sf::meta::with(is_save_class<T>::value, is_saveload_class<T>::value);
+        static constexpr auto index = sf::meta::with<is_save_class<T>, is_saveload_class<T>>::value;
 
         using mode = typename array::template type<index>;
     };
@@ -81,7 +81,7 @@ private:
     struct LoadModeMeta
     {
         using array = sf::meta::type_array<Load<T>, SaveLoad<T>, Serialization>;
-        static constexpr auto index = sf::meta::with(is_load_class<T>::value, is_saveload_class<T>::value);
+        static constexpr auto index = sf::meta::with<is_load_class<T>, is_saveload_class<T>>::value;
 
         using mode = typename array::template type<index>;
     };
@@ -134,7 +134,7 @@ public:
     template <class From, class To> struct is_cast_allowed
         : sf::meta::one<sf::meta::all<decltype(is_returnable<To>(0)),
                                       decltype(try_cast<From, To>(0))>,
-                        sf::meta::is_same_all<void, From, To>> {};
+                        sf::meta::is_same<void, From, To>> {};
 
     template <class From, class To> struct is_pointer_cast_allowed
         : sf::meta::one<is_cast_allowed<From*, To*>, sf::meta::is_void<From>> {};
