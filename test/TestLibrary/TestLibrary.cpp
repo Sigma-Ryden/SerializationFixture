@@ -2,14 +2,13 @@
 
 #include <SF/Support/shared_ptr.hpp>
 
-using sf::tracking::track;
-
 TEST(TestLibrary, TestValidation)
 {
+    using sf::tracking::track;
+
     static int s_i = 745; // some garbage value
 
     std::vector<unsigned char> storage;
-
     {
         auto ar = oarchive(storage);
 
@@ -78,6 +77,9 @@ TEST(TestLibrary, TestValidation)
     }
 }
 
+TEST_MODULE()
+{
+
 class Triangle : public Instantiable
 {
     SERIALIZABLE(Triangle)
@@ -96,6 +98,8 @@ class Square // non instantiable
 {
     SERIALIZABLE(Square)
 };
+
+} // TEST_MODULE
 
 TEST(TestLibrary, TestInstantiableRegistry)
 {
@@ -158,6 +162,9 @@ TEST(TestLibrary, TestInstantiableRegistry)
     }
 }
 
+TEST_MODULE()
+{
+
 struct MyStruct : Instantiable
 {
     SERIALIZABLE(MyStruct)
@@ -177,6 +184,8 @@ struct MyCustomType : Instantiable
 {
     SERIALIZABLE(MyCustomType)
 };
+
+} // TEST_MODULE
 
 EXPORT_INSTANTIABLE_KEY("MyClass", MyStruct)
 EXPORT_INSTANTIABLE_KEY("MyStruct", MyClass)
@@ -271,16 +280,14 @@ TEST(TestLibrary, TestStreamWrapper)
 // but if you are going to serialize it in the future -
 // write SERIALIZABLE(type) and omit SERIALIZATION(mode, type)
 
+TEST_MODULE()
+{
+
 struct WorldObject : Instantiable
 {
     SERIALIZABLE(WorldObject)
     int wo = 0;
 };
-
-SERIALIZATION(SaveLoad, WorldObject)
-{
-    ++self.wo;
-}
 
 struct EnvironmentObject : virtual WorldObject
 {
@@ -288,23 +295,11 @@ struct EnvironmentObject : virtual WorldObject
     int eo = 0;
 };
 
-SERIALIZATION(SaveLoad, EnvironmentObject)
-{
-    ++self.eo;
-    archive & hierarchy<WorldObject>(self);
-}
-
 struct MoveableObject : virtual EnvironmentObject
 {
     SERIALIZABLE(MoveableObject)
     int mo = 0;
 };
-
-SERIALIZATION(SaveLoad, MoveableObject)
-{
-    ++self.mo;
-    archive & hierarchy<EnvironmentObject>(self);
-}
 
 struct DestructibleObject : virtual EnvironmentObject
 {
@@ -312,23 +307,11 @@ struct DestructibleObject : virtual EnvironmentObject
     int dso = 0;
 };
 
-SERIALIZATION(SaveLoad, DestructibleObject)
-{
-    ++self.dso;
-    archive & hierarchy<EnvironmentObject>(self);
-}
-
 struct DecorativeObject : DestructibleObject, MoveableObject
 {
     SERIALIZABLE(DecorativeObject)
     int dco = 0;
 };
-
-SERIALIZATION(SaveLoad, DecorativeObject)
-{
-    ++self.dco;
-    archive & hierarchy<DestructibleObject, MoveableObject>(self);
-}
 
 struct FoliageObject : virtual WorldObject
 {
@@ -338,17 +321,48 @@ struct FoliageObject : virtual WorldObject
 
 struct FoliageObjectInstance : FoliageObject {};
 
-SERIALIZATION(SaveLoad, FoliageObject)
-{
-    ++self.fo;
-    archive & hierarchy<WorldObject>(self);
-}
-
 struct DecorativeFoliageObject : DecorativeObject, FoliageObjectInstance
 {
     SERIALIZABLE(DecorativeFoliageObject)
     int dcfo = 0;
 };
+
+} // TEST_MODULE
+
+SERIALIZATION(SaveLoad, WorldObject)
+{
+    ++self.wo;
+}
+
+SERIALIZATION(SaveLoad, EnvironmentObject)
+{
+    ++self.eo;
+    archive & hierarchy<WorldObject>(self);
+}
+
+SERIALIZATION(SaveLoad, MoveableObject)
+{
+    ++self.mo;
+    archive & hierarchy<EnvironmentObject>(self);
+}
+
+SERIALIZATION(SaveLoad, DestructibleObject)
+{
+    ++self.dso;
+    archive & hierarchy<EnvironmentObject>(self);
+}
+
+SERIALIZATION(SaveLoad, DecorativeObject)
+{
+    ++self.dco;
+    archive & hierarchy<DestructibleObject, MoveableObject>(self);
+}
+
+SERIALIZATION(SaveLoad, FoliageObject)
+{
+    ++self.fo;
+    archive & hierarchy<WorldObject>(self);
+}
 
 SERIALIZATION(SaveLoad, DecorativeFoliageObject)
 {
@@ -386,6 +400,9 @@ TEST(TestLibrary, TestInheritance)
     }
 }
 
+TEST_MODULE()
+{
+
 class SomeObjectImpl
 {
     SERIALIZABLE(SomeObjectImpl)
@@ -397,11 +414,6 @@ public:
 protected:
     int data_;
 };
-
-SERIALIZATION(SaveLoad, SomeObjectImpl)
-{
-    archive & self.data_;
-}
 
 class SomeObject : protected SomeObjectImpl // try protected inheritance
 {
@@ -420,32 +432,39 @@ private:
     int inner_data_;
 };
 
-SERIALIZATION(SaveLoad, SomeObject)
-{
-    archive & hierarchy<SomeObjectImpl>(self) & self.inner_data_;
-}
-
 struct PolymorphicBaseImpl : public sf::Instantiable
 {
     SERIALIZABLE(PolymorphicBaseImpl)
 };
-
-SERIALIZATION(SaveLoad, PolymorphicBaseImpl) {}
 
 struct PolymorphicBase : protected PolymorphicBaseImpl // not allowed!
 {
     SERIALIZABLE(PolymorphicBase)
 };
 
-SERIALIZATION(SaveLoad, PolymorphicBase)
-{
-    archive & hierarchy<PolymorphicBaseImpl>(self);
-}
-
 struct PolymorphicDerived : public PolymorphicBase
 {
     SERIALIZABLE(PolymorphicDerived)
 };
+
+} // TEST_MODULE
+
+SERIALIZATION(SaveLoad, SomeObjectImpl)
+{
+    archive & self.data_;
+}
+
+SERIALIZATION(SaveLoad, SomeObject)
+{
+    archive & hierarchy<SomeObjectImpl>(self) & self.inner_data_;
+}
+
+SERIALIZATION(SaveLoad, PolymorphicBaseImpl) {}
+
+SERIALIZATION(SaveLoad, PolymorphicBase)
+{
+    archive & hierarchy<PolymorphicBaseImpl>(self);
+}
 
 SERIALIZATION(SaveLoad, PolymorphicDerived)
 {
@@ -490,6 +509,9 @@ TEST(TestLibrary, TestAccess)
 // since we dont use SERIALIZABLE remember that:
 // SERIALIZABLE contains SERIALIZATION_ACCESS() and INSTANTIABLE_BODY() macros
 
+TEST_MODULE()
+{
+
 struct NoTraitBase : sf::Instantiable
 {
     int b = 0;
@@ -499,6 +521,8 @@ struct NoTraitDerived : NoTraitBase
 {
     int d = 0;
 };
+
+} // TEST_MODULE
 
 SERIALIZATION(SaveLoad, NoTraitBase)
 {

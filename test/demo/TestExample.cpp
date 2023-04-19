@@ -5,6 +5,9 @@
 #include <SF/Support/map.hpp>
 #include <SF/Support/shared_ptr.hpp>
 
+TEST_MODULE()
+{
+
 enum class Property
 {
     Speed,
@@ -23,6 +26,8 @@ struct Handbook
 {
     std::map<int, std::shared_ptr<Prototype>> prototypes;
 };
+
+} // TEST_MODULE
 
 SERIALIZATION(SaveLoad, Prototype)
 {

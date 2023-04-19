@@ -2,6 +2,9 @@
 
 #include <SF/Support/pair.hpp>
 
+TEST_MODULE()
+{
+
 struct IntPoint
 {
     int X;
@@ -12,6 +15,8 @@ constexpr bool operator== (const IntPoint& A, const IntPoint& B) noexcept
 {
     return A.X == B.X && A.Y == B.Y;
 }
+
+} // TEST_MODULE
 
 SERIALIZATION(SaveLoad, IntPoint)
 {

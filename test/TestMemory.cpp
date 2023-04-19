@@ -2,6 +2,9 @@
 
 #include <SF/Support/unique_ptr.hpp>
 
+TEST_MODULE()
+{
+
 struct Parent : Instantiable
 {
     SERIALIZABLE(Parent)
@@ -10,11 +13,6 @@ struct Parent : Instantiable
     int p = 0;
 };
 
-SERIALIZATION(SaveLoad, Parent)
-{
-    archive & self.p;
-}
-
 struct Child : Parent
 {
     SERIALIZABLE(Child)
@@ -22,14 +20,21 @@ struct Child : Parent
     int c = 0;
 };
 
-SERIALIZATION(SaveLoad, Child)
-{
-    archive & hierarchy<Parent>(self) & self.c;
-}
-
 bool operator== (const Child& lhs, const Child& rhs)
 {
     return lhs.p == rhs.p && lhs.c == rhs.c;
+}
+
+} // TEST_MODULE
+
+SERIALIZATION(SaveLoad, Parent)
+{
+    archive & self.p;
+}
+
+SERIALIZATION(SaveLoad, Child)
+{
+    archive & hierarchy<Parent>(self) & self.c;
 }
 
 TEST(TestMemory, TestUniquePtr)
@@ -69,6 +74,9 @@ TEST(TestMemory, TestUniquePtr)
 
 #include <SF/Support/shared_ptr.hpp>
 
+TEST_MODULE()
+{
+
 struct A : Instantiable
 {
     SERIALIZABLE(A)
@@ -97,6 +105,16 @@ struct D : B, C
     int d = 0;
 };
 
+bool operator== (const D& lhs, const D& rhs)
+{
+    return lhs.a == rhs.a
+        && lhs.b == rhs.b
+        && lhs.c == rhs.c
+        && lhs.d == rhs.d;
+}
+
+} // TEST_MODULE
+
 SERIALIZATION(SaveLoad, A)
 {
     archive & self.a;
@@ -118,14 +136,6 @@ SERIALIZATION(SaveLoad, D)
 {
     archive & hierarchy<B, C>(self) // type order does not matter
             & self.d;
-}
-
-bool operator== (const D& lhs, const D& rhs)
-{
-    return lhs.a == rhs.a
-        && lhs.b == rhs.b
-        && lhs.c == rhs.c
-        && lhs.d == rhs.d;
 }
 
 TEST(TestMemory, TestSharedPtr)
@@ -262,6 +272,9 @@ TEST(TestMemory, TestSharedAndWeakPtr)
 
 #include <SF/Support/string.hpp>
 
+TEST_MODULE()
+{
+
 struct Human
 {
     std::string name;
@@ -269,6 +282,8 @@ struct Human
 
     Human(const std::string& name = "Unnamed") : name(name) {}
 };
+
+} // TEST_MODULE
 
 SERIALIZATION(SaveLoad, Human)
 {

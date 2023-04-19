@@ -1,5 +1,8 @@
 #include "SFTestingBase.hpp"
 
+TEST_MODULE()
+{
+
 struct Vector
 {
     Vector(float x = 0.f, float y = 0.f, float z = 0.f)
@@ -19,6 +22,8 @@ struct Box
     Vector Min;
     Vector Max;
 };
+
+} // TEST_MODULE
 
 SERIALIZATION(SaveLoad, Vector)
 {
@@ -60,6 +65,9 @@ TEST(TestCommon, TestUserType)
 #include <SF/Support/string.hpp>
 #include <SF/Support/any.hpp>
 
+TEST_MODULE()
+{
+
 struct Product
 {
     std::string name;
@@ -67,17 +75,19 @@ struct Product
     std::size_t price;
 };
 
-SERIALIZATION(SaveLoad, Product)
-{
-    archive & self.name & self.series & self.price;
-}
-
 struct Printer : Product
 {
 #if __cplusplus >= 201703L
     std::any owner;
 #endif // if
 };
+
+} // TEST_MODULE
+
+SERIALIZATION(SaveLoad, Product)
+{
+    archive & self.name & self.series & self.price;
+}
 
 SERIALIZATION(SaveLoad, Printer)
 {

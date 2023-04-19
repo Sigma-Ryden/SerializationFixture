@@ -2,6 +2,9 @@
 
 #include <SF/Support/string.hpp>
 
+TEST_MODULE()
+{
+
 template <class SomeType>
 struct Base : Instantiable
 {
@@ -17,17 +20,6 @@ public:
 
 template <typename> struct is_base : std::false_type {};
 template <typename T> struct is_base<Base<T>> : std::true_type {};
-
-SERIALIZATION(Save, Base<std::string>)
-{
-    // more specialize version
-    archive & self.data;
-}
-
-CONDITIONAL_SERIALIZATION(SaveLoad, is_base<T>::value)
-{
-    archive & self.data;
-}
 
 namespace internal // example namespace
 {
@@ -45,6 +37,19 @@ public:
 };
 
 } // namespace internal
+
+} // TEST_MODULE
+
+SERIALIZATION(Save, Base<std::string>)
+{
+    // more specialize version
+    archive & self.data;
+}
+
+CONDITIONAL_SERIALIZATION(SaveLoad, is_base<T>::value)
+{
+    archive & self.data;
+}
 
 SERIALIZATION(SaveLoad, internal::Derived)
 {

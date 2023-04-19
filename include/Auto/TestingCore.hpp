@@ -9,8 +9,13 @@
 #include <string> // string
 
 // Test definition
+
+// Allow to hide owner classes within different translation units
+#define TEST_MODULE(test_module)                                                                        \
+    namespace test_module
+
 #define TEST(test_module, test_name)                                                                    \
-    namespace test_module {                                                                             \
+    TEST_MODULE(test_module) {                                                                          \
         struct test_name : TestingInterface {                                                           \
             test_name() : TestingInterface(#test_module, #test_name) {}                                 \
             void run() override;                                                                        \

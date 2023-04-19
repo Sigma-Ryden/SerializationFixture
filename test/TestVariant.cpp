@@ -5,12 +5,17 @@
 #include <SF/Support/variant.hpp>
 #include <SF/Support/string.hpp>
 
+TEST_MODULE()
+{
+
 struct OwnType
 {
     OwnType(int data) : var(data) {}
 
     int var;
 };
+
+} // TEST_MODULE
 
 SERIALIZATION(SaveLoad, OwnType)
 {
