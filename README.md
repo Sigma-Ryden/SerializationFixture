@@ -25,7 +25,7 @@ Is a header-only library implemented purely in C++11.
 
 See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/include/SF/Support).
 ### Serialization of users class:
-- Aggregate
+- Aggregate (since C++17)
 - Common/Template
 - Hierarchy
 - Polymorphic
