@@ -155,8 +155,8 @@ public:
 
 public:
     template <typename Pointer,
-              SFREQUIRE(meta::is_pointer<Pointer>() and
-                        not meta::is_pointer_to_polymorphic<Pointer>())>
+              SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
+                                  meta::negation<meta::is_pointer_to_polymorphic<Pointer>>>::value)>
     static void_ptr<Pointer> pure(const Pointer& pointer)
     {
         return static_pointer_cast<void>(pointer);

@@ -6,6 +6,9 @@
 #include <SF/Support/any.hpp>
 #include <SF/Support/shared_ptr.hpp>
 
+TEST_MODULE()
+{
+
 struct AggregateType
 {
     std::string string;
@@ -37,6 +40,8 @@ struct DerivedAggregateType // : BaseAggregateType - serialization not supported
     BaseAggregateType base;
     bool state;
 };
+
+} // TEST_MODULE
 
 TEST(TestCommon, TestAggregate)
 {

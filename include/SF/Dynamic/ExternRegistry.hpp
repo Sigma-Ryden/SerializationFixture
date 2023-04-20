@@ -43,7 +43,7 @@ public:
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
 
-        key_type key;
+        key_type key{};
         archive & key;
 
         return key;

@@ -8,6 +8,9 @@
 #include <SF/Support/vector.hpp>
 #include <SF/Support/shared_ptr.hpp>
 
+TEST_MODULE()
+{
+
 struct Entity : Instantiable
 {
     SERIALIZABLE(Entity)
@@ -28,6 +31,8 @@ struct Girl : Entity
 
     int g;
 };
+
+} // TEST_MODULE
 
 SERIALIZATION(SaveLoad, Boy)
 {

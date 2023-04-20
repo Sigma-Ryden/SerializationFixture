@@ -36,12 +36,14 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, complex, meta::is_std_complex<T>::value)
 {
     using integral_type = typename T::value_type;
 
-    integral_type real{};
-    integral_type imag{};
+    integral_type re{};
+    integral_type im{};
 
-    archive & real & imag;
+    archive & re & im;
 
-    complex = {real, imag};
+    complex.real(re);
+    complex.imag(im);
+
     return archive;
 }
 

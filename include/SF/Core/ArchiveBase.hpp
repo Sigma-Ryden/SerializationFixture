@@ -46,9 +46,12 @@ public:
     }
 };
 
-
 template <class ArchiveType>
-struct Archive : ArchiveBase, ArchiveType {};
+class Archive : public ArchiveBase, public ArchiveType
+{
+protected:
+    virtual ~Archive() = default;
+};
 
 } // namespace core
 
