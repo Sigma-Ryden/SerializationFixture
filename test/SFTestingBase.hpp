@@ -1,7 +1,7 @@
 #ifndef SF_TESTING_BASE_HPP
 #define SF_TESTING_BASE_HPP
 
-#define SF_DEBUG
+#define SF_DEBUG // we should define this macro to enable additional checks for testing
 
 #include <SF/Core.hpp>
 #include <Auto/TestingCore.hpp>

@@ -5,7 +5,6 @@
 
 #include <unordered_map> // unordered_map
 #include <any> // any
-
 #include <typeinfo> // typeid, type_info
 
 #include <SF/Core/PolymorphicArchive.hpp>
