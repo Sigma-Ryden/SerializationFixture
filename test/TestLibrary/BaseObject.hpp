@@ -7,6 +7,7 @@
 
 struct BaseObject : sf::Instantiable
 {
+    // not required for SERIALIZATION_INTERFACE
     SERIALIZABLE(BaseObject)
 
     int id;
