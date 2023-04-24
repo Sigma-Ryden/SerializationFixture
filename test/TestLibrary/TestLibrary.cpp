@@ -599,3 +599,53 @@ TEST(TestLibrary, TestPartition)
             d->id == s_d.id && d->name == s_d.name && d->data == s_d.data);
     }
 }
+
+#if __cplusplus >= 201703L
+
+TEST_MODULE()
+{
+
+struct AggregateObject
+{
+    int i;
+    float f;
+    char c;
+};
+
+} // TEST_MODULE
+
+SERIALIZATION(SaveLoad, AggregateObject)
+{
+    archive & self.i & self.f; // ignoring self.c
+}
+
+TEST(TestLibrary, TestAggregateOverload)
+{
+    using sf::aggregate;
+
+    static AggregateObject s_nao { 123, 3.14f, 'F' };
+    static AggregateObject s_ao { 8938, 2.17f, 's' };
+
+    std::vector<unsigned char> storage;
+    {
+        AggregateObject nao = s_nao;
+        AggregateObject ao = s_ao;
+
+        auto ar = oarchive(storage);
+        ar & nao // will serialize as user type by Serialization::SaveLoad
+           & aggregate(ao); // will serialize as aggregate type
+    }
+    {
+        AggregateObject nao {};
+        AggregateObject ao {};
+
+        auto ar = iarchive(storage);
+        ar & nao
+           & aggregate(ao);
+
+        EXPECT("serialization as non-aggregate.", nao.i == s_nao.i && nao.f == s_nao.f && nao.c != s_nao.c);
+        EXPECT("serialization as aggregate.", ao.i == s_ao.i && ao.f == s_ao.f && ao.c == s_ao.c);
+    }
+}
+
+#endif // if

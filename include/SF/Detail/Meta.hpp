@@ -212,10 +212,12 @@ struct aggregate_size_implementation<C, index_sequence<I...>,
     SFVOID(C{ declval<dummy_type>(), declval<dummy_type, I>()... })>
     : aggregate_size_implementation<C, index_sequence<I..., sizeof...(I)>> {};
 
+} // namespace detail
+
 template <class T, bool condition = std::is_aggregate<T>::value>
 struct aggregate_size
 {
-    static constexpr auto value = aggregate_size_implementation<T>::size();
+    static constexpr auto value = detail::aggregate_size_implementation<T>::size();
 };
 
 template <class T>
@@ -224,12 +226,6 @@ struct aggregate_size<T, false>
     static constexpr auto value = 0;
 };
 
-} // namespace detail
-
-template <class T> constexpr std::size_t aggregate_size() noexcept
-{
-    return detail::aggregate_size<T>::value;
-}
 #endif // if
 
 namespace detail
