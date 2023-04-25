@@ -3,7 +3,7 @@
 
 #include <SF/Core/SerializatonBase.hpp>
 
-#include <SF/Utility/Utility.hpp>
+#include <SF/Utility/Functional.hpp>
 
 #include <SF/Detail/Meta.hpp>
 #include <SF/Detail/MetaMacro.hpp>

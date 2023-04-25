@@ -7,7 +7,7 @@ namespace sf
 namespace core
 {
 
-#ifndef SF_DEFAULT_DISABLE
+#ifndef SF_TYPE_PORTABLE_DISABLE
 
 static_assert(sizeof(char) == 1, "Require character size.");
 
@@ -16,7 +16,7 @@ static_assert(sizeof(double) == 8, "Require double precision floation point numb
 
 static_assert(sizeof(int) == 4, "Require integer number size.");
 
-#endif // SF_DEFAULT_DISABLE
+#endif // SF_TYPE_PORTABLE_DISABLE
 
 } // namespace core
 

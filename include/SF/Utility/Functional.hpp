@@ -1,5 +1,5 @@
-#ifndef SF_UTILITY_HPP
-#define SF_UTILITY_HPP
+#ifndef SF_UTILITY_FUNCTIONAL_HPP
+#define SF_UTILITY_FUNCTIONAL_HPP
 
 #include <cstddef> // size_t
 
@@ -60,4 +60,4 @@ std::size_t size(const CharType* str) noexcept
 
 } // namespace sf
 
-#endif // SF_UTILITY_HPP
+#endif // SF_UTILITY_FUNCTIONAL_HPP

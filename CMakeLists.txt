@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(SerializationFixture LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -30,9 +30,9 @@ set(SF
     include/SF/Dynamic/ExternRegistry.hpp
     include/SF/Dynamic/AnyRegistry.hpp
 
-    include/SF/Utility/Utility.hpp
     include/SF/Utility/Span.hpp
     include/SF/Utility/Ref.hpp
+    include/SF/Utility/Functional.hpp
 
     include/SF/DataTrack.hpp
     include/SF/Compress.hpp

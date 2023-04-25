@@ -43,8 +43,8 @@ class Serialization
 {
 private:
     // specificaly check for construction without arguments
-    template <typename T, typename = void> struct has_implementation : std::false_type {};
-    template <typename T> struct has_implementation<T, SFVOID(T{})> : std::true_type {};
+    template <class T, typename = void> struct has_implementation : std::false_type {};
+    template <class T> struct has_implementation<T, SFVOID(T{})> : std::true_type {};
 
 public:
     template <typename T, typename enable = void> struct SaveLoad;
@@ -63,27 +63,26 @@ public:
 public:
     template <class Archive, typename T> static void call(Archive& archive, T& self)
     {
-        // default implementationementation
-        throw "The 'T' type cannot be saved/loaded.";
+        throw "The 'T' type cannot be saved/loaded."; // default implementation
     }
 
 private:
     template <typename T>
     struct SaveModeMeta
     {
-        using array = sf::meta::type_array<Save<T>, SaveLoad<T>, Serialization>;
         static constexpr auto index = sf::meta::with<is_save_class<T>, is_saveload_class<T>>::value;
 
-        using mode = typename array::template type<index>;
+        using mode_array = sf::meta::type_array<Save<T>, SaveLoad<T>, Serialization>;
+        using mode = typename mode_array::template type<index>;
     };
 
     template <typename T>
     struct LoadModeMeta
     {
-        using array = sf::meta::type_array<Load<T>, SaveLoad<T>, Serialization>;
         static constexpr auto index = sf::meta::with<is_load_class<T>, is_saveload_class<T>>::value;
 
-        using mode = typename array::template type<index>;
+        using mode_array = sf::meta::type_array<Load<T>, SaveLoad<T>, Serialization>;
+        using mode = typename mode_array::template type<index>;
     };
 
 public:
@@ -91,53 +90,43 @@ public:
     template <typename T> using LoadMode = typename LoadModeMeta<T>::mode;
 
 public:
-    template <typename C, typename = void> struct has_static_trait : std::false_type {};
-    template <typename C> struct has_static_trait<C, SFVOID(&C::__static_trait)> : std::true_type {};
+    template <class T, typename = void> struct has_static_trait : std::false_type {};
+    template <class T> struct has_static_trait<T, SFVOID(&T::__static_trait)> : std::true_type {};
 
-    template <typename C, typename = void> struct has_trait : std::false_type {};
-    template <typename C> struct has_trait<C, SFVOID(&C::__trait)> : std::true_type {};
+    template <class T, typename = void> struct has_trait : std::false_type {};
+    template <class T> struct has_trait<T, SFVOID(&T::__trait)> : std::true_type {};
 
 public:
-    // delayed
-    template <class T> static constexpr bool has_inner_trait() noexcept
+    template <class T> struct has_inner_trait
     {
-        return has_static_trait<T>::value and has_trait<T>::value;
-    }
+        static constexpr bool value = has_static_trait<T>::value and has_trait<T>::value; // delay access
+    };
 
 private:
-    template <typename From, typename To, typename = void>
-    struct can_static_cast : std::false_type {};
-
+    template <typename From, typename To, typename = void> struct can_static_cast : std::false_type {};
     template <typename From, typename To>
-    struct can_static_cast<From, To, SFVOID(static_cast<To>(std::declval<From>()))>
-    : std::true_type {};
+    struct can_static_cast<From, To, SFVOID(static_cast<To>(std::declval<From>()))> : std::true_type {};
 
-    template <typename> static std::false_type is_returnable(...);
-    template <typename T> static auto is_returnable(int) noexcept -> decltype
-    (
-        (void) static_cast<T(*)()>(nullptr),
-        std::true_type{}
-    );
+    template <typename From, typename To, typename = void> struct can_cast : std::false_type {};
+    template <typename From, typename To>
+    struct can_cast<From, To, SFVOID(std::declval<void(&)(To)>()(std::declval<From>()))> : std::true_type {};
 
-    template <class, class> static std::false_type try_cast(...);
-    template <class From, class To> static auto try_cast(int) -> decltype
-    (
-        (void) std::declval<void(&)(To)>()(std::declval<From>()),
-        std::true_type{}
-    );
+    template <typename T, typename = void> struct is_returnable : std::false_type {};
+    template <typename T>
+    struct is_returnable<T, SFVOID(static_cast<T(*)()>(nullptr))> : std::true_type {};
+
+public:
+    template <class From, class To> struct is_cast_allowed
+        : sf::meta::one<sf::meta::all<is_returnable<To>, can_cast<From, To>>,
+                        sf::meta::is_same<void, From, To>> {};
+
+    template <class From, class To> struct is_pointer_cast_allowed
+        : sf::meta::one<is_cast_allowed<From*, To*>, sf::meta::is_void<From>> {};
 
 public:
     template <class Base, class Derived> struct is_virtual_base_of
         : sf::meta::all<std::is_base_of<Base, Derived>,
                         sf::meta::can_static_cast<Base*, Derived*>> {};
-
-    template <class From, class To> struct is_cast_allowed
-        : sf::meta::one<sf::meta::all<decltype(is_returnable<To>(0)),
-                                      decltype(try_cast<From, To>(0))>,
-                        sf::meta::is_same<void, From, To>> {};
-
-    template <class From, class To> struct is_pointer_cast_allowed
-        : sf::meta::one<is_cast_allowed<From*, To*>, sf::meta::is_void<From>> {};
 
 public:
     using ArchiveBase = sf::core::ArchiveBase;
@@ -164,7 +153,7 @@ public:
         archive & cast<Base&>(object);
     }
 
-    template <class T, SFREQUIRE(not has_inner_trait<T>())>
+    template <class T, SFREQUIRE(not has_inner_trait<T>::value)>
     static InstantiableTraitBase::key_type trait(T& object) noexcept
     {
     #ifdef SF_EXTERN_RUNTIME_TRAIT
@@ -174,13 +163,13 @@ public:
     #endif // SF_EXTERN_RUNTIME_TRAIT
     }
 
-    template <class T, SFREQUIRE(has_inner_trait<T>())>
+    template <class T, SFREQUIRE(has_inner_trait<T>::value)>
     static InstantiableTraitBase::key_type trait(T& object) noexcept
     {
         return object.__trait();
     }
 
-    template <class T, SFREQUIRE(not has_inner_trait<T>())>
+    template <class T, SFREQUIRE(not has_inner_trait<T>::value)>
     static InstantiableTraitBase::key_type static_trait() noexcept
     {
     #ifdef SF_EXTERN_TRAIT
@@ -190,13 +179,13 @@ public:
     #endif // SF_EXTERN_TRAIT
     }
 
-    template <class T, SFREQUIRE(has_inner_trait<T>())>
+    template <class T, SFREQUIRE(has_inner_trait<T>::value)>
     static constexpr InstantiableTraitBase::key_type static_trait() noexcept
     {
         return T::__static_trait();
     }
 
-    template <class T, SFREQUIRE(not has_inner_trait<T>())>
+    template <class T, SFREQUIRE(not has_inner_trait<T>::value)>
     static InstantiableTraitBase::key_type trait() noexcept
     {
         constexpr auto trait_key = sf::core::InstantiableTraitKey<T>::key;
@@ -207,7 +196,7 @@ public:
         return static_trait<T>();
     }
 
-    template <class T, SFREQUIRE(has_inner_trait<T>())>
+    template <class T, SFREQUIRE(has_inner_trait<T>::value)>
 #ifdef SF_EXPORT_INSTANTIABLE_DISABLE
     static constexpr InstantiableTraitBase::key_type trait() noexcept
 #else
