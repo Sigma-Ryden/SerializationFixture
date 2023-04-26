@@ -31,7 +31,6 @@ set(SF
     include/SF/Dynamic/AnyRegistry.hpp
 
     include/SF/Utility/Span.hpp
-    include/SF/Utility/Ref.hpp
     include/SF/Utility/Functional.hpp
 
     include/SF/DataTrack.hpp
@@ -49,6 +48,7 @@ set(SF
     include/SF/Serializable.hpp
     include/SF/HierarchyTrack.hpp
     include/SF/Aggregate.hpp
+    include/SF/Alias.hpp
 
     include/SF/Core.hpp
 )
@@ -117,6 +117,7 @@ add_executable(${PROJECT_NAME}
     test/TestPolymorphic.cpp
     test/TestTracking.cpp
     test/TestAggregate.cpp
+    test/TestAlias.cpp
 
     test/TestLibrary/BaseObject.hpp
     test/TestLibrary/BaseObject.cpp

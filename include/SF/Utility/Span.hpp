@@ -7,7 +7,7 @@
 
 #include <SF/Core/SerializatonBase.hpp>
 
-#include <SF/Utility/Ref.hpp>
+#include <SF/Alias.hpp>
 #include <SF/ApplyFunctor.hpp>
 
 #include <SF/Detail/Meta.hpp>
@@ -36,7 +36,7 @@ protected:
     using Dimension         = size_type[N];
 
 protected:
-    Ref<pointer> data_;
+    alias<pointer> data_;
     Dimension dim_;
 
 protected:
@@ -47,7 +47,7 @@ protected:
 
 public:
     void init(pointer data) noexcept { data_.get() = data; }
-    void data(Ref<pointer> data) noexcept { data_ = data; }
+    void data(alias<pointer> data) noexcept { data_ = data; }
 
     pointer& data() noexcept { return data_; }
     const_pointer& data() const noexcept { return data_; }
@@ -223,7 +223,7 @@ namespace detail
 template <class Archive, typename T,
           SFREQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::negation<meta::is_span<T>>>::value)>
-void raw_span(Archive& archive, T& data)
+void span_implementation(Archive& archive, T& data)
 {
     archive & data;
 }
@@ -232,18 +232,18 @@ void raw_span(Archive& archive, T& data)
 template <class WriteArchive, typename T,
           SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
                               meta::is_span<T>>::value)>
-void raw_span(WriteArchive& archive, T& array)
+void span_implementation(WriteArchive& archive, T& array)
 {
     using size_type = typename T::size_type;
 
     for (size_type i = 0; i < array.size(); ++i)
-        raw_span(archive, array[i]);
+        span_implementation(archive, array[i]);
 }
 
 template <class ReadArchive, typename T,
           SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
                               meta::is_span<T>>::value)>
-void raw_span(ReadArchive& archive, T& array)
+void span_implementation(ReadArchive& archive, T& array)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
@@ -254,7 +254,7 @@ void raw_span(ReadArchive& archive, T& array)
     array.init(ptr);
 
     for (size_type i = 0; i < array.size(); ++i)
-        raw_span(archive, array[i]);
+        span_implementation(archive, array[i]);
 }
 
 } // namespace detail
@@ -275,7 +275,7 @@ void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
     archive(dimension, dimension_n...);
 
     auto span_data = utility::make_span(pointer, dimension, dimension_n...);
-    detail::raw_span(archive, span_data);
+    detail::span_implementation(archive, span_data);
 }
 
 template <class ReadArchive, typename T,
@@ -290,7 +290,7 @@ void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
     archive(dimension, dimension_n...);
 
     auto span_data = utility::make_span(pointer, dimension, dimension_n...);
-    detail::raw_span(archive, span_data);
+    detail::span_implementation(archive, span_data);
 }
 
 } // inline namespace common
