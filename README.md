@@ -18,7 +18,9 @@ Is a header-only library implemented purely in C++11.
 - All arithmetic types
 - Enum or scoped enum
 - Static or dynamic array
-- Raw & Smart pointers (with data tracking)
+- Data tracking:
+- - Raw & Smart pointer
+- - Reference (as alias)  
 ### Serialization of standard library types:
 - C++11: string, vector, map, and many others
 - C++17: any, optional, variant
