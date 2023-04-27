@@ -12,6 +12,8 @@ The type registrar will allow you to properly serialize and deserialize polymorp
 
 Is a header-only library implemented purely in C++11.
 
+See last stable library version [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/main).
+
 ## Functional:
 
 ### Serialization of common types:
