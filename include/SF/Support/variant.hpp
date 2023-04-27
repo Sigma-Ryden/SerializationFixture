@@ -12,6 +12,9 @@
 
 #include <SF/ExternSerialization.hpp>
 
+// serialization of std::monostate
+#include <SF/Aggregate.hpp>
+
 namespace sf
 {
 
@@ -26,48 +29,45 @@ template <typename... Tn> struct is_std_variant<std::variant<Tn...>> : std::true
 namespace detail
 {
 
-template <typename Type, class Variant,
+template <let::u64 I, class Archive, class Variant,
+          SFREQUIRE(I == std::variant_size<Variant>::value)>
+void variant_save(Archive& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
+
+template <let::u64 I = 0, class Archive, class Variant,
+          SFREQUIRE(I < std::variant_size<Variant>::value)>
+void variant_save(Archive& archive, Variant& variant, let::u64 index)
+{
+    if (I < index) return variant_save<I + 1>(archive, variant, index);
+    archive & std::get<I>(variant);
+}
+
+template <typename Type, class Archive, class Variant,
           SFREQUIRE(not std::is_constructible<Type>::value)>
-void variant_emplace(Variant& variant)
+void variant_load_implementation(Archive& archive, Variant& variant)
 {
     throw "Require default constructor for specify type.";
 }
 
-template <typename Type, class Variant,
+template <typename Type, class Archive, class Variant,
           SFREQUIRE(std::is_constructible<Type>::value)>
-void variant_emplace(Variant& variant)
+void variant_load_implementation(Archive& archive, Variant& variant)
 {
-    variant.template emplace<Type>();
+    archive & variant.template emplace<Type>();
 }
 
-template <let::u64 I, class Variant,
+template <let::u64 I, class Archive, class Variant,
           SFREQUIRE(I == std::variant_size<Variant>::value)>
-void variant_construct(Variant& variant, let::u64 index) noexcept { /*pass*/ }
+void variant_load(Archive& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
 
-template <let::u64 I = 0, class Variant,
+template <let::u64 I = 0, class Archive, class Variant,
           SFREQUIRE(I < std::variant_size<Variant>::value)>
-void variant_construct(Variant& variant, let::u64 index)
+void variant_load(Archive& archive, Variant& variant, let::u64 index)
 {
-    if (I < index) return variant_construct<I + 1>(variant, index);
+    if (I < index) return variant_load<I + 1>(archive, variant, index);
 
     using type = typename std::variant_alternative<I, Variant>::type;
-    variant_emplace<type>(variant);
+    variant_load_implementation<type>(archive, variant);
 }
-
-template <class Archive>
-class SerializationVisitor
-{
-private:
-    Archive& archive_;
-
-public:
-    SerializationVisitor(Archive& archive) : archive_(archive) {}
-
-    void operator()(std::monostate& data) noexcept { /*pass*/ }
-
-    template <typename T>
-    void operator()(T& data) { archive_ & data; }
-};
 
 } // namespace detail
 
@@ -80,7 +80,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, variant, meta::is_std_variant<T>::value)
     archive & index;
 
     if (index != std::variant_npos)
-        std::visit(detail::SerializationVisitor(archive), variant);
+        detail::variant_save(archive, variant, index);
 
     return archive;
 }
@@ -91,10 +91,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, variant, meta::is_std_variant<T>::value)
     archive & index;
 
     if (index != std::variant_npos)
-    {
-        detail::variant_construct(variant, index);
-        std::visit(detail::SerializationVisitor(archive), variant);
-    }
+        detail::variant_load(archive, variant, index);
 
     return archive;
 }
