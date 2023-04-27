@@ -15,6 +15,7 @@
 
 #include <SF/Common.hpp>
 #include <SF/Aggregate.hpp>
+#include <SF/Alias.hpp>
 
 #include <SF/ApplyFunctor.hpp>
 #include <SF/Hierarchy.hpp>

@@ -1,7 +1,5 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Alias.hpp>
-
 TEST_MODULE()
 {
 
