@@ -15,7 +15,7 @@ TEST(TestSTL, TestArray)
         ar & a;
     }
     {
-        std::array<char, s_a_size> a = s_a;
+        std::array<char, s_a_size> a;
 
         auto ar = iarchive(storage);
         ar & a;
