@@ -43,6 +43,6 @@ template <typename T> struct is_registered_extern
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_unsupported<T>())
+CONDITIONAL_TYPE_REGISTRY(meta::is_unsupported<T>::value)
 
 #endif // SF_CORE_TYPE_REGISTRY_HPP
