@@ -1,3 +1,6 @@
+#ifndef SERIALIZATION_FIXTURE_HPP
+#define SERIALIZATION_FIXTURE_HPP
+
 namespace sf
 {
 
@@ -442,7 +445,7 @@ template <typename T> struct is_registered_extern
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_unsupported<T>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::is_unsupported<T>())
 
 namespace sf
 {
@@ -4434,3 +4437,5 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, any, meta::is_std_any<T>::value)
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_any<T>::value)
 
 #endif // if
+
+#endif // SERIALIZATION_FIXTURE_HPP
