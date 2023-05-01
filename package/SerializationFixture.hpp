@@ -3591,8 +3591,10 @@ template <class WriteArchive, typename T,
                               meta::is_span_set<T, D, Dn...>>::value)>
 void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
-    if (pointer == nullptr)
-        throw "The write span data must be allocated.";
+#ifndef SF_NULLPTR_DISABLE
+    const auto success = detail::is_refer(archive, pointer); // serialize refer info
+    if (not success) return;
+#endif // SF_NULLPTR_DISABLE
 
     archive(dimension, dimension_n...);
 
@@ -3606,8 +3608,10 @@ template <class ReadArchive, typename T,
                               meta::is_span_set<T, D, Dn...>>::value)>
 void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
-    if (pointer != nullptr)
-        throw "The read span data must be initialized to nullptr.";
+#ifndef SF_NULLPTR_DISABLE
+    const auto success = detail::is_refer(archive, pointer); // serialize refer info
+    if (not success) return;
+#endif // SF_NULLPTR_DISABLE
 
     archive(dimension, dimension_n...);
 
