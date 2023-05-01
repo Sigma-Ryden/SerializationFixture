@@ -14,6 +14,7 @@ TEST(TestSTLAdapter, TestStack)
     std::vector<unsigned char> storage;
     {
         std::stack<char16_t> s = s_s;
+
         auto ar = oarchive(storage);
         ar & s;
     }
