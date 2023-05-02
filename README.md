@@ -35,7 +35,7 @@ See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/ma
 - Aggregate (since C++17)
 - Common/Template
 - Hierarchy
-- Polymorphic
+- Polymorphic/Abstract
 - Virtual Inheritance
 
 ## Auto Tests:
