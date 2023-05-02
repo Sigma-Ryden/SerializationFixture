@@ -1116,14 +1116,16 @@ public:
 public:
     template <typename To, typename From = To, typename TraitType,
               SFREQUIRE(meta::all<meta::is_memory<TraitType>,
-                                  meta::negation<is_pointer_cast_allowed<From, To>>>::value)>
+                                  meta::one<meta::negation<is_pointer_cast_allowed<From, To>>,
+                                            std::is_abstract<From>>>::value)>
     static std::nullptr_t allocate()
     {
         return nullptr;
     }
 
     template <typename To, typename From = To, typename TraitType,
-              SFREQUIRE(meta::all<meta::is_memory_shared<TraitType>,
+              SFREQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
+                                  meta::is_memory_shared<TraitType>,
                                   is_pointer_cast_allowed<From, To>>::value)>
     static shared_ptr<To> allocate()
     {
@@ -1132,7 +1134,8 @@ public:
     }
 
     template <typename To, typename From = To, typename TraitType,
-              SFREQUIRE(meta::all<meta::is_memory_raw<TraitType>,
+              SFREQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
+                                  meta::is_memory_raw<TraitType>,
                                   is_pointer_cast_allowed<From, To>>::value)>
     static raw_ptr<To> allocate()
     {

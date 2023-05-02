@@ -649,3 +649,47 @@ TEST(TestLibrary, TestAggregateOverload)
 }
 
 #endif // if
+
+#include <SF/Support/unique_ptr.hpp>
+
+TEST_MODULE()
+{
+
+struct Interface : sf::Instantiable
+{
+    SERIALIZABLE(Interface)
+
+    virtual void logic() = 0;
+};
+
+struct Implementation : Interface
+{
+    SERIALIZABLE(Implementation)
+
+    virtual void logic() override { /*some logic...*/ }
+};
+
+} // TEST_MODULE
+
+SERIALIZATION(SaveLoad, Interface) {}
+SERIALIZATION(SaveLoad, Implementation) {}
+
+TEST(TestLibrary, TestAbstract)
+{
+    std::vector<unsigned char> storage;
+    {
+        std::unique_ptr<Interface> i(new Implementation);
+
+        auto ar = oarchive(storage);
+        ar & i;
+    }
+    {
+        std::unique_ptr<Interface> i;
+
+        auto ar = iarchive(storage);
+        ar & i;
+
+        ASSERT("inited", i != nullptr);
+        EXPECT("trait", ::Serialization::trait(*i) == ::Serialization::trait<Implementation>());
+    }
+}
