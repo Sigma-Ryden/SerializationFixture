@@ -690,6 +690,6 @@ TEST(TestLibrary, TestAbstract)
         ar & i;
 
         ASSERT("inited", i != nullptr);
-        EXPECT("trait", ::Serialization::trait(*i) == ::Serialization::trait<Implementation>());
+        EXPECT("trait", Serialization::trait(*i) == Serialization::trait<Implementation>());
     }
 }
