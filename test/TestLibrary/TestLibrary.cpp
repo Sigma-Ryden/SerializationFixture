@@ -674,6 +674,9 @@ struct Implementation : Interface
 SERIALIZATION(SaveLoad, Interface) {}
 SERIALIZATION(SaveLoad, Implementation) {}
 
+// or general solution
+// CONDITIONAL_SERIALIZATION(SaveLoad, std::is_base_of<Interface, T>::value) {}
+
 TEST(TestLibrary, TestAbstract)
 {
     std::vector<unsigned char> storage;
