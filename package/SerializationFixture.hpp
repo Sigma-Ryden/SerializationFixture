@@ -1720,8 +1720,10 @@ public:
               SFREQUIRE(meta::is_pointer_to_polymorphic<Pointer>::value)>
     static key_type load_key(Archive& archive, Pointer& pointer)
     {
+    #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
 
         key_type key{};
         archive & key;
@@ -1751,8 +1753,10 @@ public:
         using TraitType = typename Memory::ptr_trait<T>::trait;
         using dT = meta::dereference<T>;
 
+    #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
 
         auto& registry = InstantiableRegistry::instance();
 
@@ -1770,8 +1774,10 @@ public:
     {
         using dT = meta::dereference<T>;
 
+    #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
 
         auto casted = InstantiableRegistry::instance().cast(address, key);
         pointer = Memory::dynamic_pointer_cast<dT>(casted);
@@ -2360,8 +2366,10 @@ void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     using item_type = typename Memory::ptr_trait<T>::item;
 
+#ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
+#endif // SF_GARBAGE_CHECK_DISABLE
 
     Memory::allocate<item_type>(pointer);
     cache = Memory::pure(pointer);
@@ -2542,8 +2550,10 @@ void track(ReadArchive& archive, T& pointer)
     using key_type   = typename ReadArchive::TrackingKeyType;
     using track_type = typename tracking::track_trait<T>::type;
 
+#ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
         throw "The read track pointer must be initialized to nullptr.";
+#endif // SF_GARBAGE_CHECK_DISABLE
 
 #ifndef SF_NULLPTR_DISABLE
     const auto success = detail::is_refer(archive, pointer); // serialize refer info
@@ -3125,8 +3135,10 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
 
     using track_type = tracking::Raw;
 
+#ifndef SF_GARBAGE_CHECK_DISABLE
     if (not alias.is_refer())
         throw "The read alias must be null.";
+#endif // SF_GARBAGE_CHECK_DISABLE
 
     key_type key;
     archive & key;
