@@ -251,7 +251,7 @@ void span_implementation(ReadArchive& archive, T& array)
 
     using pointer          = typename T::pointer;
 
-    pointer ptr = new dereference_type [array.size()];
+    pointer ptr = new dereference_type [array.size()] {};
     array.init(ptr);
 
     for (size_type i = 0; i < array.size(); ++i)
