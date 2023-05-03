@@ -1139,7 +1139,7 @@ public:
                                   is_pointer_cast_allowed<From, To>>::value)>
     static raw_ptr<To> allocate()
     {
-        auto instance = new From;
+        auto instance = new From{};
         return static_pointer_cast<To>(instance);
     }
 
@@ -3587,7 +3587,7 @@ void span_implementation(ReadArchive& archive, T& array)
 
     using pointer          = typename T::pointer;
 
-    pointer ptr = new dereference_type [array.size()];
+    pointer ptr = new dereference_type [array.size()] {};
     array.init(ptr);
 
     for (size_type i = 0; i < array.size(); ++i)
