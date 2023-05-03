@@ -102,8 +102,10 @@ void track(ReadArchive& archive, T& pointer)
     using key_type   = typename ReadArchive::TrackingKeyType;
     using track_type = typename tracking::track_trait<T>::type;
 
+#ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
         throw "The read track pointer must be initialized to nullptr.";
+#endif // SF_GARBAGE_CHECK_DISABLE
 
 #ifndef SF_NULLPTR_DISABLE
     const auto success = detail::is_refer(archive, pointer); // serialize refer info

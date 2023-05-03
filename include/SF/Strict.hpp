@@ -31,8 +31,10 @@ void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     using item_type = typename Memory::ptr_trait<T>::item;
 
+#ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
+#endif // SF_GARBAGE_CHECK_DISABLE
 
     Memory::allocate<item_type>(pointer);
     cache = Memory::pure(pointer);

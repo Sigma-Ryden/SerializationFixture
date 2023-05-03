@@ -40,8 +40,10 @@ public:
               SFREQUIRE(meta::is_pointer_to_polymorphic<Pointer>::value)>
     static key_type load_key(Archive& archive, Pointer& pointer)
     {
+    #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
 
         key_type key{};
         archive & key;
@@ -71,8 +73,10 @@ public:
         using TraitType = typename Memory::ptr_trait<T>::trait;
         using dT = meta::dereference<T>;
 
+    #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
 
         auto& registry = InstantiableRegistry::instance();
 
@@ -90,8 +94,10 @@ public:
     {
         using dT = meta::dereference<T>;
 
+    #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
 
         auto casted = InstantiableRegistry::instance().cast(address, key);
         pointer = Memory::dynamic_pointer_cast<dT>(casted);

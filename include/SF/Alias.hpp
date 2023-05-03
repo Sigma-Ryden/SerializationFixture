@@ -92,8 +92,10 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
 
     using track_type = tracking::Raw;
 
+#ifndef SF_GARBAGE_CHECK_DISABLE
     if (not alias.is_refer())
         throw "The read alias must be null.";
+#endif // SF_GARBAGE_CHECK_DISABLE
 
     key_type key;
     archive & key;
