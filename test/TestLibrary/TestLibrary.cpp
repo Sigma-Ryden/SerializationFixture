@@ -262,7 +262,8 @@ TEST(TestLibrary, TestStreamWrapper)
         // or 'sf::memory::const_byte_cast' function
         file.write(storage.data(), storage.size());
 
-        file.close();
+        // will close in destructor
+        // file.close();
     }
     {
         std::string s;
