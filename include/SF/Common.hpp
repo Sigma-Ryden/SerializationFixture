@@ -49,7 +49,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, enumerator, std::is_enum<T>::value)
 {
     using underlying_type = typename std::underlying_type<T>::type;
 
-    underlying_type buff = 0;
+    underlying_type buff{};
     archive & buff;
 
     enumerator = static_cast<T>(buff);
