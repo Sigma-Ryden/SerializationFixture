@@ -20,7 +20,7 @@ struct PairHash
     template <typename T1, typename T2>
     let::u64 operator() (const std::pair<T1, T2>& pair) const noexcept
     {
-        let::u64 seed = 0;
+        let::u64 seed{};
 
         detail::hash_combine(seed, pair.first);
         detail::hash_combine(seed, pair.second);
