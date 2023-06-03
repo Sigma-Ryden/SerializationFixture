@@ -50,8 +50,8 @@ template <typename CharType,
           SFREQUIRE(meta::is_character<CharType>::value)>
 std::size_t size(const CharType* str) noexcept
 {
-    std::size_t count = 0;
-    while (*str++ != CharType(0)) ++count;
+    std::size_t count{};
+    while (*str++ != CharType{}) ++count;
 
     return count;
 }
