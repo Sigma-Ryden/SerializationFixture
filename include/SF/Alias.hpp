@@ -97,7 +97,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
         throw "The read alias must be null.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-    key_type key;
+    key_type key{};
     archive & key;
 
     auto& item = archive.template tracking<tracking::Raw>()[key];
