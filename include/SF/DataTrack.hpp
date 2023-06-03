@@ -112,7 +112,7 @@ void track(ReadArchive& archive, T& pointer)
     if (not success) return;
 #endif // SF_NULLPTR_DISABLE
 
-    key_type key;
+    key_type key{};
     archive & key;
 
     auto& item = archive.template tracking<track_type>()[key];
@@ -135,7 +135,7 @@ void track(ReadArchive& archive, T& data)
 {
     using key_type = typename ReadArchive::TrackingKeyType;
 
-    key_type key;
+    key_type key{};
     archive & key;
 
     auto& item = archive.template tracking<tracking::Raw>()[key];
