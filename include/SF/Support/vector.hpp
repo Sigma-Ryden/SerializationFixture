@@ -77,7 +77,7 @@ EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
 
 EXTERN_SERIALIZATION(Load, vector, std::vector<bool>)
 {
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     vector.resize(size);
