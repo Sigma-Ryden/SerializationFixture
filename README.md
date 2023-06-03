@@ -76,7 +76,9 @@ struct Handbook
 {
     std::map<int, std::shared_ptr<Prototype>> prototypes;
 };
-
+```
+Lets write serialization functions (since C++17 we can ommit it, for aggregate types).
+```C++
 SERIALIZATION(SaveLoad, Prototype)
 {
     archive & self.name & self.properties;
