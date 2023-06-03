@@ -1852,7 +1852,7 @@ struct PairHash
     template <typename T1, typename T2>
     let::u64 operator() (const std::pair<T1, T2>& pair) const noexcept
     {
-        let::u64 seed = 0;
+        let::u64 seed{};
 
         detail::hash_combine(seed, pair.first);
         detail::hash_combine(seed, pair.second);
@@ -2560,7 +2560,7 @@ void track(ReadArchive& archive, T& pointer)
     if (not success) return;
 #endif // SF_NULLPTR_DISABLE
 
-    key_type key;
+    key_type key{};
     archive & key;
 
     auto& item = archive.template tracking<track_type>()[key];
@@ -2583,7 +2583,7 @@ void track(ReadArchive& archive, T& data)
 {
     using key_type = typename ReadArchive::TrackingKeyType;
 
-    key_type key;
+    key_type key{};
     archive & key;
 
     auto& item = archive.template tracking<tracking::Raw>()[key];
@@ -2689,7 +2689,7 @@ template <typename CharType,
           SFREQUIRE(meta::is_character<CharType>::value)>
 std::size_t size(const CharType* str) noexcept
 {
-    std::size_t count = 0;
+    std::size_t count{};
     while (*str++ != CharType(0)) ++count;
 
     return count;
@@ -2784,7 +2784,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, enumerator, std::is_enum<T>::value)
 {
     using underlying_type = typename std::underlying_type<T>::type;
 
-    underlying_type buff = 0;
+    underlying_type buff{};
     archive & buff;
 
     enumerator = static_cast<T>(buff);
@@ -3140,7 +3140,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
         throw "The read alias must be null.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-    key_type key;
+    key_type key{};
     archive & key;
 
     auto& item = archive.template tracking<tracking::Raw>()[key];
@@ -3745,7 +3745,7 @@ EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
 
 EXTERN_SERIALIZATION(Load, vector, std::vector<bool>)
 {
-    let::u64 size;
+    let::u64 size{};
     archive & size;
 
     vector.resize(size);
