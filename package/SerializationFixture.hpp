@@ -1643,7 +1643,7 @@ public:
 
 #ifdef SF_REGISTRY_ACCESS
 private:
-#endif // #ifdef SF_REGISTRY_ACCESS
+#endif // SF_REGISTRY_ACCESS
     const AnyProxy& registry(let::u64 hash)
     {
         // It happens if the type not registered with fixture object.
@@ -2690,7 +2690,7 @@ template <typename CharType,
 std::size_t size(const CharType* str) noexcept
 {
     std::size_t count{};
-    while (*str++ != CharType(0)) ++count;
+    while (*str++ != CharType{}) ++count;
 
     return count;
 }
