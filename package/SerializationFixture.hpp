@@ -843,7 +843,7 @@ public:
 public:
     template <class Base, class Derived> struct is_virtual_base_of
         : sf::meta::all<std::is_base_of<Base, Derived>,
-                        sf::meta::can_static_cast<Base*, Derived*>> {};
+                        sf::meta::negation<sf::meta::can_static_cast<Base*, Derived*>>> {};
 
 public:
     using ArchiveBase = sf::core::ArchiveBase;
@@ -3205,14 +3205,14 @@ namespace detail
 {
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(::Serialization::is_virtual_base_of<Base, Derived>::value)>
+          SFREQUIRE(not ::Serialization::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_base)
 {
     base<Base>(archive, object_with_base);
 }
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(not ::Serialization::is_virtual_base_of<Base, Derived>::value)>
+          SFREQUIRE(::Serialization::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_virtual_base)
 {
     virtual_base<Base>(archive, object_with_virtual_base);
