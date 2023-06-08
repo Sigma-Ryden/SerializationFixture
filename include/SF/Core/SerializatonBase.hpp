@@ -9,7 +9,7 @@ namespace sf
 namespace core
 {
 
-struct ArchiveBase;
+class ArchiveBase;
 
 struct ReadArchiveType {};
 struct WriteArchiveType {};

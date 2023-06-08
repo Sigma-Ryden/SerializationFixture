@@ -40,8 +40,8 @@ template <typename T> struct WordTrait { static constexpr auto value = Word::x64
 template <> struct WordTrait<let::u32> { static constexpr auto value = Word::x32; };
 template <> struct WordTrait<let::u64> { static constexpr auto value = Word::x64; };
 
-template <let::u64 FnvPrime, let::u64 OffsetBasis>
-let::u64 fnv_1a(const char* text)
+template <typename HashType, HashType FnvPrime, HashType OffsetBasis>
+HashType fnv_1a(const char* text)
 {
     auto hash = OffsetBasis;
     while (*text != '\0')
@@ -55,12 +55,12 @@ let::u64 fnv_1a(const char* text)
     return hash;
 }
 
-template <let::u64 FnvPrime, let::u64 OffsetBasis>
-constexpr let::u64 static_fnv_1a(const char* text, let::u64 hash = OffsetBasis) noexcept
+template <typename HashType, HashType FnvPrime, HashType OffsetBasis>
+constexpr HashType static_fnv_1a(const char* text, HashType hash = OffsetBasis) noexcept
 {
     return (*text == '\0')
            ? hash
-           : static_fnv_1a<FnvPrime, OffsetBasis>(text + 1, (hash ^ (*text)) * FnvPrime);
+           : static_fnv_1a<HashType, FnvPrime, OffsetBasis>(text + 1, (hash ^ (*text)) * FnvPrime);
 }
 
 template <detail::Word word>
@@ -77,12 +77,12 @@ private:
 public:
     static let::u32 run(const char* text)
     {
-        return detail::fnv_1a<fnv_prime, fnv_offset_basis>(text);
+        return detail::fnv_1a<let::u32, fnv_prime, fnv_offset_basis>(text);
     }
 
     static constexpr let::u32 static_run(const char* text) noexcept
     {
-        return detail::static_fnv_1a<fnv_prime, fnv_offset_basis>(text);
+        return detail::static_fnv_1a<let::u32, fnv_prime, fnv_offset_basis>(text);
     }
 };
 
@@ -97,12 +97,12 @@ private:
 public:
     static let::u64 run(const char* text)
     {
-        return detail::fnv_1a<fnv_prime, fnv_offset_basis>(text);
+        return detail::fnv_1a<let::u64, fnv_prime, fnv_offset_basis>(text);
     }
 
     static constexpr let::u64 static_run(const char* text) noexcept
     {
-        return detail::static_fnv_1a<fnv_prime, fnv_offset_basis>(text);
+        return detail::static_fnv_1a<let::u64, fnv_prime, fnv_offset_basis>(text);
     }
 };
 
@@ -126,7 +126,7 @@ constexpr key_type static_hash(const char* text) noexcept
     return Hash<detail::WordTrait<key_type>::value>::static_run(text);
 }
 
-inline let::u64 type_hash(const std::type_info& type) noexcept
+inline std::size_t type_hash(const std::type_info& type) noexcept
 {
     // not portable implementation - will be changed
     return type.hash_code();
@@ -135,10 +135,11 @@ inline let::u64 type_hash(const std::type_info& type) noexcept
 namespace detail
 {
 
-template <typename T>
-inline void hash_combine(let::u64& seed, const T& object) noexcept
+template <typename HashType, typename T>
+inline void hash_combine(HashType& seed, const T& object) noexcept
 {
-    seed ^= std::hash<T>{}(object) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    auto hash = std::hash<T>{}(object) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= static_cast<HashType>(hash);
 }
 
 } // namespace detail

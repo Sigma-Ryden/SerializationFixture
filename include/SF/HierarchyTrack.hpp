@@ -15,12 +15,13 @@ namespace sf
 namespace detail
 {
 
+template <typename HashType = let::u64>
 struct PairHash
 {
     template <typename T1, typename T2>
-    let::u64 operator() (const std::pair<T1, T2>& pair) const noexcept
+    HashType operator() (const std::pair<T1, T2>& pair) const noexcept
     {
-        let::u64 seed{};
+        HashType seed{};
 
         detail::hash_combine(seed, pair.first);
         detail::hash_combine(seed, pair.second);
@@ -37,7 +38,7 @@ namespace tracking
 struct Hierarchy {};
 
 template <typename KeyType, typename TraitType = core::InstantiableTraitBase::key_type>
-using HierarchyTrack = std::unordered_map<std::pair<KeyType, TraitType>, bool, detail::PairHash>;
+using HierarchyTrack = std::unordered_map<std::pair<KeyType, TraitType>, bool, detail::PairHash<TraitType>>;
 
 } // namespace tracking
 

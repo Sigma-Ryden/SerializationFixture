@@ -11,8 +11,8 @@
 // Test definition
 
 // Allow to hide owner classes within different translation units
-#define TEST_MODULE(test_module)                                                                        \
-    namespace test_module
+#define TEST_MODULE(...)                                                                                \
+    namespace __VA_ARGS__
 
 #define TEST(test_module, test_name)                                                                    \
     TEST_MODULE(test_module) {                                                                          \

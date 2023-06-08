@@ -116,8 +116,8 @@ template <typename T, typename... Tn>
 auto WriteArchive<OutStream, StreamWrapper, Registry>::operator() (
     T& data, Tn&... data_n) -> WriteArchive&
 {
-    (*this) & data;
-    return (*this)(data_n...);
+    operator<<(data);
+    return operator()(data_n...);
 }
 
 template <class Archive, typename T,

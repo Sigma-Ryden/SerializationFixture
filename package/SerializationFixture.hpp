@@ -453,7 +453,7 @@ namespace sf
 namespace core
 {
 
-struct ArchiveBase;
+class ArchiveBase;
 
 struct ReadArchiveType {};
 struct WriteArchiveType {};
@@ -589,8 +589,8 @@ template <typename T> struct WordTrait { static constexpr auto value = Word::x64
 template <> struct WordTrait<let::u32> { static constexpr auto value = Word::x32; };
 template <> struct WordTrait<let::u64> { static constexpr auto value = Word::x64; };
 
-template <let::u64 FnvPrime, let::u64 OffsetBasis>
-let::u64 fnv_1a(const char* text)
+template <typename HashType, HashType FnvPrime, HashType OffsetBasis>
+HashType fnv_1a(const char* text)
 {
     auto hash = OffsetBasis;
     while (*text != '\0')
@@ -604,12 +604,12 @@ let::u64 fnv_1a(const char* text)
     return hash;
 }
 
-template <let::u64 FnvPrime, let::u64 OffsetBasis>
-constexpr let::u64 static_fnv_1a(const char* text, let::u64 hash = OffsetBasis) noexcept
+template <typename HashType, HashType FnvPrime, HashType OffsetBasis>
+constexpr HashType static_fnv_1a(const char* text, HashType hash = OffsetBasis) noexcept
 {
     return (*text == '\0')
            ? hash
-           : static_fnv_1a<FnvPrime, OffsetBasis>(text + 1, (hash ^ (*text)) * FnvPrime);
+           : static_fnv_1a<HashType, FnvPrime, OffsetBasis>(text + 1, (hash ^ (*text)) * FnvPrime);
 }
 
 template <detail::Word word>
@@ -626,12 +626,12 @@ private:
 public:
     static let::u32 run(const char* text)
     {
-        return detail::fnv_1a<fnv_prime, fnv_offset_basis>(text);
+        return detail::fnv_1a<let::u32, fnv_prime, fnv_offset_basis>(text);
     }
 
     static constexpr let::u32 static_run(const char* text) noexcept
     {
-        return detail::static_fnv_1a<fnv_prime, fnv_offset_basis>(text);
+        return detail::static_fnv_1a<let::u32, fnv_prime, fnv_offset_basis>(text);
     }
 };
 
@@ -646,12 +646,12 @@ private:
 public:
     static let::u64 run(const char* text)
     {
-        return detail::fnv_1a<fnv_prime, fnv_offset_basis>(text);
+        return detail::fnv_1a<let::u64, fnv_prime, fnv_offset_basis>(text);
     }
 
     static constexpr let::u64 static_run(const char* text) noexcept
     {
-        return detail::static_fnv_1a<fnv_prime, fnv_offset_basis>(text);
+        return detail::static_fnv_1a<let::u64, fnv_prime, fnv_offset_basis>(text);
     }
 };
 
@@ -675,7 +675,7 @@ constexpr key_type static_hash(const char* text) noexcept
     return Hash<detail::WordTrait<key_type>::value>::static_run(text);
 }
 
-inline let::u64 type_hash(const std::type_info& type) noexcept
+inline std::size_t type_hash(const std::type_info& type) noexcept
 {
     // not portable implementation - will be changed
     return type.hash_code();
@@ -684,10 +684,11 @@ inline let::u64 type_hash(const std::type_info& type) noexcept
 namespace detail
 {
 
-template <typename T>
-inline void hash_combine(let::u64& seed, const T& object) noexcept
+template <typename HashType, typename T>
+inline void hash_combine(HashType& seed, const T& object) noexcept
 {
-    seed ^= std::hash<T>{}(object) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    auto hash = std::hash<T>{}(object) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= static_cast<HashType>(hash);
 }
 
 } // namespace detail
@@ -890,7 +891,7 @@ public:
     static InstantiableTraitBase::key_type static_trait() noexcept
     {
     #ifdef SF_EXTERN_TRAIT
-        return SF_EXTERN_TRAIT(T);
+        ayto trait = SF_EXTERN_TRAIT(T);
     #else
         return SF_TYPE_HASH(typeid(T));
     #endif // SF_EXTERN_TRAIT
@@ -1847,12 +1848,13 @@ namespace sf
 namespace detail
 {
 
+template <typename HashType = let::u64>
 struct PairHash
 {
     template <typename T1, typename T2>
-    let::u64 operator() (const std::pair<T1, T2>& pair) const noexcept
+    HashType operator() (const std::pair<T1, T2>& pair) const noexcept
     {
-        let::u64 seed{};
+        HashType seed{};
 
         detail::hash_combine(seed, pair.first);
         detail::hash_combine(seed, pair.second);
@@ -1869,7 +1871,7 @@ namespace tracking
 struct Hierarchy {};
 
 template <typename KeyType, typename TraitType = core::InstantiableTraitBase::key_type>
-using HierarchyTrack = std::unordered_map<std::pair<KeyType, TraitType>, bool, detail::PairHash>;
+using HierarchyTrack = std::unordered_map<std::pair<KeyType, TraitType>, bool, detail::PairHash<TraitType>>;
 
 } // namespace tracking
 
@@ -2084,8 +2086,8 @@ template <typename T, typename... Tn>
 auto WriteArchive<OutStream, StreamWrapper, Registry>::operator() (
     T& data, Tn&... data_n) -> WriteArchive&
 {
-    (*this) & data;
-    return (*this)(data_n...);
+    operator<<(data);
+    return operator()(data_n...);
 }
 
 template <class Archive, typename T,
@@ -2218,8 +2220,8 @@ template <typename T, typename... Tn>
 auto ReadArchive<InStream, StreamWrapper, Registry>::operator() (
     T& data, Tn&... data_n) -> ReadArchive&
 {
-    (*this) & data;
-    return (*this)(data_n...);
+    operator>>(data);
+    return operator()(data_n...);
 }
 
 template <class Archive, typename T,
