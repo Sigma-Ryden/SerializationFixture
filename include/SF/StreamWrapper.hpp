@@ -31,7 +31,7 @@ public:
     OutStream& storage;
 
 public:
-    OByteStream(OutStream& stream) : storage(stream)
+    OByteStream(OutStream& stream) noexcept : storage(stream)
     {
         storage.reserve(SF_BYTE_STREAM_RESERVE_SIZE); // default reserve memory
     }
@@ -61,7 +61,7 @@ public:
     InStream& storage;
     std::size_t offset;
 
-    IByteStream(InStream& stream) : storage(stream), offset() {}
+    IByteStream(InStream& stream) noexcept : storage(stream), offset() {}
 
     template <typename T>
     void call(T* data, std::size_t size)
@@ -82,7 +82,7 @@ public:
     OutStream& file;
 
 public:
-    OFileStream(OutStream& stream) : file(stream) {}
+    OFileStream(OutStream& stream) noexcept : file(stream) {}
 
     template <typename T>
     void call(const T* data, std::size_t memory_size)
@@ -98,7 +98,7 @@ public:
     InStream& file;
 
 public:
-    IFileStream(InStream& stream) : file(stream) {}
+    IFileStream(InStream& stream) noexcept : file(stream) {}
 
     template <typename T>
     void call(T* data, std::size_t memory_size)

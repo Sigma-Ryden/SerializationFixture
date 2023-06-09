@@ -203,7 +203,7 @@ public:
 
     template <typename dT = T,
               SFREQUIRE(not InstantiableRegistry::is_instantiable<dT>::value)>
-    static void call() { /*pass*/ }
+    static void call() noexcept { /*pass*/ }
 };
 
 template <class T>

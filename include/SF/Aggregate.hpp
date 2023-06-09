@@ -35,7 +35,7 @@ namespace detail
 {
 
 template <class Archive, typename T>
-void aggregate_implementation(Archive& archive, T& object, meta::dispatch<0>) { /*pass*/ }
+void aggregate_implementation(Archive& archive, T& object, meta::dispatch<0>) noexcept { /*pass*/ }
 
 SFREPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
@@ -71,12 +71,12 @@ struct AggregateFunctor : ApplyFunctor
     AggregateFunctor(T& object) noexcept : object(object) {}
 
     template <class Archive>
-    void operator() (Archive& archive) { aggregate(archive, object); }
+    void operator() (Archive& archive) const { aggregate(archive, object); }
 };
 
 } // namespace apply
 
-template <typename T> apply::AggregateFunctor<T> aggregate(T& object) { return { object }; }
+template <typename T> apply::AggregateFunctor<T> aggregate(T& object) noexcept { return { object }; }
 
 } // namespace sf
 

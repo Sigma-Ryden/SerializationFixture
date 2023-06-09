@@ -92,91 +92,91 @@ private:
         : ::Serialization::is_pointer_cast_allowed<From, To> {};
 
 public:
-    template <typename To, typename Pointer,
-              SFREQUIRE(meta::is_shared_pointer<Pointer>::value)>
-    static shared_ptr<To> dynamic_pointer_cast(const Pointer& pointer)
+    template <typename To, typename T,
+              SFREQUIRE(meta::is_shared_pointer<T>::value)>
+    static shared_ptr<To> dynamic_pointer_cast(const T& pointer)
     {
         auto address = dynamic_pointer_cast<To>(pointer.get());
         return address == nullptr ? shared_ptr<To>() : shared_ptr<To>(pointer, address);
     }
 
-    template <typename To, typename Pointer,
-              SFREQUIRE(meta::is_raw_pointer<Pointer>::value)>
-    static raw_ptr<To> dynamic_pointer_cast(const Pointer& pointer)
+    template <typename To, typename T,
+              SFREQUIRE(meta::is_raw_pointer<T>::value)>
+    static raw_ptr<To> dynamic_pointer_cast(const T& pointer)
     {
         return dynamic_cast<raw_ptr<To>>(pointer);
     }
 
-    template <typename To, typename Pointer,
-              typename Trait = ptr_trait<Pointer>,
-              SFREQUIRE(meta::one<meta::is_null_pointer<Pointer>,
-                                  meta::all<meta::is_pointer<Pointer>,
+    template <typename To, typename T,
+              typename Trait = ptr_trait<T>,
+              SFREQUIRE(meta::one<meta::is_null_pointer<T>,
+                                  meta::all<meta::is_pointer<T>,
                                             meta::negation<is_pointer_cast_allowed<typename Trait::item, To>>>>::value)>
-    static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
+    static typename Trait::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
     {
         return nullptr;
     }
 
-    template <typename To, typename Pointer,
-              SFREQUIRE(meta::all<meta::is_shared_pointer<Pointer>,
-                                  is_pointer_cast_allowed<typename ptr_trait<Pointer>::item, To>>::value)>
-    static shared_ptr<To> static_pointer_cast(const Pointer& pointer)
+    template <typename To, typename T,
+              SFREQUIRE(meta::all<meta::is_shared_pointer<T>,
+                                  is_pointer_cast_allowed<typename ptr_trait<T>::item, To>>::value)>
+    static shared_ptr<To> static_pointer_cast(const T& pointer) noexcept
     {
         auto address = static_pointer_cast<To>(pointer.get());
         return shared_ptr<To>(pointer, address);
     }
 
-    template <typename To, typename Pointer,
-              SFREQUIRE(meta::all<meta::is_raw_pointer<Pointer>,
-                                  is_pointer_cast_allowed<typename ptr_trait<Pointer>::item, To>>::value)>
-    static raw_ptr<To> static_pointer_cast(const Pointer& pointer)
+    template <typename To, typename T,
+              SFREQUIRE(meta::all<meta::is_raw_pointer<T>,
+                                  is_pointer_cast_allowed<typename ptr_trait<T>::item, To>>::value)>
+    static raw_ptr<To> static_pointer_cast(const T& pointer) noexcept
     {
         return static_cast<raw_ptr<To>>(pointer);
     }
 
-    template <typename To, typename From, typename Pointer,
-              typename Trait = ptr_trait<Pointer>,
-              SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
+    template <typename To, typename From, typename T,
+              typename Trait = ptr_trait<T>,
+              SFREQUIRE(meta::all<meta::is_pointer<T>,
                                   meta::negation<is_pointer_cast_allowed<From, To>>>::value)>
-    static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
+    static typename Trait::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
     {
         return nullptr;
     }
 
-    template <typename To, typename From, typename Pointer,
-              typename Trait = ptr_trait<Pointer>,
-              SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
+    template <typename To, typename From, typename T,
+              typename Trait = ptr_trait<T>,
+              SFREQUIRE(meta::all<meta::is_pointer<T>,
                                   is_pointer_cast_allowed<typename Trait::item, From>,
                                   is_pointer_cast_allowed<From, To>>::value)>
-    static typename Trait::template wrapper<To> static_pointer_cast(const Pointer& pointer)
+    static typename Trait::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
     {
         return static_pointer_cast<To>(static_pointer_cast<From>(pointer));
     }
 
 public:
-    template <typename Pointer,
-              SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
-                                  meta::negation<meta::is_pointer_to_polymorphic<Pointer>>>::value)>
-    static void_ptr<Pointer> pure(const Pointer& pointer)
+    template <typename T,
+              SFREQUIRE(meta::all<meta::is_pointer<T>,
+                                  meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
+    static void_ptr<T> pure(const T& pointer) noexcept
     {
         return static_pointer_cast<void>(pointer);
     }
 
-    template <typename Pointer,
-              SFREQUIRE(meta::all<meta::is_pointer<Pointer>,
-                                  meta::is_pointer_to_polymorphic<Pointer>>::value)>
-    static void_ptr<Pointer> pure(const Pointer& pointer_to_polymorphic)
+    template <typename T,
+              SFREQUIRE(meta::all<meta::is_pointer<T>,
+                                  meta::is_pointer_to_polymorphic<T>>::value)>
+    static void_ptr<T> pure(const T& pointer_to_polymorphic)
     {
         return dynamic_pointer_cast<void>(pointer_to_polymorphic);
     }
 
-    static raw_ptr<void> pure(std::nullptr_t pointer) { return nullptr; }
+    static raw_ptr<void> pure(std::nullptr_t pointer) noexcept { return nullptr; }
 
-    template <typename T, typename Pointer,
-              SFREQUIRE(meta::is_pointer<Pointer>::value)>
-    static void assign(Pointer& pointer, const void_ptr<Pointer>& address)
+    template <typename dT, typename T,
+              SFREQUIRE(meta::is_pointer<T>::value)>
+    static void assign(T& pointer, const void_ptr<T>& address) noexcept
     {
-        pointer = static_pointer_cast<T>(address);
+        pointer = static_pointer_cast<dT>(address);
     }
 
 public:
@@ -184,7 +184,7 @@ public:
               SFREQUIRE(meta::all<meta::is_memory<TraitType>,
                                   meta::one<meta::negation<is_pointer_cast_allowed<From, To>>,
                                             std::is_abstract<From>>>::value)>
-    static std::nullptr_t allocate()
+    static std::nullptr_t allocate() noexcept
     {
         return nullptr;
     }
@@ -221,21 +221,21 @@ public:
         return allocate<To, From, Raw>();
     }
 
-    template <typename To, typename From = To, typename Pointer,
-              SFREQUIRE(meta::is_pointer<Pointer>::value)>
-    static void allocate(Pointer& pointer)
+    template <typename To, typename From = To, typename T,
+              SFREQUIRE(meta::is_pointer<T>::value)>
+    static void allocate(T& pointer)
     {
-        pointer = allocate<To, From, typename ptr_trait<Pointer>::trait>();
+        pointer = allocate<To, From, typename ptr_trait<T>::trait>();
     }
 
 public:
-    template <typename Pointer, typename T = typename ptr_trait<Pointer>::item,
-              SFREQUIRE(meta::is_raw_pointer<Pointer>::value)>
-    static raw_ptr<T> raw(const Pointer& pointer) { return pointer; }
+    template <typename T, typename dT = typename ptr_trait<T>::item,
+              SFREQUIRE(meta::is_raw_pointer<T>::value)>
+    static raw_ptr<dT> raw(const T& pointer) { return pointer; }
 
-    template <typename Pointer, typename T = typename ptr_trait<Pointer>::item,
-              SFREQUIRE(meta::is_shared_pointer<Pointer>::value)>
-    static raw_ptr<T> raw(const Pointer& pointer) { return pointer.get(); }
+    template <typename T, typename dT = typename ptr_trait<T>::item,
+              SFREQUIRE(meta::is_shared_pointer<T>::value)>
+    static raw_ptr<dT> raw(const T& pointer) { return pointer.get(); }
 
 public:
     template <typename ByteType = char, typename T>

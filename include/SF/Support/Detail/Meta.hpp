@@ -9,7 +9,7 @@ namespace meta
 
 template <template <typename...> class Adapter,
           typename Type, class Container, typename... Args>
-Container& underlying(Adapter<Type, Container, Args...>& adapter)
+Container& underlying(Adapter<Type, Container, Args...>& adapter) noexcept
 {
     using Core = Adapter<Type, Container, Args...>;
 

@@ -16,14 +16,14 @@ namespace utility
 {
 
 template <class Container>
-inline const typename Container::value_type* data(const Container& c)
+inline const typename Container::value_type* data(const Container& c) noexcept
 {
     // if begin return iterator - we should deref it and take address again
     return std::addressof(*std::begin(c));
 }
 
 template <typename T>
-inline const T* data(const std::valarray<T>& c)
+inline const T* data(const std::valarray<T>& c) noexcept
 {
     return std::begin(c);
 }
@@ -35,7 +35,7 @@ inline const T* data(const T (&array)[N]) noexcept
 }
 
 template <class Container>
-inline auto size(const Container& c) -> decltype(c.size())
+inline auto size(const Container& c) noexcept -> decltype(c.size())
 {
     return c.size();
 }

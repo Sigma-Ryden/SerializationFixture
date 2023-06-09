@@ -23,9 +23,9 @@ public:
     using key_type = core::InstantiableTraitBase::key_type;
 
 public:
-    template <class Archive, class Pointer,
-              SFREQUIRE(meta::is_pointer_to_polymorphic<Pointer>::value)>
-    static key_type save_key(Archive& archive, Pointer& pointer)
+    template <class Archive, typename T,
+              SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
+    static key_type save_key(Archive& archive, T& pointer)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -36,9 +36,9 @@ public:
         return key;
     }
 
-    template <class Archive, class Pointer,
-              SFREQUIRE(meta::is_pointer_to_polymorphic<Pointer>::value)>
-    static key_type load_key(Archive& archive, Pointer& pointer)
+    template <class Archive, typename T,
+              SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
+    static key_type load_key(Archive& archive, T& pointer)
     {
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)

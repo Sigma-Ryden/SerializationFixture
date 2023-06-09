@@ -15,7 +15,7 @@
 namespace sf
 {
 
-template <typename Base, class Archive, typename Derived,
+template <class Base, class Archive, class Derived,
           SFREQUIRE(meta::all<meta::is_archive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
 void base(Archive& archive, Derived& object)
@@ -23,7 +23,7 @@ void base(Archive& archive, Derived& object)
     ::Serialization::serialize_base<Base>(archive, object);
 }
 
-template <typename Base, class Archive, typename Derived,
+template <class Base, class Archive, class Derived,
           SFREQUIRE(meta::all<meta::is_archive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
 void virtual_base(Archive& archive, Derived& object)
@@ -72,7 +72,7 @@ void native_base(Archive& archive, Derived& object_with_virtual_base)
 namespace apply
 {
 
-template <typename Derived, typename Base>
+template <class Derived, class Base>
 struct BaseFunctor : ApplyFunctor
 {
     Derived& object;
@@ -80,10 +80,10 @@ struct BaseFunctor : ApplyFunctor
     BaseFunctor(Derived& object) noexcept : object(object) {}
 
     template <class Archive>
-    void operator() (Archive& archive) { base<Base>(archive, object); }
+    void operator() (Archive& archive) const { base<Base>(archive, object); }
 };
 
-template <typename Derived, typename Base>
+template <class Derived, class Base>
 struct VirtualBaseFunctor : ApplyFunctor
 {
     Derived& object;
@@ -91,16 +91,16 @@ struct VirtualBaseFunctor : ApplyFunctor
     VirtualBaseFunctor(Derived& object) noexcept : object(object) {}
 
     template <class Archive>
-    void operator() (Archive& archive) { virtual_base<Base>(archive, object); }
+    void operator() (Archive& archive) const { virtual_base<Base>(archive, object); }
 };
 
 } // namespace apply
 
-template <typename Base, typename Derived,
+template <class Base, class Derived,
           SFREQUIRE(std::is_base_of<Base, Derived>::value)>
 apply::BaseFunctor<Derived, Base> base(Derived& object) { return { object }; }
 
-template <typename Base, typename Derived,
+template <class Base, class Derived,
           SFREQUIRE(std::is_base_of<Base, Derived>::value)>
 apply::VirtualBaseFunctor<Derived, Base> virtual_base(Derived& object) { return { object }; }
 
@@ -121,7 +121,7 @@ void hierarchy(Archive& archive, Derived& object)
 namespace apply
 {
 
-template <typename Derived, typename Base, typename... Base_n>
+template <class Derived, class Base, class... Base_n>
 struct HierarchyFunctor : ApplyFunctor
 {
     Derived& object;
@@ -129,14 +129,14 @@ struct HierarchyFunctor : ApplyFunctor
     HierarchyFunctor(Derived& object) noexcept : object(object) {}
 
     template <class Archive>
-    void operator() (Archive& archive) { hierarchy<Base, Base_n...>(archive, object); }
+    void operator() (Archive& archive) const { hierarchy<Base, Base_n...>(archive, object); }
 };
 
 } // namespace apply
 
 template <class Base, class... Base_n, class Derived,
           SFREQUIRE(meta::is_derived_of<Derived, Base, Base_n...>::value)>
-apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object)
+apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object) noexcept
 {
     return { object };
 }

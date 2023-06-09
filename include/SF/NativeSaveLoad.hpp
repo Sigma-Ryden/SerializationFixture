@@ -13,18 +13,18 @@ namespace sf
 namespace detail
 {
 
-template <class WriteArchive, typename T, typename key_type,
+template <class WriteArchive, typename T, typename KeyType,
           SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_save(WriteArchive& archive, T& pointer, key_type track_key)
+void native_save(WriteArchive& archive, T& pointer, KeyType track_key)
 {
     archive & track_key;
 }
 
-template <class WriteArchive, typename T, typename key_type,
+template <class WriteArchive, typename T, typename KeyType,
           SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void native_save(WriteArchive& archive, T& pointer, key_type track_key)
+void native_save(WriteArchive& archive, T& pointer, KeyType track_key)
 {
     archive & track_key;
     archive.registry().save_key(archive, pointer); // write class info
@@ -33,7 +33,7 @@ void native_save(WriteArchive& archive, T& pointer, key_type track_key)
 template <class ReadArchive, typename T,
           SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& address)
+void native_load(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
 {
     using dT = meta::dereference<T>;
     Memory::assign<dT>(pointer, address);

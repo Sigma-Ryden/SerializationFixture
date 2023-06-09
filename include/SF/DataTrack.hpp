@@ -20,17 +20,17 @@ namespace sf
 namespace tracking
 {
 
-template <typename TrackType, class Archive, typename key_type,
+template <typename TrackType, class Archive, typename KeyType,
           SFREQUIRE(meta::is_archive<Archive>::value)>
-bool is_track(Archive& archive, key_type key)
+bool is_track(Archive& archive, KeyType key)
 {
     auto& item = archive.template tracking<TrackType>();
     return item.find(key) != item.end();
 }
 
-template <typename TrackType, class Archive, typename key_type,
+template <typename TrackType, class Archive, typename KeyType,
           SFREQUIRE(meta::is_archive<Archive>::value)>
-bool is_mixed(Archive& archive, key_type key)
+bool is_mixed(Archive& archive, KeyType key)
 {
     using reverse_track_type = typename reverse_trait<TrackType>::type;
 
@@ -172,7 +172,7 @@ struct TrackFunctor : ApplyFunctor
     TrackFunctor(T& data) noexcept : data(data) {}
 
     template <class Archive>
-    void operator() (Archive& archive) { tracking::track(archive, data); }
+    void operator() (Archive& archive) const { tracking::track(archive, data); }
 };
 
 template <typename T>
@@ -183,7 +183,7 @@ struct RawFunctor : ApplyFunctor
     RawFunctor(T& data) noexcept : data(data) {}
 
     template <class Archive>
-    void operator() (Archive& archive) { tracking::raw(archive, data); }
+    void operator() (Archive& archive) const { tracking::raw(archive, data); }
 };
 
 } // namespace apply
@@ -191,8 +191,8 @@ struct RawFunctor : ApplyFunctor
 namespace tracking
 {
 
-template <typename T> apply::TrackFunctor<T> track(T& data) { return { data }; }
-template <typename T> apply::RawFunctor<T> raw(T& data) { return { data }; }
+template <typename T> apply::TrackFunctor<T> track(T& data) noexcept { return { data }; }
+template <typename T> apply::RawFunctor<T> raw(T& data) noexcept { return { data }; }
 
 } // namespace tracking
 

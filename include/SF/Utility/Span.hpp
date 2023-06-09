@@ -313,14 +313,14 @@ struct SpanFunctor : ApplyFunctor
     SpanFunctor(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
 
     template <class Archive>
-    void operator() (Archive& archive)
+    void operator() (Archive& archive) const
     {
         invoke(archive, meta::make_index_sequence<std::tuple_size<Pack>::value>{});
     }
 
 private:
     template <class Archive, std::size_t... I>
-    void invoke(Archive& archive, meta::index_sequence<I...>)
+    void invoke(Archive& archive, meta::index_sequence<I...>) const
     {
         span(archive, std::get<I>(pack)...);
     }
@@ -334,7 +334,7 @@ inline namespace common
 
 template <typename T, typename D, typename... Dn,
           SFREQUIRE(meta::is_span_set<T, D, Dn...>::value)>
-apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n)
+apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n) noexcept
 {
     return { pointer, dimension, dimension_n... };
 }

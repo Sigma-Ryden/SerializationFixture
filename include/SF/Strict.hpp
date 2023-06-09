@@ -117,13 +117,13 @@ struct StrictFunctor : public ApplyFunctor
     StrictFunctor(T& data) noexcept : data(data) {}
 
     template <class Archive>
-    void operator() (Archive& archive) { strict(archive, data); }
+    void operator() (Archive& archive) const { strict(archive, data); }
 };
 
 } // namespace apply
 
 template <typename T>
-apply::StrictFunctor<T> strict(T& parameter) { return { parameter }; }
+apply::StrictFunctor<T> strict(T& parameter) noexcept { return { parameter }; }
 
 } // namespace sf
 

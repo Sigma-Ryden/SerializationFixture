@@ -102,7 +102,7 @@ private:
     }
 };
 
-template <class T>
+template <typename T>
 class AnyFixture
 {
 private:
@@ -129,7 +129,7 @@ public:
     }
 };
 
-template <class T>
+template <typename T>
 bool AnyFixture<T>::lock_ = false;
 
 } // namespace dynamic
