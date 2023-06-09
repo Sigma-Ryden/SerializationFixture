@@ -891,7 +891,7 @@ public:
     static InstantiableTraitBase::key_type static_trait() noexcept
     {
     #ifdef SF_EXTERN_TRAIT
-        ayto trait = SF_EXTERN_TRAIT(T);
+        return SF_EXTERN_TRAIT(T);
     #else
         return SF_TYPE_HASH(typeid(T));
     #endif // SF_EXTERN_TRAIT
