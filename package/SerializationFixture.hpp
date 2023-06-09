@@ -3251,11 +3251,11 @@ struct VirtualBaseFunctor : ApplyFunctor
 
 template <class Base, class Derived,
           SFREQUIRE(std::is_base_of<Base, Derived>::value)>
-apply::BaseFunctor<Derived, Base> base(Derived& object) { return { object }; }
+apply::BaseFunctor<Derived, Base> base(Derived& object) noexcept { return { object }; }
 
 template <class Base, class Derived,
           SFREQUIRE(std::is_base_of<Base, Derived>::value)>
-apply::VirtualBaseFunctor<Derived, Base> virtual_base(Derived& object) { return { object }; }
+apply::VirtualBaseFunctor<Derived, Base> virtual_base(Derived& object) noexcept { return { object }; }
 
 // default empty implementation
 template <class Archive, class Derived>
