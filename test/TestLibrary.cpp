@@ -287,37 +287,37 @@ TEST_MODULE()
 struct WorldObject : Instantiable
 {
     SERIALIZABLE(WorldObject)
-    int wo = 0;
+    static int wo = 0;
 };
 
 struct EnvironmentObject : virtual WorldObject
 {
     SERIALIZABLE(EnvironmentObject)
-    int eo = 0;
+    static int eo = 0;
 };
 
 struct MoveableObject : virtual EnvironmentObject
 {
     SERIALIZABLE(MoveableObject)
-    int mo = 0;
+    static int mo = 0;
 };
 
 struct DestructibleObject : virtual EnvironmentObject
 {
     SERIALIZABLE(DestructibleObject)
-    int dso = 0;
+    static int dso = 0;
 };
 
 struct DecorativeObject : DestructibleObject, MoveableObject
 {
     SERIALIZABLE(DecorativeObject)
-    int dco = 0;
+    static int dco = 0;
 };
 
 struct FoliageObject : virtual WorldObject
 {
     SERIALIZABLE(FoliageObject)
-    int fo = 0;
+    static int fo = 0;
 };
 
 struct FoliageObjectInstance : FoliageObject {};
@@ -325,7 +325,7 @@ struct FoliageObjectInstance : FoliageObject {};
 struct DecorativeFoliageObject : DecorativeObject, FoliageObjectInstance
 {
     SERIALIZABLE(DecorativeFoliageObject)
-    int dcfo = 0;
+    static int dcfo = 0;
 };
 
 } // TEST_MODULE
