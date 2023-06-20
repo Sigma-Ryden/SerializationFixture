@@ -1349,10 +1349,10 @@ Archive& operator>> (Archive& archive, T&& data)
 
 #define INSTANTIABLE_BODY(...)                                                                          \
     private:                                                                                            \
-    using key_type = sf::core::InstantiableTraitBase::key_type;                                         \
+    using __key_type = sf::core::InstantiableTraitBase::key_type;                                       \
     sf::dynamic::InstantiableFixture<__VA_ARGS__> __fixture;                                            \
-    static constexpr key_type __static_trait() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }        \
-    virtual key_type __trait() const noexcept { return ::Serialization::trait<__VA_ARGS__>(); }         \
+    static constexpr __key_type __static_trait() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }      \
+    virtual __key_type __trait() const noexcept { return ::Serialization::trait<__VA_ARGS__>(); }       \
     public:
 
 namespace sf
@@ -2290,8 +2290,7 @@ template <class ReadArchive, typename T,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
 void native_load(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
 {
-    using dT = meta::dereference<T>;
-    Memory::assign<dT>(pointer, address);
+    Memory::assign<meta::dereference<T>>(pointer, address);
 }
 
 template <class ReadArchive, typename T,
@@ -2483,7 +2482,6 @@ template <typename TrackType, class Archive, typename KeyType,
 bool is_mixed(Archive& archive, KeyType key)
 {
     using reverse_track_type = typename reverse_trait<TrackType>::type;
-
     return is_track<reverse_track_type>(archive, key);
 }
 
@@ -2496,11 +2494,10 @@ void track(WriteArchive& archive, T& pointer)
     using track_type = typename tracking::track_trait<T>::type;
 
 #ifndef SF_NULLPTR_DISABLE
-    const auto success = detail::is_refer(archive, pointer); // serialize refer info
-    if (not success) return;
+    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
-    auto pure = Memory::pure(pointer);
+    const auto pure = Memory::pure(pointer);
     auto key = reinterpret_cast<key_type>(Memory::raw(pure));
 
 #ifdef SF_DEBUG
@@ -2558,8 +2555,7 @@ void track(ReadArchive& archive, T& pointer)
 #endif // SF_GARBAGE_CHECK_DISABLE
 
 #ifndef SF_NULLPTR_DISABLE
-    const auto success = detail::is_refer(archive, pointer); // serialize refer info
-    if (not success) return;
+    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
     key_type key{};
@@ -2604,7 +2600,7 @@ template <class Archive, typename T,
 void raw(Archive& archive, T& pointer)
 {
 #ifndef SF_NULLPTR_DISABLE
-    if (detail::is_refer(archive, pointer))
+    if (detail::is_refer(archive, pointer)) // serialize refer info
 #endif //SF_NULLPTR_DISABLE
     strict(archive, pointer);
 }
@@ -2714,6 +2710,7 @@ template <class Archive, typename T,
 void fast(Archive& archive, T& object)
 {
     using item_type = meta::value_type<T>;
+
     archive.stream().call
     (
         const_cast<item_type*>(utility::data(object)),
@@ -2725,7 +2722,7 @@ template <class Archive, typename T,
           SFREQUIRE(meta::is_archive<Archive>::value)>
 void slow(Archive& archive, T& object)
 {
-    for (auto& item : object)
+    for (auto&& item : object)
         archive & item;
 }
 
@@ -3074,7 +3071,8 @@ public:
 
     template <typename dT,
               SFREQUIRE(::Serialization::is_pointer_cast_allowed<dT, T>::value)>
-    alias(dT& data) noexcept : data_(std::addressof(data)) {}
+    alias(dT& data) noexcept
+        : data_(std::addressof(data)) {}
 
     template <typename dT>
     alias(const alias<dT>& data) noexcept : alias(data.get()) {}
@@ -3379,22 +3377,20 @@ protected:
     Dimension dim_;
 
 protected:
-    SpanBase(pointer& data) noexcept;
+    SpanBase(pointer& data) noexcept
+        : data_(data), dim_() {}
 
     template <typename D, typename... Dn>
-    SpanBase(pointer& data, D d, Dn... dn) noexcept;
+    SpanBase(pointer& data, D d, Dn... dn) noexcept
+        : data_(data), dim_{d, dn...} {}
 
 public:
     void init(pointer data) noexcept { data_.get() = data; }
     void data(alias<pointer> data) noexcept { data_ = data; }
 
     pointer& data() noexcept { return data_; }
-    const_pointer& data() const noexcept { return data_; }
-
     size_type size() const noexcept { return dim_[0]; }
-
     Dimension& dim() noexcept { return dim_; }
-    const Dimension& dim() const noexcept { return dim_; }
 };
 
 template <typename T, std::size_t N>
@@ -3421,16 +3417,25 @@ private:
     mutable value_type child_scope_;
 
 public:
-    Span(pointer& data, Dimension dim_) noexcept;
+    Span(pointer& data, Dimension dim) noexcept
+        : Core(data), child_scope_(data[0], dim + 1)
+    {
+        for (size_type i = 0; i < N; ++i)
+            this->dim_[i] = dim;
+    }
 
     template <typename D, typename... Dn,
-              meta::require<not std::is_array<D>::value> = 0>
-    Span(pointer& data, D d, Dn... dn) noexcept;
+              SFREQUIRE(not std::is_array<D>::value)>
+    Span(pointer& data, D d, Dn... dn) noexcept
+        : Core(data, d, dn...), child_scope_(data[0], dn...) {}
 
     void size(size_type value) noexcept { this->dim_[0] = value; }
 
-    reference operator[] (size_type i) noexcept;
-    const_reference operator[] (size_type i) const noexcept;
+    reference operator[] (size_type i) noexcept
+    {
+        child_scope_.data(this->data_[i]);
+        return child_scope_;
+    }
 
 public:
     using Core::size; // prevent Core function hiding
@@ -3457,72 +3462,17 @@ protected:
     using typename Core::Dimension;
 
 public:
-    Span(pointer& data, Dimension size) noexcept;
-    Span(pointer& data, size_type size) noexcept;
+    Span(pointer& data, Dimension size) noexcept
+        : Core(data)
+    {
+        this->dim_[0] = size[0];
+    }
+
+    Span(pointer& data, size_type size) noexcept
+        : Core(data, size) {}
 
     reference operator[] (size_type i) noexcept { return this->data_[i]; }
-    const_reference operator[] (size_type i) const noexcept { return this->data_[i]; }
 };
-
-template <typename T, std::size_t N>
-inline SpanBase<T, N>::SpanBase(pointer& data) noexcept
-    : data_(data)
-    , dim_()
-{
-}
-
-template <typename T, std::size_t N>
-template <typename D, typename... Dn>
-SpanBase<T, N>::SpanBase(pointer& data, D d, Dn... dn) noexcept
-    : data_(data)
-    , dim_{d, dn...}
-{
-}
-
-template <typename T, std::size_t N>
-Span<T, N>::Span(pointer& data, Dimension dim) noexcept
-    : Core(data)
-    , child_scope_(data[0], dim + 1)
-{
-    for (size_type i = 0; i < N; ++i)
-        this->dim_[i] = dim;
-}
-
-template <typename T, std::size_t N>
-template <typename D, typename... Dn,
-          meta::require<not std::is_array<D>::value>>
-Span<T, N>::Span(pointer& data, D d, Dn... dn) noexcept
-    : Core(data, d, dn...)
-    , child_scope_(data[0], dn...)
-{
-}
-
-template <typename T, std::size_t N>
-inline auto Span<T, N>::operator[] (size_type i) noexcept -> reference
-{
-    child_scope_.data(this->data_[i]);
-    return child_scope_;
-}
-
-template <typename T, std::size_t N>
-inline auto Span<T, N>::operator[] (size_type i) const noexcept -> const_reference
-{
-    child_scope_.data(this->data_[i]);
-    return child_scope_;
-}
-
-template <typename T>
-inline Span<T, 1>::Span(pointer& data, Dimension dim) noexcept
-    : Core(data)
-{
-    this->dim_[0] = dim[0];
-}
-
-template <typename T>
-inline Span<T, 1>::Span(pointer& data, size_type size) noexcept
-    : Core(data, size)
-{
-}
 
 } // namespace utility
 
@@ -3589,7 +3539,7 @@ void span_implementation(ReadArchive& archive, T& array)
 
     using pointer          = typename T::pointer;
 
-    pointer ptr = new dereference_type [array.size()] {};
+    auto ptr = new dereference_type [array.size()] {};
     array.init(ptr);
 
     for (size_type i = 0; i < array.size(); ++i)
@@ -3609,8 +3559,7 @@ template <class WriteArchive, typename T,
 void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
 #ifndef SF_NULLPTR_DISABLE
-    const auto success = detail::is_refer(archive, pointer); // serialize refer info
-    if (not success) return;
+    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
     archive(dimension, dimension_n...);
@@ -3626,8 +3575,7 @@ template <class ReadArchive, typename T,
 void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
 #ifndef SF_NULLPTR_DISABLE
-    const auto success = detail::is_refer(archive, pointer); // serialize refer info
-    if (not success) return;
+    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
     archive(dimension, dimension_n...);
@@ -4566,10 +4514,10 @@ inline namespace library
 
 EXTERN_CONDITIONAL_SERIALIZATION(Save, complex, meta::is_std_complex<T>::value)
 {
-    auto real = complex.real();
-    auto imag = complex.imag();
+    auto re = complex.real();
+    auto im = complex.imag();
 
-    archive & real & imag;
+    archive & re & im;
 
     return archive;
 }
