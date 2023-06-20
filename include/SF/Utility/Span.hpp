@@ -41,22 +41,20 @@ protected:
     Dimension dim_;
 
 protected:
-    SpanBase(pointer& data) noexcept;
+    SpanBase(pointer& data) noexcept
+        : data_(data), dim_() {}
 
     template <typename D, typename... Dn>
-    SpanBase(pointer& data, D d, Dn... dn) noexcept;
+    SpanBase(pointer& data, D d, Dn... dn) noexcept
+        : data_(data), dim_{d, dn...} {}
 
 public:
     void init(pointer data) noexcept { data_.get() = data; }
     void data(alias<pointer> data) noexcept { data_ = data; }
 
     pointer& data() noexcept { return data_; }
-    const_pointer& data() const noexcept { return data_; }
-
     size_type size() const noexcept { return dim_[0]; }
-
     Dimension& dim() noexcept { return dim_; }
-    const Dimension& dim() const noexcept { return dim_; }
 };
 
 template <typename T, std::size_t N>
@@ -83,16 +81,25 @@ private:
     mutable value_type child_scope_;
 
 public:
-    Span(pointer& data, Dimension dim_) noexcept;
+    Span(pointer& data, Dimension dim) noexcept
+        : Core(data), child_scope_(data[0], dim + 1)
+    {
+        for (size_type i = 0; i < N; ++i)
+            this->dim_[i] = dim;
+    }
 
     template <typename D, typename... Dn,
-              meta::require<not std::is_array<D>::value> = 0>
-    Span(pointer& data, D d, Dn... dn) noexcept;
+              SFREQUIRE(not std::is_array<D>::value)>
+    Span(pointer& data, D d, Dn... dn) noexcept
+        : Core(data, d, dn...), child_scope_(data[0], dn...) {}
 
     void size(size_type value) noexcept { this->dim_[0] = value; }
 
-    reference operator[] (size_type i) noexcept;
-    const_reference operator[] (size_type i) const noexcept;
+    reference operator[] (size_type i) noexcept
+    {
+        child_scope_.data(this->data_[i]);
+        return child_scope_;
+    }
 
 public:
     using Core::size; // prevent Core function hiding
@@ -119,72 +126,17 @@ protected:
     using typename Core::Dimension;
 
 public:
-    Span(pointer& data, Dimension size) noexcept;
-    Span(pointer& data, size_type size) noexcept;
+    Span(pointer& data, Dimension size) noexcept
+        : Core(data)
+    {
+        this->dim_[0] = size[0];
+    }
+
+    Span(pointer& data, size_type size) noexcept
+        : Core(data, size) {}
 
     reference operator[] (size_type i) noexcept { return this->data_[i]; }
-    const_reference operator[] (size_type i) const noexcept { return this->data_[i]; }
 };
-
-template <typename T, std::size_t N>
-inline SpanBase<T, N>::SpanBase(pointer& data) noexcept
-    : data_(data)
-    , dim_()
-{
-}
-
-template <typename T, std::size_t N>
-template <typename D, typename... Dn>
-SpanBase<T, N>::SpanBase(pointer& data, D d, Dn... dn) noexcept
-    : data_(data)
-    , dim_{d, dn...}
-{
-}
-
-template <typename T, std::size_t N>
-Span<T, N>::Span(pointer& data, Dimension dim) noexcept
-    : Core(data)
-    , child_scope_(data[0], dim + 1)
-{
-    for (size_type i = 0; i < N; ++i)
-        this->dim_[i] = dim;
-}
-
-template <typename T, std::size_t N>
-template <typename D, typename... Dn,
-          meta::require<not std::is_array<D>::value>>
-Span<T, N>::Span(pointer& data, D d, Dn... dn) noexcept
-    : Core(data, d, dn...)
-    , child_scope_(data[0], dn...)
-{
-}
-
-template <typename T, std::size_t N>
-inline auto Span<T, N>::operator[] (size_type i) noexcept -> reference
-{
-    child_scope_.data(this->data_[i]);
-    return child_scope_;
-}
-
-template <typename T, std::size_t N>
-inline auto Span<T, N>::operator[] (size_type i) const noexcept -> const_reference
-{
-    child_scope_.data(this->data_[i]);
-    return child_scope_;
-}
-
-template <typename T>
-inline Span<T, 1>::Span(pointer& data, Dimension dim) noexcept
-    : Core(data)
-{
-    this->dim_[0] = dim[0];
-}
-
-template <typename T>
-inline Span<T, 1>::Span(pointer& data, size_type size) noexcept
-    : Core(data, size)
-{
-}
 
 } // namespace utility
 
@@ -251,7 +203,7 @@ void span_implementation(ReadArchive& archive, T& array)
 
     using pointer          = typename T::pointer;
 
-    pointer ptr = new dereference_type [array.size()] {};
+    auto ptr = new dereference_type [array.size()] {};
     array.init(ptr);
 
     for (size_type i = 0; i < array.size(); ++i)
@@ -271,8 +223,7 @@ template <class WriteArchive, typename T,
 void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
 #ifndef SF_NULLPTR_DISABLE
-    const auto success = detail::is_refer(archive, pointer); // serialize refer info
-    if (not success) return;
+    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
     archive(dimension, dimension_n...);
@@ -288,8 +239,7 @@ template <class ReadArchive, typename T,
 void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
 #ifndef SF_NULLPTR_DISABLE
-    const auto success = detail::is_refer(archive, pointer); // serialize refer info
-    if (not success) return;
+    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
     archive(dimension, dimension_n...);

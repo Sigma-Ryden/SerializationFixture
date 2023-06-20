@@ -24,10 +24,10 @@ inline namespace library
 
 EXTERN_CONDITIONAL_SERIALIZATION(Save, complex, meta::is_std_complex<T>::value)
 {
-    auto real = complex.real();
-    auto imag = complex.imag();
+    auto re = complex.real();
+    auto im = complex.imag();
 
-    archive & real & imag;
+    archive & re & im;
 
     return archive;
 }

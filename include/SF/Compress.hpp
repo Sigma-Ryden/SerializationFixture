@@ -21,6 +21,7 @@ template <class Archive, typename T,
 void fast(Archive& archive, T& object)
 {
     using item_type = meta::value_type<T>;
+
     archive.stream().call
     (
         const_cast<item_type*>(utility::data(object)),
@@ -32,7 +33,7 @@ template <class Archive, typename T,
           SFREQUIRE(meta::is_archive<Archive>::value)>
 void slow(Archive& archive, T& object)
 {
-    for (auto& item : object)
+    for (auto&& item : object)
         archive & item;
 }
 

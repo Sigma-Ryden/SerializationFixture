@@ -33,7 +33,6 @@ template <typename TrackType, class Archive, typename KeyType,
 bool is_mixed(Archive& archive, KeyType key)
 {
     using reverse_track_type = typename reverse_trait<TrackType>::type;
-
     return is_track<reverse_track_type>(archive, key);
 }
 
@@ -46,11 +45,10 @@ void track(WriteArchive& archive, T& pointer)
     using track_type = typename tracking::track_trait<T>::type;
 
 #ifndef SF_NULLPTR_DISABLE
-    const auto success = detail::is_refer(archive, pointer); // serialize refer info
-    if (not success) return;
+    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
-    auto pure = Memory::pure(pointer);
+    const auto pure = Memory::pure(pointer);
     auto key = reinterpret_cast<key_type>(Memory::raw(pure));
 
 #ifdef SF_DEBUG
@@ -108,8 +106,7 @@ void track(ReadArchive& archive, T& pointer)
 #endif // SF_GARBAGE_CHECK_DISABLE
 
 #ifndef SF_NULLPTR_DISABLE
-    const auto success = detail::is_refer(archive, pointer); // serialize refer info
-    if (not success) return;
+    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
     key_type key{};
@@ -154,7 +151,7 @@ template <class Archive, typename T,
 void raw(Archive& archive, T& pointer)
 {
 #ifndef SF_NULLPTR_DISABLE
-    if (detail::is_refer(archive, pointer))
+    if (detail::is_refer(archive, pointer)) // serialize refer info
 #endif //SF_NULLPTR_DISABLE
     strict(archive, pointer);
 }

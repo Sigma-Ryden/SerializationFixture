@@ -2,7 +2,6 @@
 #define SF_READ_ARCHIVE_HPP
 
 #include <cstdint> // uintptr_t
-#include <cstddef> // size_t
 #include <unordered_map> // unordered_map
 #include <utility> // forward
 

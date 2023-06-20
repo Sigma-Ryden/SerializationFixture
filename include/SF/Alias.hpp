@@ -29,7 +29,8 @@ public:
 
     template <typename dT,
               SFREQUIRE(::Serialization::is_pointer_cast_allowed<dT, T>::value)>
-    alias(dT& data) noexcept : data_(std::addressof(data)) {}
+    alias(dT& data) noexcept
+        : data_(std::addressof(data)) {}
 
     template <typename dT>
     alias(const alias<dT>& data) noexcept : alias(data.get()) {}
