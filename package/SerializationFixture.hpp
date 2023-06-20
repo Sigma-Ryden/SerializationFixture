@@ -2497,7 +2497,7 @@ void track(WriteArchive& archive, T& pointer)
     if (not detail::is_refer(archive, pointer)) return; // serialize refer info
 #endif // SF_NULLPTR_DISABLE
 
-    const auto pure = Memory::pure(pointer);
+    auto pure = Memory::pure(pointer);
     auto key = reinterpret_cast<key_type>(Memory::raw(pure));
 
 #ifdef SF_DEBUG
