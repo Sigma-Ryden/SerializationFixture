@@ -1,5 +1,4 @@
 #include <Auto/TestingCore.hpp>
-#include <vector>
 
 int main()
 {
