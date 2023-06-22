@@ -536,7 +536,7 @@ SERIALIZATION(SaveLoad, NoTraitDerived)
 }
 
 // if user does not SERIALIZABLE macro, then library will use typeid for type hashing,
-// mixed usage SERIALIZABLE and typeid does not allowed!
+// mixed usage SERIALIZABLE and typeid does not allowed (in single hierarchy only)!
 // You also can specify hashing behavior with macro SF_TYPE_HASH - see Core/Hash.hpp
 // Note that: EXPORT_INSTANTIABLE_KEY("some_text", some_type) - is not allowed with typeid using
 
