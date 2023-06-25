@@ -16,17 +16,13 @@ namespace detail
 template <class WriteArchive, typename T, typename KeyType,
           SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_save(WriteArchive& archive, T& pointer, KeyType track_key)
-{
-    archive & track_key;
-}
+void native_save(WriteArchive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
 
 template <class WriteArchive, typename T, typename KeyType,
           SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
 void native_save(WriteArchive& archive, T& pointer, KeyType track_key)
 {
-    archive & track_key;
     archive.registry().save_key(archive, pointer); // write class info
 }
 

@@ -41,15 +41,10 @@ template <class WriteArchive, typename T,
                               meta::is_pointer<T>>::value)>
 void track(WriteArchive& archive, T& pointer)
 {
-    using key_type   = typename WriteArchive::TrackingKeyType;
     using track_type = typename tracking::track_trait<T>::type;
 
-#ifndef SF_NULLPTR_DISABLE
-    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
-#endif // SF_NULLPTR_DISABLE
-
-    auto pure = Memory::pure(pointer);
-    auto key = reinterpret_cast<key_type>(Memory::raw(pure));
+    auto key = detail::refer_key(archive, pointer);
+    if (not key) return; // serialize refer info
 
 #ifdef SF_DEBUG
     if (is_mixed<track_type>(archive, key))
@@ -61,8 +56,6 @@ void track(WriteArchive& archive, T& pointer)
     if (not is_tracking)
     {
         is_tracking = true;
-
-        archive & key;
         strict(archive, pointer); // call the strict serialization of not tracking pointer
     }
     else
@@ -97,7 +90,6 @@ template <class ReadArchive, typename T,
                               meta::is_pointer<T>>::value)>
 void track(ReadArchive& archive, T& pointer)
 {
-    using key_type   = typename ReadArchive::TrackingKeyType;
     using track_type = typename tracking::track_trait<T>::type;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -105,12 +97,8 @@ void track(ReadArchive& archive, T& pointer)
         throw "The read track pointer must be initialized to nullptr.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-#ifndef SF_NULLPTR_DISABLE
-    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
-#endif // SF_NULLPTR_DISABLE
-
-    key_type key{};
-    archive & key;
+    auto key = detail::refer_key(archive, pointer); // serialize refer info
+    if (not key) return;
 
     auto& item = archive.template tracking<track_type>()[key];
 
@@ -150,10 +138,8 @@ template <class Archive, typename T,
                               meta::is_serializable_raw_pointer<T>>::value)>
 void raw(Archive& archive, T& pointer)
 {
-#ifndef SF_NULLPTR_DISABLE
-    if (detail::is_refer(archive, pointer)) // serialize refer info
-#endif //SF_NULLPTR_DISABLE
-    strict(archive, pointer);
+    if (detail::refer_key(archive, pointer)) // serialize refer info
+        strict(archive, pointer);
 }
 
 } // namespace tracking

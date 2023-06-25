@@ -15,7 +15,8 @@
 #ifndef SERIALIZABLE
     #define SERIALIZABLE(...)                                                                           \
         SERIALIZATION_ACCESS(__VA_ARGS__)                                                               \
-        INSTANTIABLE_BODY(__VA_ARGS__)
+        SERIALIZATION_FIXTURE(__VA_ARGS__)                                                              \
+        SERIALIZATION_TRAIT(__VA_ARGS__)
 #endif // SERIALIZABLE
 
 namespace sf

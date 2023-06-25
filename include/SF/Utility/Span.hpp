@@ -216,32 +216,13 @@ void span_implementation(ReadArchive& archive, T& array)
 inline namespace common
 {
 
-template <class WriteArchive, typename T,
+template <class Archive, typename T,
           typename D, typename... Dn,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::is_span_set<T, D, Dn...>>::value)>
-void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
+void span(Archive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
-#ifndef SF_NULLPTR_DISABLE
-    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
-#endif // SF_NULLPTR_DISABLE
-
-    archive(dimension, dimension_n...);
-
-    auto span_data = utility::make_span(pointer, dimension, dimension_n...);
-    detail::span_implementation(archive, span_data);
-}
-
-template <class ReadArchive, typename T,
-          typename D, typename... Dn,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
-                              meta::is_span_set<T, D, Dn...>>::value)>
-void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
-{
-#ifndef SF_NULLPTR_DISABLE
-    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
-#endif // SF_NULLPTR_DISABLE
-
+    if (not detail::refer_key(archive, pointer)) return; // serialize refer info
     archive(dimension, dimension_n...);
 
     auto span_data = utility::make_span(pointer, dimension, dimension_n...);

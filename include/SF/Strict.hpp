@@ -78,30 +78,33 @@ namespace detail
 {
 
 template <class WriteArchive, typename T,
+          typename KeyType = typename WriteArchive::TrackingKeyType,
           SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
                               meta::is_serializable_pointer<T>>::value)>
-bool is_refer(WriteArchive& archive, T& pointer)
+KeyType refer_key(WriteArchive& archive, T& pointer)
 {
-    auto info = static_cast<bool>(pointer);
-    archive & info;
+    auto pure = Memory::pure(pointer);
+    auto key = reinterpret_cast<KeyType>(Memory::raw(pure));
 
-    return info;
+    archive & key;
+    return key;
 }
 
 template <class ReadArchive, typename T,
+          typename KeyType = typename ReadArchive::TrackingKeyType,
           SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
                               meta::is_serializable_pointer<T>>::value)>
-bool is_refer(ReadArchive& archive, T& pointer)
+KeyType refer_key(ReadArchive& archive, T& pointer)
 {
 #ifdef SF_DEBUG
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 #endif // SF_DEBUG
 
-    auto info = false;
-    archive & info;
+    KeyType key{};
+    archive & key;
 
-    return info;
+    return key;
 }
 
 } // namespace detail

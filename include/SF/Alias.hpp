@@ -72,9 +72,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
         throw "The write alias must be initialized.";
 
     auto pointer = std::addressof(alias.get());
-    auto address = Memory::pure(pointer);
-
-    auto key = reinterpret_cast<key_type>(address);
+    auto key = detail::refer_key(archive, pointer);
 
     auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
 
