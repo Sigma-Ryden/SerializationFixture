@@ -2526,8 +2526,8 @@ void track(WriteArchive& archive, T& pointer)
 {
     using track_type = typename tracking::track_trait<T>::type;
 
-    auto key = detail::refer_key(archive, pointer);
-    if (not key) return; // serialize refer info
+    auto key = detail::refer_key(archive, pointer); // serialize refer info
+    if (not key) return;
 
 #ifdef SF_DEBUG
     if (is_mixed<track_type>(archive, key))
