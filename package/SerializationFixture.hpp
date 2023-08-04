@@ -1347,10 +1347,15 @@ Archive& operator>> (Archive& archive, T&& data)
     #define INSTANTIABLE_TYPE ::sf::Instantiable
 #endif // INSTANTIABLE_TYPE
 
-#define INSTANTIABLE_BODY(...)                                                                          \
+// Auto instantiable type registration
+#define SERIALIZATION_FIXTURE(...)                                                                      \
+    private:                                                                                            \
+    sf::dynamic::InstantiableFixture<__VA_ARGS__> __fixture;                                            \
+    public:
+
+#define SERIALIZATION_TRAIT(...)                                                                        \
     private:                                                                                            \
     using __key_type = sf::core::InstantiableTraitBase::key_type;                                       \
-    sf::dynamic::InstantiableFixture<__VA_ARGS__> __fixture;                                            \
     static constexpr __key_type __static_trait() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }      \
     virtual __key_type __trait() const noexcept { return ::Serialization::trait<__VA_ARGS__>(); }       \
     public:
@@ -2265,52 +2270,6 @@ Archive& operator& (Archive& archive, T& unregistered)
 namespace sf
 {
 
-namespace detail
-{
-
-template <class WriteArchive, typename T, typename KeyType,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
-                              meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_save(WriteArchive& archive, T& pointer, KeyType track_key)
-{
-    archive & track_key;
-}
-
-template <class WriteArchive, typename T, typename KeyType,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
-                              meta::is_pointer_to_polymorphic<T>>::value)>
-void native_save(WriteArchive& archive, T& pointer, KeyType track_key)
-{
-    archive & track_key;
-    archive.registry().save_key(archive, pointer); // write class info
-}
-
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
-                              meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
-{
-    Memory::assign<meta::dereference<T>>(pointer, address);
-}
-
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
-                              meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& address)
-{
-    auto& registry = archive.registry();
-
-    auto id = registry.load_key(archive, pointer);
-    registry.assign(pointer, address, id);
-}
-
-} // namespace detail
-
-} // namespace sf
-
-namespace sf
-{
-
 namespace apply
 {
 
@@ -2345,6 +2304,78 @@ Archive& operator& (Archive& archive, T&& apply_functor)
 } // namespace sf
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_apply_functor<T>::value)
+
+namespace sf
+{
+
+template <class Archive, typename T,
+          SFREQUIRE(meta::is_archive<Archive>::value)>
+void binary(Archive& archive, T& data)
+{
+    archive.stream().call(std::addressof(data), sizeof(T));
+}
+
+namespace apply
+{
+
+template <typename T>
+struct BinaryFunctor : ApplyFunctor
+{
+    T& data;
+
+    BinaryFunctor(T& data) noexcept : data(data) {}
+
+    template <class Archive>
+    void operator() (Archive& archive) const { binary(archive, data); }
+};
+
+} // namespace apply
+
+template <typename T> apply::BinaryFunctor<T> binary(T& object) noexcept { return { object }; }
+
+} // namespace sf
+
+namespace sf
+{
+
+namespace detail
+{
+
+template <class WriteArchive, typename T, typename KeyType,
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
+void native_save(WriteArchive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
+
+template <class WriteArchive, typename T, typename KeyType,
+          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+                              meta::is_pointer_to_polymorphic<T>>::value)>
+void native_save(WriteArchive& archive, T& pointer, KeyType track_key)
+{
+    archive.registry().save_key(archive, pointer); // write class info
+}
+
+template <class ReadArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
+void native_load(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
+{
+    Memory::assign<meta::dereference<T>>(pointer, address);
+}
+
+template <class ReadArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+                              meta::is_pointer_to_polymorphic<T>>::value)>
+void native_load(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& address)
+{
+    auto& registry = archive.registry();
+
+    auto id = registry.load_key(archive, pointer);
+    registry.assign(pointer, address, id);
+}
+
+} // namespace detail
+
+} // namespace sf
 
 namespace sf
 {
@@ -2414,30 +2445,33 @@ namespace detail
 {
 
 template <class WriteArchive, typename T,
+          typename KeyType = typename WriteArchive::TrackingKeyType,
           SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
                               meta::is_serializable_pointer<T>>::value)>
-bool is_refer(WriteArchive& archive, T& pointer)
+KeyType refer_key(WriteArchive& archive, T& pointer)
 {
-    auto info = static_cast<bool>(pointer);
-    archive & info;
+    auto pure = Memory::pure(pointer);
+    auto key = reinterpret_cast<KeyType>(Memory::raw(pure));
 
-    return info;
+    archive & key;
+    return key;
 }
 
 template <class ReadArchive, typename T,
+          typename KeyType = typename ReadArchive::TrackingKeyType,
           SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
                               meta::is_serializable_pointer<T>>::value)>
-bool is_refer(ReadArchive& archive, T& pointer)
+KeyType refer_key(ReadArchive& archive, T& pointer)
 {
 #ifdef SF_DEBUG
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 #endif // SF_DEBUG
 
-    auto info = false;
-    archive & info;
+    KeyType key{};
+    archive & key;
 
-    return info;
+    return key;
 }
 
 } // namespace detail
@@ -2490,15 +2524,10 @@ template <class WriteArchive, typename T,
                               meta::is_pointer<T>>::value)>
 void track(WriteArchive& archive, T& pointer)
 {
-    using key_type   = typename WriteArchive::TrackingKeyType;
     using track_type = typename tracking::track_trait<T>::type;
 
-#ifndef SF_NULLPTR_DISABLE
-    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
-#endif // SF_NULLPTR_DISABLE
-
-    auto pure = Memory::pure(pointer);
-    auto key = reinterpret_cast<key_type>(Memory::raw(pure));
+    auto key = detail::refer_key(archive, pointer);
+    if (not key) return; // serialize refer info
 
 #ifdef SF_DEBUG
     if (is_mixed<track_type>(archive, key))
@@ -2510,8 +2539,6 @@ void track(WriteArchive& archive, T& pointer)
     if (not is_tracking)
     {
         is_tracking = true;
-
-        archive & key;
         strict(archive, pointer); // call the strict serialization of not tracking pointer
     }
     else
@@ -2546,7 +2573,6 @@ template <class ReadArchive, typename T,
                               meta::is_pointer<T>>::value)>
 void track(ReadArchive& archive, T& pointer)
 {
-    using key_type   = typename ReadArchive::TrackingKeyType;
     using track_type = typename tracking::track_trait<T>::type;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -2554,12 +2580,8 @@ void track(ReadArchive& archive, T& pointer)
         throw "The read track pointer must be initialized to nullptr.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-#ifndef SF_NULLPTR_DISABLE
-    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
-#endif // SF_NULLPTR_DISABLE
-
-    key_type key{};
-    archive & key;
+    auto key = detail::refer_key(archive, pointer); // serialize refer info
+    if (not key) return;
 
     auto& item = archive.template tracking<track_type>()[key];
 
@@ -2599,10 +2621,8 @@ template <class Archive, typename T,
                               meta::is_serializable_raw_pointer<T>>::value)>
 void raw(Archive& archive, T& pointer)
 {
-#ifndef SF_NULLPTR_DISABLE
-    if (detail::is_refer(archive, pointer)) // serialize refer info
-#endif //SF_NULLPTR_DISABLE
-    strict(archive, pointer);
+    if (detail::refer_key(archive, pointer)) // serialize refer info
+        strict(archive, pointer);
 }
 
 } // namespace tracking
@@ -2767,7 +2787,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::Serialization::has_load_mode<T>
 
 EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, number, std::is_arithmetic<T>::value)
 {
-    archive.stream().call(&number, sizeof(number));
+    binary(archive, number);
     return archive;
 }
 
@@ -2993,6 +3013,7 @@ namespace meta
 
 template <typename T> struct is_serializable_aggregate
     : all<is_aggregate<T>,
+          negation<std::is_union<T>>,
           negation<::Serialization::has_save_mode<T>>,
           negation<::Serialization::has_save_mode<T>>> {};
 
@@ -3009,7 +3030,8 @@ SFREPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 } // namespace detail
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_aggregate<T>::value)>
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+                              meta::is_aggregate<T>>::value)>
 void aggregate(Archive& archive, T& object)
 {
     constexpr auto size = meta::aggregate_size<T>::value;
@@ -3053,6 +3075,29 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_aggregate<T>::value)
 #undef _SF_AGGREGATE_IMPLEMENTATION_GENERIC
 
 #endif // if
+
+namespace sf
+{
+
+namespace meta
+{
+
+template <typename T> struct is_serializable_union
+    : all<std::is_union<T>,
+          negation<::Serialization::has_save_mode<T>>,
+          negation<::Serialization::has_save_mode<T>>> {};
+
+} // namespace meta
+
+EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, data, meta::is_serializable_union<T>::value)
+{
+    binary(archive, data);
+    return archive;
+}
+
+} // namespace sf
+
+CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_union<T>::value)
 
 namespace sf
 {
@@ -3114,9 +3159,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
         throw "The write alias must be initialized.";
 
     auto pointer = std::addressof(alias.get());
-    auto address = Memory::pure(pointer);
-
-    auto key = reinterpret_cast<key_type>(address);
+    auto key = detail::refer_key(archive, pointer);
 
     auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
 
@@ -3302,7 +3345,8 @@ apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object) noe
 #ifndef SERIALIZABLE
     #define SERIALIZABLE(...)                                                                           \
         SERIALIZATION_ACCESS(__VA_ARGS__)                                                               \
-        INSTANTIABLE_BODY(__VA_ARGS__)
+        SERIALIZATION_FIXTURE(__VA_ARGS__)                                                              \
+        SERIALIZATION_TRAIT(__VA_ARGS__)
 #endif // SERIALIZABLE
 
 namespace sf
@@ -3552,32 +3596,13 @@ void span_implementation(ReadArchive& archive, T& array)
 inline namespace common
 {
 
-template <class WriteArchive, typename T,
+template <class Archive, typename T,
           typename D, typename... Dn,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::is_span_set<T, D, Dn...>>::value)>
-void span(WriteArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
+void span(Archive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
-#ifndef SF_NULLPTR_DISABLE
-    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
-#endif // SF_NULLPTR_DISABLE
-
-    archive(dimension, dimension_n...);
-
-    auto span_data = utility::make_span(pointer, dimension, dimension_n...);
-    detail::span_implementation(archive, span_data);
-}
-
-template <class ReadArchive, typename T,
-          typename D, typename... Dn,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
-                              meta::is_span_set<T, D, Dn...>>::value)>
-void span(ReadArchive& archive, T& pointer, D& dimension, Dn&... dimension_n)
-{
-#ifndef SF_NULLPTR_DISABLE
-    if (not detail::is_refer(archive, pointer)) return; // serialize refer info
-#endif // SF_NULLPTR_DISABLE
-
+    if (not detail::refer_key(archive, pointer)) return; // serialize refer info
     archive(dimension, dimension_n...);
 
     auto span_data = utility::make_span(pointer, dimension, dimension_n...);

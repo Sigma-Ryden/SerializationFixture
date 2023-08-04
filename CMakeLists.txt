@@ -33,6 +33,7 @@ set(SF
     include/SF/Utility/Span.hpp
     include/SF/Utility/Functional.hpp
 
+    include/SF/Binary.hpp
     include/SF/DataTrack.hpp
     include/SF/Compress.hpp
     include/SF/Common.hpp
@@ -47,6 +48,7 @@ set(SF
     include/SF/Hierarchy.hpp
     include/SF/Serializable.hpp
     include/SF/HierarchyTrack.hpp
+    include/SF/Union.hpp
     include/SF/Aggregate.hpp
     include/SF/Alias.hpp
 
@@ -92,6 +94,7 @@ add_executable(${PROJECT_NAME}
     test/TestNumber.cpp
     test/TestEnum.cpp
     test/TestUserType.cpp
+    test/TestUnion.cpp
     test/TestVector.cpp
     test/TestArray.cpp
     test/TestValarray.cpp

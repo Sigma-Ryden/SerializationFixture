@@ -26,6 +26,7 @@ namespace meta
 
 template <typename T> struct is_serializable_aggregate
     : all<is_aggregate<T>,
+          negation<std::is_union<T>>,
           negation<::Serialization::has_save_mode<T>>,
           negation<::Serialization::has_save_mode<T>>> {};
 
@@ -42,7 +43,8 @@ SFREPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 } // namespace detail
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_aggregate<T>::value)>
+          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+                              meta::is_aggregate<T>>::value)>
 void aggregate(Archive& archive, T& object)
 {
     constexpr auto size = meta::aggregate_size<T>::value;

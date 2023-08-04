@@ -9,6 +9,7 @@
 
 #include <SF/ExternSerialization.hpp>
 
+#include <SF/Binary.hpp>
 #include <SF/DataTrack.hpp>
 #include <SF/Compress.hpp>
 
@@ -33,7 +34,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::Serialization::has_load_mode<T>
 
 EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, number, std::is_arithmetic<T>::value)
 {
-    archive.stream().call(&number, sizeof(number));
+    binary(archive, number);
     return archive;
 }
 
