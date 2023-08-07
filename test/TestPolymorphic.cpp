@@ -2,7 +2,7 @@
 
 #include <SF/Support/string.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 template <class SomeType>
@@ -38,7 +38,7 @@ public:
 
 } // namespace internal
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(Save, Base<std::string>)
 {

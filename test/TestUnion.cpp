@@ -2,7 +2,7 @@
 
 #include <SF/Support/array.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 union CommonData
@@ -19,7 +19,7 @@ union Variant
     std::array<wchar_t, 3> a;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Variant)
 {

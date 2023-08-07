@@ -5,7 +5,7 @@
 #include <SF/Support/variant.hpp>
 #include <SF/Support/string.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct OwnType
@@ -15,7 +15,7 @@ struct OwnType
     int var;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, OwnType)
 {

@@ -7,7 +7,8 @@
 
 #include <SF/Core/SerializatonBase.hpp>
 
-#include <SF/Alias.hpp>
+#include <SF/Utility/Alias.hpp>
+
 #include <SF/ApplyFunctor.hpp>
 #include <SF/Strict.hpp>
 

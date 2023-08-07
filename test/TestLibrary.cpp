@@ -77,7 +77,7 @@ TEST(TestLibrary, TestValidation)
     }
 }
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 class Triangle : public Instantiable
@@ -99,7 +99,7 @@ class Square // non instantiable
     SERIALIZABLE(Square)
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 TEST(TestLibrary, TestInstantiableRegistry)
 {
@@ -162,7 +162,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
     }
 }
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct MyStruct : Instantiable
@@ -185,7 +185,7 @@ struct MyCustomType : Instantiable
     SERIALIZABLE(MyCustomType)
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 EXPORT_INSTANTIABLE_KEY("MyClass", MyStruct)
 EXPORT_INSTANTIABLE_KEY("MyStruct", MyClass)
@@ -281,7 +281,7 @@ TEST(TestLibrary, TestStreamWrapper)
 // but if you are going to serialize it in the future -
 // write SERIALIZABLE(type) and omit SERIALIZATION(mode, type)
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct WorldObject : Instantiable
@@ -328,7 +328,7 @@ struct DecorativeFoliageObject : DecorativeObject, FoliageObjectInstance
     int dcfo = 0;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, WorldObject)
 {
@@ -401,7 +401,7 @@ TEST(TestLibrary, TestInheritance)
     }
 }
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 class SomeObjectImpl
@@ -448,7 +448,7 @@ struct PolymorphicDerived : public PolymorphicBase
     SERIALIZABLE(PolymorphicDerived)
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, SomeObjectImpl)
 {
@@ -510,7 +510,7 @@ TEST(TestLibrary, TestAccess)
 // since we dont use SERIALIZABLE remember that:
 // SERIALIZABLE contains SERIALIZATION_ACCESS() and INSTANTIABLE_BODY() macros
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct NoTraitBase : sf::Instantiable
@@ -523,7 +523,7 @@ struct NoTraitDerived : NoTraitBase
     int d = 0;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, NoTraitBase)
 {
@@ -603,7 +603,7 @@ TEST(TestLibrary, TestPartition)
 
 #if __cplusplus >= 201703L
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct AggregateObject
@@ -613,7 +613,7 @@ struct AggregateObject
     char c;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, AggregateObject)
 {
@@ -653,7 +653,7 @@ TEST(TestLibrary, TestAggregateOverload)
 
 #include <SF/Support/unique_ptr.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct Interface : sf::Instantiable
@@ -670,7 +670,7 @@ struct Implementation : Interface
     virtual void logic() override { /*some logic...*/ }
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Interface) {}
 SERIALIZATION(SaveLoad, Implementation) {}

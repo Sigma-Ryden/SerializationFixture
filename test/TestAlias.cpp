@@ -1,6 +1,8 @@
 #include "SFTestingBase.hpp"
 
-TEST_MODULE()
+#include <SF/Utility/Alias.hpp>
+
+TEST_SPACE()
 {
 
 struct Base : Instantiable
@@ -15,7 +17,7 @@ struct Derived : Base
     int y;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Base)
 {

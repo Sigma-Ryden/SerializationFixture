@@ -11,11 +11,11 @@
 // Test definition
 
 // Allow to hide owner classes within different translation units
-#define TEST_MODULE(...)                                                                                \
+#define TEST_SPACE(...)                                                                                 \
     namespace __VA_ARGS__
 
 #define TEST(test_module, test_name)                                                                    \
-    TEST_MODULE(test_module) {                                                                          \
+    TEST_SPACE(test_module) {                                                                           \
         struct test_name : TestingInterface {                                                           \
             test_name() : TestingInterface(#test_module, #test_name) {}                                 \
             void run() override;                                                                        \

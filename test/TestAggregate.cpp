@@ -6,7 +6,7 @@
 #include <SF/Support/any.hpp>
 #include <SF/Support/shared_ptr.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct AggregateType
@@ -41,7 +41,7 @@ struct DerivedAggregateType // : BaseAggregateType - serialization not supported
     bool state;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 TEST(TestCommon, TestAggregate)
 {

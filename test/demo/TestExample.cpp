@@ -5,7 +5,7 @@
 #include <SF/Support/map.hpp>
 #include <SF/Support/shared_ptr.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 enum class Property
@@ -27,7 +27,7 @@ struct Handbook
     std::map<int, std::shared_ptr<Prototype>> prototypes;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Prototype)
 {

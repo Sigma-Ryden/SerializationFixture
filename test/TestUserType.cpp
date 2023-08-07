@@ -1,6 +1,6 @@
 #include "SFTestingBase.hpp"
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct Vector
@@ -23,7 +23,7 @@ struct Box
     Vector Max;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Vector)
 {
@@ -65,7 +65,7 @@ TEST(TestCommon, TestUserType)
 #include <SF/Support/string.hpp>
 #include <SF/Support/any.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct Product
@@ -82,7 +82,7 @@ struct Printer : Product
 #endif // if
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Product)
 {

@@ -8,7 +8,7 @@
 #include <SF/Support/vector.hpp>
 #include <SF/Support/shared_ptr.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct Entity : Instantiable
@@ -32,7 +32,7 @@ struct Girl : Entity
     int g;
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Boy)
 {

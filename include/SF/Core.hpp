@@ -17,8 +17,6 @@
 #include <SF/Aggregate.hpp>
 #include <SF/Union.hpp>
 
-#include <SF/Alias.hpp>
-
 #include <SF/ApplyFunctor.hpp>
 #include <SF/Hierarchy.hpp>
 #include <SF/DataTrack.hpp>

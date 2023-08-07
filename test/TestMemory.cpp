@@ -2,7 +2,7 @@
 
 #include <SF/Support/unique_ptr.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct Parent : Instantiable
@@ -25,7 +25,7 @@ bool operator== (const Child& lhs, const Child& rhs)
     return lhs.p == rhs.p && lhs.c == rhs.c;
 }
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Parent)
 {
@@ -74,7 +74,7 @@ TEST(TestMemory, TestUniquePtr)
 
 #include <SF/Support/shared_ptr.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct A : Instantiable
@@ -113,7 +113,7 @@ bool operator== (const D& lhs, const D& rhs)
         && lhs.d == rhs.d;
 }
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, A)
 {
@@ -272,7 +272,7 @@ TEST(TestMemory, TestSharedAndWeakPtr)
 
 #include <SF/Support/string.hpp>
 
-TEST_MODULE()
+TEST_SPACE()
 {
 
 struct Human
@@ -283,7 +283,7 @@ struct Human
     Human(const std::string& name = "Unnamed") : name(name) {}
 };
 
-} // TEST_MODULE
+} // TEST_SPACE
 
 SERIALIZATION(SaveLoad, Human)
 {

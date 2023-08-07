@@ -32,6 +32,8 @@ set(SF
 
     include/SF/Utility/Span.hpp
     include/SF/Utility/Functional.hpp
+    include/SF/Utility/BitPack.hpp
+    include/SF/Utility/Alias.hpp
 
     include/SF/Binary.hpp
     include/SF/DataTrack.hpp
@@ -50,7 +52,6 @@ set(SF
     include/SF/HierarchyTrack.hpp
     include/SF/Union.hpp
     include/SF/Aggregate.hpp
-    include/SF/Alias.hpp
 
     include/SF/Core.hpp
 )
@@ -121,6 +122,7 @@ add_executable(${PROJECT_NAME}
     test/TestTracking.cpp
     test/TestAggregate.cpp
     test/TestAlias.cpp
+    test/TestBitPack.cpp
 
     test/TestLibrary/BaseObject.hpp
     test/TestLibrary/BaseObject.cpp
