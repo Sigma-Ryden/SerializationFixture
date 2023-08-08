@@ -470,11 +470,6 @@ template <class T> struct is_write_archive : std::is_base_of<core::WriteArchiveT
 
 template <class T> struct is_archive : one<is_read_archive<T>, is_write_archive<T>> {};
 
-template <class T> struct is_Save : is_write_archive<T> {};
-template <class T> struct is_Load : is_read_archive<T> {};
-
-template <class T> struct is_SaveLoad : is_archive<T> {};
-
 } // namespace meta
 
 } // namespace sf
@@ -2270,6 +2265,21 @@ Archive& operator& (Archive& archive, T& unregistered)
 namespace sf
 {
 
+namespace meta
+{
+
+template <class T> struct is_Save : is_write_archive<T> {};
+template <class T> struct is_Load : is_read_archive<T> {};
+
+template <class T> struct is_SaveLoad : is_archive<T> {};
+
+} // namespace meta
+
+} // namespace sf
+
+namespace sf
+{
+
 namespace apply
 {
 
@@ -3677,55 +3687,64 @@ apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_
 } // namespace sf
 
 #define _BITPACK_N(...) SFCONCAT(_BITPACK_, SFVA_ARGS_SIZE(__VA_ARGS__))(__VA_ARGS__)
-#define _BITPACK_IMPLEMENTATION(archive, ...) archive); _BITPACK_N(__VA_ARGS__) }
+#define _BITPACK_BODY(archive, ...) archive); _BITPACK_N(__VA_ARGS__) }
+#define _BITPACK_IMPLEMENTATION(...) { auto __bitpack = ::sf::bitpack<__VA_ARGS__>( _BITPACK_BODY
 
+#define _BITFIELD(field_and_bits) SFFIRST_ARGUMENT field_and_bits = __bitpack field_and_bits;
+
+#define _BITPACK_1(field_and_bits) _BITFIELD(field_and_bits)
+#define _BITPACK_2(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_1(__VA_ARGS__)
+#define _BITPACK_3(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_2(__VA_ARGS__)
+#define _BITPACK_4(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_3(__VA_ARGS__)
+#define _BITPACK_5(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_4(__VA_ARGS__)
+#define _BITPACK_6(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_5(__VA_ARGS__)
+#define _BITPACK_7(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_6(__VA_ARGS__)
+#define _BITPACK_8(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_7(__VA_ARGS__)
+
+#define _BITPACK_9(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_8(__VA_ARGS__)
+#define _BITPACK_10(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_9(__VA_ARGS__)
+#define _BITPACK_11(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_10(__VA_ARGS__)
+#define _BITPACK_12(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_11(__VA_ARGS__)
+#define _BITPACK_13(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_12(__VA_ARGS__)
+#define _BITPACK_14(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_13(__VA_ARGS__)
+#define _BITPACK_15(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_14(__VA_ARGS__)
+#define _BITPACK_16(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_15(__VA_ARGS__)
+
+#define _BITPACK_17(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_16(__VA_ARGS__)
+#define _BITPACK_18(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_17(__VA_ARGS__)
+#define _BITPACK_19(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_18(__VA_ARGS__)
+#define _BITPACK_20(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_19(__VA_ARGS__)
+#define _BITPACK_21(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_20(__VA_ARGS__)
+#define _BITPACK_22(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_21(__VA_ARGS__)
+#define _BITPACK_23(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_22(__VA_ARGS__)
+#define _BITPACK_24(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_23(__VA_ARGS__)
+
+#define _BITPACK_25(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_24(__VA_ARGS__)
+#define _BITPACK_26(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_25(__VA_ARGS__)
+#define _BITPACK_27(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_26(__VA_ARGS__)
+#define _BITPACK_28(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_27(__VA_ARGS__)
+#define _BITPACK_29(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_28(__VA_ARGS__)
+#define _BITPACK_30(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_29(__VA_ARGS__)
+#define _BITPACK_31(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_30(__VA_ARGS__)
+#define _BITPACK_32(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_31(__VA_ARGS__)
+// and etc.
+
+// Signature:
 // BITPACK(common_fields_type)(archive, (object.field0, field0_bits), (object.field1, field1_bits), ...)
-// will generate code:
+#define BITPACK(...) _BITPACK_IMPLEMENTATION(__VA_ARGS__)
+
+// Signature:
+// FBITPACK(archive, (object.field0, field0_bits), (object.field1, field1_bits), ...)
+#define FBITPACK(...) BITPACK()(__VA_ARGS__)
+
+// FBITPACK use fixed common_fields_type size version.
+// BITPACK macro will generate code:
 // {
 //     auto __bitpack = ::sf::bitpack<common_fields_type>(archive);
 //     object.field0 = __bitpack(object.field0, field0_bits);
 //     object.field1 = __bitpack(object.field1, field1_bits);
-//     ...
+//     and etc.
 // }
-#define BITPACK(...) { auto __bitpack = ::sf::bitpack<__VA_ARGS__>( _BITPACK_IMPLEMENTATION
-
-#define _BITFIELD(field_and_size) SFFIRST_ARGUMENT field_and_size = __bitpack field_and_size;
-
-#define _BITPACK_1(field_and_size) _BITFIELD(field_and_size)
-#define _BITPACK_2(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_1(__VA_ARGS__)
-#define _BITPACK_3(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_2(__VA_ARGS__)
-#define _BITPACK_4(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_3(__VA_ARGS__)
-#define _BITPACK_5(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_4(__VA_ARGS__)
-#define _BITPACK_6(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_5(__VA_ARGS__)
-#define _BITPACK_7(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_6(__VA_ARGS__)
-#define _BITPACK_8(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_7(__VA_ARGS__)
-
-#define _BITPACK_9(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_8(__VA_ARGS__)
-#define _BITPACK_10(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_9(__VA_ARGS__)
-#define _BITPACK_11(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_10(__VA_ARGS__)
-#define _BITPACK_12(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_11(__VA_ARGS__)
-#define _BITPACK_13(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_12(__VA_ARGS__)
-#define _BITPACK_14(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_13(__VA_ARGS__)
-#define _BITPACK_15(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_14(__VA_ARGS__)
-#define _BITPACK_16(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_15(__VA_ARGS__)
-
-#define _BITPACK_17(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_16(__VA_ARGS__)
-#define _BITPACK_18(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_17(__VA_ARGS__)
-#define _BITPACK_19(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_18(__VA_ARGS__)
-#define _BITPACK_20(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_19(__VA_ARGS__)
-#define _BITPACK_21(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_20(__VA_ARGS__)
-#define _BITPACK_22(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_21(__VA_ARGS__)
-#define _BITPACK_23(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_22(__VA_ARGS__)
-#define _BITPACK_24(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_23(__VA_ARGS__)
-
-#define _BITPACK_25(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_24(__VA_ARGS__)
-#define _BITPACK_26(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_25(__VA_ARGS__)
-#define _BITPACK_27(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_26(__VA_ARGS__)
-#define _BITPACK_28(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_27(__VA_ARGS__)
-#define _BITPACK_29(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_28(__VA_ARGS__)
-#define _BITPACK_30(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_29(__VA_ARGS__)
-#define _BITPACK_31(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_30(__VA_ARGS__)
-#define _BITPACK_32(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_31(__VA_ARGS__)
 
 namespace sf
 {
