@@ -2842,7 +2842,29 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>::value)
 #if __cplusplus >= 201703L
 
 #define _SF_CONCAT_IMPL(a, b) a##b
+
+// concatenation of two macro arguments
 #define SFCONCAT(a, b) _SF_CONCAT_IMPL(a, b)
+
+// return first argument from two
+#define SFFIRST_ARGUMENT(first, ...) first
+
+#define _SFVA_ARGS_SIZE_IMPL(                                                                           \
+     _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, _10, _11, _12, _13, _14, _15, _16,                     \
+    _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32,                     \
+    _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48,                     \
+    _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, N, ...) N
+
+#define _REVERSE_INTEGER_SEQUENCE                                                                       \
+    63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48,                                     \
+    47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,                                     \
+    31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16,                                     \
+    15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0
+
+#define _SFVA_ARGS_SIZE(...) _SFVA_ARGS_SIZE_IMPL(__VA_ARGS__)
+
+// return __VA_ARGS__ arguments count, for empty __VA_ARGS__ return 1
+#define SFVA_ARGS_SIZE(...) _SFVA_ARGS_SIZE(__VA_ARGS__, _REVERSE_INTEGER_SEQUENCE)
 
 // generate repeat sequance macro(1) macro(2) ... macro(count)
 #define SFREPEAT(macro, count) SFCONCAT(_REPEAT_, count)(macro)
@@ -3102,113 +3124,6 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_union<T>::value)
 namespace sf
 {
 
-template <typename T>
-class alias
-{
-private:
-    T* data_;
-
-public:
-    using type = T;
-
-    // DONT use dereferencing of null data before rebinding
-    alias() noexcept : data_(nullptr) {}
-
-    template <typename dT,
-              SFREQUIRE(::Serialization::is_pointer_cast_allowed<dT, T>::value)>
-    alias(dT& data) noexcept
-        : data_(std::addressof(data)) {}
-
-    template <typename dT>
-    alias(const alias<dT>& data) noexcept : alias(data.get()) {}
-
-public:
-    // rebinding data
-    alias(const alias&) = default;
-    alias& operator=(const alias&) = default;
-
-    bool is_refer() const noexcept { return data_ == nullptr; }
-
-    template <typename dT>
-    bool is_refer(dT& data)  const noexcept { return data_ == std::addressof(data); }
-
-    operator T&() const noexcept { return get(); }
-
-    T& get() const noexcept { return *data_; }
-    void set(T& data) noexcept { data_ = std::addressof(data); }
-};
-
-namespace meta
-{
-
-template <typename> struct is_alias : std::false_type {};
-template <typename T>
-struct is_alias<alias<T>> : std::true_type {};
-
-} // namespace meta
-
-// inline namespace common also used in namespace library
-inline namespace common
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
-{
-    using key_type = typename Archive::TrackingKeyType;
-
-    if (alias.is_refer())
-        throw "The write alias must be initialized.";
-
-    auto pointer = std::addressof(alias.get());
-    auto key = detail::refer_key(archive, pointer);
-
-    auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
-
-    if (not is_tracking)
-        throw "The write alias must be tracked before.";
-
-    detail::native_save(archive, pointer, key);
-
-    return archive;
-}
-
-EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
-{
-    using key_type   = typename Archive::TrackingKeyType;
-    using value_type = typename T::type;
-
-    using track_type = tracking::Raw;
-
-#ifndef SF_GARBAGE_CHECK_DISABLE
-    if (not alias.is_refer())
-        throw "The read alias must be null.";
-#endif // SF_GARBAGE_CHECK_DISABLE
-
-    key_type key{};
-    archive & key;
-
-    auto& item = archive.template tracking<tracking::Raw>()[key];
-
-    if (item.address == nullptr)
-        throw "The read alias must be tracked before.";
-
-    value_type* pointer = nullptr;
-
-    detail::native_load(archive, pointer, item.address);
-
-    alias.set(*pointer); // pointer will never nullptr
-
-    return archive;
-}
-
-} // inline namespace common
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(meta::is_alias<T>::value)
-
-namespace sf
-{
-
 template <class Base, class Archive, class Derived,
           SFREQUIRE(meta::all<meta::is_archive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
@@ -3393,6 +3308,113 @@ EXPORT_SERIALIZATION_ARCHIVE(1, WriteArchive,
 
 #include <initializer_list> // initializer_list
 #include <tuple> // tuple
+
+namespace sf
+{
+
+template <typename T>
+class alias
+{
+private:
+    T* data_;
+
+public:
+    using type = T;
+
+    // DONT use dereferencing of null data before rebinding
+    alias() noexcept : data_(nullptr) {}
+
+    template <typename dT,
+              SFREQUIRE(::Serialization::is_pointer_cast_allowed<dT, T>::value)>
+    alias(dT& data) noexcept
+        : data_(std::addressof(data)) {}
+
+    template <typename dT>
+    alias(const alias<dT>& data) noexcept : alias(data.get()) {}
+
+public:
+    // rebinding data
+    alias(const alias&) = default;
+    alias& operator=(const alias&) = default;
+
+    bool is_refer() const noexcept { return data_ == nullptr; }
+
+    template <typename dT>
+    bool is_refer(dT& data)  const noexcept { return data_ == std::addressof(data); }
+
+    operator T&() const noexcept { return get(); }
+
+    T& get() const noexcept { return *data_; }
+    void set(T& data) noexcept { data_ = std::addressof(data); }
+};
+
+namespace meta
+{
+
+template <typename> struct is_alias : std::false_type {};
+template <typename T>
+struct is_alias<alias<T>> : std::true_type {};
+
+} // namespace meta
+
+// inline namespace common also used in namespace library
+inline namespace common
+{
+
+EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
+{
+    using key_type = typename Archive::TrackingKeyType;
+
+    if (alias.is_refer())
+        throw "The write alias must be initialized.";
+
+    auto pointer = std::addressof(alias.get());
+    auto key = detail::refer_key(archive, pointer);
+
+    auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
+
+    if (not is_tracking)
+        throw "The write alias must be tracked before.";
+
+    detail::native_save(archive, pointer, key);
+
+    return archive;
+}
+
+EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
+{
+    using key_type   = typename Archive::TrackingKeyType;
+    using value_type = typename T::type;
+
+    using track_type = tracking::Raw;
+
+#ifndef SF_GARBAGE_CHECK_DISABLE
+    if (not alias.is_refer())
+        throw "The read alias must be null.";
+#endif // SF_GARBAGE_CHECK_DISABLE
+
+    key_type key{};
+    archive & key;
+
+    auto& item = archive.template tracking<tracking::Raw>()[key];
+
+    if (item.address == nullptr)
+        throw "The read alias must be tracked before.";
+
+    value_type* pointer = nullptr;
+
+    detail::native_load(archive, pointer, item.address);
+
+    alias.set(*pointer); // pointer will never nullptr
+
+    return archive;
+}
+
+} // inline namespace common
+
+} // namespace sf
+
+CONDITIONAL_TYPE_REGISTRY(meta::is_alias<T>::value)
 
 namespace sf
 {
@@ -3653,6 +3675,218 @@ apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_
 } // inline namespace common
 
 } // namespace sf
+
+#define _BITPACK_N(...) SFCONCAT(_BITPACK_, SFVA_ARGS_SIZE(__VA_ARGS__))(__VA_ARGS__)
+#define _BITPACK_IMPLEMENTATION(archive, ...) archive); _BITPACK_N(__VA_ARGS__) }
+
+// BITPACK(common_fields_type)(archive, (object.field0, field0_bits), (object.field1, field1_bits), ...)
+// will generate code:
+// {
+//     auto __bitpack = ::sf::bitpack<common_fields_type>(archive);
+//     object.field0 = __bitpack(object.field0, field0_bits);
+//     object.field1 = __bitpack(object.field1, field1_bits);
+//     ...
+// }
+#define BITPACK(...) { auto __bitpack = ::sf::bitpack<__VA_ARGS__>( _BITPACK_IMPLEMENTATION
+
+#define _BITFIELD(field_and_size) SFFIRST_ARGUMENT field_and_size = __bitpack field_and_size;
+
+#define _BITPACK_1(field_and_size) _BITFIELD(field_and_size)
+#define _BITPACK_2(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_1(__VA_ARGS__)
+#define _BITPACK_3(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_2(__VA_ARGS__)
+#define _BITPACK_4(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_3(__VA_ARGS__)
+#define _BITPACK_5(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_4(__VA_ARGS__)
+#define _BITPACK_6(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_5(__VA_ARGS__)
+#define _BITPACK_7(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_6(__VA_ARGS__)
+#define _BITPACK_8(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_7(__VA_ARGS__)
+
+#define _BITPACK_9(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_8(__VA_ARGS__)
+#define _BITPACK_10(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_9(__VA_ARGS__)
+#define _BITPACK_11(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_10(__VA_ARGS__)
+#define _BITPACK_12(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_11(__VA_ARGS__)
+#define _BITPACK_13(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_12(__VA_ARGS__)
+#define _BITPACK_14(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_13(__VA_ARGS__)
+#define _BITPACK_15(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_14(__VA_ARGS__)
+#define _BITPACK_16(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_15(__VA_ARGS__)
+
+#define _BITPACK_17(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_16(__VA_ARGS__)
+#define _BITPACK_18(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_17(__VA_ARGS__)
+#define _BITPACK_19(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_18(__VA_ARGS__)
+#define _BITPACK_20(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_19(__VA_ARGS__)
+#define _BITPACK_21(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_20(__VA_ARGS__)
+#define _BITPACK_22(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_21(__VA_ARGS__)
+#define _BITPACK_23(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_22(__VA_ARGS__)
+#define _BITPACK_24(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_23(__VA_ARGS__)
+
+#define _BITPACK_25(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_24(__VA_ARGS__)
+#define _BITPACK_26(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_25(__VA_ARGS__)
+#define _BITPACK_27(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_26(__VA_ARGS__)
+#define _BITPACK_28(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_27(__VA_ARGS__)
+#define _BITPACK_29(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_28(__VA_ARGS__)
+#define _BITPACK_30(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_29(__VA_ARGS__)
+#define _BITPACK_31(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_30(__VA_ARGS__)
+#define _BITPACK_32(field_and_size, ...) _BITFIELD(field_and_size) _BITPACK_31(__VA_ARGS__)
+
+namespace sf
+{
+
+namespace detail
+{
+
+template <class Archive, typename T, typename enable = void>
+struct BitPack;
+
+template <class Archive, typename T>
+struct BitPack<Archive, T, SFWHEN(sf::meta::is_write_archive<Archive>::value)>
+{
+    Archive& archive;
+    T data{};
+    std::size_t offset{};
+
+    BitPack(Archive& archive) : archive(archive) {}
+    ~BitPack() { archive & data; }
+
+    T operator()(T field, std::size_t bits) noexcept
+    {
+        // same as data = data | (field << offset);
+        data |= field << offset;
+        offset += bits;
+
+        return field;
+    }
+};
+
+template <class Archive, typename T>
+struct BitPack<Archive, T, SFWHEN(sf::meta::is_read_archive<Archive>::value)>
+{
+    Archive& archive;
+    T data{};
+
+    BitPack(Archive& archive) : archive(archive) { archive & data; }
+
+    T operator()(T field, std::size_t bits) noexcept
+    {
+        //same as field = data & ~(0xf...f << bits)
+        field = data & ~(~T{} << bits);
+        data >>= bits;
+
+        return field;
+    }
+};
+
+} // namespace detail
+
+template <typename PackType = let::u32, class Archive>
+detail::BitPack<Archive, PackType> bitpack(Archive& archive) noexcept { return { archive }; }
+
+} // namespace sf
+
+namespace sf
+{
+
+template <typename T>
+class alias
+{
+private:
+    T* data_;
+
+public:
+    using type = T;
+
+    // DONT use dereferencing of null data before rebinding
+    alias() noexcept : data_(nullptr) {}
+
+    template <typename dT,
+              SFREQUIRE(::Serialization::is_pointer_cast_allowed<dT, T>::value)>
+    alias(dT& data) noexcept
+        : data_(std::addressof(data)) {}
+
+    template <typename dT>
+    alias(const alias<dT>& data) noexcept : alias(data.get()) {}
+
+public:
+    // rebinding data
+    alias(const alias&) = default;
+    alias& operator=(const alias&) = default;
+
+    bool is_refer() const noexcept { return data_ == nullptr; }
+
+    template <typename dT>
+    bool is_refer(dT& data)  const noexcept { return data_ == std::addressof(data); }
+
+    operator T&() const noexcept { return get(); }
+
+    T& get() const noexcept { return *data_; }
+    void set(T& data) noexcept { data_ = std::addressof(data); }
+};
+
+namespace meta
+{
+
+template <typename> struct is_alias : std::false_type {};
+template <typename T>
+struct is_alias<alias<T>> : std::true_type {};
+
+} // namespace meta
+
+// inline namespace common also used in namespace library
+inline namespace common
+{
+
+EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
+{
+    using key_type = typename Archive::TrackingKeyType;
+
+    if (alias.is_refer())
+        throw "The write alias must be initialized.";
+
+    auto pointer = std::addressof(alias.get());
+    auto key = detail::refer_key(archive, pointer);
+
+    auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
+
+    if (not is_tracking)
+        throw "The write alias must be tracked before.";
+
+    detail::native_save(archive, pointer, key);
+
+    return archive;
+}
+
+EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
+{
+    using key_type   = typename Archive::TrackingKeyType;
+    using value_type = typename T::type;
+
+    using track_type = tracking::Raw;
+
+#ifndef SF_GARBAGE_CHECK_DISABLE
+    if (not alias.is_refer())
+        throw "The read alias must be null.";
+#endif // SF_GARBAGE_CHECK_DISABLE
+
+    key_type key{};
+    archive & key;
+
+    auto& item = archive.template tracking<tracking::Raw>()[key];
+
+    if (item.address == nullptr)
+        throw "The read alias must be tracked before.";
+
+    value_type* pointer = nullptr;
+
+    detail::native_load(archive, pointer, item.address);
+
+    alias.set(*pointer); // pointer will never nullptr
+
+    return archive;
+}
+
+} // inline namespace common
+
+} // namespace sf
+
+CONDITIONAL_TYPE_REGISTRY(meta::is_alias<T>::value)
 
 namespace sf
 {
