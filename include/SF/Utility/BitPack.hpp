@@ -12,6 +12,7 @@
 #define _BITPACK_N(...) SFCONCAT(_BITPACK_, SFVA_ARGS_SIZE(__VA_ARGS__))(__VA_ARGS__)
 #define _BITPACK_IMPLEMENTATION(archive, ...) archive); _BITPACK_N(__VA_ARGS__) }
 
+// BITPACK macro signature:
 // BITPACK(common_fields_type)(archive, (object.field0, field0_bits), (object.field1, field1_bits), ...)
 // will generate code:
 // {
