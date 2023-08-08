@@ -34,6 +34,7 @@ set(SF
     include/SF/Utility/Functional.hpp
     include/SF/Utility/BitPack.hpp
     include/SF/Utility/Alias.hpp
+	include/SF/Utility/Detail/Macro.hpp
 
     include/SF/Binary.hpp
     include/SF/DataTrack.hpp

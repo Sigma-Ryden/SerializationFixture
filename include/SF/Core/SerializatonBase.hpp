@@ -26,11 +26,6 @@ template <class T> struct is_write_archive : std::is_base_of<core::WriteArchiveT
 
 template <class T> struct is_archive : one<is_read_archive<T>, is_write_archive<T>> {};
 
-template <class T> struct is_Save : is_write_archive<T> {};
-template <class T> struct is_Load : is_read_archive<T> {};
-
-template <class T> struct is_SaveLoad : is_archive<T> {};
-
 } // namespace meta
 
 } // namespace sf

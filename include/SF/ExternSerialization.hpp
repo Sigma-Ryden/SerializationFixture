@@ -21,4 +21,19 @@
                                         ::sf::meta::is_registered_extern<__VA_ARGS__>>::value)>         \
     Archive& operator& (Archive& archive, __VA_ARGS__& parameter)
 
+namespace sf
+{
+
+namespace meta
+{
+
+template <class T> struct is_Save : is_write_archive<T> {};
+template <class T> struct is_Load : is_read_archive<T> {};
+
+template <class T> struct is_SaveLoad : is_archive<T> {};
+
+} // namespace meta
+
+} // namespace sf
+
 #endif // SF_EXTERN_SERIALIZATION_HPP

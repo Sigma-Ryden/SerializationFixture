@@ -1,5 +1,5 @@
-#ifndef SF_ALIAS_HPP
-#define SF_ALIAS_HPP
+#ifndef SF_UTILITY_ALIAS_HPP
+#define SF_UTILITY_ALIAS_HPP
 
 #include <memory> // addressof
 
@@ -119,4 +119,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_alias<T>::value)
 
-#endif // SF_ALIAS_HPP
+#endif // SF_UTILITY_ALIAS_HPP
