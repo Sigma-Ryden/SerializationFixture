@@ -3347,7 +3347,7 @@ public:
     alias(const alias&) = default;
     alias& operator=(const alias&) = default;
 
-    bool is_refer() const noexcept { return data_ == nullptr; }
+    bool is_refer() const noexcept { return data_ != nullptr; }
 
     template <typename dT>
     bool is_refer(dT& data)  const noexcept { return data_ == std::addressof(data); }
@@ -3375,7 +3375,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
 {
     using key_type = typename Archive::TrackingKeyType;
 
-    if (alias.is_refer())
+    if (not alias.is_refer())
         throw "The write alias must be initialized.";
 
     auto pointer = std::addressof(alias.get());
@@ -3399,7 +3399,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
     using track_type = tracking::Raw;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
-    if (not alias.is_refer())
+    if (alias.is_refer())
         throw "The read alias must be null.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
