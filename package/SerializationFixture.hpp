@@ -39,10 +39,6 @@ static_assert(sizeof(int) == 4, "Require integer number size.");
 #define SFWHEN(...) ::sf::meta::when<(bool)(__VA_ARGS__)>
 #define SFVOID(...) ::sf::meta::to_void<decltype(__VA_ARGS__)>
 
-#ifndef SF_MAX_TEMPLATE_DEPTH
-    #define SF_MAX_TEMPLATE_DEPTH 256
-#endif // SF_MAX_TEMPLATE_DEPTH
-
 namespace sf
 {
 
@@ -495,8 +491,8 @@ using u64 = std::uint64_t;
 
 } // namespace sf
 
-#ifndef SF_ARCHIVE_MAX_TRAIT_KEY
-    #define SF_ARCHIVE_MAX_TRAIT_KEY 4
+#ifndef SF_ARCHIVE_TRAIT_MAX_KEY_SIZE
+    #define SF_ARCHIVE_TRAIT_MAX_KEY_SIZE 4
 #endif // SF_ARCHIVE_MAX_TRAIT_KEY
 
 #define SERIALIZATION_ARCHIVE(...)                                                                      \
@@ -515,7 +511,7 @@ struct ArchiveTraitBase
     using key_type = let::u8;
 
     static constexpr auto base_key = key_type(-1);
-    static constexpr auto max_key = key_type(SF_ARCHIVE_MAX_TRAIT_KEY);
+    static constexpr auto max_key = key_type(SF_ARCHIVE_TRAIT_MAX_KEY_SIZE);
 };
 
 template <class Archive> struct ArchiveTraitKey
@@ -1342,6 +1338,14 @@ Archive& operator>> (Archive& archive, T&& data)
     #define INSTANTIABLE_TYPE ::sf::Instantiable
 #endif // INSTANTIABLE_TYPE
 
+namespace sf
+{
+
+// Should be in sf namespace
+struct Instantiable { virtual ~Instantiable() = default; };
+
+} // namespace sf
+
 // Auto instantiable type registration
 #define SERIALIZATION_FIXTURE(...)                                                                      \
     private:                                                                                            \
@@ -1354,14 +1358,6 @@ Archive& operator>> (Archive& archive, T&& data)
     static constexpr __key_type __static_trait() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }      \
     virtual __key_type __trait() const noexcept { return ::Serialization::trait<__VA_ARGS__>(); }       \
     public:
-
-namespace sf
-{
-
-// Should be in sf namespace
-struct Instantiable { virtual ~Instantiable() = default; };
-
-} // namespace sf
 
 namespace sf
 {
@@ -1510,7 +1506,7 @@ public:
         return registry_.find(key) != registry_.end();
     }
 
-#ifdef SF_REGISTRY_ACCESS
+#ifndef SF_REGISTRY_ACCESS
 private:
 #endif // SF_REGISTRY_ACCESS
     InstantiableProxy& registry(key_type key)
@@ -1887,7 +1883,7 @@ template <typename T> struct is_track_hierarchy : std::is_same<T, tracking::Hier
 #include <vector> // vector
 
 #ifndef SF_BYTE_STREAM_RESERVE_SIZE
-    #define SF_BYTE_STREAM_RESERVE_SIZE std::size_t(1024)
+    #define SF_BYTE_STREAM_RESERVE_SIZE std::size_t(4096)
 #endif // SF_BYTE_STREAM_RESERVE_SIZE
 
 namespace sf
