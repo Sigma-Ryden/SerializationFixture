@@ -16,10 +16,6 @@
 
 #include <SF/Detail/MetaMacro.hpp> // SFVOID
 
-#ifndef SF_MAX_TEMPLATE_DEPTH
-    #define SF_MAX_TEMPLATE_DEPTH 256
-#endif // SF_MAX_TEMPLATE_DEPTH
-
 namespace sf
 {
 

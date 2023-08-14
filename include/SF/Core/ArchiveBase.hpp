@@ -3,8 +3,8 @@
 
 #include <SF/Core/TypeCore.hpp>
 
-#ifndef SF_ARCHIVE_MAX_TRAIT_KEY
-    #define SF_ARCHIVE_MAX_TRAIT_KEY 4
+#ifndef SF_ARCHIVE_TRAIT_MAX_KEY_SIZE
+    #define SF_ARCHIVE_TRAIT_MAX_KEY_SIZE 4
 #endif // SF_ARCHIVE_MAX_TRAIT_KEY
 
 #define SERIALIZATION_ARCHIVE(...)                                                                      \
@@ -23,7 +23,7 @@ struct ArchiveTraitBase
     using key_type = let::u8;
 
     static constexpr auto base_key = key_type(-1);
-    static constexpr auto max_key = key_type(SF_ARCHIVE_MAX_TRAIT_KEY);
+    static constexpr auto max_key = key_type(SF_ARCHIVE_TRAIT_MAX_KEY_SIZE);
 };
 
 template <class Archive> struct ArchiveTraitKey

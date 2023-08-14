@@ -7,7 +7,7 @@
 #include <SF/Core/Memory.hpp>
 
 #ifndef SF_BYTE_STREAM_RESERVE_SIZE
-    #define SF_BYTE_STREAM_RESERVE_SIZE std::size_t(1024)
+    #define SF_BYTE_STREAM_RESERVE_SIZE std::size_t(4096)
 #endif // SF_BYTE_STREAM_RESERVE_SIZE
 
 namespace sf
