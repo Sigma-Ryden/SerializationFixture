@@ -20,6 +20,7 @@ See last stable library version [here](https://github.com/Sigma-Ryden/Serializat
 - All arithmetic types
 - Enum or scoped enum
 - Static or dynamic array
+- Bit fields
 
 ### Data tracking:
 - Raw pointers
@@ -33,7 +34,7 @@ See last stable library version [here](https://github.com/Sigma-Ryden/Serializat
 See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/include/SF/Support).
 ### Serialization of users class:
 - Aggregate (since C++17)
-- Common/Template
+- Common/Union/Template
 - Hierarchy
 - Polymorphic/Abstract
 - Virtual Inheritance
