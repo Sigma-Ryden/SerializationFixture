@@ -535,7 +535,8 @@ SERIALIZATION(SaveLoad, NoTraitDerived)
     archive & hierarchy<NoTraitBase>(self) & self.d;
 }
 
-// if user does not use SERIALIZABLE macro (which include SERIALIZATION_TRAIT), then library will use typeid for type hashing,
+// if user does not use SERIALIZABLE macro (which include SERIALIZATION_TRAIT),
+// then library will use typeid for type hashing,
 // mixed usage SERIALIZATION_TRAIT and typeid does not allowed (in single hierarchy only)!
 // You also can specify hashing behavior with macro SF_TYPE_HASH - see Core/Hash.hpp
 // Note that: EXPORT_INSTANTIABLE_KEY("some_text", some_type) - is not allowed with typeid using
