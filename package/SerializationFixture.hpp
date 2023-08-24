@@ -847,7 +847,7 @@ public:
     }
 
     template <typename Base, class Archive, class Derived,
-              SFREQUIRE(sf::meta::all<sf::meta::is_archive<Archive>,
+              SFREQUIRE(sf::meta::all<sf::meta::is_ioarchive<Archive>,
                                       std::is_base_of<Base, Derived>>::value)>
     static void serialize_base(Archive& archive, Derived& object)
     {
@@ -1281,7 +1281,7 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_archive<DerivedArchive>,
+              SFREQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
                                   meta::negation<::Serialization::has_save_mode<T>>,
                                   meta::negation<::Serialization::has_load_mode<T>>>::value)>
     static void proccess(DerivedArchive& archive, T& data)
@@ -2031,7 +2031,7 @@ public:
     auto operator() () noexcept -> OArchive& { return *this; }
 };
 
-// create default OArchive<> with wrapper::OByteStream<>
+// create default OArchive with wrapper::OByteStream<>
 template <typename OutStream>
 OArchive<wrapper::OByteStream<OutStream>> oarchive(OutStream& stream)
 {
@@ -2163,7 +2163,7 @@ public:
     auto operator() () -> IArchive& { return *this; }
 };
 
-// create default IArchive<> with wrapper::IByteStream<>
+// create default IArchive with wrapper::IByteStream<>
 template <typename InStream>
 IArchive<wrapper::IByteStream<InStream>> iarchive(InStream& stream)
 {
@@ -2255,7 +2255,7 @@ namespace meta
 template <class T> struct is_Save : is_oarchive<T> {};
 template <class T> struct is_Load : is_iarchive<T> {};
 
-template <class T> struct is_SaveLoad : is_archive<T> {};
+template <class T> struct is_SaveLoad : is_ioarchive<T> {};
 
 } // namespace meta
 
@@ -2303,7 +2303,7 @@ namespace sf
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
 void binary(Archive& archive, T& data)
 {
     archive.stream().call(std::addressof(data), sizeof(T));
@@ -2335,31 +2335,31 @@ namespace sf
 namespace detail
 {
 
-template <class OArchive, typename T, typename KeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T, typename KeyType,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_save(OArchive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
+void native_save(Archive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
 
-template <class OArchive, typename T, typename KeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T, typename KeyType,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void native_save(OArchive& archive, T& pointer, KeyType track_key)
+void native_save(Archive& archive, T& pointer, KeyType track_key)
 {
     archive.registry().save_key(archive, pointer); // write class info
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(IArchive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
+void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
 {
     Memory::assign<meta::dereference<T>>(pointer, address);
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(IArchive& archive, T& pointer, Memory::void_ptr<T>& address)
+void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address)
 {
     auto& registry = archive.registry();
 
@@ -2374,10 +2374,10 @@ void native_load(IArchive& archive, T& pointer, Memory::void_ptr<T>& address)
 namespace sf
 {
 
-template <class OArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(OArchive& archive, T& pointer)
+void strict(Archive& archive, T& pointer)
 {
     if (pointer == nullptr)
         throw "The write pointer must be allocated.";
@@ -2385,10 +2385,10 @@ void strict(OArchive& archive, T& pointer)
     archive & (*pointer);
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(IArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
+void strict(Archive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     using item_type = typename Memory::ptr_trait<T>::item;
 
@@ -2403,10 +2403,10 @@ void strict(IArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
     archive & (*pointer);
 }
 
-template <class OArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(OArchive& archive, T& pointer)
+void strict(Archive& archive, T& pointer)
 {
     auto& registry = archive.registry();
 
@@ -2414,10 +2414,10 @@ void strict(OArchive& archive, T& pointer)
     registry.save(archive, pointer, id);
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(IArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
+void strict(Archive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
@@ -2426,10 +2426,10 @@ void strict(IArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 }
 
 // verison without cache using
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
-void strict(IArchive& archive, T& pointer)
+void strict(Archive& archive, T& pointer)
 {
     Memory::void_ptr<T> cache = nullptr;
     strict(archive, pointer, cache);
@@ -2438,11 +2438,11 @@ void strict(IArchive& archive, T& pointer)
 namespace detail
 {
 
-template <class OArchive, typename T,
-          typename KeyType = typename OArchive::TrackingKeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T,
+          typename KeyType = typename Archive::TrackingKeyType,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
-KeyType refer_key(OArchive& archive, T& pointer)
+KeyType refer_key(Archive& archive, T& pointer)
 {
     auto pure = Memory::pure(pointer);
     auto key = reinterpret_cast<KeyType>(Memory::raw(pure));
@@ -2451,11 +2451,11 @@ KeyType refer_key(OArchive& archive, T& pointer)
     return key;
 }
 
-template <class IArchive, typename T,
-          typename KeyType = typename IArchive::TrackingKeyType,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          typename KeyType = typename Archive::TrackingKeyType,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
-KeyType refer_key(IArchive& archive, T& pointer)
+KeyType refer_key(Archive& archive, T& pointer)
 {
 #ifdef SF_DEBUG
     if (pointer != nullptr)
@@ -2498,7 +2498,7 @@ namespace tracking
 {
 
 template <typename TrackType, class Archive, typename KeyType,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
 bool is_track(Archive& archive, KeyType key)
 {
     auto& item = archive.template tracking<TrackType>();
@@ -2506,17 +2506,17 @@ bool is_track(Archive& archive, KeyType key)
 }
 
 template <typename TrackType, class Archive, typename KeyType,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
 bool is_mixed(Archive& archive, KeyType key)
 {
     using reverse_track_type = typename reverse_trait<TrackType>::type;
     return is_track<reverse_track_type>(archive, key);
 }
 
-template <class OArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer<T>>::value)>
-void track(OArchive& archive, T& pointer)
+void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_trait<T>::type;
 
@@ -2541,12 +2541,12 @@ void track(OArchive& archive, T& pointer)
     }
 }
 
-template <class OArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_pointer<T>>>::value)>
-void track(OArchive& archive, T& data)
+void track(Archive& archive, T& data)
 {
-    using key_type = typename OArchive::TrackingKeyType;
+    using key_type = typename Archive::TrackingKeyType;
 
     auto address = Memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
@@ -2562,10 +2562,10 @@ void track(OArchive& archive, T& data)
     archive & data;
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer<T>>::value)>
-void track(IArchive& archive, T& pointer)
+void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_trait<T>::type;
 
@@ -2590,12 +2590,12 @@ void track(IArchive& archive, T& pointer)
     }
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::negation<meta::is_pointer<T>>>::value)>
-void track(IArchive& archive, T& data)
+void track(Archive& archive, T& data)
 {
-    using key_type = typename IArchive::TrackingKeyType;
+    using key_type = typename Archive::TrackingKeyType;
 
     key_type key{};
     archive & key;
@@ -2611,7 +2611,7 @@ void track(IArchive& archive, T& data)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<T>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<T>,
                               meta::is_serializable_raw_pointer<T>>::value)>
 void raw(Archive& archive, T& pointer)
 {
@@ -2719,7 +2719,7 @@ namespace compress
 
 // always require compressible type for fast compression
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_compressible<T>>::value)>
 void fast(Archive& archive, T& object)
 {
@@ -2733,7 +2733,7 @@ void fast(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
 void slow(Archive& archive, T& object)
 {
     for (auto&& item : object)
@@ -2741,7 +2741,7 @@ void slow(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_compressible<T>>::value)>
 void zip(Archive& archive, T& object)
 {
@@ -2749,7 +2749,7 @@ void zip(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::negation<meta::is_compressible<T>>>::value)>
 void zip(Archive& archive, T& object)
 {
@@ -3046,7 +3046,7 @@ SFREPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 } // namespace detail
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_aggregate<T>>::value)>
 void aggregate(Archive& archive, T& object)
 {
@@ -3119,7 +3119,7 @@ namespace sf
 {
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
 void base(Archive& archive, Derived& object)
 {
@@ -3127,7 +3127,7 @@ void base(Archive& archive, Derived& object)
 }
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
 void virtual_base(Archive& archive, Derived& object)
 {
@@ -3213,7 +3213,7 @@ void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
 
 // Variadic native_base function
 template <class Base, class... Base_n, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_derived_of<Derived, Base, Base_n...>>::value)>
 void hierarchy(Archive& archive, Derived& object)
 {
