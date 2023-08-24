@@ -139,7 +139,7 @@ public:
     }
 
     template <typename Base, class Archive, class Derived,
-              SFREQUIRE(sf::meta::all<sf::meta::is_archive<Archive>,
+              SFREQUIRE(sf::meta::all<sf::meta::is_ioarchive<Archive>,
                                       std::is_base_of<Base, Derived>>::value)>
     static void serialize_base(Archive& archive, Derived& object)
     {

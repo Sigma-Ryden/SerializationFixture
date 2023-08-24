@@ -100,7 +100,7 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_archive<DerivedArchive>,
+              SFREQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
                                   meta::negation<::Serialization::has_save_mode<T>>,
                                   meta::negation<::Serialization::has_load_mode<T>>>::value)>
     static void proccess(DerivedArchive& archive, T& data)

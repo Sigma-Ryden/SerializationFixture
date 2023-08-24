@@ -13,31 +13,31 @@ namespace sf
 namespace detail
 {
 
-template <class OArchive, typename T, typename KeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T, typename KeyType,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_save(OArchive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
+void native_save(Archive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
 
-template <class OArchive, typename T, typename KeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T, typename KeyType,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void native_save(OArchive& archive, T& pointer, KeyType track_key)
+void native_save(Archive& archive, T& pointer, KeyType track_key)
 {
     archive.registry().save_key(archive, pointer); // write class info
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(IArchive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
+void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
 {
     Memory::assign<meta::dereference<T>>(pointer, address);
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(IArchive& archive, T& pointer, Memory::void_ptr<T>& address)
+void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address)
 {
     auto& registry = archive.registry();
 

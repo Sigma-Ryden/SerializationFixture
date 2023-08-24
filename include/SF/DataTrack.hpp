@@ -21,7 +21,7 @@ namespace tracking
 {
 
 template <typename TrackType, class Archive, typename KeyType,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
 bool is_track(Archive& archive, KeyType key)
 {
     auto& item = archive.template tracking<TrackType>();
@@ -29,17 +29,17 @@ bool is_track(Archive& archive, KeyType key)
 }
 
 template <typename TrackType, class Archive, typename KeyType,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
 bool is_mixed(Archive& archive, KeyType key)
 {
     using reverse_track_type = typename reverse_trait<TrackType>::type;
     return is_track<reverse_track_type>(archive, key);
 }
 
-template <class OArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer<T>>::value)>
-void track(OArchive& archive, T& pointer)
+void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_trait<T>::type;
 
@@ -64,12 +64,12 @@ void track(OArchive& archive, T& pointer)
     }
 }
 
-template <class OArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_pointer<T>>>::value)>
-void track(OArchive& archive, T& data)
+void track(Archive& archive, T& data)
 {
-    using key_type = typename OArchive::TrackingKeyType;
+    using key_type = typename Archive::TrackingKeyType;
 
     auto address = Memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
@@ -85,10 +85,10 @@ void track(OArchive& archive, T& data)
     archive & data;
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer<T>>::value)>
-void track(IArchive& archive, T& pointer)
+void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_trait<T>::type;
 
@@ -113,12 +113,12 @@ void track(IArchive& archive, T& pointer)
     }
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class Archive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::negation<meta::is_pointer<T>>>::value)>
-void track(IArchive& archive, T& data)
+void track(Archive& archive, T& data)
 {
-    using key_type = typename IArchive::TrackingKeyType;
+    using key_type = typename Archive::TrackingKeyType;
 
     key_type key{};
     archive & key;
@@ -134,7 +134,7 @@ void track(IArchive& archive, T& data)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<T>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<T>,
                               meta::is_serializable_raw_pointer<T>>::value)>
 void raw(Archive& archive, T& pointer)
 {

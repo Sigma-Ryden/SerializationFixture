@@ -8,7 +8,7 @@ namespace sf
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
 void binary(Archive& archive, T& data)
 {
     archive.stream().call(std::addressof(data), sizeof(T));

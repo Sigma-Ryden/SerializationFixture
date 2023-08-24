@@ -16,7 +16,7 @@ namespace sf
 {
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
 void base(Archive& archive, Derived& object)
 {
@@ -24,7 +24,7 @@ void base(Archive& archive, Derived& object)
 }
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
 void virtual_base(Archive& archive, Derived& object)
 {
@@ -110,7 +110,7 @@ void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
 
 // Variadic native_base function
 template <class Base, class... Base_n, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_derived_of<Derived, Base, Base_n...>>::value)>
 void hierarchy(Archive& archive, Derived& object)
 {

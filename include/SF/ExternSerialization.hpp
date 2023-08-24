@@ -30,7 +30,7 @@ namespace meta
 template <class T> struct is_Save : is_oarchive<T> {};
 template <class T> struct is_Load : is_iarchive<T> {};
 
-template <class T> struct is_SaveLoad : is_archive<T> {};
+template <class T> struct is_SaveLoad : is_ioarchive<T> {};
 
 } // namespace meta
 

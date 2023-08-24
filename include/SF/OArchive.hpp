@@ -1,5 +1,5 @@
-#ifndef SF_WRITE_ARCHIVE_HPP
-#define SF_WRITE_ARCHIVE_HPP
+#ifndef SF_OARCHIVE_HPP
+#define SF_OARCHIVE_HPP
 
 #include <cstdint> // uintptr_t
 #include <unordered_map> // unordered_map
@@ -72,7 +72,7 @@ public:
     auto operator() () noexcept -> OArchive& { return *this; }
 };
 
-// create default OArchive<> with wrapper::OByteStream<>
+// create default OArchive with wrapper::OByteStream<>
 template <typename OutStream>
 OArchive<wrapper::OByteStream<OutStream>> oarchive(OutStream& stream)
 {
@@ -141,4 +141,4 @@ Archive& operator& (Archive& archive, T& unregistered)
 
 } // namespace sf
 
-#endif // SF_WRITE_ARCHIVE_HPP
+#endif // SF_OARCHIVE_HPP

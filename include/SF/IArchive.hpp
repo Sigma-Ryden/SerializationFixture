@@ -1,5 +1,5 @@
-#ifndef SF_READ_ARCHIVE_HPP
-#define SF_READ_ARCHIVE_HPP
+#ifndef SF_IARCHIVE_HPP
+#define SF_IARCHIVE_HPP
 
 #include <cstdint> // uintptr_t
 #include <unordered_map> // unordered_map
@@ -83,7 +83,7 @@ public:
     auto operator() () -> IArchive& { return *this; }
 };
 
-// create default IArchive<> with wrapper::IByteStream<>
+// create default IArchive with wrapper::IByteStream<>
 template <typename InStream>
 IArchive<wrapper::IByteStream<InStream>> iarchive(InStream& stream)
 {
@@ -152,4 +152,4 @@ Archive& operator& (Archive& archive, T& unregistered)
 
 } // namespace sf
 
-#endif // SF_READ_ARCHIVE_HPP
+#endif // SF_IARCHIVE_HPP

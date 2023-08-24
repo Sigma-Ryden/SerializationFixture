@@ -43,7 +43,7 @@ SFREPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 } // namespace detail
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_aggregate<T>>::value)>
 void aggregate(Archive& archive, T& object)
 {
