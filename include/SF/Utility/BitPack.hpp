@@ -3,8 +3,8 @@
 
 #include <SF/Core/TypeCore.hpp>
 
-#include <SF/WriteArchive.hpp>
-#include <SF/ReadArchive.hpp>
+#include <SF/OArchive.hpp>
+#include <SF/IArchive.hpp>
 
 #include <SF/Utility/Detail/Macro.hpp> // _BITPACK_IMPLEMENTATION
 
@@ -38,7 +38,7 @@ template <class Archive, typename T, typename enable = void>
 struct BitPack;
 
 template <class Archive, typename T>
-struct BitPack<Archive, T, SFWHEN(sf::meta::is_write_archive<Archive>::value)>
+struct BitPack<Archive, T, SFWHEN(sf::meta::is_oarchive<Archive>::value)>
 {
     Archive& archive;
     T data{};
@@ -58,7 +58,7 @@ struct BitPack<Archive, T, SFWHEN(sf::meta::is_write_archive<Archive>::value)>
 };
 
 template <class Archive, typename T>
-struct BitPack<Archive, T, SFWHEN(sf::meta::is_read_archive<Archive>::value)>
+struct BitPack<Archive, T, SFWHEN(sf::meta::is_iarchive<Archive>::value)>
 {
     Archive& archive;
     T data{};

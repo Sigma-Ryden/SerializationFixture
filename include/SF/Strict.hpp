@@ -13,10 +13,10 @@
 namespace sf
 {
 
-template <class WriteArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+template <class OArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
                               meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(WriteArchive& archive, T& pointer)
+void strict(OArchive& archive, T& pointer)
 {
     if (pointer == nullptr)
         throw "The write pointer must be allocated.";
@@ -24,10 +24,10 @@ void strict(WriteArchive& archive, T& pointer)
     archive & (*pointer);
 }
 
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+template <class IArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
                               meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
+void strict(IArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     using item_type = typename Memory::ptr_trait<T>::item;
 
@@ -42,10 +42,10 @@ void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
     archive & (*pointer);
 }
 
-template <class WriteArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+template <class OArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(WriteArchive& archive, T& pointer)
+void strict(OArchive& archive, T& pointer)
 {
     auto& registry = archive.registry();
 
@@ -53,10 +53,10 @@ void strict(WriteArchive& archive, T& pointer)
     registry.save(archive, pointer, id);
 }
 
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+template <class IArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
+void strict(IArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
@@ -65,10 +65,10 @@ void strict(ReadArchive& archive, T& pointer, Memory::void_ptr<T>& cache)
 }
 
 // verison without cache using
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+template <class IArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
                               meta::is_serializable_pointer<T>>::value)>
-void strict(ReadArchive& archive, T& pointer)
+void strict(IArchive& archive, T& pointer)
 {
     Memory::void_ptr<T> cache = nullptr;
     strict(archive, pointer, cache);
@@ -77,11 +77,11 @@ void strict(ReadArchive& archive, T& pointer)
 namespace detail
 {
 
-template <class WriteArchive, typename T,
-          typename KeyType = typename WriteArchive::TrackingKeyType,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+template <class OArchive, typename T,
+          typename KeyType = typename OArchive::TrackingKeyType,
+          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
                               meta::is_serializable_pointer<T>>::value)>
-KeyType refer_key(WriteArchive& archive, T& pointer)
+KeyType refer_key(OArchive& archive, T& pointer)
 {
     auto pure = Memory::pure(pointer);
     auto key = reinterpret_cast<KeyType>(Memory::raw(pure));
@@ -90,11 +90,11 @@ KeyType refer_key(WriteArchive& archive, T& pointer)
     return key;
 }
 
-template <class ReadArchive, typename T,
-          typename KeyType = typename ReadArchive::TrackingKeyType,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+template <class IArchive, typename T,
+          typename KeyType = typename IArchive::TrackingKeyType,
+          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
                               meta::is_serializable_pointer<T>>::value)>
-KeyType refer_key(ReadArchive& archive, T& pointer)
+KeyType refer_key(IArchive& archive, T& pointer)
 {
 #ifdef SF_DEBUG
     if (pointer != nullptr)

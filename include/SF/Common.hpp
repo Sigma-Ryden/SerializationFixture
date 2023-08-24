@@ -4,8 +4,8 @@
 #include <SF/Core/Serialization.hpp>
 #include <SF/Core/TypeRegistry.hpp>
 
-#include <SF/WriteArchive.hpp>
-#include <SF/ReadArchive.hpp>
+#include <SF/OArchive.hpp>
+#include <SF/IArchive.hpp>
 
 #include <SF/ExternSerialization.hpp>
 

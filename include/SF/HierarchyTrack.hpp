@@ -37,7 +37,7 @@ namespace tracking
 
 struct Hierarchy {};
 
-template <typename KeyType, typename TraitType = core::InstantiableTraitBase::key_type>
+template <typename KeyType, typename TraitType = core::InstantiableTrait::key_type>
 using HierarchyTrack = std::unordered_map<std::pair<KeyType, TraitType>, bool, detail::PairHash<TraitType>>;
 
 } // namespace tracking

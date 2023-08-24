@@ -36,10 +36,10 @@ bool is_mixed(Archive& archive, KeyType key)
     return is_track<reverse_track_type>(archive, key);
 }
 
-template <class WriteArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+template <class OArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
                               meta::is_pointer<T>>::value)>
-void track(WriteArchive& archive, T& pointer)
+void track(OArchive& archive, T& pointer)
 {
     using track_type = typename tracking::track_trait<T>::type;
 
@@ -64,12 +64,12 @@ void track(WriteArchive& archive, T& pointer)
     }
 }
 
-template <class WriteArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+template <class OArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
                               meta::negation<meta::is_pointer<T>>>::value)>
-void track(WriteArchive& archive, T& data)
+void track(OArchive& archive, T& data)
 {
-    using key_type = typename WriteArchive::TrackingKeyType;
+    using key_type = typename OArchive::TrackingKeyType;
 
     auto address = Memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
@@ -85,10 +85,10 @@ void track(WriteArchive& archive, T& data)
     archive & data;
 }
 
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+template <class IArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
                               meta::is_pointer<T>>::value)>
-void track(ReadArchive& archive, T& pointer)
+void track(IArchive& archive, T& pointer)
 {
     using track_type = typename tracking::track_trait<T>::type;
 
@@ -113,12 +113,12 @@ void track(ReadArchive& archive, T& pointer)
     }
 }
 
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+template <class IArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
                               meta::negation<meta::is_pointer<T>>>::value)>
-void track(ReadArchive& archive, T& data)
+void track(IArchive& archive, T& data)
 {
-    using key_type = typename ReadArchive::TrackingKeyType;
+    using key_type = typename IArchive::TrackingKeyType;
 
     key_type key{};
     archive & key;

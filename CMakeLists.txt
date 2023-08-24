@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(SerializationFixture LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -43,8 +43,8 @@ set(SF
     include/SF/ApplyFunctor.hpp
     include/SF/NativeSaveLoad.hpp
     include/SF/Strict.hpp
-    include/SF/ReadArchive.hpp
-    include/SF/WriteArchive.hpp
+    include/SF/IArchive.hpp
+    include/SF/OArchive.hpp
     include/SF/ExternSerialization.hpp
     include/SF/StreamWrapper.hpp
     include/SF/DataTrackBase.hpp

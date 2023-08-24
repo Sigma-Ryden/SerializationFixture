@@ -22,7 +22,7 @@ namespace dynamic
 class AnyRegistry
 {
 public:
-    using archive_type = core::ArchiveBase;
+    using archive_type = core::IOArchive;
 
 private:
     struct AnyProxy

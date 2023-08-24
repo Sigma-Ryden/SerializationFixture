@@ -18,7 +18,7 @@ namespace sf
 namespace core
 {
 
-struct ArchiveTraitBase
+struct ArchiveTrait
 {
     using key_type = let::u8;
 
@@ -28,29 +28,22 @@ struct ArchiveTraitBase
 
 template <class Archive> struct ArchiveTraitKey
 {
-    static constexpr auto key = ArchiveTraitBase::base_key;
+    static constexpr auto key = ArchiveTrait::base_key;
 };
 
-class ArchiveBase
+class IOArchive
 {
 public:
-    using key_type = ArchiveTraitBase::key_type;
+    using key_type = ArchiveTrait::key_type;
 
 protected:
-    virtual ~ArchiveBase() = default;
+    virtual ~IOArchive() = default;
 
 public:
     virtual key_type trait() const noexcept
     {
-        return ArchiveTraitKey<ArchiveBase>::key;
+        return ArchiveTraitKey<IOArchive>::key;
     }
-};
-
-template <class ArchiveType>
-class Archive : public ArchiveBase, public ArchiveType
-{
-protected:
-    virtual ~Archive() = default;
 };
 
 } // namespace core

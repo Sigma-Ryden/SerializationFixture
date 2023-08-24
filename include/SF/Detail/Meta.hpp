@@ -170,7 +170,13 @@ template <typename T, typename... Tn> struct type_array<T, Tn...>
 };
 
 // meta
-template <typename From, typename To, typename = void>
+template <typename T, typename enable = void>
+struct is_complete : std::false_type {};
+
+template <typename T>
+struct is_complete<T, SFVOID(sizeof(T))> : std::true_type {};
+
+template <typename From, typename To, typename enable = void>
 struct can_static_cast : std::false_type {};
 
 template <typename From, typename To>

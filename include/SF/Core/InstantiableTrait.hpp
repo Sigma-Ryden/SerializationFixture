@@ -19,7 +19,7 @@ namespace sf
 namespace core
 {
 
-struct InstantiableTraitBase
+struct InstantiableTrait
 {
     using key_type = SF_STATIC_HASH_KEY_TYPE;
     
@@ -29,7 +29,7 @@ struct InstantiableTraitBase
 template <class T>
 struct InstantiableTraitKey
 {
-    static constexpr auto key = InstantiableTraitBase::base_key;
+    static constexpr auto key = InstantiableTrait::base_key;
 };
 
 } // namespace core

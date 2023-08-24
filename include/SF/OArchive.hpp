@@ -1,5 +1,5 @@
-#ifndef SF_READ_ARCHIVE_HPP
-#define SF_READ_ARCHIVE_HPP
+#ifndef SF_WRITE_ARCHIVE_HPP
+#define SF_WRITE_ARCHIVE_HPP
 
 #include <cstdint> // uintptr_t
 #include <unordered_map> // unordered_map
@@ -23,51 +23,39 @@
 namespace sf
 {
 
-template <class InStream,
-          class StreamWrapper,
+template <class StreamWrapper,
           class Registry = dynamic::ExternRegistry>
-class ReadArchive : public core::Archive<core::ReadArchiveType>
+class OArchive : public core::IOArchive, public core::OArchiveType
 {
-    SERIALIZATION_ARCHIVE(ReadArchive)
-
-private:
-    template <typename VoidPointer>
-    struct TrackData { VoidPointer address = nullptr; };
-
-public:
-    using Shared = TrackData<Memory::shared_ptr<void>>;
-    using Raw = TrackData<Memory::raw_ptr<void>>;
+    SERIALIZATION_ARCHIVE(OArchive)
 
 public:
     using TrackingKeyType = std::uintptr_t;
-
-    template <typename TrackData>
-    using TrackingTable = std::unordered_map<TrackingKeyType, TrackData>;
-
+    using TrackingTable = std::unordered_map<TrackingKeyType, bool>;
     using HierarchyTrackingTable = tracking::HierarchyTrack<TrackingKeyType>;
 
 private:
     StreamWrapper archive_;
 
-    TrackingTable<Shared> track_shared_;
-    TrackingTable<Raw> track_raw_;
+    TrackingTable track_shared_;
+    TrackingTable track_raw_;
 
     HierarchyTrackingTable track_hierarchy_;
 
     Registry registry_;
 
 public:
-    ReadArchive(InStream& stream);
+    template <typename OutStream> OArchive(OutStream& stream);
 
     auto stream() noexcept -> StreamWrapper& { return archive_; }
 
     template <typename TrackType,
               SFREQUIRE(meta::is_track_shared<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable<Shared>& { return track_shared_; }
+    auto tracking() noexcept -> TrackingTable& { return track_shared_; }
 
     template <typename TrackType,
               SFREQUIRE(meta::is_track_raw<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable<Raw>& { return track_raw_; }
+    auto tracking() noexcept -> TrackingTable& { return track_raw_; }
 
     template <typename TrackType,
               SFREQUIRE(meta::is_track_hierarchy<TrackType>::value)>
@@ -76,82 +64,81 @@ public:
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator>> (T&& data) -> ReadArchive&;
+    auto operator<< (T&& data) -> OArchive&;
 
     template <typename T, typename... Tn>
-    auto operator() (T& data, Tn&... data_n) -> ReadArchive&;
+    auto operator() (T& data, Tn&... data_n) -> OArchive&;
 
-    auto operator() () -> ReadArchive& { return *this; }
+    auto operator() () noexcept -> OArchive& { return *this; }
 };
 
-// create default ReadArchive<> with wrapper::IByteStream<>
-template <class InStream>
-ReadArchive<InStream, wrapper::IByteStream<InStream>> iarchive(InStream& stream)
+// create default OArchive<> with wrapper::OByteStream<>
+template <typename OutStream>
+OArchive<wrapper::OByteStream<OutStream>> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
 template <template <class, typename...> class StreamWrapper,
           class Registry = dynamic::ExternRegistry,
-          class InStream>
-ReadArchive<InStream, StreamWrapper<InStream>, Registry> iarchive(InStream& stream)
+          typename OutStream>
+OArchive<StreamWrapper<OutStream>, Registry> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
 template <class StreamWrapper,
           class Registry = dynamic::ExternRegistry,
-          class InStream>
-ReadArchive<InStream, StreamWrapper, Registry> iarchive(InStream& stream)
+          typename OutStream>
+OArchive<StreamWrapper, Registry> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
-template <class InStream, class StreamWrapper, class Registry>
-ReadArchive<InStream, StreamWrapper, Registry>::ReadArchive(InStream& stream)
+template <class StreamWrapper, class Registry>
+template <typename OutStream>
+OArchive<StreamWrapper, Registry>::OArchive(OutStream& stream)
     : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 
-template <class InStream, class StreamWrapper, class Registry>
+template <class StreamWrapper, class Registry>
 template <typename T>
-auto ReadArchive<InStream, StreamWrapper, Registry>::operator>> (
-    T&& data) -> ReadArchive&
+auto OArchive<StreamWrapper, Registry>::operator<< (T&& data) -> OArchive&
 {
     return (*this) & std::forward<T>(data);
 }
 
-template <class InStream, class StreamWrapper, class Registry>
+template <class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto ReadArchive<InStream, StreamWrapper, Registry>::operator() (
-    T& data, Tn&... data_n) -> ReadArchive&
+auto OArchive<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> OArchive&
 {
-    operator>>(data);
+    (*this) & data;
     return operator()(data_n...);
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_unsupported<T>>::value)>
 Archive& operator& (Archive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unsupported type for the 'sf::ReadArchive'.");
+        "The 'T' is an unsupported type for the 'sf::OArchive'.");
 
     return archive;
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<Archive>,
+          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_registered<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'sf::ReadArchive'.");
+        "The 'T' is an unregistered type for the 'sf::OArchive'.");
 
     return archive;
 }
 
 } // namespace sf
 
-#endif // SF_READ_ARCHIVE_HPP
+#endif // SF_WRITE_ARCHIVE_HPP

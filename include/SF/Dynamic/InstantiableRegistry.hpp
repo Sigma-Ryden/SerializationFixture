@@ -21,7 +21,7 @@
 
 #define SERIALIZATION_TRAIT(...)                                                                        \
     private:                                                                                            \
-    using __key_type = ::sf::core::InstantiableTraitBase::key_type;                                     \
+    using __key_type = ::sf::core::InstantiableTrait::key_type;                                         \
     static constexpr __key_type __static_trait() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }      \
     virtual __key_type __trait() const noexcept { return ::Serialization::trait<__VA_ARGS__>(); }       \
     public:
@@ -35,9 +35,9 @@ namespace dynamic
 class InstantiableRegistry
 {
 public:
-    using key_type          = core::InstantiableTraitBase::key_type;
+    using key_type          = core::InstantiableTrait::key_type;
     using instantiable_type = INSTANTIABLE_TYPE;
-    using archive_type      = core::ArchiveBase;
+    using archive_type      = core::IOArchive;
 
 private:
     template <typename ItemType>

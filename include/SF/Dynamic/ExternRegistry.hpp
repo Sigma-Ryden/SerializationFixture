@@ -20,7 +20,7 @@ namespace dynamic
 class ExternRegistry
 {
 public:
-    using key_type = core::InstantiableTraitBase::key_type;
+    using key_type = core::InstantiableTrait::key_type;
 
 public:
     template <class Archive, typename T,
@@ -58,7 +58,7 @@ private:
 
 public:
     template <typename T, SFREQUIRE(is_pointer_to_instantiable<T>::value)>
-    static void save(core::ArchiveBase& archive, T& pointer, key_type key)
+    static void save(core::IOArchive& archive, T& pointer, key_type key)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -68,7 +68,7 @@ public:
     }
 
     template <typename T, SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void load(core::ArchiveBase& archive, T& pointer, key_type key, Memory::void_ptr<T>& cache)
+    static void load(core::IOArchive& archive, T& pointer, key_type key, Memory::void_ptr<T>& cache)
     {
         using TraitType = typename Memory::ptr_trait<T>::trait;
         using dT = meta::dereference<T>;

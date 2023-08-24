@@ -183,10 +183,10 @@ void span_implementation(Archive& archive, T& data)
 }
 
 // serialization of scoped data with previous dimension initialization
-template <class WriteArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_write_archive<WriteArchive>,
+template <class OArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
                               meta::is_span<T>>::value)>
-void span_implementation(WriteArchive& archive, T& array)
+void span_implementation(OArchive& archive, T& array)
 {
     using size_type = typename T::size_type;
 
@@ -194,10 +194,10 @@ void span_implementation(WriteArchive& archive, T& array)
         span_implementation(archive, array[i]);
 }
 
-template <class ReadArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_read_archive<ReadArchive>,
+template <class IArchive, typename T,
+          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
                               meta::is_span<T>>::value)>
-void span_implementation(ReadArchive& archive, T& array)
+void span_implementation(IArchive& archive, T& array)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;

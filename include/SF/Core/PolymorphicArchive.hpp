@@ -22,25 +22,25 @@ namespace core
 class PolymorphicArchive
 {
 public:
-    using Archive  = core::ArchiveBase;
-    using key_type = core::ArchiveBase::key_type;
+    using Archive  = core::IOArchive;
+    using key_type = core::IOArchive::key_type;
 
-    static constexpr key_type max_key = core::ArchiveTraitBase::max_key;
+    static constexpr key_type max_key = core::ArchiveTrait::max_key;
 
 public:
     template <class T> static void save(Archive& archive, T& data)
     {
-        call<core::WriteArchiveTrait>(archive, data);
+        call<core::OArchiveTrait>(archive, data);
     }
 
     template <class T> static void load(Archive& archive, T& data)
     {
-        call<core::ReadArchiveTrait>(archive, data);
+        call<core::IArchiveTrait>(archive, data);
     }
 
 private:
     template <class Archive> struct is_valid_archive
-        : meta::boolean<core::ArchiveTraitKey<Archive>::key != core::ArchiveTraitBase::base_key> {};
+        : meta::boolean<core::ArchiveTraitKey<Archive>::key != core::ArchiveTrait::base_key> {};
 
 private:
     template <template <key_type> class ArchiveTrait,
@@ -84,7 +84,7 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_write_archive<DerivedArchive>,
+              SFREQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
                                   ::Serialization::has_save_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
@@ -92,7 +92,7 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_read_archive<DerivedArchive>,
+              SFREQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
                                   ::Serialization::has_load_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
@@ -124,7 +124,7 @@ private:
 };
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_base_archive<Archive>::value)>
+          SFREQUIRE(meta::is_archive<Archive>::value)>
 Archive& operator<< (Archive& archive, T&& data)
 {
     PolymorphicArchive::save(archive, data);
@@ -132,7 +132,7 @@ Archive& operator<< (Archive& archive, T&& data)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_base_archive<Archive>::value)>
+          SFREQUIRE(meta::is_archive<Archive>::value)>
 Archive& operator>> (Archive& archive, T&& data)
 {
     PolymorphicArchive::load(archive, data);
