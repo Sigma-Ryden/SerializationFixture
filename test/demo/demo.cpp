@@ -1,12 +1,12 @@
 #include <fstream> // ifstream, ofstream
 #include <iostream> // cout
 
-#include <SF/Core.hpp>// WriteArchive
+#include <SF/Core.hpp>// OArchive
 
 #include <SF/Support/string.hpp>
 #include <SF/Support/array.hpp>
 
-using sf::WriteArchive;
+using sf::OArchive;
 
 // Impl of user wrapper for iostream
 class FormatOutStream
@@ -31,7 +31,7 @@ public:
     }
 };
 
-using FormatWriteArchive = WriteArchive<std::ostream, FormatOutStream>;
+using FormatOArchive = OArchive<FormatOutStream>;
 
 enum Axis { X, Y, Z };
 enum class Color { Red, Green, Blue, Alpha };
@@ -93,8 +93,8 @@ SERIALIZATION(SaveLoad, A)
     archive & self.x & self.y & self.b;
 }
 
-// FormatWriteArchive overloading operator& for class B
-auto operator& (FormatWriteArchive& ar, B& b) -> decltype(ar)
+// FormatOArchive overloading operator& for class B
+auto operator& (FormatOArchive& ar, B& b) -> decltype(ar)
 {
     std::cout << "overloading operator& for B";
 
