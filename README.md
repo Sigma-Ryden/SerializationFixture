@@ -63,7 +63,7 @@ enum class Property
 {
     Speed,
     Force,
-    Intelige,
+    inteligance,
     Fly
 };
 
@@ -113,7 +113,7 @@ rew->properties = {Property::Force};
 
 auto ifly = std::make_shared<Prototype>();
 ifly->name = "I.Fly";
-ifly->properties = {Property::Intelige, Property::Fly};
+ifly->properties = {Property::inteligance, Property::Fly};
 
 db.prototypes[0] = zero;
 db.prototypes[3] = rew;
