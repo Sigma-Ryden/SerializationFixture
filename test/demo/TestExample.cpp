@@ -12,7 +12,7 @@ enum class Property
 {
     Speed,
     Force,
-    Intelige,
+    inteligance,
     Fly
 };
 
@@ -47,7 +47,7 @@ TEST(TestDemo, TestExample)
 
     static std::vector<Property> s_zero_properties = {Property::Speed};
     static std::vector<Property> s_rew_properties = {Property::Force};
-    static std::vector<Property> s_ifly_properties = {Property::Intelige, Property::Fly};
+    static std::vector<Property> s_ifly_properties = {Property::inteligance, Property::Fly};
 
     std::vector<unsigned char> storage;
     {
