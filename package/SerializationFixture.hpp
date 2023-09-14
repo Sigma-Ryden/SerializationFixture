@@ -35,6 +35,8 @@ static_assert(sizeof(int) == 4, "Require integer number size.");
 #include <memory> // shared_ptr
 #include <array> // array
 
+#include <tuple> // tuple_element
+
 #define SFREQUIRE(...) ::sf::meta::require<(bool)(__VA_ARGS__)> = 0
 #define SFWHEN(...) ::sf::meta::when<(bool)(__VA_ARGS__)>
 #define SFVOID(...) ::sf::meta::to_void<decltype(__VA_ARGS__)>
@@ -170,26 +172,11 @@ struct index_sequence_helper<0, In...>
 template <std::size_t N>
 using make_index_sequence = typename detail::index_sequence_helper<N>::type;
 
-template <typename...> struct type_array;
-
-template <> struct type_array<>
+template <typename... Tn>
+struct type_array
 {
-    template <int I> struct arg { using type = void; };
-};
-
-template <typename T, typename... Tn> struct type_array<T, Tn...>
-{
-    template <int I, typename overload = void> struct at
-    {
-        using type = typename type_array<Tn...>::template at<I - 1>::type;
-    };
-
-    template <typename overload> struct at<0, overload>
-    {
-        using type = T;
-    };
-
-    template <int I> using type = typename at<I>::type;
+    template <std::size_t I>
+    using type = typename std::tuple_element<I, std::tuple<Tn...>>::type;
 };
 
 // meta
@@ -738,11 +725,11 @@ struct InstantiableTraitKey
 #define SERIALIZATION_INTERFACE(mode, ...)                                                              \
     template <>                                                                                         \
     struct Serialization::mode<__VA_ARGS__> {                                                           \
-        mode(sf::core::IOArchive&, __VA_ARGS__&);                                                       \
+        mode(::sf::core::IOArchive&, __VA_ARGS__&);                                                     \
     };
 
 #define SERIALIZATION_IMPLEMENTATION(mode, ...)                                                         \
-    Serialization::mode<__VA_ARGS__>::mode(sf::core::IOArchive& archive, __VA_ARGS__& self)
+    Serialization::mode<__VA_ARGS__>::mode(::sf::core::IOArchive& archive, __VA_ARGS__& self)
 
 // should be in global namespace
 class Serialization
@@ -851,7 +838,7 @@ public:
                                       std::is_base_of<Base, Derived>>::value)>
     static void serialize_base(Archive& archive, Derived& object)
     {
-        archive & cast<Base&>(object);
+        archive & static_cast<Base&>(object);
     }
 
     template <class T, SFREQUIRE(not has_inner_trait<T>::value)>
@@ -909,17 +896,6 @@ public:
         return trait_key == InstantiableTrait::base_key
              ? static_trait<T>()
              : trait_key;
-    }
-
-private:
-    template <class To, class From> static To cast(From& from) noexcept
-    {
-        return static_cast<To>(from);
-    }
-
-    template <class To, class From> static To runtime_cast(From& from) // may throw exception
-    {
-        return dynamic_cast<To>(from);
     }
 };
 
@@ -1630,7 +1606,7 @@ public:
         return registry_.find(hash) != registry_.end();
     }
 
-#ifdef SF_REGISTRY_ACCESS
+#ifndef SF_REGISTRY_ACCESS
 private:
 #endif // SF_REGISTRY_ACCESS
     const AnyProxy& registry(let::u64 hash)
@@ -3295,7 +3271,6 @@ EXPORT_SERIALIZATION_ARCHIVE(1, O, OArchive<wrapper::OFileStream<std::ofstream>>
 #endif // SF_DEFAULT_DISABLE
 
 #include <initializer_list> // initializer_list
-#include <tuple> // tuple
 
 namespace sf
 {

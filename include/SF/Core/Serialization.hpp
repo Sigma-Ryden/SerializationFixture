@@ -30,11 +30,11 @@
 #define SERIALIZATION_INTERFACE(mode, ...)                                                              \
     template <>                                                                                         \
     struct Serialization::mode<__VA_ARGS__> {                                                           \
-        mode(sf::core::IOArchive&, __VA_ARGS__&);                                                       \
+        mode(::sf::core::IOArchive&, __VA_ARGS__&);                                                     \
     };
 
 #define SERIALIZATION_IMPLEMENTATION(mode, ...)                                                         \
-    Serialization::mode<__VA_ARGS__>::mode(sf::core::IOArchive& archive, __VA_ARGS__& self)
+    Serialization::mode<__VA_ARGS__>::mode(::sf::core::IOArchive& archive, __VA_ARGS__& self)
 
 // should be in global namespace
 class Serialization
@@ -143,7 +143,7 @@ public:
                                       std::is_base_of<Base, Derived>>::value)>
     static void serialize_base(Archive& archive, Derived& object)
     {
-        archive & cast<Base&>(object);
+        archive & static_cast<Base&>(object);
     }
 
     template <class T, SFREQUIRE(not has_inner_trait<T>::value)>
@@ -201,17 +201,6 @@ public:
         return trait_key == InstantiableTrait::base_key
              ? static_trait<T>()
              : trait_key;
-    }
-
-private:
-    template <class To, class From> static To cast(From& from) noexcept
-    {
-        return static_cast<To>(from);
-    }
-
-    template <class To, class From> static To runtime_cast(From& from) // may throw exception
-    {
-        return dynamic_cast<To>(from);
     }
 };
 

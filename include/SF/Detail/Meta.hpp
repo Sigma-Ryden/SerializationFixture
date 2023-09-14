@@ -14,6 +14,8 @@
 #include <memory> // shared_ptr
 #include <array> // array
 
+#include <tuple> // tuple_element
+
 #include <SF/Detail/MetaMacro.hpp> // SFVOID
 
 namespace sf
@@ -147,26 +149,11 @@ struct index_sequence_helper<0, In...>
 template <std::size_t N>
 using make_index_sequence = typename detail::index_sequence_helper<N>::type;
 
-template <typename...> struct type_array;
-
-template <> struct type_array<>
+template <typename... Tn>
+struct type_array
 {
-    template <int I> struct arg { using type = void; };
-};
-
-template <typename T, typename... Tn> struct type_array<T, Tn...>
-{
-    template <int I, typename overload = void> struct at
-    {
-        using type = typename type_array<Tn...>::template at<I - 1>::type;
-    };
-
-    template <typename overload> struct at<0, overload>
-    {
-        using type = T;
-    };
-
-    template <int I> using type = typename at<I>::type;
+    template <std::size_t I>
+    using type = typename std::tuple_element<I, std::tuple<Tn...>>::type;
 };
 
 // meta

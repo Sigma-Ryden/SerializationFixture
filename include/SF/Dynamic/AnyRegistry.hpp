@@ -88,7 +88,7 @@ public:
         return registry_.find(hash) != registry_.end();
     }
 
-#ifdef SF_REGISTRY_ACCESS
+#ifndef SF_REGISTRY_ACCESS
 private:
 #endif // SF_REGISTRY_ACCESS
     const AnyProxy& registry(let::u64 hash)
