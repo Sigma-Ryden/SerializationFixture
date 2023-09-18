@@ -87,6 +87,21 @@ public:
     template <typename T>
     using void_ptr = typename ptr_trait<T>::void_ptr;
 
+public:
+    template <typename T>
+    struct Factory
+    {
+        static std::shared_ptr<T> shared()
+        {
+            return std::make_shared<T>();
+        }
+
+        static T* raw()
+        {
+            return new T{};
+        }
+    };
+
 private:
     template <class From, class To> struct is_pointer_cast_allowed
         : ::Serialization::is_pointer_cast_allowed<From, To> {};
@@ -195,7 +210,7 @@ public:
                                   is_pointer_cast_allowed<From, To>>::value)>
     static shared_ptr<To> allocate()
     {
-        auto instance = std::make_shared<From>();
+        auto instance = Factory<From>::shared();
         return static_pointer_cast<To>(instance);
     }
 
@@ -205,7 +220,7 @@ public:
                                   is_pointer_cast_allowed<From, To>>::value)>
     static raw_ptr<To> allocate()
     {
-        auto instance = new From{};
+        auto instance = Factory<From>::raw();
         return static_pointer_cast<To>(instance);
     }
 

@@ -981,6 +981,21 @@ public:
     template <typename T>
     using void_ptr = typename ptr_trait<T>::void_ptr;
 
+public:
+    template <typename T>
+    struct Factory
+    {
+        static std::shared_ptr<T> shared()
+        {
+            return std::make_shared<T>();
+        }
+
+        static T* raw()
+        {
+            return new T{};
+        }
+    };
+
 private:
     template <class From, class To> struct is_pointer_cast_allowed
         : ::Serialization::is_pointer_cast_allowed<From, To> {};
@@ -1089,7 +1104,7 @@ public:
                                   is_pointer_cast_allowed<From, To>>::value)>
     static shared_ptr<To> allocate()
     {
-        auto instance = std::make_shared<From>();
+        auto instance = Factory<From>::shared();
         return static_pointer_cast<To>(instance);
     }
 
@@ -1099,7 +1114,7 @@ public:
                                   is_pointer_cast_allowed<From, To>>::value)>
     static raw_ptr<To> allocate()
     {
-        auto instance = new From{};
+        auto instance = Factory<From>::raw();
         return static_pointer_cast<To>(instance);
     }
 
@@ -1179,25 +1194,25 @@ namespace core
 class PolymorphicArchive
 {
 public:
-    using Archive  = core::IOArchive;
-    using key_type = core::IOArchive::key_type;
+    using Archive  = IOArchive;
+    using key_type = IOArchive::key_type;
 
-    static constexpr key_type max_key = core::ArchiveTrait::max_key;
+    static constexpr key_type max_key = ArchiveTrait::max_key;
 
 public:
     template <class T> static void save(Archive& archive, T& data)
     {
-        call<core::OArchiveTrait>(archive, data);
+        call<OArchiveTrait>(archive, data);
     }
 
     template <class T> static void load(Archive& archive, T& data)
     {
-        call<core::IArchiveTrait>(archive, data);
+        call<IArchiveTrait>(archive, data);
     }
 
 private:
     template <class Archive> struct is_valid_archive
-        : meta::boolean<core::ArchiveTraitKey<Archive>::key != core::ArchiveTrait::base_key> {};
+        : meta::boolean<ArchiveTraitKey<Archive>::key != ArchiveTrait::base_key> {};
 
 private:
     template <template <key_type> class ArchiveTrait,
@@ -1213,7 +1228,7 @@ private:
     {
         using DerivedArchive = typename ArchiveTrait<Key>::type;
 
-        if (core::ArchiveTraitKey<DerivedArchive>::key == archive.trait())
+        if (ArchiveTraitKey<DerivedArchive>::key == archive.trait())
             return try_call<DerivedArchive>(archive, data);
 
         call<ArchiveTrait, Key + 1>(archive, data);
@@ -3223,8 +3238,7 @@ apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object) noe
 } // namespace sf
 
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class ::Serialization;                                                                       \
-    friend class ::sf::Memory;
+    friend class ::Serialization;
 
 // Alternative instantiable registration with library trait no-rtti
 #ifndef SERIALIZABLE

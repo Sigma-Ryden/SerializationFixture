@@ -2,14 +2,12 @@
 #define SF_SERIALIZABLE_HPP
 
 #include <SF/Core/Serialization.hpp>
-#include <SF/Core/Memory.hpp>
 
 #include <SF/Dynamic/InstantiableRegistry.hpp>
 #include <SF/Dynamic/AnyRegistry.hpp>
 
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class ::Serialization;                                                                       \
-    friend class ::sf::Memory;
+    friend class ::Serialization;
 
 // Alternative instantiable registration with library trait no-rtti
 #ifndef SERIALIZABLE

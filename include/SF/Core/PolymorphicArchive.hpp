@@ -22,25 +22,25 @@ namespace core
 class PolymorphicArchive
 {
 public:
-    using Archive  = core::IOArchive;
-    using key_type = core::IOArchive::key_type;
+    using Archive  = IOArchive;
+    using key_type = IOArchive::key_type;
 
-    static constexpr key_type max_key = core::ArchiveTrait::max_key;
+    static constexpr key_type max_key = ArchiveTrait::max_key;
 
 public:
     template <class T> static void save(Archive& archive, T& data)
     {
-        call<core::OArchiveTrait>(archive, data);
+        call<OArchiveTrait>(archive, data);
     }
 
     template <class T> static void load(Archive& archive, T& data)
     {
-        call<core::IArchiveTrait>(archive, data);
+        call<IArchiveTrait>(archive, data);
     }
 
 private:
     template <class Archive> struct is_valid_archive
-        : meta::boolean<core::ArchiveTraitKey<Archive>::key != core::ArchiveTrait::base_key> {};
+        : meta::boolean<ArchiveTraitKey<Archive>::key != ArchiveTrait::base_key> {};
 
 private:
     template <template <key_type> class ArchiveTrait,
@@ -56,7 +56,7 @@ private:
     {
         using DerivedArchive = typename ArchiveTrait<Key>::type;
 
-        if (core::ArchiveTraitKey<DerivedArchive>::key == archive.trait())
+        if (ArchiveTraitKey<DerivedArchive>::key == archive.trait())
             return try_call<DerivedArchive>(archive, data);
 
         call<ArchiveTrait, Key + 1>(archive, data);
