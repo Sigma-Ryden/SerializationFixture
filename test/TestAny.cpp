@@ -67,7 +67,7 @@ TEST(TestUtility, TestAny)
             serializable(Property::Force) // (2)
         };
 
-        // serializable<int>(); serializable with explicit type can be omitted, see previous type ristry (1)
+        // serializable<int>(); serializable with explicit type can be omitted, see previous type registry (1)
         va[0] = serializable(sv_va_0); // (0)
         va[2] = sv_va_2; // serializable can be omitted, see previous type registry (2)
 
