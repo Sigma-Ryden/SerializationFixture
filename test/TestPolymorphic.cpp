@@ -83,7 +83,6 @@ TEST(TestCommon, TestPolymorphic)
 
         auto ar = oarchive(storage);
         ar & p & c;
-
     }
     {
         Parent* p = nullptr;

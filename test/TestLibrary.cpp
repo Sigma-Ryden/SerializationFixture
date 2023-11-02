@@ -699,3 +699,148 @@ TEST(TestLibrary, TestAbstract)
         EXPECT("trait", Serialization::trait(*i) == Serialization::trait<Implementation>());
     }
 }
+
+TEST_SPACE()
+{
+struct NoMacroObject
+{
+    std::string data;
+};
+
+struct NoMacroBase : sf::Instantiable
+{
+    int b;
+};
+
+struct NoMacroDerived : NoMacroBase
+{
+    int d;
+};
+
+} // TEST_SPACE
+
+template <>
+struct Serialization::SaveLoad<NoMacroObject>
+{
+    template <class Archive>
+    SaveLoad(Archive& archive, NoMacroObject& self)
+    {
+        archive & self.data;
+    }
+};
+
+// polymorphic
+template <>
+struct Serialization::Save<NoMacroBase>
+{
+    template <class Archive>
+    Save(Archive& archive, NoMacroBase& self)
+    {
+        archive & self.b;
+    }
+};
+
+template <>
+struct Serialization::Load<NoMacroBase>
+{
+    template <class Archive>
+    Load(Archive& archive, NoMacroBase& self)
+    {
+        archive & self.b;
+    }
+};
+
+template <>
+struct Serialization::SaveLoad<NoMacroDerived>
+{
+    template <class Archive>
+    SaveLoad(Archive& archive, NoMacroDerived& self)
+    {
+        archive & sf::hierarchy<NoMacroBase>(self) & self.d;
+    }
+};
+
+TEST(TestLibrary, TestNoMacro)
+{
+    static std::string s_data = "abc\"def;";
+
+    static int s_b = 213;
+    static int s_d = 32413;
+
+    std::vector<unsigned char> storage;
+    {
+        sf::serializable<NoMacroDerived>(); // registry
+
+        NoMacroObject nmo;
+        nmo.data = s_data;
+
+        NoMacroDerived* nmd = new NoMacroDerived;
+        nmd->b = s_b;
+        nmd->d = s_d;
+
+        NoMacroBase* nmb = nmd;
+
+        auto ar = oarchive(storage);
+        ar & nmo & nmb;
+    }
+    {
+        NoMacroObject nmo;
+        NoMacroBase* nmb = nullptr;
+
+        auto ar = iarchive(storage);
+        ar & nmo & nmb;
+
+        EXPECT("no-macro.value", nmo.data == s_data);
+
+        auto nmd = dynamic_cast<NoMacroDerived*>(nmb);
+        ASSERT("no-macro polymorphic.inited", nmd != nullptr);
+
+        EXPECT("no-macro polymorphic.value", nmd->b == s_b && nmd->d == s_d);
+    }
+}
+
+TEST(TestLibrary, TestPolymorphicArchive)
+{
+    static std::string s_data = "Hello, SF!";
+
+    std::vector<unsigned char> storage;
+    {
+        std::string data = s_data;
+
+        auto oar = oarchive(storage);
+        sf::core::IOArchive& ar = oar;
+        ar << data;
+    }
+    {
+        std::string data;
+
+        sf::core::IOArchive&& ar = iarchive(storage);
+        ar >> data;
+
+        EXPECT("value", data == s_data);
+    }
+
+    storage.clear();
+    {
+        int some_data = 0;
+
+        sf::core::IOArchive&& ar = oarchive(storage);
+
+        auto success = false;
+        try { ar >> some_data; } catch(...) { success = true; }
+
+        EXPECT("bad oarchive", success);
+
+        ar << some_data;
+    }
+    {
+        int some_data = 0;
+
+        sf::core::IOArchive&& ar = iarchive(storage);
+
+        auto success = false;
+        try { ar << some_data; } catch(...) { success = true; }
+
+        EXPECT("bad iarchive", success);
+    }
+}
