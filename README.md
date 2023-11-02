@@ -32,7 +32,7 @@ See last stable library version [here](https://github.com/Sigma-Ryden/Serializat
 - C++17: any, optional, variant
 
 See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/include/SF/Support).
-### Serialization of users class:
+### Serialization of user classes:
 - Aggregate (since C++17)
 - Common/Union/Template
 - Hierarchy
