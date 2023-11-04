@@ -702,11 +702,16 @@ TEST(TestLibrary, TestAbstract)
 
 TEST_SPACE()
 {
+
 struct NoMacroObject
 {
     std::string data;
 };
 
+// since we want to serialize object using pointer to base type,
+// we should inherit from instantiable type, which defined by macro INSTANTIABLE_TYPE
+// Note that: any derived type from instantiable becomes polymorphic,
+// becose instantiable type has virtual destructor (requrement of sf library)
 struct NoMacroBase : sf::Instantiable
 {
     int b;
@@ -719,37 +724,15 @@ struct NoMacroDerived : NoMacroBase
 
 } // TEST_SPACE
 
-template <>
-struct Serialization::SaveLoad<NoMacroObject>
+// extern serialization - useful for open classes
+template <class Archive>
+Archive& operator& (Archive& archive, NoMacroObject& self)
 {
-    template <class Archive>
-    SaveLoad(Archive& archive, NoMacroObject& self)
-    {
-        archive & self.data;
-    }
-};
+    archive & self.data;
+    return archive;
+}
 
-// polymorphic
-template <>
-struct Serialization::Save<NoMacroBase>
-{
-    template <class Archive>
-    Save(Archive& archive, NoMacroBase& self)
-    {
-        archive & self.b;
-    }
-};
-
-template <>
-struct Serialization::Load<NoMacroBase>
-{
-    template <class Archive>
-    Load(Archive& archive, NoMacroBase& self)
-    {
-        archive & self.b;
-    }
-};
-
+// inner serialization - useful for open/close class attributes (standard serialization)
 template <>
 struct Serialization::SaveLoad<NoMacroDerived>
 {
@@ -757,6 +740,28 @@ struct Serialization::SaveLoad<NoMacroDerived>
     SaveLoad(Archive& archive, NoMacroDerived& self)
     {
         archive & sf::hierarchy<NoMacroBase>(self) & self.d;
+    }
+};
+
+// inner serialization with split
+// polymorphic archive - useful for hide impl to translation unit
+template <>
+struct Serialization::Save<NoMacroBase>
+{
+    Save(sf::core::IOArchive& archive, NoMacroBase& self)
+    {
+        archive << self.b;
+    }
+};
+
+// for non polymorphic archive we can use operator&, and not only operator>>
+template <>
+struct Serialization::Load<NoMacroBase>
+{
+    template <class Archive>
+    Load(Archive& archive, NoMacroBase& self)
+    {
+        archive & self.b; // or archive >> self.b
     }
 };
 
