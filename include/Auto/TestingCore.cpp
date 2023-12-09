@@ -2,7 +2,7 @@
 
 #include <Auto/TestingCore.hpp>
 
-TestingInterface::TestingInterface(const char* module, const char* name)
+TestingInterface::TestingInterface(const std::string& module, const std::string& name)
     : module(module), name(name)
 {
     TestingCore::instance().add(this);
@@ -19,7 +19,7 @@ TestingCore& TestingCore::instance()
     return self;
 }
 
-static std::string info_format(TestingInterface* test, const char* msg, bool contition)
+static std::string info_format(TestingInterface* test, const std::string& msg, bool contition)
 {
     return std::string(test->module)
          + "::"
@@ -37,7 +37,7 @@ static void update_stat(unsigned& passed, unsigned& failed, bool ok)
     failed += not ok;
 }
 
-void TestingCore::check(bool condition, TestingInterface* test, const char* msg)
+void TestingCore::check(bool condition, TestingInterface* test, const std::string& msg)
 {
     update_stat(passed, failed, condition);
     text_printer(info_format(test, msg, condition));
@@ -48,7 +48,7 @@ void TestingCore::add(TestingInterface* test)
     registry_[test->module][test->name] = test;
 }
 
-void TestingCore::execute_module(const char* name)
+void TestingCore::execute_module(const std::string& name)
 {
     auto it = registry_.find(name);
     if (it == registry_.end()) return;
@@ -57,7 +57,7 @@ void TestingCore::execute_module(const char* name)
     for (auto& name_test : module) name_test.second->run();
 }
 
-void TestingCore::execute_test(const char* name)
+void TestingCore::execute_test(const std::string& name)
 {
     for (auto& name_module : registry_)
     {
