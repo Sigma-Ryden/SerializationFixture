@@ -91,8 +91,6 @@ set(AUTO
 include_directories(test)
 
 add_executable(${PROJECT_NAME}
-    # test/demo/demo.cpp
-
     test/TestNumber.cpp
     test/TestEnum.cpp
     test/TestUserType.cpp
@@ -131,7 +129,7 @@ add_executable(${PROJECT_NAME}
     test/TestLibrary/DerivedObject.cpp
     test/TestLibrary.cpp
 
-    test/demo/TestExample.cpp
+    test/TestExample.cpp
 
     test/SFTestingBase.hpp
     test/main.cpp
