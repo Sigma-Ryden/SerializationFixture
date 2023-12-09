@@ -1,6 +1,6 @@
 #include <iostream> // cout
 
-#include <Auto/TestingCore.hpp>
+#include <AutoTesting/Core.hpp>
 
 TestingInterface::TestingInterface(const std::string& module, const std::string& name)
     : module(module), name(name)

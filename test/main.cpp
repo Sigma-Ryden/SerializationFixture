@@ -1,4 +1,4 @@
-#include <Auto/TestingCore.hpp>
+#include <AutoTesting/Core.hpp>
 
 int main()
 {

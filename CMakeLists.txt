@@ -84,14 +84,14 @@ set(SF_SUPPORT
 )
 
 set(AUTO
-    include/Auto/TestingCore.hpp
-    include/Auto/TestingCore.cpp
+	include/AutoTesting/Core.hpp
+	include/AutoTesting/Core.cpp
 )
 
 include_directories(test)
 
 add_executable(${PROJECT_NAME}
-    test/TestNumber.cpp
+	test/TestNumber.cpp
     test/TestEnum.cpp
     test/TestUserType.cpp
     test/TestUnion.cpp
