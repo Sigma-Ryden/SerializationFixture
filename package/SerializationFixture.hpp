@@ -814,7 +814,7 @@ public:
 public:
     template <class Base, class Derived> struct is_virtual_base_of
         : sf::meta::all<std::is_base_of<Base, Derived>,
-                        sf::meta::negation<sf::meta::can_static_cast<Base*, Derived*>>> {};
+                        sf::meta::negation<can_static_cast<Base*, Derived*>>> {};
 
 public:
     using IOArchive = sf::core::IOArchive;
