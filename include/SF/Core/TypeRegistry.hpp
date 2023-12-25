@@ -29,7 +29,7 @@ struct TypeRegistry : std::false_type {};
 namespace meta
 {
 
-template <typename T> struct is_registered : boolean<core::TypeRegistry<T>::value> {};
+template <typename T> struct is_registered : core::TypeRegistry<T> {};
 
 // use this function only for extern type registry check
 template <typename T> struct is_registered_extern
@@ -38,6 +38,8 @@ template <typename T> struct is_registered_extern
 #else
     : is_registered<T> {};
 #endif // SF_TYPE_REGISTRY_DISABLE
+
+template <typename T> struct is_serializable : one<is_registered<T>, negation<is_unsupported<T>>> {};
 
 } // namespace meta
 
