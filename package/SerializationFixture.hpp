@@ -432,7 +432,7 @@ template <typename T> struct is_registered_extern
     : is_registered<T> {};
 #endif // SF_TYPE_REGISTRY_DISABLE
 
-template <typename T> struct is_serializable : one<is_registered<T>, negation<is_unsupported<T>>> {};
+template <typename T> struct is_serializable : all<negation<is_unsupported<T>>, is_registered<T>> {};
 
 } // namespace meta
 
