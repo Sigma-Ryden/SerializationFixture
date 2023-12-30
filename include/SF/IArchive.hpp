@@ -141,7 +141,7 @@ Archive& operator& (Archive& archive, T& unsupported)
 
 template <class Archive, typename T,
           SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::negation<meta::is_registered<T>>>::value)>
+                              meta::negation<meta::is_registered_extern<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),

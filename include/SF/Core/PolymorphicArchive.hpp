@@ -109,14 +109,14 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::is_registered<T>::value)>
+              SFREQUIRE(meta::is_registered_extern<T>::value)>
     static void process_data(DerivedArchive& archive, T& data)
     {
         archive & data;
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(not meta::is_registered<T>::value)>
+              SFREQUIRE(not meta::is_registered_extern<T>::value)>
     static void process_data(DerivedArchive& archive, T& data)
     {
         throw "The 'T' type is unregistered.";
