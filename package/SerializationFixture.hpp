@@ -1285,14 +1285,14 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::is_registered<T>::value)>
+              SFREQUIRE(meta::is_registered_extern<T>::value)>
     static void process_data(DerivedArchive& archive, T& data)
     {
         archive & data;
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(not meta::is_registered<T>::value)>
+              SFREQUIRE(not meta::is_registered_extern<T>::value)>
     static void process_data(DerivedArchive& archive, T& data)
     {
         throw "The 'T' type is unregistered.";
@@ -2084,7 +2084,7 @@ Archive& operator& (Archive& archive, T& unsupported)
 
 template <class Archive, typename T,
           SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::negation<meta::is_registered<T>>>::value)>
+                              meta::negation<meta::is_registered_extern<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
@@ -2216,7 +2216,7 @@ Archive& operator& (Archive& archive, T& unsupported)
 
 template <class Archive, typename T,
           SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::negation<meta::is_registered<T>>>::value)>
+                              meta::negation<meta::is_registered_extern<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
@@ -2280,7 +2280,7 @@ inline namespace common
 template <typename Archive, typename T,
           typename dT = meta::decay<T>, // T can be lvalue
           SFREQUIRE(meta::all<meta::is_archive<Archive>,
-                              meta::is_registered<dT>,
+                              meta::is_registered_extern<dT>,
                               meta::is_apply_functor<dT>>::value)>
 Archive& operator& (Archive& archive, T&& apply_functor)
 {
@@ -3259,7 +3259,7 @@ namespace sf
 template <typename T> void serializable()
 {
     static_assert(not meta::is_unsupported<T>::value, "The 'T' is an unsupported type for serialization.");
-    static_assert(meta::is_registered<T>::value, "The 'T' is an unregistered type for serialization.");
+    static_assert(meta::is_registered_extern<T>::value, "The 'T' is an unregistered type for serialization.");
 
     dynamic::InstantiableFixture<T>::call();
 
