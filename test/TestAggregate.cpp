@@ -2,9 +2,9 @@
 
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/string.hpp>
-#include <SF/Support/any.hpp>
-#include <SF/Support/shared_ptr.hpp>
+#include <SF/BuiltIn/string.hpp>
+#include <SF/BuiltIn/any.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
 
 TEST_SPACE()
 {

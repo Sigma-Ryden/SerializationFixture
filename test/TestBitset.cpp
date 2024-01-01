@@ -1,6 +1,6 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/bitset.hpp>
+#include <SF/BuiltIn/bitset.hpp>
 
 TEST(TestUtility, TestBitset)
 {

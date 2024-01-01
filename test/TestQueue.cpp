@@ -1,6 +1,6 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/queue.hpp>
+#include <SF/BuiltIn/queue.hpp>
 
 TEST(TestSTLAdapter, TestQueue)
 {

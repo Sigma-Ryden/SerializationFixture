@@ -2,8 +2,8 @@
 
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/optional.hpp>
-#include <SF/Support/atomic.hpp>
+#include <SF/BuiltIn/optional.hpp>
+#include <SF/BuiltIn/atomic.hpp>
 
 TEST(TestUtility, TestOptional)
 {

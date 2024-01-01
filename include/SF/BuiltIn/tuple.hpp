@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_TUPLE_HPP
-#define SF_SUPPORT_TUPLE_HPP
+#ifndef SF_BUILT_IN_TUPLE_HPP
+#define SF_BUILT_IN_TUPLE_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -49,4 +49,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, tuple, meta::is_std_tuple<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_tuple<T>::value)
 
-#endif // SF_SUPPORT_TUPLE_HPP
+#endif // SF_BUILT_IN_TUPLE_HPP

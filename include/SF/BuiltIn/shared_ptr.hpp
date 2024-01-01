@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_SHARED_PTR_HPP
-#define SF_SUPPORT_SHARED_PTR_HPP
+#ifndef SF_BUILT_IN_SHARED_PTR_HPP
+#define SF_BUILT_IN_SHARED_PTR_HPP
 
 #include <memory> // shared_ptr
 
@@ -28,4 +28,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, shared_ptr, meta::is_std_shared_ptr<T
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_shared_ptr<T>::value)
 
-#endif // SF_SUPPORT_SHARED_PTR_HPP
+#endif // SF_BUILT_IN_SHARED_PTR_HPP

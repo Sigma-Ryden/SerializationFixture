@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_COMPLEX_HPP
-#define SF_SUPPORT_COMPLEX_HPP
+#ifndef SF_BUILT_IN_COMPLEX_HPP
+#define SF_BUILT_IN_COMPLEX_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -53,4 +53,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, complex, meta::is_std_complex<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_complex<T>::value)
 
-#endif // SF_SUPPORT_COMPLEX_HPP
+#endif // SF_BUILT_IN_COMPLEX_HPP

@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_MAP_HPP
-#define SF_SUPPORT_MAP_HPP
+#ifndef SF_BUILT_IN_MAP_HPP
+#define SF_BUILT_IN_MAP_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -15,7 +15,7 @@
 #include <SF/ExternSerialization.hpp>
 
 // serialization of core map value_type
-#include <SF/Support/pair.hpp>
+#include <SF/BuiltIn/pair.hpp>
 
 #define _SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                      \
     template <typename> struct is_std_##map_type : std::false_type {};                                  \
@@ -107,4 +107,4 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_map<T>::value)
 //clear
 #undef _SF_IS_STD_MAP_TYPE_META_GENERIC
 
-#endif // SF_SUPPORT_MAP_HPP
+#endif // SF_BUILT_IN_MAP_HPP

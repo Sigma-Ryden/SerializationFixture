@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_BITSET_HPP
-#define SF_SUPPORT_BITSET_HPP
+#ifndef SF_BUILT_IN_BITSET_HPP
+#define SF_BUILT_IN_BITSET_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -9,7 +9,7 @@
 #include <SF/ExternSerialization.hpp>
 
 // default array for bitset convertion
-#include <SF/Support/string.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 namespace sf
 {
@@ -50,4 +50,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, bitset, meta::is_std_bitset<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_bitset<T>::value)
 
-#endif // SF_SUPPORT_BITSET_HPP
+#endif // SF_BUILT_IN_BITSET_HPP

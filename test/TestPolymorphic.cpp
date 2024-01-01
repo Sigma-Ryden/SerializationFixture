@@ -1,6 +1,6 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/string.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 TEST_SPACE()
 {

@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_DEQUE_HPP
-#define SF_SUPPORT_DEQUE_HPP
+#ifndef SF_BUILT_IN_DEQUE_HPP
+#define SF_BUILT_IN_DEQUE_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -53,4 +53,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, deque, meta::is_std_deque<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_deque<T>::value)
 
-#endif // SF_SUPPORT_DEQUE_HPP
+#endif // SF_BUILT_IN_DEQUE_HPP

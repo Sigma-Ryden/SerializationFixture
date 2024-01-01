@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_ARRAY_HPP
-#define SF_SUPPORT_ARRAY_HPP
+#ifndef SF_BUILT_IN_ARRAY_HPP
+#define SF_BUILT_IN_ARRAY_HPP
 
 #include <array> // array
 
@@ -27,4 +27,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, array, meta::is_std_array<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_array<T>::value)
 
-#endif // SF_SUPPORT_ARRAY_HPP
+#endif // SF_BUILT_IN_ARRAY_HPP

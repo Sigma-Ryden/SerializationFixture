@@ -62,8 +62,8 @@ TEST(TestCommon, TestUserType)
     }
 }
 
-#include <SF/Support/string.hpp>
-#include <SF/Support/any.hpp>
+#include <SF/BuiltIn/string.hpp>
+#include <SF/BuiltIn/any.hpp>
 
 TEST_SPACE()
 {

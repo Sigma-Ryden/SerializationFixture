@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_VECTOR_HPP
-#define SF_SUPPORT_VECTOR_HPP
+#ifndef SF_BUILT_IN_VECTOR_HPP
+#define SF_BUILT_IN_VECTOR_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -96,4 +96,4 @@ EXTERN_SERIALIZATION(Load, vector, std::vector<bool>)
 
 } // namespace sf
 
-#endif // SF_SUPPORT_VECTOR_HPP
+#endif // SF_BUILT_IN_VECTOR_HPP

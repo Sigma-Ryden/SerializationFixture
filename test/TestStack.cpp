@@ -1,6 +1,6 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/stack.hpp>
+#include <SF/BuiltIn/stack.hpp>
 
 TEST(TestSTLAdapter, TestStack)
 {

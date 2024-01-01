@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_QUEUE_HPP
-#define SF_SUPPORT_QUEUE_HPP
+#ifndef SF_BUILT_IN_QUEUE_HPP
+#define SF_BUILT_IN_QUEUE_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -8,13 +8,13 @@
 #include <SF/Core/TypeRegistry.hpp>
 #include <SF/ExternSerialization.hpp>
 
-#include <SF/Support/Detail/Meta.hpp>
+#include <SF/BuiltIn/Detail/Meta.hpp>
 
 // default container for queue
-#include <SF/Support/deque.hpp>
+#include <SF/BuiltIn/deque.hpp>
 
 // default container for priority_queue
-#include <SF/Support/vector.hpp>
+#include <SF/BuiltIn/vector.hpp>
 
 namespace sf
 {
@@ -51,4 +51,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, queue, meta::is_std_any_queue<T>::val
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_queue<T>::value)
 
-#endif // SF_SUPPORT_QUEUE_HPP
+#endif // SF_BUILT_IN_QUEUE_HPP

@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_UNIQUE_PTR_HPP
-#define SF_SUPPORT_UNIQUE_PTR_HPP
+#ifndef SF_BUILT_IN_UNIQUE_PTR_HPP
+#define SF_BUILT_IN_UNIQUE_PTR_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -51,4 +51,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, unique_ptr, meta::is_std_unique_ptr<T>::v
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_unique_ptr<T>::value)
 
-#endif // SF_SUPPORT_UNIQUE_PTR_HPP
+#endif // SF_BUILT_IN_UNIQUE_PTR_HPP

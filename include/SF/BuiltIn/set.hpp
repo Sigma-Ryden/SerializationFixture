@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_SET_HPP
-#define SF_SUPPORT_SET_HPP
+#ifndef SF_BUILT_IN_SET_HPP
+#define SF_BUILT_IN_SET_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -101,4 +101,4 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_set<T>::value)
 // clean up
 #undef _SF_IS_STD_SET_TYPE_META_GENERIC
 
-#endif // SF_SUPPORT_SET_HPP
+#endif // SF_BUILT_IN_SET_HPP

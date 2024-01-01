@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_ANY_HPP
-#define SF_SUPPORT_ANY_HPP
+#ifndef SF_BUILT_IN_ANY_HPP
+#define SF_BUILT_IN_ANY_HPP
 
 #if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
 
@@ -58,4 +58,4 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_std_any<T>::value)
 
 #endif // if
 
-#endif // SF_SUPPORT_ANY_HPP
+#endif // SF_BUILT_IN_ANY_HPP

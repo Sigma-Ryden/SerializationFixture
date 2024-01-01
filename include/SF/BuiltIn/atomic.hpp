@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_ATOMIC_HPP
-#define SF_SUPPORT_ATOMIC_HPP
+#ifndef SF_BUILT_IN_ATOMIC_HPP
+#define SF_BUILT_IN_ATOMIC_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -51,4 +51,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, atomic, meta::is_std_atomic<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_atomic<T>::value)
 
-#endif // SF_SUPPORT_ATOMIC_HPP
+#endif // SF_BUILT_IN_ATOMIC_HPP

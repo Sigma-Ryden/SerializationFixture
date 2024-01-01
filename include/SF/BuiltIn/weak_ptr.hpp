@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_WEAK_PTR_HPP
-#define SF_SUPPORT_WEAK_PTR_HPP
+#ifndef SF_BUILT_IN_WEAK_PTR_HPP
+#define SF_BUILT_IN_WEAK_PTR_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -11,7 +11,7 @@
 #include <SF/ExternSerialization.hpp>
 
 // serialization of shared_ptr
-#include <SF/Support/shared_ptr.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
 
 namespace sf
 {
@@ -53,4 +53,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, weak_ptr, meta::is_std_weak_ptr<T>::value
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_weak_ptr<T>::value)
 
-#endif // SF_SUPPORT_WEAK_PTR_HPP
+#endif // SF_BUILT_IN_WEAK_PTR_HPP

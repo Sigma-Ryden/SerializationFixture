@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_PAIR_HPP
-#define SF_SUPPORT_PAIR_HPP
+#ifndef SF_BUILT_IN_PAIR_HPP
+#define SF_BUILT_IN_PAIR_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -35,4 +35,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pair, meta::is_std_pair<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_pair<T>::value)
 
-#endif // SF_SUPPORT_PAIR_HPP
+#endif // SF_BUILT_IN_PAIR_HPP

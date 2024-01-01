@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_STRING_HPP
-#define SF_SUPPORT_STRING_HPP
+#ifndef SF_BUILT_IN_STRING_HPP
+#define SF_BUILT_IN_STRING_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -59,4 +59,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, string, meta::is_std_basic_string<T>::val
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_basic_string<T>::value)
 
-#endif // SF_SUPPORT_STRING_HPP
+#endif // SF_BUILT_IN_STRING_HPP

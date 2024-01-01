@@ -1,6 +1,6 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/unique_ptr.hpp>
+#include <SF/BuiltIn/unique_ptr.hpp>
 
 TEST_SPACE()
 {
@@ -72,7 +72,7 @@ TEST(TestMemory, TestUniquePtr)
     }
 }
 
-#include <SF/Support/shared_ptr.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
 
 TEST_SPACE()
 {
@@ -193,7 +193,7 @@ TEST(TestMemory, TestSharedPtr)
     }
 }
 
-#include <SF/Support/weak_ptr.hpp>
+#include <SF/BuiltIn/weak_ptr.hpp>
 
 TEST(TestMemory, TestWeakPtr)
 {
@@ -270,7 +270,7 @@ TEST(TestMemory, TestSharedAndWeakPtr)
     }
 }
 
-#include <SF/Support/string.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 TEST_SPACE()
 {

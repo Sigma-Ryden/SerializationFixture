@@ -1,6 +1,6 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/pair.hpp>
+#include <SF/BuiltIn/pair.hpp>
 
 TEST_SPACE()
 {

@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_FORWARD_LIST_HPP
-#define SF_SUPPORT_FORWARD_LIST_HPP
+#ifndef SF_BUILT_IN_FORWARD_LIST_HPP
+#define SF_BUILT_IN_FORWARD_LIST_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -53,4 +53,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, forward_list, meta::is_std_forward_list<T
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_forward_list<T>::value)
 
-#endif // SF_SUPPORT_FORWARD_LIST_HPP
+#endif // SF_BUILT_IN_FORWARD_LIST_HPP

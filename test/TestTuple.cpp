@@ -1,7 +1,7 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/tuple.hpp>
-#include <SF/Support/string.hpp>
+#include <SF/BuiltIn/tuple.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 TEST(TestUtility, TestTuple)
 {

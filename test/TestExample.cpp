@@ -1,9 +1,9 @@
 #include "SFTestingBase.hpp"
 
-#include <SF/Support/string.hpp>
-#include <SF/Support/vector.hpp>
-#include <SF/Support/map.hpp>
-#include <SF/Support/shared_ptr.hpp>
+#include <SF/BuiltIn/string.hpp>
+#include <SF/BuiltIn/vector.hpp>
+#include <SF/BuiltIn/map.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
 
 TEST_SPACE()
 {

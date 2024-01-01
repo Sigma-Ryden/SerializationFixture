@@ -57,30 +57,30 @@ set(SF
     include/SF/Core.hpp
 )
 
-set(SF_SUPPORT
-    include/SF/Support/Detail/Meta.hpp
-    include/SF/Support/vector.hpp
-    include/SF/Support/array.hpp
-    include/SF/Support/string.hpp
-    include/SF/Support/pair.hpp
-    include/SF/Support/tuple.hpp
-    include/SF/Support/list.hpp
-    include/SF/Support/forward_list.hpp
-    include/SF/Support/set.hpp
-    include/SF/Support/unique_ptr.hpp
-    include/SF/Support/shared_ptr.hpp
-    include/SF/Support/weak_ptr.hpp
-    include/SF/Support/map.hpp
-    include/SF/Support/deque.hpp
-    include/SF/Support/stack.hpp
-    include/SF/Support/queue.hpp
-    include/SF/Support/valarray.hpp
-    include/SF/Support/bitset.hpp
-    include/SF/Support/atomic.hpp
-    include/SF/Support/complex.hpp
-    include/SF/Support/optional.hpp
-    include/SF/Support/variant.hpp
-    include/SF/Support/any.hpp
+set(SF_BUILT_IN
+	include/SF/BuiltIn/Detail/Meta.hpp
+	include/SF/BuiltIn/vector.hpp
+	include/SF/BuiltIn/array.hpp
+	include/SF/BuiltIn/string.hpp
+	include/SF/BuiltIn/pair.hpp
+	include/SF/BuiltIn/tuple.hpp
+	include/SF/BuiltIn/list.hpp
+	include/SF/BuiltIn/forward_list.hpp
+	include/SF/BuiltIn/set.hpp
+	include/SF/BuiltIn/unique_ptr.hpp
+	include/SF/BuiltIn/shared_ptr.hpp
+	include/SF/BuiltIn/weak_ptr.hpp
+	include/SF/BuiltIn/map.hpp
+	include/SF/BuiltIn/deque.hpp
+	include/SF/BuiltIn/stack.hpp
+	include/SF/BuiltIn/queue.hpp
+	include/SF/BuiltIn/valarray.hpp
+	include/SF/BuiltIn/bitset.hpp
+	include/SF/BuiltIn/atomic.hpp
+	include/SF/BuiltIn/complex.hpp
+	include/SF/BuiltIn/optional.hpp
+	include/SF/BuiltIn/variant.hpp
+	include/SF/BuiltIn/any.hpp
 )
 
 set(AUTO
@@ -135,6 +135,6 @@ add_executable(${PROJECT_NAME}
     test/main.cpp
 
     ${SF}
-    ${SF_SUPPORT}
+    ${SF_BUILT_IN}
     ${AUTO}
 )

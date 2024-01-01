@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_OPTIONAL_HPP
-#define SF_SUPPORT_OPTIONAL_HPP
+#ifndef SF_BUILT_IN_OPTIONAL_HPP
+#define SF_BUILT_IN_OPTIONAL_HPP
 
 #if __cplusplus >= 201703L
 
@@ -56,4 +56,4 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_std_optional<T>::value)
 
 #endif // if
 
-#endif // SF_SUPPORT_OPTIONAL_HPP
+#endif // SF_BUILT_IN_OPTIONAL_HPP

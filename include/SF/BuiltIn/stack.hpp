@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_STACK_HPP
-#define SF_SUPPORT_STACK_HPP
+#ifndef SF_BUILT_IN_STACK_HPP
+#define SF_BUILT_IN_STACK_HPP
 
 #include <type_traits> // true_type, false_type
 
@@ -8,10 +8,10 @@
 #include <SF/Core/TypeRegistry.hpp>
 #include <SF/ExternSerialization.hpp>
 
-#include <SF/Support/Detail/Meta.hpp>
+#include <SF/BuiltIn/Detail/Meta.hpp>
 
 // default container for stack
-#include <SF/Support/deque.hpp>
+#include <SF/BuiltIn/deque.hpp>
 
 namespace sf
 {
@@ -40,4 +40,4 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, stack, meta::is_std_stack<T>::value)
 
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_stack<T>::value)
 
-#endif // SF_SUPPORT_STACK_HPP
+#endif // SF_BUILT_IN_STACK_HPP

@@ -1,5 +1,5 @@
-#ifndef SF_SUPPORT_DETAIL_META_HPP
-#define SF_SUPPORT_DETAIL_META_HPP
+#ifndef SF_BUILT_IN_DETAIL_META_HPP
+#define SF_BUILT_IN_DETAIL_META_HPP
 
 namespace sf
 {
@@ -29,4 +29,4 @@ Container& underlying(Adapter<Type, Container, Args...>& adapter) noexcept
 
 } // namespace sf
 
-#endif // SF_SUPPORT_DETAIL_META_HPP
+#endif // SF_BUILT_IN_DETAIL_META_HPP
