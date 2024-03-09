@@ -21,13 +21,12 @@ TestingCore& TestingCore::instance()
 
 static std::string info_format(TestingInterface* test, const std::string& msg, bool contition)
 {
-    return std::string(test->module)
+    return (contition?"[   OK   ] ":"[ FAILED ] ")
+         + std::string(test->module)
          + "::"
          + test->name
          + '.'
          + msg
-         + " - "
-         + (contition?"Ok":"Fail")
          + '\n';
 }
 
@@ -81,11 +80,11 @@ void TestingCore::execute_all()
 
 static std::string stat_format(unsigned passed, unsigned failed)
 {
-    return "\nPassed: "
+    return "\nOK: "
          + std::to_string(passed)
-         + " Failed: "
+         + " FAILED: "
          + std::to_string(failed)
-         + " Total: "
+         + " TOTAL: "
          + std::to_string(passed+failed)
          + '\n';
 }
