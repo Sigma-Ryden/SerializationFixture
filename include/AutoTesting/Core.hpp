@@ -19,7 +19,7 @@
         static struct test_name : TestingInterface {                                                    \
             test_name() : TestingInterface(#test_module, #test_name) {}                                 \
             void run() override;                                                                        \
-        } s##test_module##test_name;                                                                    \
+        } s##test_name;                                                                                 \
     }                                                                                                   \
     void test_module::test_name::run()
 
