@@ -31,7 +31,7 @@ See last stable library version [here](https://github.com/Sigma-Ryden/Serializat
 - C++11: string, vector, map, and many others
 - C++17: any, optional, variant
 
-See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/include/SF/Support).
+See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/include/SF/BuiltIn).
 ### Serialization of user classes:
 - Aggregate (since C++17)
 - Common/Union/Template
