@@ -133,7 +133,7 @@ Handbook db; // some other clear db
 auto ar = sf::iarchive(storage);
 ar & db;
 ```
-See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/demo/TestExample.cpp)
+See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/TestExample.cpp)
 
 ### Notes:
 For ```oarchive_t``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
