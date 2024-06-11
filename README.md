@@ -43,7 +43,7 @@ See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/ma
 See library testing [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test).
 
 ## Quick start:
-Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/demo).
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/).
 
 Preparing:
 
