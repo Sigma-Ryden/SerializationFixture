@@ -16,7 +16,7 @@ namespace compress
 
 // always require compressible type for fast compression
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_compressible<T>>::value)>
 void fast(Archive& archive, T& object)
 {
@@ -30,7 +30,7 @@ void fast(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
+          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
 void slow(Archive& archive, T& object)
 {
     for (auto&& item : object)
@@ -38,7 +38,7 @@ void slow(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_compressible<T>>::value)>
 void zip(Archive& archive, T& object)
 {
@@ -46,7 +46,7 @@ void zip(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::negation<meta::is_compressible<T>>>::value)>
 void zip(Archive& archive, T& object)
 {

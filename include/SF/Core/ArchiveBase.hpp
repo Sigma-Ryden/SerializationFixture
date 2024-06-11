@@ -9,7 +9,7 @@
 
 #define SERIALIZATION_ARCHIVE(...)                                                                      \
     virtual key_type trait() const noexcept override {                                                  \
-        return ::sf::core::ArchiveTraitKey<__VA_ARGS__>::key;                                           \
+        return ::sf::core::archive_traits_key_t<__VA_ARGS__>::key;                                      \
     }
 
 namespace sf
@@ -18,7 +18,7 @@ namespace sf
 namespace core
 {
 
-struct ArchiveTrait
+struct archive_traits
 {
     using key_type = let::u8;
 
@@ -26,23 +26,23 @@ struct ArchiveTrait
     static constexpr auto max_key = key_type(SF_ARCHIVE_TRAIT_MAX_KEY_SIZE);
 };
 
-template <class Archive> struct ArchiveTraitKey
+template <class Archive> struct archive_traits_key_t
 {
-    static constexpr auto key = ArchiveTrait::base_key;
+    static constexpr auto key = archive_traits::base_key;
 };
 
-class IOArchive
+class ioarchive_t
 {
 public:
-    using key_type = ArchiveTrait::key_type;
+    using key_type = archive_traits::key_type;
 
 protected:
-    virtual ~IOArchive() = default;
+    virtual ~ioarchive_t() = default;
 
 public:
     virtual key_type trait() const noexcept
     {
-        return ArchiveTraitKey<IOArchive>::key;
+        return archive_traits_key_t<ioarchive_t>::key;
     }
 };
 

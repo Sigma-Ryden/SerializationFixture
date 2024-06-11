@@ -14,7 +14,7 @@ namespace sf
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_standard_layout<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
@@ -25,25 +25,25 @@ void strict(Archive& archive, T& pointer)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(Archive& archive, T& pointer, Memory::void_ptr<T>& cache)
+void strict(Archive& archive, T& pointer, memory_t::void_ptr<T>& cache)
 {
-    using item_type = typename Memory::ptr_trait<T>::item;
+    using item_type = typename memory_t::ptr_traits<T>::item;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-    Memory::allocate<item_type>(pointer);
-    cache = Memory::pure(pointer);
+    memory_t::allocate<item_type>(pointer);
+    cache = memory_t::pure(pointer);
 
     archive & (*pointer);
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
@@ -54,9 +54,9 @@ void strict(Archive& archive, T& pointer)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(Archive& archive, T& pointer, Memory::void_ptr<T>& cache)
+void strict(Archive& archive, T& pointer, memory_t::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
@@ -66,11 +66,11 @@ void strict(Archive& archive, T& pointer, Memory::void_ptr<T>& cache)
 
 // verison without cache using
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
-    Memory::void_ptr<T> cache = nullptr;
+    memory_t::void_ptr<T> cache = nullptr;
     strict(archive, pointer, cache);
 }
 
@@ -79,12 +79,12 @@ namespace detail
 
 template <class Archive, typename T,
           typename KeyType = typename Archive::TrackingKeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
 KeyType refer_key(Archive& archive, T& pointer)
 {
-    auto pure = Memory::pure(pointer);
-    auto key = reinterpret_cast<KeyType>(Memory::raw(pure));
+    auto pure = memory_t::pure(pointer);
+    auto key = reinterpret_cast<KeyType>(memory_t::raw(pure));
 
     archive & key;
     return key;
@@ -92,7 +92,7 @@ KeyType refer_key(Archive& archive, T& pointer)
 
 template <class Archive, typename T,
           typename KeyType = typename Archive::TrackingKeyType,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
 KeyType refer_key(Archive& archive, T& pointer)
 {
@@ -113,11 +113,11 @@ namespace apply
 {
 
 template <typename T>
-struct StrictFunctor : public ApplyFunctor
+struct strict_functor_t : public apply_functor_t
 {
     T& data;
 
-    StrictFunctor(T& data) noexcept : data(data) {}
+    strict_functor_t(T& data) noexcept : data(data) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { strict(archive, data); }
@@ -126,7 +126,7 @@ struct StrictFunctor : public ApplyFunctor
 } // namespace apply
 
 template <typename T>
-apply::StrictFunctor<T> strict(T& parameter) noexcept { return { parameter }; }
+apply::strict_functor_t<T> strict(T& parameter) noexcept { return { parameter }; }
 
 } // namespace sf
 

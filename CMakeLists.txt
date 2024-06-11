@@ -14,9 +14,9 @@ set(SF
     include/SF/Detail/Preprocessor.hpp
 
     include/SF/Core/ArchiveBase.hpp
-    include/SF/Core/ArchiveTrait.hpp
+    include/SF/Core/ArchiveTraits.hpp
     include/SF/Core/Config.hpp
-    include/SF/Core/InstantiableTrait.hpp
+    include/SF/Core/InstantiableTraits.hpp
     include/SF/Core/PolymorphicArchive.hpp
     include/SF/Core/TypeRegistry.hpp
     include/SF/Core/Serialization.hpp

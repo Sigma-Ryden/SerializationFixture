@@ -5,7 +5,7 @@ and quickly turn your objects into a sequence of bits.
 The library has a small code base, but enough to use it.
 
 Use macros for code generation or read the documentation and write your own code.
-There are 2 main serialization classes under your control: `OArchive` and `IArchive`.
+There are 2 main serialization classes under your control: `oarchive_t` and `iarchive_t`.
 Both classes can be equipped with additional helper classes via template parameters if needed.
 A wrapper for streams will help you flexibly configure the process of writing and reading data.
 The type registrar will allow you to properly serialize and deserialize polymorphic and abstract types.
@@ -136,8 +136,8 @@ ar & db;
 See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/demo/TestExample.cpp)
 
 ### Notes:
-For ```OArchive``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
-or ```operator()```, and also ```operator >>``` for ```IArchive``` objects.
+For ```oarchive_t``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
+or ```operator()```, and also ```operator >>``` for ```iarchive_t``` objects.
 
 Examples:
 ```C++

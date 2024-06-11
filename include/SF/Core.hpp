@@ -23,15 +23,15 @@
 
 #include <SF/Serializable.hpp>
 
-EXPORT_SERIALIZATION_ARCHIVE(0, I, IArchive<wrapper::IByteStream<wrapper::ByteContainer>>)
-EXPORT_SERIALIZATION_ARCHIVE(0, O, OArchive<wrapper::OByteStream<wrapper::ByteContainer>>)
+EXPORT_SERIALIZATION_ARCHIVE(0, i, iarchive_t<wrapper::ibyte_stream_t<wrapper::byte_container_t>>)
+EXPORT_SERIALIZATION_ARCHIVE(0, o, oarchive_t<wrapper::obyte_stream_t<wrapper::byte_container_t>>)
 
 #ifndef SF_DEFAULT_DISABLE
 
 #include <fstream> // ifstream, ofstream
 
-EXPORT_SERIALIZATION_ARCHIVE(1, I, IArchive<wrapper::IFileStream<std::ifstream>>)
-EXPORT_SERIALIZATION_ARCHIVE(1, O, OArchive<wrapper::OFileStream<std::ofstream>>)
+EXPORT_SERIALIZATION_ARCHIVE(1, i, iarchive_t<wrapper::ifile_stream_t<std::ifstream>>)
+EXPORT_SERIALIZATION_ARCHIVE(1, o, oarchive_t<wrapper::ofile_stream_t<std::ofstream>>)
 
 #endif // SF_DEFAULT_DISABLE
 

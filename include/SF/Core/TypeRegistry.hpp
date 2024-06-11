@@ -6,13 +6,13 @@
 
 #define CONDITIONAL_TYPE_REGISTRY(...)                                                                  \
     namespace sf { namespace core {                                                                     \
-        template <typename T> struct TypeRegistry<T, SFWHEN(__VA_ARGS__)> : std::true_type {};          \
+        template <typename T> struct type_registry_t<T, SF_WHEN(__VA_ARGS__)> : std::true_type {};      \
     }}
 
 // you should use TYPE_REGISTRY before using EXTERN_SERIALIZATION e.t.
 #define TYPE_REGISTRY(...)                                                                              \
     namespace sf { namespace core {                                                                     \
-        template <> struct TypeRegistry<__VA_ARGS__> : std::true_type {};                               \
+        template <> struct type_registry_t<__VA_ARGS__> : std::true_type {};                            \
     }}
 
 namespace sf
@@ -22,14 +22,14 @@ namespace core
 {
 
 template <typename T, typename enable = void>
-struct TypeRegistry : std::false_type {};
+struct type_registry_t : std::false_type {};
 
 } // namespace core
 
 namespace meta
 {
 
-template <typename T> struct is_registered : core::TypeRegistry<T> {};
+template <typename T> struct is_registered : core::type_registry_t<T> {};
 
 // use this function only for extern type registry check
 template <typename T> struct is_registered_extern

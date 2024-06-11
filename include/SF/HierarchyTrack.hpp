@@ -4,7 +4,7 @@
 #include <utility> // pair
 #include <unordered_map> // unordered_map
 
-#include <SF/Core/InstantiableTrait.hpp>
+#include <SF/Core/InstantiableTraits.hpp>
 #include <SF/Core/Hash.hpp>
 
 #include <SF/Detail/MetaMacro.hpp>
@@ -16,7 +16,7 @@ namespace detail
 {
 
 template <typename HashType = let::u64>
-struct PairHash
+struct pair_hash_t
 {
     template <typename T1, typename T2>
     HashType operator() (const std::pair<T1, T2>& pair) const noexcept
@@ -35,17 +35,17 @@ struct PairHash
 namespace tracking
 {
 
-struct Hierarchy {};
+struct hierarchy_t {};
 
-template <typename KeyType, typename TraitType = core::InstantiableTrait::key_type>
-using HierarchyTrack = std::unordered_map<std::pair<KeyType, TraitType>, bool, detail::PairHash<TraitType>>;
+template <typename KeyType, typename TraitsType = core::instantiable_traits_t::key_type>
+using hierarchy_track_t = std::unordered_map<std::pair<KeyType, TraitsType>, bool, detail::pair_hash_t<TraitsType>>;
 
 } // namespace tracking
 
 namespace meta
 {
 
-template <typename T> struct is_track_hierarchy : std::is_same<T, tracking::Hierarchy> {};
+template <typename T> struct is_track_hierarchy : std::is_same<T, tracking::hierarchy_t> {};
 
 } // namespace meta
 

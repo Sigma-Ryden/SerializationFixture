@@ -11,6 +11,6 @@ using sf::iarchive;
 
 using sf::hierarchy;
 
-using sf::Instantiable;
+using sf::instantiable_t;
 
 #endif // SF_TESTING_BASE_HPP

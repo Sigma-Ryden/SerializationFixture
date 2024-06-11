@@ -26,7 +26,7 @@ struct AggregateType
 // aggregate with 64 member-variables
 struct BigAggregateType
 {
-    int SFPLACEHOLDERS(64);
+    int SF_PLACEHOLDERS(64);
 };
 
 struct BaseAggregateType

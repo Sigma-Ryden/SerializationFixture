@@ -19,13 +19,13 @@ namespace sf
 namespace dynamic
 {
 
-class AnyRegistry
+class any_registry_t
 {
 public:
-    using archive_type = core::IOArchive;
+    using archive_type = core::ioarchive_t;
 
 private:
-    struct AnyProxy
+    struct any_proxy_t
     {
         // we use raw function ptr instead std::function to reach perfomance
         void(*__save)(archive_type&, std::any&) = nullptr;
@@ -33,21 +33,21 @@ private:
     };
 
 private:
-    using InnerTable = std::unordered_map<let::u64, AnyProxy>;
+    using InnerTable = std::unordered_map<let::u64, any_proxy_t>;
 
 private:
     InnerTable registry_;
 
 private:
-    AnyRegistry() : registry_() {}
+    any_registry_t() : registry_() {}
 
-    AnyRegistry(const AnyRegistry&) = delete;
-    AnyRegistry& operator=(const AnyRegistry&) = delete;
+    any_registry_t(const any_registry_t&) = delete;
+    any_registry_t& operator=(const any_registry_t&) = delete;
 
 public:
-    static AnyRegistry& instance() noexcept
+    static any_registry_t& instance() noexcept
     {
-        static AnyRegistry self;
+        static any_registry_t self;
         return self;
     }
 
@@ -55,7 +55,7 @@ public:
     {
         if (is_registered(hash)) return;
 
-        AnyProxy proxy;
+        any_proxy_t proxy;
 
         proxy.__save = [](archive_type& archive, std::any& any)
         {
@@ -91,25 +91,25 @@ public:
 #ifndef SF_REGISTRY_ACCESS
 private:
 #endif // SF_REGISTRY_ACCESS
-    const AnyProxy& registry(let::u64 hash)
+    const any_proxy_t& registry(let::u64 hash)
     {
         // It happens if the type not registered with fixture object.
         auto it = registry_.find(hash);
         if (it == registry_.end())
-            throw "The 'sf::AnyRegistry' must registry type with specify hash code.";
+            throw "The 'sf::any_registry_t' must registry type with specify hash code.";
 
         return it->second;
     }
 };
 
 template <typename T>
-class AnyFixture
+class any_fixture_t
 {
 private:
     static bool lock_;
 
 public:
-    AnyFixture() { call(); }
+    any_fixture_t() { call(); }
 
 public:
     static void call()
@@ -117,12 +117,12 @@ public:
         if (lock_) return;
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
-        auto& registry = AnyRegistry::instance();
+        auto& registry = any_registry_t::instance();
 
         auto hash = SF_TYPE_HASH(typeid(T));
     #ifdef SF_DEBUG
         if (registry.is_registered(hash))
-            throw "The 'sf::dynamic::AnyRegistry' must contains unique hashes.";
+            throw "The 'sf::dynamic::any_registry_t' must contains unique hashes.";
     #endif // SF_DEBUG
 
         registry.update<T>(hash);
@@ -130,7 +130,7 @@ public:
 };
 
 template <typename T>
-bool AnyFixture<T>::lock_ = false;
+bool any_fixture_t<T>::lock_ = false;
 
 } // namespace dynamic
 

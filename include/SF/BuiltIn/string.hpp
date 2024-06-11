@@ -20,8 +20,8 @@ namespace meta
 template <typename>
 struct is_std_basic_string : std::false_type {};
 
-template <typename Char, typename Traits, typename Alloc>
-struct is_std_basic_string<std::basic_string<Char, Traits, Alloc>> : std::true_type {};
+template <typename Char, typename Traitss, typename Alloc>
+struct is_std_basic_string<std::basic_string<Char, Traitss, Alloc>> : std::true_type {};
 
 } // namespace meta
 

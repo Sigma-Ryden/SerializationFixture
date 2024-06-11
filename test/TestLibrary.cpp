@@ -80,12 +80,12 @@ TEST(TestLibrary, TestValidation)
 TEST_SPACE()
 {
 
-class Triangle : public Instantiable
+class Triangle : public instantiable_t
 {
     SERIALIZABLE(Triangle)
 };
 
-class Cyrcle : public Instantiable
+class Cyrcle : public instantiable_t
 {
     SERIALIZABLE(Triangle) // oops - polymorphic key is already use
 };
@@ -103,22 +103,22 @@ class Square // non instantiable
 
 TEST(TestLibrary, TestInstantiableRegistry)
 {
-    using sf::dynamic::InstantiableFixture;
+    using sf::dynamic::instantiable_fixture_t;
 
     {
-        InstantiableFixture<Triangle> triangle;
+        instantiable_fixture_t<Triangle> triangle;
 
         auto success = false;
-        try { InstantiableFixture<Cyrcle> cyrcle; } catch(...) { success = true; }
+        try { instantiable_fixture_t<Cyrcle> cyrcle; } catch(...) { success = true; }
 
         EXPECT("same polymorphic key", success);
     }
 
-    using sf::dynamic::InstantiableRegistry;
-    using sf::dynamic::ExternRegistry;
+    using sf::dynamic::instantiable_registry_t;
+    using sf::dynamic::extern_registry_t;
 
-    auto& registry = InstantiableRegistry::instance();
-    auto key = Serialization::trait<Square>();
+    auto& registry = instantiable_registry_t::instance();
+    auto key = __sf::traits<Square>();
 
     {
         auto success = false;
@@ -127,17 +127,17 @@ TEST(TestLibrary, TestInstantiableRegistry)
         EXPECT("non-instantiable type", success);
     }
 
-    using sf::Memory;
+    using sf::memory_t;
 
     {
         auto success = false;
-        try { registry.clone<Memory::Raw>(key); } catch(...) { success = true; }
+        try { registry.clone<memory_t::Raw>(key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable raw", success);
     }
     {
         auto success = false;
-        try { registry.clone<Memory::Shared>(key); } catch(...) { success = true; }
+        try { registry.clone<memory_t::Shared>(key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable shared", success);
     }
@@ -165,12 +165,12 @@ TEST(TestLibrary, TestInstantiableRegistry)
 TEST_SPACE()
 {
 
-struct MyStruct : Instantiable
+struct MyStruct : instantiable_t
 {
     SERIALIZABLE(MyStruct)
 };
 
-class MyClass : sf::Instantiable // is same as Instantiable
+class MyClass : sf::instantiable_t // is same as instantiable_t
 {
     SERIALIZABLE(MyClass)
 };
@@ -180,7 +180,7 @@ class MyDerivedClass : public MyClass
     SERIALIZABLE(MyDerivedClass)
 };
 
-struct MyCustomType : Instantiable
+struct MyCustomType : instantiable_t
 {
     SERIALIZABLE(MyCustomType)
 };
@@ -200,30 +200,30 @@ TEST(TestLibrary, TestExportInstantiable)
     static auto sv_c = SF_STATIC_HASH("MyStruct");
 
     {
-        EXPECT("export instantiable key.trait",
-            Serialization::trait<MyStruct>() == sv_s &&
-            Serialization::trait<MyClass>() == sv_c);
+        EXPECT("export instantiable key.traits",
+            __sf::traits<MyStruct>() == sv_s &&
+            __sf::traits<MyClass>() == sv_c);
 
-        EXPECT("export instantiable key.static_trait",
-            Serialization::static_trait<MyStruct>() == sv_c &&
-            Serialization::static_trait<MyClass>() == sv_s);
+        EXPECT("export instantiable key.static_traits",
+            __sf::static_traits<MyStruct>() == sv_c &&
+            __sf::static_traits<MyClass>() == sv_s);
     }
 
-    using sf::dynamic::ExternRegistry;
+    using sf::dynamic::extern_registry_t;
 
     static auto sv_ct = SF_STATIC_HASH("MyCustomType");
 
     {
         EXPECT("export instantiable.equivalent",
-            Serialization::trait<MyCustomType>() == sv_ct &&
-            Serialization::static_trait<MyCustomType>() == sv_ct);
+            __sf::traits<MyCustomType>() == sv_ct &&
+            __sf::static_traits<MyCustomType>() == sv_ct);
     }
 
     static auto sv_dc = SF_STATIC_HASH("MyDerived");
 
     {
         std::shared_ptr<MyClass> b = std::make_shared<MyDerivedClass>();
-        EXPECT("instantiable runtime key.trait", Serialization::trait(*b) == sv_dc);
+        EXPECT("instantiable runtime key.traits", __sf::traits(*b) == sv_dc);
     }
 }
 
@@ -270,7 +270,7 @@ TEST(TestLibrary, TestStreamWrapper)
 
         std::ifstream file("test.bin", std::ios::binary);
 
-        auto ar = iarchive<sf::wrapper::IFileStream>(file);
+        auto ar = iarchive<sf::wrapper::ifile_stream_t>(file);
         ar & s;
 
         EXPECT("storage converting", s == s_s);
@@ -284,7 +284,7 @@ TEST(TestLibrary, TestStreamWrapper)
 TEST_SPACE()
 {
 
-struct WorldObject : Instantiable
+struct WorldObject : instantiable_t
 {
     SERIALIZABLE(WorldObject)
     int wo = 0;
@@ -433,7 +433,7 @@ private:
     int inner_data_;
 };
 
-struct PolymorphicBaseImpl : public sf::Instantiable
+struct PolymorphicBaseImpl : public sf::instantiable_t
 {
     SERIALIZABLE(PolymorphicBaseImpl)
 };
@@ -492,18 +492,18 @@ TEST(TestLibrary, TestAccess)
         EXPECT("non-public inheritance.value", so == s_so);
     }
 
-    using sf::dynamic::InstantiableRegistry;
+    using sf::dynamic::instantiable_registry_t;
 
     {
         // since PolymorphicBase protected inherited from PolymorphicBaseImpl, where
         // PolymorphicBaseImpl is instantiable type - we cannot use dynamic_cast for serialization
         // since we get nullptr after apply casting
 
-        EXPECT("public instantiable", InstantiableRegistry::is_instantiable<PolymorphicBaseImpl>::value);
+        EXPECT("public instantiable", instantiable_registry_t::is_instantiable<PolymorphicBaseImpl>::value);
 
         EXPECT("non-public instantiable",
-            !InstantiableRegistry::is_instantiable<PolymorphicBase>::value &&
-            !InstantiableRegistry::is_instantiable<PolymorphicDerived>::value);
+            !instantiable_registry_t::is_instantiable<PolymorphicBase>::value &&
+            !instantiable_registry_t::is_instantiable<PolymorphicDerived>::value);
     }
 }
 
@@ -513,62 +513,62 @@ TEST(TestLibrary, TestAccess)
 TEST_SPACE()
 {
 
-struct NoTraitBase : sf::Instantiable
+struct NoTraitsBase : sf::instantiable_t
 {
     int b = 0;
 };
 
-struct NoTraitDerived : NoTraitBase
+struct NoTraitsDerived : NoTraitsBase
 {
     int d = 0;
 };
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, NoTraitBase)
+SERIALIZATION(SaveLoad, NoTraitsBase)
 {
     archive & self.b;
 }
 
-SERIALIZATION(SaveLoad, NoTraitDerived)
+SERIALIZATION(SaveLoad, NoTraitsDerived)
 {
-    archive & hierarchy<NoTraitBase>(self) & self.d;
+    archive & hierarchy<NoTraitsBase>(self) & self.d;
 }
 
-// if user does not use SERIALIZABLE macro (which include SERIALIZATION_TRAIT),
+// if user does not use SERIALIZABLE macro (which include SERIALIZATION_TRAITS),
 // then library will use typeid for type hashing,
-// mixed usage SERIALIZATION_TRAIT and typeid does not allowed (in single hierarchy only)!
+// mixed usage SERIALIZATION_TRAITS and typeid does not allowed (in single hierarchy only)!
 // You also can specify hashing behavior with macro SF_TYPE_HASH - see Core/Hash.hpp
 // Note that: EXPORT_INSTANTIABLE_KEY("some_text", some_type) - is not allowed with typeid using
-// SERIALIZABLE macro consists of SERIALIZATION_ACCESS, SERIALIZATION_FIXTURE and SERIALIZATION_TRAIT
+// SERIALIZABLE macro consists of SERIALIZATION_ACCESS, SERIALIZATION_FIXTURE and SERIALIZATION_TRAITS
 
-TEST(TestLibrary, TestNoTrait)
+TEST(TestLibrary, TestNoTraits)
 {
     using sf::serializable;
 
-    static NoTraitDerived s_d;
+    static NoTraitsDerived s_d;
     s_d.b = 246253;
     s_d.d = 4895792;
 
     std::vector<unsigned char> storage;
     {
-        serializable<NoTraitDerived>();
+        serializable<NoTraitsDerived>();
 
-        std::shared_ptr<NoTraitBase> b = std::make_shared<NoTraitDerived>(s_d);
+        std::shared_ptr<NoTraitsBase> b = std::make_shared<NoTraitsDerived>(s_d);
 
         auto ar = oarchive(storage);
         ar & b;
     }
     {
-        std::shared_ptr<NoTraitBase> b = nullptr;
+        std::shared_ptr<NoTraitsBase> b = nullptr;
 
         auto ar = iarchive(storage);
         ar & b;
 
-        auto d = std::dynamic_pointer_cast<NoTraitDerived>(b);
+        auto d = std::dynamic_pointer_cast<NoTraitsDerived>(b);
 
-        ASSERT("no-trait.inited", d != nullptr);
-        EXPECT("no-trait.value", d->b == s_d.b && d->d == s_d.d);
+        ASSERT("no-traits.inited", d != nullptr);
+        EXPECT("no-traits.value", d->b == s_d.b && d->d == s_d.d);
     }
 }
 
@@ -635,7 +635,7 @@ TEST(TestLibrary, TestAggregateOverload)
         AggregateObject ao = s_ao;
 
         auto ar = oarchive(storage);
-        ar & nao // will serialize as user type by Serialization::SaveLoad
+        ar & nao // will serialize as user type by __sf::SaveLoad
            & aggregate(ao); // will serialize as aggregate type
     }
     {
@@ -658,7 +658,7 @@ TEST(TestLibrary, TestAggregateOverload)
 TEST_SPACE()
 {
 
-struct Interface : sf::Instantiable
+struct Interface : sf::instantiable_t
 {
     SERIALIZABLE(Interface)
 
@@ -696,7 +696,7 @@ TEST(TestLibrary, TestAbstract)
         ar & i;
 
         ASSERT("inited", i != nullptr);
-        EXPECT("trait", Serialization::trait(*i) == Serialization::trait<Implementation>());
+        EXPECT("traits", __sf::traits(*i) == __sf::traits<Implementation>());
     }
 }
 
@@ -712,7 +712,7 @@ struct NoMacroObject
 // we should inherit from instantiable type, which defined by macro INSTANTIABLE_TYPE
 // Note that: any derived type from instantiable becomes polymorphic,
 // becose instantiable type has virtual destructor (requrement of sf library)
-struct NoMacroBase : sf::Instantiable
+struct NoMacroBase : sf::instantiable_t
 {
     int b;
 };
@@ -734,7 +734,7 @@ Archive& operator& (Archive& archive, NoMacroObject& self)
 
 // inner serialization - useful for open/close class attributes (standard serialization)
 template <>
-struct Serialization::SaveLoad<NoMacroDerived>
+struct __sf::SaveLoad<NoMacroDerived>
 {
     template <class Archive>
     SaveLoad(Archive& archive, NoMacroDerived& self)
@@ -746,9 +746,9 @@ struct Serialization::SaveLoad<NoMacroDerived>
 // inner serialization with split
 // polymorphic archive - useful for hide impl to translation unit
 template <>
-struct Serialization::Save<NoMacroBase>
+struct __sf::Save<NoMacroBase>
 {
-    Save(sf::core::IOArchive& archive, NoMacroBase& self)
+    Save(sf::core::ioarchive_t& archive, NoMacroBase& self)
     {
         archive << self.b;
     }
@@ -756,7 +756,7 @@ struct Serialization::Save<NoMacroBase>
 
 // for non polymorphic archive we can use operator&, and not only operator>>
 template <>
-struct Serialization::Load<NoMacroBase>
+struct __sf::Load<NoMacroBase>
 {
     template <class Archive>
     Load(Archive& archive, NoMacroBase& self)
@@ -804,7 +804,7 @@ TEST(TestLibrary, TestNoMacro)
     }
 }
 
-TEST(TestLibrary, TestPolymorphicArchive)
+TEST(TestLibrary, Testpolymorphic_archive_t)
 {
     static std::string s_data = "Hello, SF!";
 
@@ -813,13 +813,13 @@ TEST(TestLibrary, TestPolymorphicArchive)
         std::string data = s_data;
 
         auto oar = oarchive(storage);
-        sf::core::IOArchive& ar = oar;
+        sf::core::ioarchive_t& ar = oar;
         ar << data;
     }
     {
         std::string data;
 
-        sf::core::IOArchive&& ar = iarchive(storage);
+        sf::core::ioarchive_t&& ar = iarchive(storage);
         ar >> data;
 
         EXPECT("value", data == s_data);
@@ -829,7 +829,7 @@ TEST(TestLibrary, TestPolymorphicArchive)
     {
         int some_data = 0;
 
-        sf::core::IOArchive&& ar = oarchive(storage);
+        sf::core::ioarchive_t&& ar = oarchive(storage);
 
         auto success = false;
         try { ar >> some_data; } catch(...) { success = true; }
@@ -841,7 +841,7 @@ TEST(TestLibrary, TestPolymorphicArchive)
     {
         int some_data = 0;
 
-        sf::core::IOArchive&& ar = iarchive(storage);
+        sf::core::ioarchive_t&& ar = iarchive(storage);
 
         auto success = false;
         try { ar << some_data; } catch(...) { success = true; }

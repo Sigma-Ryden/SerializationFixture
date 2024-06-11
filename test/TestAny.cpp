@@ -11,7 +11,7 @@
 TEST_SPACE()
 {
 
-struct Entity : Instantiable
+struct Entity : instantiable_t
 {
     SERIALIZABLE(Entity)
 

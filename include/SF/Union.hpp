@@ -14,8 +14,8 @@ namespace meta
 
 template <typename T> struct is_serializable_union
     : all<std::is_union<T>,
-          negation<::Serialization::has_save_mode<T>>,
-          negation<::Serialization::has_save_mode<T>>> {};
+          negation<::__sf::has_save_mode<T>>,
+          negation<::__sf::has_save_mode<T>>> {};
 
 } // namespace meta
 

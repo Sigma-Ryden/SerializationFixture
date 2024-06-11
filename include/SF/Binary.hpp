@@ -8,7 +8,7 @@ namespace sf
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
+          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
 void binary(Archive& archive, T& data)
 {
     archive.stream().call(std::addressof(data), sizeof(T));
@@ -18,11 +18,11 @@ namespace apply
 {
 
 template <typename T>
-struct BinaryFunctor : ApplyFunctor
+struct binary_functor_t : apply_functor_t
 {
     T& data;
 
-    BinaryFunctor(T& data) noexcept : data(data) {}
+    binary_functor_t(T& data) noexcept : data(data) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { binary(archive, data); }
@@ -30,7 +30,7 @@ struct BinaryFunctor : ApplyFunctor
 
 } // namespace apply
 
-template <typename T> apply::BinaryFunctor<T> binary(T& object) noexcept { return { object }; }
+template <typename T> apply::binary_functor_t<T> binary(T& object) noexcept { return { object }; }
 
 } // namespace sf
 

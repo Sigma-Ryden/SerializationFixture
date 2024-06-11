@@ -9,7 +9,7 @@
 #include <SF/Utility/Detail/Macro.hpp> // _BITPACK_IMPLEMENTATION
 
 #include <SF/Detail/MetaMacro.hpp>
-#include <SF/Detail/Preprocessor.hpp> // SFFIRST_ARGUMENT, SFCONCAT
+#include <SF/Detail/Preprocessor.hpp> // SF_FIRST_ARGUMENT, SF_CONCAT
 
 // Signature:
 // BITPACK(common_fields_type)(archive, (object.field0, field0_bits), (object.field1, field1_bits), ...)
@@ -35,17 +35,17 @@ namespace detail
 {
 
 template <class Archive, typename T, typename enable = void>
-struct BitPack;
+struct bitpack_t;
 
 template <class Archive, typename T>
-struct BitPack<Archive, T, SFWHEN(sf::meta::is_oarchive<Archive>::value)>
+struct bitpack_t<Archive, T, SF_WHEN(sf::meta::is_oarchive<Archive>::value)>
 {
     Archive& archive;
     T data{};
     std::size_t offset{};
 
-    BitPack(Archive& archive) : archive(archive) {}
-    ~BitPack() { archive & data; }
+    bitpack_t(Archive& archive) : archive(archive) {}
+    ~bitpack_t() { archive & data; }
 
     T operator()(T field, std::size_t bits) noexcept
     {
@@ -58,12 +58,12 @@ struct BitPack<Archive, T, SFWHEN(sf::meta::is_oarchive<Archive>::value)>
 };
 
 template <class Archive, typename T>
-struct BitPack<Archive, T, SFWHEN(sf::meta::is_iarchive<Archive>::value)>
+struct bitpack_t<Archive, T, SF_WHEN(sf::meta::is_iarchive<Archive>::value)>
 {
     Archive& archive;
     T data{};
 
-    BitPack(Archive& archive) : archive(archive) { archive & data; }
+    bitpack_t(Archive& archive) : archive(archive) { archive & data; }
 
     T operator()(T field, std::size_t bits) noexcept
     {
@@ -78,7 +78,7 @@ struct BitPack<Archive, T, SFWHEN(sf::meta::is_iarchive<Archive>::value)>
 } // namespace detail
 
 template <typename PackType = let::u32, class Archive>
-detail::BitPack<Archive, PackType> bitpack(Archive& archive) noexcept { return { archive }; }
+detail::bitpack_t<Archive, PackType> bitpack(Archive& archive) noexcept { return { archive }; }
 
 } // namespace sf
 

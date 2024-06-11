@@ -9,22 +9,22 @@ namespace sf
 namespace core
 {
 
-class IOArchive;
+class ioarchive_t;
 
-struct IArchiveType {};
-struct OArchiveType {};
+struct iarchive_common_t {};
+struct oarchive_common_t {};
 
 } // namespace core
 
 namespace meta
 {
 
-template <class T> struct is_iarchive : std::is_base_of<core::IArchiveType, T> {};
-template <class T> struct is_oarchive : std::is_base_of<core::OArchiveType, T> {};
+template <class T> struct is_iarchive : std::is_base_of<core::iarchive_common_t, T> {};
+template <class T> struct is_oarchive : std::is_base_of<core::oarchive_common_t, T> {};
 
 template <class T> struct is_ioarchive : one<is_iarchive<T>, is_oarchive<T>> {};
 
-template <class T> struct is_archive : std::is_base_of<core::IOArchive, T> {};
+template <class T> struct is_archive : std::is_base_of<core::ioarchive_t, T> {};
 
 } // namespace meta
 

@@ -24,7 +24,7 @@ namespace detail
 {
 
 template <class Archive, class T, std::size_t... I,
-          SFREQUIRE(meta::is_std_tuple<T>::value)>
+          SF_REQUIRE(meta::is_std_tuple<T>::value)>
 void expand(Archive& archive, T& tuple, meta::index_sequence<I...>)
 {
     archive(std::get<I>(tuple)...);

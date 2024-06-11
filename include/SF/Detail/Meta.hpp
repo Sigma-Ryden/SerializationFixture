@@ -16,7 +16,7 @@
 
 #include <tuple> // tuple_element
 
-#include <SF/Detail/MetaMacro.hpp> // SFVOID
+#include <SF/Detail/MetaMacro.hpp> // SF_VOID
 
 namespace sf
 {
@@ -100,7 +100,7 @@ template <typename T> struct dereference_implementation<std::weak_ptr<T>> { usin
 template <typename T> struct dereference_implementation<std::shared_ptr<T>> { using type = T; };
 template <typename T> struct dereference_implementation<std::unique_ptr<T>> { using type = T; };
 
-template <typename T> struct dereference_implementation<T, SFVOID(*std::declval<T>())>
+template <typename T> struct dereference_implementation<T, SF_VOID(*std::declval<T>())>
     : std::remove_reference<decltype(*std::declval<T>())> {};
 
 } // namespace detail
@@ -163,14 +163,14 @@ template <typename T, typename enable = void>
 struct is_complete : std::false_type {};
 
 template <typename T>
-struct is_complete<T, SFVOID(sizeof(T))> : std::true_type {};
+struct is_complete<T, SF_VOID(sizeof(T))> : std::true_type {};
 
 template <typename From, typename To, typename enable = void>
 struct can_static_cast : std::false_type {};
 
 template <typename From, typename To>
 struct can_static_cast<From, To,
-    SFVOID( static_cast<To*>(std::declval<From*>()) )> : std::true_type {};
+    SF_VOID( static_cast<To*>(std::declval<From*>()) )> : std::true_type {};
 
 template <typename T> constexpr std::size_t pointer_count() noexcept
 {
@@ -185,7 +185,7 @@ struct raw_type {};
 struct dummy_type
 {
 #if __cplusplus >= 201703L
-    template <typename T, SFREQUIRE(not std::is_same<T, std::any>::value)> operator T();
+    template <typename T, SF_REQUIRE(not std::is_same<T, std::any>::value)> operator T();
 #else
     template <typename T> operator T();
 #endif // if
@@ -200,7 +200,7 @@ struct aggregate_size_implementation : S {};
 
 template <class C, std::size_t... I>
 struct aggregate_size_implementation<C, index_sequence<I...>,
-    SFVOID(C{ declval<dummy_type>(), declval<dummy_type, I>()... })>
+    SF_VOID(C{ declval<dummy_type>(), declval<dummy_type, I>()... })>
     : aggregate_size_implementation<C, index_sequence<I..., sizeof...(I)>> {};
 
 } // namespace detail

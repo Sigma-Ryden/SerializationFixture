@@ -5,7 +5,7 @@
 
 #include "SFTestingBase.hpp"
 
-struct BaseObject : sf::Instantiable
+struct BaseObject : sf::instantiable_t
 {
     // not required for SERIALIZATION_INTERFACE
     SERIALIZABLE(BaseObject)

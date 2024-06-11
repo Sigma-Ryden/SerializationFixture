@@ -22,14 +22,14 @@ namespace utility
 {
 
 template <typename T, std::size_t N>
-class Span;
+class span_t;
 
 template <typename T, std::size_t N>
-class SpanBase
+class span_base_t
 {
 public:
     using size_type         = std::size_t;
-    using value_type        = Span<T, N - 1>;
+    using value_type        = span_t<T, N - 1>;
 
     using pointer           = meta::pointer<T, N>;
     using const_pointer     = const meta::pointer<T, N>;
@@ -38,20 +38,20 @@ protected:
     using Dimension         = size_type[N];
 
 protected:
-    alias<pointer> data_;
+    alias_t<pointer> data_;
     Dimension dim_;
 
 protected:
-    SpanBase(pointer& data) noexcept
+    span_base_t(pointer& data) noexcept
         : data_(data), dim_() {}
 
     template <typename D, typename... Dn>
-    SpanBase(pointer& data, D d, Dn... dn) noexcept
+    span_base_t(pointer& data, D d, Dn... dn) noexcept
         : data_(data), dim_{d, dn...} {}
 
 public:
     void init(pointer data) noexcept { data_.get() = data; }
-    void data(alias<pointer> data) noexcept { data_ = data; }
+    void data(alias_t<pointer> data) noexcept { data_ = data; }
 
     pointer& data() noexcept { return data_; }
     size_type size() const noexcept { return dim_[0]; }
@@ -59,17 +59,17 @@ public:
 };
 
 template <typename T, std::size_t N>
-class Span : public SpanBase<T, N>
+class span_t : public span_base_t<T, N>
 {
 protected:
-    using Core = SpanBase<T, N>;
+    using Core = span_base_t<T, N>;
 
 public:
     using typename Core::size_type;
     using typename Core::pointer;
 
 public:
-    using value_type        = Span<T, N - 1>;
+    using value_type        = span_t<T, N - 1>;
     using dereference_type  = meta::pointer<T, N - 1>;
 
     using reference         = value_type&;
@@ -82,7 +82,7 @@ private:
     mutable value_type child_scope_;
 
 public:
-    Span(pointer& data, Dimension dim) noexcept
+    span_t(pointer& data, Dimension dim) noexcept
         : Core(data), child_scope_(data[0], dim + 1)
     {
         for (size_type i = 0; i < N; ++i)
@@ -90,8 +90,8 @@ public:
     }
 
     template <typename D, typename... Dn,
-              SFREQUIRE(not std::is_array<D>::value)>
-    Span(pointer& data, D d, Dn... dn) noexcept
+              SF_REQUIRE(not std::is_array<D>::value)>
+    span_t(pointer& data, D d, Dn... dn) noexcept
         : Core(data, d, dn...), child_scope_(data[0], dn...) {}
 
     void size(size_type value) noexcept { this->dim_[0] = value; }
@@ -107,10 +107,10 @@ public:
 };
 
 template <typename T>
-class Span<T, 1> : public SpanBase<T, 1>
+class span_t<T, 1> : public span_base_t<T, 1>
 {
 protected:
-    using Core = SpanBase<T, 1>;
+    using Core = span_base_t<T, 1>;
 
 public:
     using typename Core::size_type;
@@ -127,13 +127,13 @@ protected:
     using typename Core::Dimension;
 
 public:
-    Span(pointer& data, Dimension size) noexcept
+    span_t(pointer& data, Dimension size) noexcept
         : Core(data)
     {
         this->dim_[0] = size[0];
     }
 
-    Span(pointer& data, size_type size) noexcept
+    span_t(pointer& data, size_type size) noexcept
         : Core(data, size) {}
 
     reference operator[] (size_type i) noexcept { return this->data_[i]; }
@@ -146,7 +146,7 @@ namespace meta
 
 template <typename> struct is_span : std::false_type {};
 template <typename T, std::size_t N>
-struct is_span<utility::Span<T, N>> : std::true_type {};
+struct is_span<utility::span_t<T, N>> : std::true_type {};
 
 template <typename Pointer, typename D, typename... Dn>
 struct is_span_set
@@ -162,10 +162,10 @@ namespace utility
 template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
           typename Type = meta::remove_pointer<Pointer, N>,
-          SFREQUIRE(meta::is_span_set<Pointer, D, Dn...>::value)>
-Span<Type, N> make_span(Pointer& data, D d, Dn... dn)
+          SF_REQUIRE(meta::is_span_set<Pointer, D, Dn...>::value)>
+span_t<Type, N> make_span(Pointer& data, D d, Dn... dn)
 {
-    using size_type = typename Span<Type, N>::size_type;
+    using size_type = typename span_t<Type, N>::size_type;
     return { data, static_cast<size_type>(d), static_cast<size_type>(dn)... };
 }
 
@@ -175,7 +175,7 @@ namespace detail
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::negation<meta::is_span<T>>>::value)>
 void span_implementation(Archive& archive, T& data)
 {
@@ -183,10 +183,10 @@ void span_implementation(Archive& archive, T& data)
 }
 
 // serialization of scoped data with previous dimension initialization
-template <class OArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class oarchive_t, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<oarchive_t>,
                               meta::is_span<T>>::value)>
-void span_implementation(OArchive& archive, T& array)
+void span_implementation(oarchive_t& archive, T& array)
 {
     using size_type = typename T::size_type;
 
@@ -194,10 +194,10 @@ void span_implementation(OArchive& archive, T& array)
         span_implementation(archive, array[i]);
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class iarchive_t, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<iarchive_t>,
                               meta::is_span<T>>::value)>
-void span_implementation(IArchive& archive, T& array)
+void span_implementation(iarchive_t& archive, T& array)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
@@ -219,7 +219,7 @@ inline namespace common
 
 template <class Archive, typename T,
           typename D, typename... Dn,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::is_span_set<T, D, Dn...>>::value)>
 void span(Archive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
@@ -236,13 +236,13 @@ namespace apply
 {
 
 template <typename T, typename D, typename... Dn>
-struct SpanFunctor : ApplyFunctor
+struct span_functor_t : apply_functor_t
 {
     using Pack = std::tuple<T&, D&, Dn&...>;
 
     Pack pack;
 
-    SpanFunctor(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
+    span_functor_t(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
 
     template <class Archive>
     void operator() (Archive& archive) const
@@ -265,8 +265,8 @@ inline namespace common
 {
 
 template <typename T, typename D, typename... Dn,
-          SFREQUIRE(meta::is_span_set<T, D, Dn...>::value)>
-apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n) noexcept
+          SF_REQUIRE(meta::is_span_set<T, D, Dn...>::value)>
+apply::span_functor_t<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n) noexcept
 {
     return { pointer, dimension, dimension_n... };
 }

@@ -5,7 +5,7 @@
 TEST_SPACE()
 {
 
-struct Base : Instantiable
+struct Base : instantiable_t
 {
     SERIALIZABLE(Base)
     int x;
@@ -31,7 +31,7 @@ SERIALIZATION(SaveLoad, Derived)
 
 TEST(TestCommon, TestAlias)
 {
-    using sf::alias;
+    using sf::alias_t;
     using sf::tracking::track;
 
     static int s_i = 64822;
@@ -39,18 +39,18 @@ TEST(TestCommon, TestAlias)
     std::vector<unsigned char> storage;
     {
         int i = s_i;
-        alias<int> r1 = i;
-        alias<int> r2 = i;
-        alias<int> r3 = r2;
+        alias_t<int> r1 = i;
+        alias_t<int> r2 = i;
+        alias_t<int> r3 = r2;
 
         auto ar = oarchive(storage);
         ar & track(i) & r1 & r2 & r3;
     }
     {
         int i;
-        alias<int> r1;
-        alias<int> r2;
-        alias<int> r3;
+        alias_t<int> r1;
+        alias_t<int> r2;
+        alias_t<int> r3;
 
         auto ar = iarchive(storage);
         ar & track(i) & r2 & r3 & r1; // one more shuffle
@@ -66,18 +66,18 @@ TEST(TestCommon, TestAlias)
     storage.clear();
     {
         Derived d = s_d;
-        alias<Derived> rd = d;
-        alias<Base> rb1 = rd;
-        alias<Base> rb2 = alias<Derived>(d);
+        alias_t<Derived> rd = d;
+        alias_t<Base> rb1 = rd;
+        alias_t<Base> rb2 = alias_t<Derived>(d);
 
         auto ar = oarchive(storage);
         ar & track(d) & rd & rb1 & rb2;
     }
     {
         Derived d;
-        alias<Derived> rd;
-        alias<Base> rb1;
-        alias<Base> rb2;
+        alias_t<Derived> rd;
+        alias_t<Base> rb1;
+        alias_t<Base> rb2;
 
         auto ar = iarchive(storage);
         ar & track(d) & rb2 & rd & rb1; // one more shuffle

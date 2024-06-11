@@ -6,7 +6,7 @@ TEST_SPACE()
 {
 
 template <class SomeType>
-struct Base : Instantiable
+struct Base : instantiable_t
 {
     SERIALIZABLE(Base)
 
@@ -92,14 +92,14 @@ TEST(TestCommon, TestPolymorphic)
         ar & p & c;
 
         ASSERT("polymorphic.inited", p != nullptr);
-        ASSERT("polymorphic.trait", Serialization::trait<Parent>() == Serialization::trait(*p));
+        ASSERT("polymorphic.traits", __sf::traits<Parent>() == __sf::traits(*p));
 
         EXPECT("polymorphic.value", p->data == sv_p_d);
 
         auto d = dynamic_cast<Child*>(c);
 
         ASSERT("polymorphic.derived inited", d != nullptr);
-        ASSERT("polymorphic.derived trait", Serialization::trait<Child>() == Serialization::trait(*c));
+        ASSERT("polymorphic.derived traits", __sf::traits<Child>() == __sf::traits(*c));
 
         EXPECT("polymorphic.derived value", d->data == sv_c_d && d->value == sv_c_v);
     }

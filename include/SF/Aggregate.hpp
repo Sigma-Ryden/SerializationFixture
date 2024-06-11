@@ -14,8 +14,8 @@
 #define _SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                     \
     template <class Archive, typename T>                                                                \
     void aggregate_implementation(Archive& archive, T& object, meta::dispatch<count>) {                 \
-        auto& [SFPLACEHOLDERS(count)] = object;                                                         \
-        archive(SFPLACEHOLDERS(count));                                                                 \
+        auto& [SF_PLACEHOLDERS(count)] = object;                                                         \
+        archive(SF_PLACEHOLDERS(count));                                                                 \
     }
 
 namespace sf
@@ -27,8 +27,8 @@ namespace meta
 template <typename T> struct is_serializable_aggregate
     : all<is_aggregate<T>,
           negation<std::is_union<T>>,
-          negation<::Serialization::has_save_mode<T>>,
-          negation<::Serialization::has_save_mode<T>>> {};
+          negation<::__sf::has_save_mode<T>>,
+          negation<::__sf::has_save_mode<T>>> {};
 
 } // namespace meta
 
@@ -38,12 +38,12 @@ namespace detail
 template <class Archive, typename T>
 void aggregate_implementation(Archive& archive, T& object, meta::dispatch<0>) noexcept { /*pass*/ }
 
-SFREPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
+SF_REPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
 } // namespace detail
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_aggregate<T>>::value)>
 void aggregate(Archive& archive, T& object)
 {
@@ -66,11 +66,11 @@ namespace apply
 {
 
 template <typename T>
-struct AggregateFunctor : ApplyFunctor
+struct aggregate_functor_t : apply_functor_t
 {
     T& object;
 
-    AggregateFunctor(T& object) noexcept : object(object) {}
+    aggregate_functor_t(T& object) noexcept : object(object) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { aggregate(archive, object); }
@@ -78,7 +78,7 @@ struct AggregateFunctor : ApplyFunctor
 
 } // namespace apply
 
-template <typename T> apply::AggregateFunctor<T> aggregate(T& object) noexcept { return { object }; }
+template <typename T> apply::aggregate_functor_t<T> aggregate(T& object) noexcept { return { object }; }
 
 } // namespace sf
 

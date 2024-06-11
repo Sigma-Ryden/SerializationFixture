@@ -35,10 +35,10 @@ template <> struct word_type_implementation<Word::x64> { using type = let::u64; 
 template <Word word>
 using WordType = typename detail::word_type_implementation<word>::type;
 
-template <typename T> struct WordTrait { static constexpr auto value = Word::x64; };
+template <typename T> struct WordTraits { static constexpr auto value = Word::x64; };
 
-template <> struct WordTrait<let::u32> { static constexpr auto value = Word::x32; };
-template <> struct WordTrait<let::u64> { static constexpr auto value = Word::x64; };
+template <> struct WordTraits<let::u32> { static constexpr auto value = Word::x32; };
+template <> struct WordTraits<let::u64> { static constexpr auto value = Word::x64; };
 
 template <typename HashType, HashType FnvPrime, HashType OffsetBasis>
 HashType fnv_1a(const char* text)
@@ -64,10 +64,10 @@ constexpr HashType static_fnv_1a(const char* text, HashType hash = OffsetBasis) 
 }
 
 template <detail::Word word>
-struct Hash;
+struct hash_t;
 
 template <>
-struct Hash<detail::Word::x32>
+struct hash_t<detail::Word::x32>
 {
 private:
     // For 32 bit machines:
@@ -87,7 +87,7 @@ public:
 };
 
 template <>
-struct Hash<detail::Word::x64>
+struct hash_t<detail::Word::x64>
 {
 private:
     // For 64 bit machines:
@@ -111,19 +111,19 @@ public:
 template <typename key_type = let::u64>
 inline key_type hash(const char* text)
 {
-    using detail::Hash;
-    using detail::WordTrait;
+    using detail::hash_t;
+    using detail::WordTraits;
 
-    return Hash<detail::WordTrait<key_type>::value>::run(text);
+    return hash_t<detail::WordTraits<key_type>::value>::run(text);
 }
 
 template <typename key_type = let::u64>
 constexpr key_type static_hash(const char* text) noexcept
 {
-    using detail::Hash;
-    using detail::WordTrait;
+    using detail::hash_t;
+    using detail::WordTraits;
 
-    return Hash<detail::WordTrait<key_type>::value>::static_run(text);
+    return hash_t<detail::WordTraits<key_type>::value>::static_run(text);
 }
 
 inline std::size_t type_hash(const std::type_info& type) noexcept

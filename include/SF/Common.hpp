@@ -20,15 +20,15 @@ namespace sf
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, object, ::Serialization::has_save_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, object, ::__sf::has_save_mode<T>::value)
 {
-    ::Serialization::save(archive, object);
+    ::__sf::save(archive, object);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::Serialization::has_load_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::__sf::has_load_mode<T>::value)
 {
-    ::Serialization::load(archive, object);
+    ::__sf::load(archive, object);
     return archive;
 }
 
@@ -79,7 +79,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_po
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::all<::Serialization::has_save_mode<T>, ::Serialization::has_load_mode<T>>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::all<::__sf::has_save_mode<T>, ::__sf::has_load_mode<T>>::value)
 
 CONDITIONAL_TYPE_REGISTRY(std::is_arithmetic<T>::value)
 CONDITIONAL_TYPE_REGISTRY(std::is_enum<T>::value)

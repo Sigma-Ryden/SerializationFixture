@@ -15,31 +15,31 @@ using Shared = meta::shared_type;
 using Raw = meta::raw_type;
 
 template <typename T>
-struct track_trait;
+struct track_traits;
 
 template <typename T>
-struct track_trait<Memory::shared_ptr<T>>
+struct track_traits<memory_t::shared_ptr<T>>
 {
     using type = tracking::Shared;
 };
 
 template <typename T>
-struct track_trait<Memory::raw_ptr<T>>
+struct track_traits<memory_t::raw_ptr<T>>
 {
     using type = tracking::Raw;
 };
 
 template <typename T>
-struct reverse_trait;
+struct reverse_traits;
 
 template <>
-struct reverse_trait<Shared>
+struct reverse_traits<Shared>
 {
     using type = Raw;
 };
 
 template <>
-struct reverse_trait<Raw>
+struct reverse_traits<Raw>
 {
     using type = Shared;
 };

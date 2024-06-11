@@ -3,7 +3,7 @@
 
 #include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/ArchiveBase.hpp>
-#include <SF/Core/ArchiveTrait.hpp>
+#include <SF/Core/ArchiveTraits.hpp>
 
 #include <SF/Core/Serialization.hpp>
 #include <SF/Core/TypeRegistry.hpp>
@@ -19,58 +19,58 @@ namespace sf
 namespace core
 {
 
-class PolymorphicArchive
+class polymorphic_archive_t
 {
 public:
-    using Archive  = IOArchive;
-    using key_type = IOArchive::key_type;
+    using Archive  = ioarchive_t;
+    using key_type = ioarchive_t::key_type;
 
-    static constexpr key_type max_key = ArchiveTrait::max_key;
+    static constexpr key_type max_key = archive_traits::max_key;
 
 public:
     template <class T> static void save(Archive& archive, T& data)
     {
-        call<OArchiveTrait>(archive, data);
+        call<oarchive_traits>(archive, data);
     }
 
     template <class T> static void load(Archive& archive, T& data)
     {
-        call<IArchiveTrait>(archive, data);
+        call<iarchive_traits>(archive, data);
     }
 
 private:
     template <class Archive> struct is_valid_archive
-        : meta::boolean<ArchiveTraitKey<Archive>::key != ArchiveTrait::base_key> {};
+        : meta::boolean<archive_traits_key_t<Archive>::key != archive_traits::base_key> {};
 
 private:
-    template <template <key_type> class ArchiveTrait,
-              key_type Key, class T, SFREQUIRE(Key == max_key)>
+    template <template <key_type> class archive_traits,
+              key_type Key, class T, SF_REQUIRE(Key == max_key)>
     static void call(Archive& archive, T& data)
     {
         throw "The read/write archive has invalid type key.";
     }
 
-    template <template <key_type> class ArchiveTrait,
-              key_type Key = 0, class T, SFREQUIRE(Key < max_key)>
+    template <template <key_type> class archive_traits,
+              key_type Key = 0, class T, SF_REQUIRE(Key < max_key)>
     static void call(Archive& archive, T& data)
     {
-        using DerivedArchive = typename ArchiveTrait<Key>::type;
+        using DerivedArchive = typename archive_traits<Key>::type;
 
-        if (ArchiveTraitKey<DerivedArchive>::key == archive.trait())
+        if (archive_traits_key_t<DerivedArchive>::key == archive.trait())
             return try_call<DerivedArchive>(archive, data);
 
-        call<ArchiveTrait, Key + 1>(archive, data);
+        call<archive_traits, Key + 1>(archive, data);
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(not is_valid_archive<DerivedArchive>::value)>
+              SF_REQUIRE(not is_valid_archive<DerivedArchive>::value)>
     static void try_call(Archive& archive, T& data)
     {
         throw "The read/write archive was not registered.";
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(is_valid_archive<DerivedArchive>::value)>
+              SF_REQUIRE(is_valid_archive<DerivedArchive>::value)>
     static void try_call(Archive& archive, T& data)
     {
         auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
@@ -84,39 +84,39 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
-                                  ::Serialization::has_save_mode<T>>::value)>
+              SF_REQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
+                                  ::__sf::has_save_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        ::Serialization::save(archive, object);
+        ::__sf::save(archive, object);
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
-                                  ::Serialization::has_load_mode<T>>::value)>
+              SF_REQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
+                                  ::__sf::has_load_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        ::Serialization::load(archive, object);
+        ::__sf::load(archive, object);
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
-                                  meta::negation<::Serialization::has_save_mode<T>>,
-                                  meta::negation<::Serialization::has_load_mode<T>>>::value)>
+              SF_REQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
+                                  meta::negation<::__sf::has_save_mode<T>>,
+                                  meta::negation<::__sf::has_load_mode<T>>>::value)>
     static void proccess(DerivedArchive& archive, T& data)
     {
         process_data(archive, data);
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::is_registered_extern<T>::value)>
+              SF_REQUIRE(meta::is_registered_extern<T>::value)>
     static void process_data(DerivedArchive& archive, T& data)
     {
         archive & data;
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(not meta::is_registered_extern<T>::value)>
+              SF_REQUIRE(not meta::is_registered_extern<T>::value)>
     static void process_data(DerivedArchive& archive, T& data)
     {
         throw "The 'T' type is unregistered.";
@@ -124,18 +124,18 @@ private:
 };
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SF_REQUIRE(meta::is_archive<Archive>::value)>
 Archive& operator<< (Archive& archive, T&& data)
 {
-    PolymorphicArchive::save(archive, data);
+    polymorphic_archive_t::save(archive, data);
     return archive;
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SF_REQUIRE(meta::is_archive<Archive>::value)>
 Archive& operator>> (Archive& archive, T&& data)
 {
-    PolymorphicArchive::load(archive, data);
+    polymorphic_archive_t::load(archive, data);
     return archive;
 }
 

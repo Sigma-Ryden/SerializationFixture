@@ -16,22 +16,22 @@ namespace sf
 namespace wrapper
 {
 
-using ByteContainer = std::vector<unsigned char>;
+using byte_container_t = std::vector<unsigned char>;
 
-template <typename OutStream = ByteContainer>
-class OByteStream
+template <typename OutStream = byte_container_t>
+class obyte_stream_t
 {
 protected:
     using item_type = typename OutStream::value_type;
 
 protected:
-    static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::OByteStream'.");
+    static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::obyte_stream_t'.");
 
 public:
     OutStream& storage;
 
 public:
-    OByteStream(OutStream& stream) noexcept : storage(stream)
+    obyte_stream_t(OutStream& stream) noexcept : storage(stream)
     {
         storage.reserve(SF_BYTE_STREAM_RESERVE_SIZE); // default reserve memory
     }
@@ -39,7 +39,7 @@ public:
     template <typename T>
     void call(const T* data, std::size_t size)
     {
-        auto it = Memory::const_byte_cast<item_type>(data);
+        auto it = memory_t::const_byte_cast<item_type>(data);
         while (size > 0)
         {
             storage.emplace_back(*it++);
@@ -48,25 +48,25 @@ public:
     }
 };
 
-template <typename InStream = ByteContainer>
-struct IByteStream
+template <typename InStream = byte_container_t>
+struct ibyte_stream_t
 {
 protected:
     using item_type = typename InStream::value_type;
 
 protected:
-    static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::IByteStream'.");
+    static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::ibyte_stream_t'.");
 
 public:
     InStream& storage;
     std::size_t offset;
 
-    IByteStream(InStream& stream) noexcept : storage(stream), offset() {}
+    ibyte_stream_t(InStream& stream) noexcept : storage(stream), offset() {}
 
     template <typename T>
     void call(T* data, std::size_t size)
     {
-        auto it = Memory::byte_cast<item_type>(data);
+        auto it = memory_t::byte_cast<item_type>(data);
         while (size > 0)
         {
             *it++ = storage[offset++];
@@ -76,34 +76,34 @@ public:
 };
 
 template <typename OutStream>
-class OFileStream
+class ofile_stream_t
 {
 public:
     OutStream& file;
 
 public:
-    OFileStream(OutStream& stream) noexcept : file(stream) {}
+    ofile_stream_t(OutStream& stream) noexcept : file(stream) {}
 
     template <typename T>
     void call(const T* data, std::size_t memory_size)
     {
-        file.write(Memory::const_byte_cast(data), memory_size);
+        file.write(memory_t::const_byte_cast(data), memory_size);
     }
 };
 
 template <typename InStream>
-class IFileStream
+class ifile_stream_t
 {
 public:
     InStream& file;
 
 public:
-    IFileStream(InStream& stream) noexcept : file(stream) {}
+    ifile_stream_t(InStream& stream) noexcept : file(stream) {}
 
     template <typename T>
     void call(T* data, std::size_t memory_size)
     {
-        file.read(Memory::byte_cast(data), memory_size);
+        file.read(memory_t::byte_cast(data), memory_size);
     }
 };
 

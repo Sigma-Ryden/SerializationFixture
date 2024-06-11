@@ -5,7 +5,7 @@
 TEST_SPACE()
 {
 
-struct Parent : Instantiable
+struct Parent : instantiable_t
 {
     SERIALIZABLE(Parent)
 
@@ -77,7 +77,7 @@ TEST(TestMemory, TestUniquePtr)
 TEST_SPACE()
 {
 
-struct A : Instantiable
+struct A : instantiable_t
 {
     SERIALIZABLE(A)
 
@@ -162,13 +162,13 @@ TEST(TestMemory, TestSharedPtr)
         std::shared_ptr<C> s_c;
         std::shared_ptr<A> s_a;
     	
-        constexpr auto xxx = ::Serialization::is_cast_allowed<B*, D*>();
+        constexpr auto xxx = ::__sf::is_cast_allowed<B*, D*>();
         {
             auto ar = iarchive(storage);
             ar & s_c & s_a & s_d & s_b; // one more shuffle
         }
 
-        using sf::Memory;
+        using sf::memory_t;
     	
         ASSERT("std::shared_ptr<polymorphic>.inited",
             s_a != nullptr && s_b != nullptr && s_c != nullptr && s_d != nullptr);
@@ -178,9 +178,9 @@ TEST(TestMemory, TestSharedPtr)
             s_c.use_count() == 4 && s_d.use_count() == 4);
 
         EXPECT("std::shared_ptr<polymorphic>.pure",
-            Memory::pure(s_a) == Memory::pure(s_b) &&
-            Memory::pure(s_b) == Memory::pure(s_c) &&
-            Memory::pure(s_c) == Memory::pure(s_d));
+            memory_t::pure(s_a) == memory_t::pure(s_b) &&
+            memory_t::pure(s_b) == memory_t::pure(s_c) &&
+            memory_t::pure(s_c) == memory_t::pure(s_d));
     	
     	auto raw_s_d = s_d.get();
     	auto raw_s_b = s_b.get();

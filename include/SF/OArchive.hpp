@@ -24,15 +24,15 @@ namespace sf
 {
 
 template <class StreamWrapper,
-          class Registry = dynamic::ExternRegistry>
-class OArchive : public core::IOArchive, public core::OArchiveType
+          class Registry = dynamic::extern_registry_t>
+class oarchive_t : public core::ioarchive_t, public core::oarchive_common_t
 {
-    SERIALIZATION_ARCHIVE(OArchive)
+    SERIALIZATION_ARCHIVE(oarchive_t)
 
 public:
     using TrackingKeyType = std::uintptr_t;
     using TrackingTable = std::unordered_map<TrackingKeyType, bool>;
-    using HierarchyTrackingTable = tracking::HierarchyTrack<TrackingKeyType>;
+    using HierarchyTrackingTable = tracking::hierarchy_track_t<TrackingKeyType>;
 
 private:
     StreamWrapper archive_;
@@ -45,96 +45,96 @@ private:
     Registry registry_;
 
 public:
-    template <typename OutStream> OArchive(OutStream& stream);
+    template <typename OutStream> oarchive_t(OutStream& stream);
 
     auto stream() noexcept -> StreamWrapper& { return archive_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_shared<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_shared<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable& { return track_shared_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_raw<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_raw<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable& { return track_raw_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_hierarchy<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_hierarchy<TrackType>::value)>
     auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
 
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator<< (T&& data) -> OArchive&;
+    auto operator<< (T&& data) -> oarchive_t&;
 
     template <typename T, typename... Tn>
-    auto operator() (T& data, Tn&... data_n) -> OArchive&;
+    auto operator() (T& data, Tn&... data_n) -> oarchive_t&;
 
-    auto operator() () noexcept -> OArchive& { return *this; }
+    auto operator() () noexcept -> oarchive_t& { return *this; }
 };
 
-// create default OArchive with wrapper::OByteStream<>
+// create default oarchive_t with wrapper::obyte_stream_t<>
 template <typename OutStream>
-OArchive<wrapper::OByteStream<OutStream>> oarchive(OutStream& stream)
+oarchive_t<wrapper::obyte_stream_t<OutStream>> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
 template <template <class, typename...> class StreamWrapper,
-          class Registry = dynamic::ExternRegistry,
+          class Registry = dynamic::extern_registry_t,
           typename OutStream>
-OArchive<StreamWrapper<OutStream>, Registry> oarchive(OutStream& stream)
+oarchive_t<StreamWrapper<OutStream>, Registry> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
 template <class StreamWrapper,
-          class Registry = dynamic::ExternRegistry,
+          class Registry = dynamic::extern_registry_t,
           typename OutStream>
-OArchive<StreamWrapper, Registry> oarchive(OutStream& stream)
+oarchive_t<StreamWrapper, Registry> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
 template <class StreamWrapper, class Registry>
 template <typename OutStream>
-OArchive<StreamWrapper, Registry>::OArchive(OutStream& stream)
+oarchive_t<StreamWrapper, Registry>::oarchive_t(OutStream& stream)
     : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T>
-auto OArchive<StreamWrapper, Registry>::operator<< (T&& data) -> OArchive&
+auto oarchive_t<StreamWrapper, Registry>::operator<< (T&& data) -> oarchive_t&
 {
     return (*this) & std::forward<T>(data);
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto OArchive<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> OArchive&
+auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> oarchive_t&
 {
     (*this) & data;
     return operator()(data_n...);
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_unsupported<T>>::value)>
 Archive& operator& (Archive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unsupported type for the 'sf::OArchive'.");
+        "The 'T' is an unsupported type for the 'sf::oarchive_t'.");
 
     return archive;
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_registered_extern<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'sf::OArchive'.");
+        "The 'T' is an unregistered type for the 'sf::oarchive_t'.");
 
     return archive;
 }

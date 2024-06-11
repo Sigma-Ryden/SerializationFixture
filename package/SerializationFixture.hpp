@@ -37,9 +37,9 @@ static_assert(sizeof(int) == 4, "Require integer number size.");
 
 #include <tuple> // tuple_element
 
-#define SFREQUIRE(...) ::sf::meta::require<(bool)(__VA_ARGS__)> = 0
-#define SFWHEN(...) ::sf::meta::when<(bool)(__VA_ARGS__)>
-#define SFVOID(...) ::sf::meta::to_void<decltype(__VA_ARGS__)>
+#define SF_REQUIRE(...) ::sf::meta::require<(bool)(__VA_ARGS__)> = 0
+#define SF_WHEN(...) ::sf::meta::when<(bool)(__VA_ARGS__)>
+#define SF_VOID(...) ::sf::meta::to_void<decltype(__VA_ARGS__)>
 
 namespace sf
 {
@@ -123,7 +123,7 @@ template <typename T> struct dereference_implementation<std::weak_ptr<T>> { usin
 template <typename T> struct dereference_implementation<std::shared_ptr<T>> { using type = T; };
 template <typename T> struct dereference_implementation<std::unique_ptr<T>> { using type = T; };
 
-template <typename T> struct dereference_implementation<T, SFVOID(*std::declval<T>())>
+template <typename T> struct dereference_implementation<T, SF_VOID(*std::declval<T>())>
     : std::remove_reference<decltype(*std::declval<T>())> {};
 
 } // namespace detail
@@ -186,14 +186,14 @@ template <typename T, typename enable = void>
 struct is_complete : std::false_type {};
 
 template <typename T>
-struct is_complete<T, SFVOID(sizeof(T))> : std::true_type {};
+struct is_complete<T, SF_VOID(sizeof(T))> : std::true_type {};
 
 template <typename From, typename To, typename enable = void>
 struct can_static_cast : std::false_type {};
 
 template <typename From, typename To>
 struct can_static_cast<From, To,
-    SFVOID( static_cast<To*>(std::declval<From*>()) )> : std::true_type {};
+    SF_VOID( static_cast<To*>(std::declval<From*>()) )> : std::true_type {};
 
 template <typename T> constexpr std::size_t pointer_count() noexcept
 {
@@ -208,7 +208,7 @@ struct raw_type {};
 struct dummy_type
 {
 #if __cplusplus >= 201703L
-    template <typename T, SFREQUIRE(not std::is_same<T, std::any>::value)> operator T();
+    template <typename T, SF_REQUIRE(not std::is_same<T, std::any>::value)> operator T();
 #else
     template <typename T> operator T();
 #endif // if
@@ -223,7 +223,7 @@ struct aggregate_size_implementation : S {};
 
 template <class C, std::size_t... I>
 struct aggregate_size_implementation<C, index_sequence<I...>,
-    SFVOID(C{ declval<dummy_type>(), declval<dummy_type, I>()... })>
+    SF_VOID(C{ declval<dummy_type>(), declval<dummy_type, I>()... })>
     : aggregate_size_implementation<C, index_sequence<I..., sizeof...(I)>> {};
 
 } // namespace detail
@@ -399,13 +399,13 @@ template <typename T> struct is_unsupported :
 
 #define CONDITIONAL_TYPE_REGISTRY(...)                                                                  \
     namespace sf { namespace core {                                                                     \
-        template <typename T> struct TypeRegistry<T, SFWHEN(__VA_ARGS__)> : std::true_type {};          \
+        template <typename T> struct type_registry_t<T, SF_WHEN(__VA_ARGS__)> : std::true_type {};      \
     }}
 
 // you should use TYPE_REGISTRY before using EXTERN_SERIALIZATION e.t.
 #define TYPE_REGISTRY(...)                                                                              \
     namespace sf { namespace core {                                                                     \
-        template <> struct TypeRegistry<__VA_ARGS__> : std::true_type {};                               \
+        template <> struct type_registry_t<__VA_ARGS__> : std::true_type {};                            \
     }}
 
 namespace sf
@@ -415,14 +415,14 @@ namespace core
 {
 
 template <typename T, typename enable = void>
-struct TypeRegistry : std::false_type {};
+struct type_registry_t : std::false_type {};
 
 } // namespace core
 
 namespace meta
 {
 
-template <typename T> struct is_registered : core::TypeRegistry<T> {};
+template <typename T> struct is_registered : core::type_registry_t<T> {};
 
 // use this function only for extern type registry check
 template <typename T> struct is_registered_extern
@@ -446,22 +446,22 @@ namespace sf
 namespace core
 {
 
-class IOArchive;
+class ioarchive_t;
 
-struct IArchiveType {};
-struct OArchiveType {};
+struct iarchive_common_t {};
+struct oarchive_common_t {};
 
 } // namespace core
 
 namespace meta
 {
 
-template <class T> struct is_iarchive : std::is_base_of<core::IArchiveType, T> {};
-template <class T> struct is_oarchive : std::is_base_of<core::OArchiveType, T> {};
+template <class T> struct is_iarchive : std::is_base_of<core::iarchive_common_t, T> {};
+template <class T> struct is_oarchive : std::is_base_of<core::oarchive_common_t, T> {};
 
 template <class T> struct is_ioarchive : one<is_iarchive<T>, is_oarchive<T>> {};
 
-template <class T> struct is_archive : std::is_base_of<core::IOArchive, T> {};
+template <class T> struct is_archive : std::is_base_of<core::ioarchive_t, T> {};
 
 } // namespace meta
 
@@ -494,7 +494,7 @@ using u64 = std::uint64_t;
 
 #define SERIALIZATION_ARCHIVE(...)                                                                      \
     virtual key_type trait() const noexcept override {                                                  \
-        return ::sf::core::ArchiveTraitKey<__VA_ARGS__>::key;                                           \
+        return ::sf::core::archive_traits_key_t<__VA_ARGS__>::key;                                      \
     }
 
 namespace sf
@@ -503,7 +503,7 @@ namespace sf
 namespace core
 {
 
-struct ArchiveTrait
+struct archive_traits
 {
     using key_type = let::u8;
 
@@ -511,23 +511,23 @@ struct ArchiveTrait
     static constexpr auto max_key = key_type(SF_ARCHIVE_TRAIT_MAX_KEY_SIZE);
 };
 
-template <class Archive> struct ArchiveTraitKey
+template <class Archive> struct archive_traits_key_t
 {
-    static constexpr auto key = ArchiveTrait::base_key;
+    static constexpr auto key = archive_traits::base_key;
 };
 
-class IOArchive
+class ioarchive_t
 {
 public:
-    using key_type = ArchiveTrait::key_type;
+    using key_type = archive_traits::key_type;
 
 protected:
-    virtual ~IOArchive() = default;
+    virtual ~ioarchive_t() = default;
 
 public:
     virtual key_type trait() const noexcept
     {
-        return ArchiveTraitKey<IOArchive>::key;
+        return archive_traits_key_t<ioarchive_t>::key;
     }
 };
 
@@ -565,10 +565,10 @@ template <> struct word_type_implementation<Word::x64> { using type = let::u64; 
 template <Word word>
 using WordType = typename detail::word_type_implementation<word>::type;
 
-template <typename T> struct WordTrait { static constexpr auto value = Word::x64; };
+template <typename T> struct WordTraits { static constexpr auto value = Word::x64; };
 
-template <> struct WordTrait<let::u32> { static constexpr auto value = Word::x32; };
-template <> struct WordTrait<let::u64> { static constexpr auto value = Word::x64; };
+template <> struct WordTraits<let::u32> { static constexpr auto value = Word::x32; };
+template <> struct WordTraits<let::u64> { static constexpr auto value = Word::x64; };
 
 template <typename HashType, HashType FnvPrime, HashType OffsetBasis>
 HashType fnv_1a(const char* text)
@@ -594,10 +594,10 @@ constexpr HashType static_fnv_1a(const char* text, HashType hash = OffsetBasis) 
 }
 
 template <detail::Word word>
-struct Hash;
+struct hash_t;
 
 template <>
-struct Hash<detail::Word::x32>
+struct hash_t<detail::Word::x32>
 {
 private:
     // For 32 bit machines:
@@ -617,7 +617,7 @@ public:
 };
 
 template <>
-struct Hash<detail::Word::x64>
+struct hash_t<detail::Word::x64>
 {
 private:
     // For 64 bit machines:
@@ -641,19 +641,19 @@ public:
 template <typename key_type = let::u64>
 inline key_type hash(const char* text)
 {
-    using detail::Hash;
-    using detail::WordTrait;
+    using detail::hash_t;
+    using detail::WordTraits;
 
-    return Hash<detail::WordTrait<key_type>::value>::run(text);
+    return hash_t<detail::WordTraits<key_type>::value>::run(text);
 }
 
 template <typename key_type = let::u64>
 constexpr key_type static_hash(const char* text) noexcept
 {
-    using detail::Hash;
-    using detail::WordTrait;
+    using detail::hash_t;
+    using detail::WordTraits;
 
-    return Hash<detail::WordTrait<key_type>::value>::static_run(text);
+    return hash_t<detail::WordTraits<key_type>::value>::static_run(text);
 }
 
 inline std::size_t type_hash(const std::type_info& type) noexcept
@@ -678,7 +678,7 @@ inline void hash_combine(HashType& seed, const T& object) noexcept
 
 #define EXPORT_INSTANTIABLE_KEY(unique_name, ...)                                                       \
     namespace sf { namespace core {                                                                     \
-        template <> struct InstantiableTraitKey<__VA_ARGS__> {                                          \
+        template <> struct instantiable_traits_key_t<__VA_ARGS__> {                                     \
             static constexpr auto key = SF_STATIC_HASH(unique_name);                                    \
         };                                                                                              \
     }}
@@ -692,7 +692,7 @@ namespace sf
 namespace core
 {
 
-struct InstantiableTrait
+struct instantiable_traits_t
 {
     using key_type = SF_STATIC_HASH_KEY_TYPE;
     
@@ -700,9 +700,9 @@ struct InstantiableTrait
 };
 
 template <class T>
-struct InstantiableTraitKey
+struct instantiable_traits_key_t
 {
-    static constexpr auto key = InstantiableTrait::base_key;
+    static constexpr auto key = instantiable_traits_t::base_key;
 };
 
 } // namespace core
@@ -711,32 +711,32 @@ struct InstantiableTraitKey
 
 #define SERIALIZATION(mode, ...)                                                                        \
     template <>                                                                                         \
-    struct Serialization::mode<__VA_ARGS__> {                                                           \
+    struct __sf::mode<__VA_ARGS__> {                                                                    \
         template <class Archive> mode(Archive&, __VA_ARGS__&);                                          \
     };                                                                                                  \
     template <class Archive>                                                                            \
-    Serialization::mode<__VA_ARGS__>::mode(Archive& archive, __VA_ARGS__& self)
+    __sf::mode<__VA_ARGS__>::mode(Archive& archive, __VA_ARGS__& self)
 
 #define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
     template <class T>                                                                                  \
-    struct Serialization::mode<T, SFWHEN(__VA_ARGS__)> {                                                \
+    struct __sf::mode<T, SF_WHEN(__VA_ARGS__)> {                                                        \
         template <class Archive> mode(Archive&, T&);                                                    \
     };                                                                                                  \
     template <class T> template <class Archive>                                                         \
-    Serialization::mode<T, SFWHEN(__VA_ARGS__)>::mode(Archive& archive, T& self)
+    __sf::mode<T, SF_WHEN(__VA_ARGS__)>::mode(Archive& archive, T& self)
 
 // Allow to hide implementationementation to translation unit, and declare interface in header
 #define SERIALIZATION_INTERFACE(mode, ...)                                                              \
     template <>                                                                                         \
-    struct Serialization::mode<__VA_ARGS__> {                                                           \
-        mode(::sf::core::IOArchive&, __VA_ARGS__&);                                                     \
+    struct __sf::mode<__VA_ARGS__> {                                                                    \
+        mode(::sf::core::ioarchive_t&, __VA_ARGS__&);                                                   \
     };
 
 #define SERIALIZATION_IMPLEMENTATION(mode, ...)                                                         \
-    Serialization::mode<__VA_ARGS__>::mode(::sf::core::IOArchive& archive, __VA_ARGS__& self)
+    __sf::mode<__VA_ARGS__>::mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
 
 // should be in global namespace
-class Serialization
+class __sf
 {
 public:
     template <class T, typename enable = void> struct SaveLoad;
@@ -764,7 +764,7 @@ private:
     {
         static constexpr auto index = sf::meta::with<is_save_class<T>, is_saveload_class<T>>::value;
 
-        using mode_array = sf::meta::type_array<Save<T>, SaveLoad<T>, Serialization>;
+        using mode_array = sf::meta::type_array<Save<T>, SaveLoad<T>, __sf>;
         using mode = typename mode_array::template type<index>;
     };
 
@@ -773,7 +773,7 @@ private:
     {
         static constexpr auto index = sf::meta::with<is_load_class<T>, is_saveload_class<T>>::value;
 
-        using mode_array = sf::meta::type_array<Load<T>, SaveLoad<T>, Serialization>;
+        using mode_array = sf::meta::type_array<Load<T>, SaveLoad<T>, __sf>;
         using mode = typename mode_array::template type<index>;
     };
 
@@ -782,30 +782,30 @@ public:
     template <class T> using LoadMode = typename LoadModeMeta<T>::mode;
 
 public:
-    template <class T, typename = void> struct has_static_trait : std::false_type {};
-    template <class T> struct has_static_trait<T, SFVOID(&T::__static_trait)> : std::true_type {};
+    template <class T, typename = void> struct has_static_traits : std::false_type {};
+    template <class T> struct has_static_traits<T, SF_VOID(&T::__static_traits)> : std::true_type {};
 
-    template <class T, typename = void> struct has_trait : std::false_type {};
-    template <class T> struct has_trait<T, SFVOID(&T::__trait)> : std::true_type {};
+    template <class T, typename = void> struct has_traits : std::false_type {};
+    template <class T> struct has_traits<T, SF_VOID(&T::__trait)> : std::true_type {};
 
 public:
-    template <class T> struct has_inner_trait
+    template <class T> struct has_inner_traits
     {
-        static constexpr bool value = has_static_trait<T>::value and has_trait<T>::value; // delay access
+        static constexpr bool value = has_static_traits<T>::value and has_traits<T>::value; // delay access
     };
 
 private:
     template <typename From, typename To, typename = void> struct can_static_cast : std::false_type {};
     template <typename From, typename To>
-    struct can_static_cast<From, To, SFVOID(static_cast<To>(std::declval<From>()))> : std::true_type {};
+    struct can_static_cast<From, To, SF_VOID(static_cast<To>(std::declval<From>()))> : std::true_type {};
 
     template <typename From, typename To, typename = void> struct can_cast : std::false_type {};
     template <typename From, typename To>
-    struct can_cast<From, To, SFVOID(std::declval<void(&)(To)>()(std::declval<From>()))> : std::true_type {};
+    struct can_cast<From, To, SF_VOID(std::declval<void(&)(To)>()(std::declval<From>()))> : std::true_type {};
 
     template <typename T, typename = void> struct is_returnable : std::false_type {};
     template <typename T>
-    struct is_returnable<T, SFVOID(static_cast<T(*)()>(nullptr))> : std::true_type {};
+    struct is_returnable<T, SF_VOID(static_cast<T(*)()>(nullptr))> : std::true_type {};
 
 public:
     template <class From, class To> struct is_cast_allowed
@@ -821,8 +821,8 @@ public:
                         sf::meta::negation<can_static_cast<Base*, Derived*>>> {};
 
 public:
-    using IOArchive = sf::core::IOArchive;
-    using InstantiableTrait = sf::core::InstantiableTrait;
+    using ioarchive_t = sf::core::ioarchive_t;
+    using instantiable_traits_t = sf::core::instantiable_traits_t;
 
 public:
     template <typename Archive, class T>
@@ -838,15 +838,15 @@ public:
     }
 
     template <typename Base, class Archive, class Derived,
-              SFREQUIRE(sf::meta::all<sf::meta::is_ioarchive<Archive>,
+              SF_REQUIRE(sf::meta::all<sf::meta::is_ioarchive<Archive>,
                                       std::is_base_of<Base, Derived>>::value)>
     static void serialize_base(Archive& archive, Derived& object)
     {
         archive & static_cast<Base&>(object);
     }
 
-    template <class T, SFREQUIRE(not has_inner_trait<T>::value)>
-    static InstantiableTrait::key_type trait(T& object)
+    template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
+    static instantiable_traits_t::key_type traits(T& object)
     {
     #ifdef SF_EXTERN_RUNTIME_TRAIT
         return SF_EXTERN_RUNTIME_TRAIT(object);
@@ -855,14 +855,14 @@ public:
     #endif // SF_EXTERN_RUNTIME_TRAIT
     }
 
-    template <class T, SFREQUIRE(has_inner_trait<T>::value)>
-    static InstantiableTrait::key_type trait(T& object) noexcept
+    template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
+    static instantiable_traits_t::key_type traits(T& object) noexcept
     {
         return object.__trait();
     }
 
-    template <class T, SFREQUIRE(not has_inner_trait<T>::value)>
-    static InstantiableTrait::key_type static_trait() noexcept
+    template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
+    static instantiable_traits_t::key_type static_traits() noexcept
     {
     #ifdef SF_EXTERN_TRAIT
         return SF_EXTERN_TRAIT(T);
@@ -871,35 +871,35 @@ public:
     #endif // SF_EXTERN_TRAIT
     }
 
-    template <class T, SFREQUIRE(has_inner_trait<T>::value)>
-    static constexpr InstantiableTrait::key_type static_trait() noexcept
+    template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
+    static constexpr instantiable_traits_t::key_type static_traits() noexcept
     {
-        return T::__static_trait();
+        return T::__static_traits();
     }
 
-    template <class T, SFREQUIRE(not has_inner_trait<T>::value)>
-    static InstantiableTrait::key_type trait() noexcept
+    template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
+    static instantiable_traits_t::key_type traits() noexcept
     {
-        constexpr auto trait_key = sf::core::InstantiableTraitKey<T>::key;
+        constexpr auto traits_key = sf::core::instantiable_traits_key_t<T>::key;
 
-        static_assert(trait_key == InstantiableTrait::base_key,
-            "Export instantiable trait is not allowed using typeid.");
+        static_assert(traits_key == instantiable_traits_t::base_key,
+            "Export instantiable traits is not allowed using typeid.");
 
-        return static_trait<T>();
+        return static_traits<T>();
     }
 
-    template <class T, SFREQUIRE(has_inner_trait<T>::value)>
+    template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
 #ifdef SF_EXPORT_INSTANTIABLE_DISABLE
-    static constexpr InstantiableTraitBase::key_type trait() noexcept
+    static constexpr InstantiableTraitsBase::key_type traits() noexcept
 #else
-    static InstantiableTrait::key_type trait() noexcept
+    static instantiable_traits_t::key_type traits() noexcept
 #endif // SF_EXPORT_INSTANTIABLE_DISABLE
     {
-        constexpr auto trait_key = sf::core::InstantiableTraitKey<T>::key;
+        constexpr auto traits_key = sf::core::instantiable_traits_key_t<T>::key;
 
-        return trait_key == InstantiableTrait::base_key
-             ? static_trait<T>()
-             : trait_key;
+        return traits_key == instantiable_traits_t::base_key
+             ? static_traits<T>()
+             : traits_key;
     }
 };
 
@@ -920,7 +920,7 @@ template <typename T> struct is_memory : one<is_memory_shared<T>, is_memory_raw<
 
 } // namespace meta
 
-class Memory
+class memory_t
 {
 public:
     using Shared = meta::shared_type;
@@ -934,15 +934,15 @@ public:
 
 public:
     template <typename T>
-    struct ptr_trait
+    struct ptr_traits
     {
         using item = std::nullptr_t;
     };
 
     template <typename T>
-    struct ptr_trait<std::shared_ptr<T>>
+    struct ptr_traits<std::shared_ptr<T>>
     {
-        using trait    = Shared;
+        using traits    = Shared;
 
         template <typename U>
         using wrapper  = shared_ptr<U>;
@@ -954,9 +954,9 @@ public:
     };
 
     template <typename T>
-    struct ptr_trait<T*>
+    struct ptr_traits<T*>
     {
-        using trait    = Raw;
+        using traits    = Raw;
 
         template <typename U>
         using wrapper  = raw_ptr<U>;
@@ -968,14 +968,14 @@ public:
     };
 
     template <typename T>
-    struct ptr_trait<std::weak_ptr<T>>
+    struct ptr_traits<std::weak_ptr<T>>
     {
         using type     = std::weak_ptr<T>;
         using item     = T;
     };
 
     template <typename T>
-    struct ptr_trait<std::unique_ptr<T>>
+    struct ptr_traits<std::unique_ptr<T>>
     {
         using type     = std::unique_ptr<T>;
         using item     = T;
@@ -983,7 +983,7 @@ public:
 
 public:
     template <typename T>
-    using void_ptr = typename ptr_trait<T>::void_ptr;
+    using void_ptr = typename ptr_traits<T>::void_ptr;
 
 public:
     template <typename T>
@@ -1002,11 +1002,11 @@ public:
 
 private:
     template <class From, class To> struct is_pointer_cast_allowed
-        : ::Serialization::is_pointer_cast_allowed<From, To> {};
+        : ::__sf::is_pointer_cast_allowed<From, To> {};
 
 public:
     template <typename To, typename T,
-              SFREQUIRE(meta::is_shared_pointer<T>::value)>
+              SF_REQUIRE(meta::is_shared_pointer<T>::value)>
     static shared_ptr<To> dynamic_pointer_cast(const T& pointer)
     {
         auto address = dynamic_pointer_cast<To>(pointer.get());
@@ -1014,25 +1014,25 @@ public:
     }
 
     template <typename To, typename T,
-              SFREQUIRE(meta::is_raw_pointer<T>::value)>
+              SF_REQUIRE(meta::is_raw_pointer<T>::value)>
     static raw_ptr<To> dynamic_pointer_cast(const T& pointer)
     {
         return dynamic_cast<raw_ptr<To>>(pointer);
     }
 
     template <typename To, typename T,
-              typename Trait = ptr_trait<T>,
-              SFREQUIRE(meta::one<meta::is_null_pointer<T>,
+              typename Traits = ptr_traits<T>,
+              SF_REQUIRE(meta::one<meta::is_null_pointer<T>,
                                   meta::all<meta::is_pointer<T>,
-                                            meta::negation<is_pointer_cast_allowed<typename Trait::item, To>>>>::value)>
-    static typename Trait::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
+                                            meta::negation<is_pointer_cast_allowed<typename Traits::item, To>>>>::value)>
+    static typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
     {
         return nullptr;
     }
 
     template <typename To, typename T,
-              SFREQUIRE(meta::all<meta::is_shared_pointer<T>,
-                                  is_pointer_cast_allowed<typename ptr_trait<T>::item, To>>::value)>
+              SF_REQUIRE(meta::all<meta::is_shared_pointer<T>,
+                                  is_pointer_cast_allowed<typename ptr_traits<T>::item, To>>::value)>
     static shared_ptr<To> static_pointer_cast(const T& pointer) noexcept
     {
         auto address = static_pointer_cast<To>(pointer.get());
@@ -1040,35 +1040,35 @@ public:
     }
 
     template <typename To, typename T,
-              SFREQUIRE(meta::all<meta::is_raw_pointer<T>,
-                                  is_pointer_cast_allowed<typename ptr_trait<T>::item, To>>::value)>
+              SF_REQUIRE(meta::all<meta::is_raw_pointer<T>,
+                                  is_pointer_cast_allowed<typename ptr_traits<T>::item, To>>::value)>
     static raw_ptr<To> static_pointer_cast(const T& pointer) noexcept
     {
         return static_cast<raw_ptr<To>>(pointer);
     }
 
     template <typename To, typename From, typename T,
-              typename Trait = ptr_trait<T>,
-              SFREQUIRE(meta::all<meta::is_pointer<T>,
+              typename Traits = ptr_traits<T>,
+              SF_REQUIRE(meta::all<meta::is_pointer<T>,
                                   meta::negation<is_pointer_cast_allowed<From, To>>>::value)>
-    static typename Trait::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
+    static typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
     {
         return nullptr;
     }
 
     template <typename To, typename From, typename T,
-              typename Trait = ptr_trait<T>,
-              SFREQUIRE(meta::all<meta::is_pointer<T>,
-                                  is_pointer_cast_allowed<typename Trait::item, From>,
+              typename Traits = ptr_traits<T>,
+              SF_REQUIRE(meta::all<meta::is_pointer<T>,
+                                  is_pointer_cast_allowed<typename Traits::item, From>,
                                   is_pointer_cast_allowed<From, To>>::value)>
-    static typename Trait::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
+    static typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
     {
         return static_pointer_cast<To>(static_pointer_cast<From>(pointer));
     }
 
 public:
     template <typename T,
-              SFREQUIRE(meta::all<meta::is_pointer<T>,
+              SF_REQUIRE(meta::all<meta::is_pointer<T>,
                                   meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
     static void_ptr<T> pure(const T& pointer) noexcept
     {
@@ -1076,7 +1076,7 @@ public:
     }
 
     template <typename T,
-              SFREQUIRE(meta::all<meta::is_pointer<T>,
+              SF_REQUIRE(meta::all<meta::is_pointer<T>,
                                   meta::is_pointer_to_polymorphic<T>>::value)>
     static void_ptr<T> pure(const T& pointer_to_polymorphic)
     {
@@ -1086,15 +1086,15 @@ public:
     static raw_ptr<void> pure(std::nullptr_t pointer) noexcept { return nullptr; }
 
     template <typename dT, typename T,
-              SFREQUIRE(meta::is_pointer<T>::value)>
+              SF_REQUIRE(meta::is_pointer<T>::value)>
     static void assign(T& pointer, const void_ptr<T>& address) noexcept
     {
         pointer = static_pointer_cast<dT>(address);
     }
 
 public:
-    template <typename To, typename From = To, typename TraitType,
-              SFREQUIRE(meta::all<meta::is_memory<TraitType>,
+    template <typename To, typename From = To, typename TraitsType,
+              SF_REQUIRE(meta::all<meta::is_memory<TraitsType>,
                                   meta::one<meta::negation<is_pointer_cast_allowed<From, To>>,
                                             std::is_abstract<From>>>::value)>
     static std::nullptr_t allocate() noexcept
@@ -1102,9 +1102,9 @@ public:
         return nullptr;
     }
 
-    template <typename To, typename From = To, typename TraitType,
-              SFREQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
-                                  meta::is_memory_shared<TraitType>,
+    template <typename To, typename From = To, typename TraitsType,
+              SF_REQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
+                                  meta::is_memory_shared<TraitsType>,
                                   is_pointer_cast_allowed<From, To>>::value)>
     static shared_ptr<To> allocate()
     {
@@ -1112,9 +1112,9 @@ public:
         return static_pointer_cast<To>(instance);
     }
 
-    template <typename To, typename From = To, typename TraitType,
-              SFREQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
-                                  meta::is_memory_raw<TraitType>,
+    template <typename To, typename From = To, typename TraitsType,
+              SF_REQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
+                                  meta::is_memory_raw<TraitsType>,
                                   is_pointer_cast_allowed<From, To>>::value)>
     static raw_ptr<To> allocate()
     {
@@ -1135,19 +1135,19 @@ public:
     }
 
     template <typename To, typename From = To, typename T,
-              SFREQUIRE(meta::is_pointer<T>::value)>
+              SF_REQUIRE(meta::is_pointer<T>::value)>
     static void allocate(T& pointer)
     {
-        pointer = allocate<To, From, typename ptr_trait<T>::trait>();
+        pointer = allocate<To, From, typename ptr_traits<T>::traits>();
     }
 
 public:
-    template <typename T, typename dT = typename ptr_trait<T>::item,
-              SFREQUIRE(meta::is_raw_pointer<T>::value)>
+    template <typename T, typename dT = typename ptr_traits<T>::item,
+              SF_REQUIRE(meta::is_raw_pointer<T>::value)>
     static raw_ptr<dT> raw(const T& pointer) { return pointer; }
 
-    template <typename T, typename dT = typename ptr_trait<T>::item,
-              SFREQUIRE(meta::is_shared_pointer<T>::value)>
+    template <typename T, typename dT = typename ptr_traits<T>::item,
+              SF_REQUIRE(meta::is_shared_pointer<T>::value)>
     static raw_ptr<dT> raw(const T& pointer) { return pointer.get(); }
 
 public:
@@ -1168,10 +1168,10 @@ public:
 
 #define EXPORT_SERIALIZATION_ARCHIVE(archive_key, archive_type, ...)                                    \
     namespace sf { namespace core {                                                                     \
-        template <> struct ArchiveTraitKey<__VA_ARGS__> {                                               \
-            static constexpr IOArchive::key_type key = archive_key;                                     \
+        template <> struct archive_traits_key_t<__VA_ARGS__> {                                          \
+            static constexpr ioarchive_t::key_type key = archive_key;                                   \
         };                                                                                              \
-        template <> struct archive_type##ArchiveTrait<ArchiveTraitKey<__VA_ARGS__>::key> {              \
+        template <> struct archive_type##archive_traits<archive_traits_key_t<__VA_ARGS__>::key> {       \
             using type = __VA_ARGS__;                                                                   \
         };                                                                                              \
     }}
@@ -1182,8 +1182,8 @@ namespace sf
 namespace core
 {
 
-template <IOArchive::key_type I> struct IArchiveTrait { using type = IOArchive; };
-template <IOArchive::key_type I> struct OArchiveTrait { using type = IOArchive; };
+template <ioarchive_t::key_type I> struct iarchive_traits { using type = ioarchive_t; };
+template <ioarchive_t::key_type I> struct oarchive_traits { using type = ioarchive_t; };
 
 } // namespace core
 
@@ -1195,58 +1195,58 @@ namespace sf
 namespace core
 {
 
-class PolymorphicArchive
+class polymorphic_archive_t
 {
 public:
-    using Archive  = IOArchive;
-    using key_type = IOArchive::key_type;
+    using Archive  = ioarchive_t;
+    using key_type = ioarchive_t::key_type;
 
-    static constexpr key_type max_key = ArchiveTrait::max_key;
+    static constexpr key_type max_key = archive_traits::max_key;
 
 public:
     template <class T> static void save(Archive& archive, T& data)
     {
-        call<OArchiveTrait>(archive, data);
+        call<oarchive_traits>(archive, data);
     }
 
     template <class T> static void load(Archive& archive, T& data)
     {
-        call<IArchiveTrait>(archive, data);
+        call<iarchive_traits>(archive, data);
     }
 
 private:
     template <class Archive> struct is_valid_archive
-        : meta::boolean<ArchiveTraitKey<Archive>::key != ArchiveTrait::base_key> {};
+        : meta::boolean<archive_traits_key_t<Archive>::key != archive_traits::base_key> {};
 
 private:
-    template <template <key_type> class ArchiveTrait,
-              key_type Key, class T, SFREQUIRE(Key == max_key)>
+    template <template <key_type> class archive_traits,
+              key_type Key, class T, SF_REQUIRE(Key == max_key)>
     static void call(Archive& archive, T& data)
     {
         throw "The read/write archive has invalid type key.";
     }
 
-    template <template <key_type> class ArchiveTrait,
-              key_type Key = 0, class T, SFREQUIRE(Key < max_key)>
+    template <template <key_type> class archive_traits,
+              key_type Key = 0, class T, SF_REQUIRE(Key < max_key)>
     static void call(Archive& archive, T& data)
     {
-        using DerivedArchive = typename ArchiveTrait<Key>::type;
+        using DerivedArchive = typename archive_traits<Key>::type;
 
-        if (ArchiveTraitKey<DerivedArchive>::key == archive.trait())
+        if (archive_traits_key_t<DerivedArchive>::key == archive.trait())
             return try_call<DerivedArchive>(archive, data);
 
-        call<ArchiveTrait, Key + 1>(archive, data);
+        call<archive_traits, Key + 1>(archive, data);
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(not is_valid_archive<DerivedArchive>::value)>
+              SF_REQUIRE(not is_valid_archive<DerivedArchive>::value)>
     static void try_call(Archive& archive, T& data)
     {
         throw "The read/write archive was not registered.";
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(is_valid_archive<DerivedArchive>::value)>
+              SF_REQUIRE(is_valid_archive<DerivedArchive>::value)>
     static void try_call(Archive& archive, T& data)
     {
         auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
@@ -1260,39 +1260,39 @@ private:
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
-                                  ::Serialization::has_save_mode<T>>::value)>
+              SF_REQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
+                                  ::__sf::has_save_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        ::Serialization::save(archive, object);
+        ::__sf::save(archive, object);
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
-                                  ::Serialization::has_load_mode<T>>::value)>
+              SF_REQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
+                                  ::__sf::has_load_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        ::Serialization::load(archive, object);
+        ::__sf::load(archive, object);
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
-                                  meta::negation<::Serialization::has_save_mode<T>>,
-                                  meta::negation<::Serialization::has_load_mode<T>>>::value)>
+              SF_REQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
+                                  meta::negation<::__sf::has_save_mode<T>>,
+                                  meta::negation<::__sf::has_load_mode<T>>>::value)>
     static void proccess(DerivedArchive& archive, T& data)
     {
         process_data(archive, data);
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(meta::is_registered_extern<T>::value)>
+              SF_REQUIRE(meta::is_registered_extern<T>::value)>
     static void process_data(DerivedArchive& archive, T& data)
     {
         archive & data;
     }
 
     template <class DerivedArchive, class T,
-              SFREQUIRE(not meta::is_registered_extern<T>::value)>
+              SF_REQUIRE(not meta::is_registered_extern<T>::value)>
     static void process_data(DerivedArchive& archive, T& data)
     {
         throw "The 'T' type is unregistered.";
@@ -1300,18 +1300,18 @@ private:
 };
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SF_REQUIRE(meta::is_archive<Archive>::value)>
 Archive& operator<< (Archive& archive, T&& data)
 {
-    PolymorphicArchive::save(archive, data);
+    polymorphic_archive_t::save(archive, data);
     return archive;
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_archive<Archive>::value)>
+          SF_REQUIRE(meta::is_archive<Archive>::value)>
 Archive& operator>> (Archive& archive, T&& data)
 {
-    PolymorphicArchive::load(archive, data);
+    polymorphic_archive_t::load(archive, data);
     return archive;
 }
 
@@ -1319,31 +1319,31 @@ Archive& operator>> (Archive& archive, T&& data)
 
 } // namespace sf
 
-// By default library will use Instantiable type for general instancing,
+// By default library will use instantiable_t type for general instancing,
 // if you want to specify behaviour, just define own INSTANTIABLE_TYPE
 // Note that: any defined INSTANTIABLE_TYPE must have virtual destructor
 #ifndef INSTANTIABLE_TYPE
-    #define INSTANTIABLE_TYPE ::sf::Instantiable
+    #define INSTANTIABLE_TYPE ::sf::instantiable_t
 #endif // INSTANTIABLE_TYPE
 
 namespace sf
 {
 
-struct Instantiable { virtual ~Instantiable() = default; };
+struct instantiable_t { virtual ~instantiable_t() = default; };
 
 } // namespace sf
 
 // Auto instantiable type registration
 #define SERIALIZATION_FIXTURE(...)                                                                      \
     private:                                                                                            \
-    ::sf::dynamic::InstantiableFixture<__VA_ARGS__> __fixture;                                          \
+    ::sf::dynamic::instantiable_fixture_t<__VA_ARGS__> __fixture;                                       \
     public:
 
-#define SERIALIZATION_TRAIT(...)                                                                        \
+#define SERIALIZATION_TRAITS(...)                                                                       \
     private:                                                                                            \
-    using __key_type = ::sf::core::InstantiableTrait::key_type;                                         \
-    static constexpr __key_type __static_trait() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }      \
-    virtual __key_type __trait() const noexcept { return ::Serialization::trait<__VA_ARGS__>(); }       \
+    using __key_type = ::sf::core::instantiable_traits_t::key_type;                                     \
+    static constexpr __key_type __static_traits() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }     \
+    virtual __key_type __trait() const noexcept { return ::__sf::traits<__VA_ARGS__>(); }               \
     public:
 
 namespace sf
@@ -1352,19 +1352,19 @@ namespace sf
 namespace dynamic
 {
 
-class InstantiableRegistry
+class instantiable_registry_t
 {
 public:
-    using key_type          = core::InstantiableTrait::key_type;
+    using key_type          = core::instantiable_traits_t::key_type;
     using instantiable_type = INSTANTIABLE_TYPE;
-    using archive_type      = core::IOArchive;
+    using archive_type      = core::ioarchive_t;
 
 private:
     template <typename ItemType>
     using InnerTable = std::unordered_map<key_type, ItemType>;
 
 private:
-    struct InstantiableProxy
+    struct instantiable_proxy_t
     {
         instantiable_type* __instance = nullptr;
 
@@ -1379,24 +1379,24 @@ private:
     };
 
 private:
-    InnerTable<InstantiableProxy> registry_;
+    InnerTable<instantiable_proxy_t> registry_;
 
 private:
 
-    InstantiableRegistry() : registry_() {}
+    instantiable_registry_t() : registry_() {}
 
-    ~InstantiableRegistry()
+    ~instantiable_registry_t()
     {
         for (const auto& pair : registry_) delete pair.second.__instance;
     }
 
-    InstantiableRegistry(const InstantiableRegistry&) = delete;
-    InstantiableRegistry& operator=(const InstantiableRegistry&) = delete;
+    instantiable_registry_t(const instantiable_registry_t&) = delete;
+    instantiable_registry_t& operator=(const instantiable_registry_t&) = delete;
 
 public:
-    static InstantiableRegistry& instance() noexcept
+    static instantiable_registry_t& instance() noexcept
     {
-        static InstantiableRegistry self;
+        static instantiable_registry_t self;
         return self;
     }
 
@@ -1405,57 +1405,57 @@ public:
     template <typename dT> struct is_instantiable : meta::is_cast_allowed<dT*, instantiable_type*> {};
 
 public:
-    template <class T, SFREQUIRE(not is_instantiable<T>::value)>
+    template <class T, SF_REQUIRE(not is_instantiable<T>::value)>
     void update(key_type key)
     {
-        throw "The polymorphic 'T' type is not convertible to 'Instantiable'.";
+        throw "The polymorphic 'T' type is not convertible to 'instantiable_t'.";
     }
 
-    template <class T, SFREQUIRE(is_instantiable<T>::value)>
+    template <class T, SF_REQUIRE(is_instantiable<T>::value)>
     void update(key_type key)
     {
         if (is_registered(key)) return;
 
-        InstantiableProxy proxy;
+        instantiable_proxy_t proxy;
 
-        proxy.__instance = Memory::allocate_raw<instantiable_type, T>();
+        proxy.__instance = memory_t::allocate_raw<instantiable_type, T>();
 
-        proxy.__shared = [] { return Memory::allocate_shared<instantiable_type, T>(); };
+        proxy.__shared = [] { return memory_t::allocate_shared<instantiable_type, T>(); };
 
         proxy.__cast_shared = [](std::shared_ptr<void> address)
         {
-            return Memory::static_pointer_cast<instantiable_type, T>(address);
+            return memory_t::static_pointer_cast<instantiable_type, T>(address);
         };
 
-        proxy.__raw = [] { return Memory::allocate_raw<instantiable_type, T>(); };
+        proxy.__raw = [] { return memory_t::allocate_raw<instantiable_type, T>(); };
 
         proxy.__cast_raw = [](void* address)
         {
-            return Memory::static_pointer_cast<instantiable_type, T>(address);
+            return memory_t::static_pointer_cast<instantiable_type, T>(address);
         };
 
         proxy.__save = [](archive_type& archive, instantiable_type* instance)
         {
-            archive << *Memory::dynamic_pointer_cast<T>(instance);
+            archive << *memory_t::dynamic_pointer_cast<T>(instance);
         };
 
         proxy.__load = [](archive_type& archive, instantiable_type* instance)
         {
-            archive >> *Memory::dynamic_pointer_cast<T>(instance);
+            archive >> *memory_t::dynamic_pointer_cast<T>(instance);
         };
 
         registry_.emplace(key, proxy);
     }
 
-    template <typename TraitType,
-              SFREQUIRE(meta::is_memory_shared<TraitType>::value)>
+    template <typename TraitsType,
+              SF_REQUIRE(meta::is_memory_shared<TraitsType>::value)>
     std::shared_ptr<instantiable_type> clone(key_type key)
     {
         return registry(key).__shared();
     }
 
-    template <typename TraitType,
-              SFREQUIRE(meta::is_memory_raw<TraitType>::value)>
+    template <typename TraitsType,
+              SF_REQUIRE(meta::is_memory_raw<TraitsType>::value)>
     instantiable_type* clone(key_type key)
     {
         return registry(key).__raw();
@@ -1472,18 +1472,18 @@ public:
     }
 
     template <typename Pointer, typename T = sf::meta::dereference<Pointer>,
-              SFREQUIRE(::Serialization::has_save_mode<T>::value)>
+              SF_REQUIRE(::__sf::has_save_mode<T>::value)>
     void save(archive_type& archive, Pointer& pointer)
     {
-        auto key = ::Serialization::trait(*pointer);
+        auto key = ::__sf::traits(*pointer);
         registry(key).__save(archive, pointer);
     }
 
     template <typename Pointer, typename T = sf::meta::dereference<Pointer>,
-              SFREQUIRE(::Serialization::has_load_mode<T>::value)>
+              SF_REQUIRE(::__sf::has_load_mode<T>::value)>
     void load(archive_type& archive, Pointer& pointer)
     {
-        auto key = ::Serialization::trait(*pointer);
+        auto key = ::__sf::traits(*pointer);
         registry(key).__load(archive, pointer);
     }
 
@@ -1496,53 +1496,53 @@ public:
 #ifndef SF_REGISTRY_ACCESS
 private:
 #endif // SF_REGISTRY_ACCESS
-    InstantiableProxy& registry(key_type key)
+    instantiable_proxy_t& registry(key_type key)
     {
         // It happens if the class with the given key has not beed public inherited
         // from the instantiable class or not registered with fixture object.
         auto it = registry_.find(key);
         if (it == registry_.end())
-            throw "The 'sf::dynamic::InstantiableRegistry' does not has instance with input key.";
+            throw "The 'sf::dynamic::instantiable_registry_t' does not has instance with input key.";
 
         return it->second;
     }
 };
 
 template <class T>
-class InstantiableFixture
+class instantiable_fixture_t
 {
 private:
     static bool lock_;
 
 public:
-    InstantiableFixture() { call<T>(); }
+    instantiable_fixture_t() { call<T>(); }
 
 public:
     template <typename dT = T,
-              SFREQUIRE(InstantiableRegistry::is_instantiable<dT>::value)>
+              SF_REQUIRE(instantiable_registry_t::is_instantiable<dT>::value)>
     static void call()
     {
         if (lock_) return;
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
-        auto& registry = InstantiableRegistry::instance();
+        auto& registry = instantiable_registry_t::instance();
 
-        auto key = ::Serialization::template trait<T>();
+        auto key = ::__sf::template traits<T>();
     #ifdef SF_DEBUG
         if (registry.is_registered(key))
-            throw "The 'sf::dynamic::InstantiableRegistry' must contains instance with unique key.";
+            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
     #endif // SF_DEBUG
 
         registry.update<T>(key);
     }
 
     template <typename dT = T,
-              SFREQUIRE(not InstantiableRegistry::is_instantiable<dT>::value)>
+              SF_REQUIRE(not instantiable_registry_t::is_instantiable<dT>::value)>
     static void call() noexcept { /*pass*/ }
 };
 
 template <class T>
-bool InstantiableFixture<T>::lock_ = false;
+bool instantiable_fixture_t<T>::lock_ = false;
 
 } // namespace dynamic
 
@@ -1556,13 +1556,13 @@ namespace sf
 namespace dynamic
 {
 
-class AnyRegistry
+class any_registry_t
 {
 public:
-    using archive_type = core::IOArchive;
+    using archive_type = core::ioarchive_t;
 
 private:
-    struct AnyProxy
+    struct any_proxy_t
     {
         // we use raw function ptr instead std::function to reach perfomance
         void(*__save)(archive_type&, std::any&) = nullptr;
@@ -1570,21 +1570,21 @@ private:
     };
 
 private:
-    using InnerTable = std::unordered_map<let::u64, AnyProxy>;
+    using InnerTable = std::unordered_map<let::u64, any_proxy_t>;
 
 private:
     InnerTable registry_;
 
 private:
-    AnyRegistry() : registry_() {}
+    any_registry_t() : registry_() {}
 
-    AnyRegistry(const AnyRegistry&) = delete;
-    AnyRegistry& operator=(const AnyRegistry&) = delete;
+    any_registry_t(const any_registry_t&) = delete;
+    any_registry_t& operator=(const any_registry_t&) = delete;
 
 public:
-    static AnyRegistry& instance() noexcept
+    static any_registry_t& instance() noexcept
     {
-        static AnyRegistry self;
+        static any_registry_t self;
         return self;
     }
 
@@ -1592,7 +1592,7 @@ public:
     {
         if (is_registered(hash)) return;
 
-        AnyProxy proxy;
+        any_proxy_t proxy;
 
         proxy.__save = [](archive_type& archive, std::any& any)
         {
@@ -1628,25 +1628,25 @@ public:
 #ifndef SF_REGISTRY_ACCESS
 private:
 #endif // SF_REGISTRY_ACCESS
-    const AnyProxy& registry(let::u64 hash)
+    const any_proxy_t& registry(let::u64 hash)
     {
         // It happens if the type not registered with fixture object.
         auto it = registry_.find(hash);
         if (it == registry_.end())
-            throw "The 'sf::AnyRegistry' must registry type with specify hash code.";
+            throw "The 'sf::any_registry_t' must registry type with specify hash code.";
 
         return it->second;
     }
 };
 
 template <typename T>
-class AnyFixture
+class any_fixture_t
 {
 private:
     static bool lock_;
 
 public:
-    AnyFixture() { call(); }
+    any_fixture_t() { call(); }
 
 public:
     static void call()
@@ -1654,12 +1654,12 @@ public:
         if (lock_) return;
         lock_ = true; // lock before creating clone instance to prevent recursive call
 
-        auto& registry = AnyRegistry::instance();
+        auto& registry = any_registry_t::instance();
 
         auto hash = SF_TYPE_HASH(typeid(T));
     #ifdef SF_DEBUG
         if (registry.is_registered(hash))
-            throw "The 'sf::dynamic::AnyRegistry' must contains unique hashes.";
+            throw "The 'sf::dynamic::any_registry_t' must contains unique hashes.";
     #endif // SF_DEBUG
 
         registry.update<T>(hash);
@@ -1667,7 +1667,7 @@ public:
 };
 
 template <typename T>
-bool AnyFixture<T>::lock_ = false;
+bool any_fixture_t<T>::lock_ = false;
 
 } // namespace dynamic
 
@@ -1681,27 +1681,27 @@ namespace sf
 namespace dynamic
 {
 
-class ExternRegistry
+class extern_registry_t
 {
 public:
-    using key_type = core::InstantiableTrait::key_type;
+    using key_type = core::instantiable_traits_t::key_type;
 
 public:
     template <class Archive, typename T,
-              SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
+              SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
     static key_type save_key(Archive& archive, T& pointer)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto key = ::Serialization::trait(*pointer);
+        auto key = ::__sf::traits(*pointer);
         archive & key;
 
         return key;
     }
 
     template <class Archive, typename T,
-              SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
+              SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
     static key_type load_key(Archive& archive, T& pointer)
     {
     #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -1717,24 +1717,24 @@ public:
 
 private:
     template <typename T> struct is_pointer_to_instantiable
-        : meta::all<InstantiableRegistry::is_instantiable<meta::dereference<T>>,
+        : meta::all<instantiable_registry_t::is_instantiable<meta::dereference<T>>,
                     meta::is_pointer_to_polymorphic<T>> {};
 
 public:
-    template <typename T, SFREQUIRE(is_pointer_to_instantiable<T>::value)>
-    static void save(core::IOArchive& archive, T& pointer, key_type key)
+    template <typename T, SF_REQUIRE(is_pointer_to_instantiable<T>::value)>
+    static void save(core::ioarchive_t& archive, T& pointer, key_type key)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto raw_pointer = Memory::raw(pointer);
-        InstantiableRegistry::instance().save(archive, raw_pointer);
+        auto raw_pointer = memory_t::raw(pointer);
+        instantiable_registry_t::instance().save(archive, raw_pointer);
     }
 
-    template <typename T, SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void load(core::IOArchive& archive, T& pointer, key_type key, Memory::void_ptr<T>& cache)
+    template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
+    static void load(core::ioarchive_t& archive, T& pointer, key_type key, memory_t::void_ptr<T>& cache)
     {
-        using TraitType = typename Memory::ptr_trait<T>::trait;
+        using TraitsType = typename memory_t::ptr_traits<T>::traits;
         using dT = meta::dereference<T>;
 
     #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -1742,19 +1742,19 @@ public:
             throw "The read pointer must be initialized to nullptr.";
     #endif // SF_GARBAGE_CHECK_DISABLE
 
-        auto& registry = InstantiableRegistry::instance();
+        auto& registry = instantiable_registry_t::instance();
 
-        auto cloned = registry.clone<TraitType>(key);
+        auto cloned = registry.clone<TraitsType>(key);
 
-        pointer = Memory::dynamic_pointer_cast<dT>(cloned);
-        cache = Memory::pure(pointer);
+        pointer = memory_t::dynamic_pointer_cast<dT>(cloned);
+        cache = memory_t::pure(pointer);
 
-        auto raw_pointer = Memory::raw(pointer);
+        auto raw_pointer = memory_t::raw(pointer);
         registry.load(archive, raw_pointer);
     }
 
-    template <typename T, SFREQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void assign(T& pointer, const Memory::void_ptr<T>& address, key_type key)
+    template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
+    static void assign(T& pointer, const memory_t::void_ptr<T>& address, key_type key)
     {
         using dT = meta::dereference<T>;
 
@@ -1763,8 +1763,8 @@ public:
             throw "The read pointer must be initialized to nullptr.";
     #endif // SF_GARBAGE_CHECK_DISABLE
 
-        auto casted = InstantiableRegistry::instance().cast(address, key);
-        pointer = Memory::dynamic_pointer_cast<dT>(casted);
+        auto casted = instantiable_registry_t::instance().cast(address, key);
+        pointer = memory_t::dynamic_pointer_cast<dT>(casted);
     }
 };
 
@@ -1784,31 +1784,31 @@ using Shared = meta::shared_type;
 using Raw = meta::raw_type;
 
 template <typename T>
-struct track_trait;
+struct track_traits;
 
 template <typename T>
-struct track_trait<Memory::shared_ptr<T>>
+struct track_traits<memory_t::shared_ptr<T>>
 {
     using type = tracking::Shared;
 };
 
 template <typename T>
-struct track_trait<Memory::raw_ptr<T>>
+struct track_traits<memory_t::raw_ptr<T>>
 {
     using type = tracking::Raw;
 };
 
 template <typename T>
-struct reverse_trait;
+struct reverse_traits;
 
 template <>
-struct reverse_trait<Shared>
+struct reverse_traits<Shared>
 {
     using type = Raw;
 };
 
 template <>
-struct reverse_trait<Raw>
+struct reverse_traits<Raw>
 {
     using type = Shared;
 };
@@ -1832,7 +1832,7 @@ namespace detail
 {
 
 template <typename HashType = let::u64>
-struct PairHash
+struct pair_hash_t
 {
     template <typename T1, typename T2>
     HashType operator() (const std::pair<T1, T2>& pair) const noexcept
@@ -1851,17 +1851,17 @@ struct PairHash
 namespace tracking
 {
 
-struct Hierarchy {};
+struct hierarchy_t {};
 
-template <typename KeyType, typename TraitType = core::InstantiableTrait::key_type>
-using HierarchyTrack = std::unordered_map<std::pair<KeyType, TraitType>, bool, detail::PairHash<TraitType>>;
+template <typename KeyType, typename TraitsType = core::instantiable_traits_t::key_type>
+using hierarchy_track_t = std::unordered_map<std::pair<KeyType, TraitsType>, bool, detail::pair_hash_t<TraitsType>>;
 
 } // namespace tracking
 
 namespace meta
 {
 
-template <typename T> struct is_track_hierarchy : std::is_same<T, tracking::Hierarchy> {};
+template <typename T> struct is_track_hierarchy : std::is_same<T, tracking::hierarchy_t> {};
 
 } // namespace meta
 
@@ -1879,22 +1879,22 @@ namespace sf
 namespace wrapper
 {
 
-using ByteContainer = std::vector<unsigned char>;
+using byte_container_t = std::vector<unsigned char>;
 
-template <typename OutStream = ByteContainer>
-class OByteStream
+template <typename OutStream = byte_container_t>
+class obyte_stream_t
 {
 protected:
     using item_type = typename OutStream::value_type;
 
 protected:
-    static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::OByteStream'.");
+    static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::obyte_stream_t'.");
 
 public:
     OutStream& storage;
 
 public:
-    OByteStream(OutStream& stream) noexcept : storage(stream)
+    obyte_stream_t(OutStream& stream) noexcept : storage(stream)
     {
         storage.reserve(SF_BYTE_STREAM_RESERVE_SIZE); // default reserve memory
     }
@@ -1902,7 +1902,7 @@ public:
     template <typename T>
     void call(const T* data, std::size_t size)
     {
-        auto it = Memory::const_byte_cast<item_type>(data);
+        auto it = memory_t::const_byte_cast<item_type>(data);
         while (size > 0)
         {
             storage.emplace_back(*it++);
@@ -1911,25 +1911,25 @@ public:
     }
 };
 
-template <typename InStream = ByteContainer>
-struct IByteStream
+template <typename InStream = byte_container_t>
+struct ibyte_stream_t
 {
 protected:
     using item_type = typename InStream::value_type;
 
 protected:
-    static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::IByteStream'.");
+    static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::ibyte_stream_t'.");
 
 public:
     InStream& storage;
     std::size_t offset;
 
-    IByteStream(InStream& stream) noexcept : storage(stream), offset() {}
+    ibyte_stream_t(InStream& stream) noexcept : storage(stream), offset() {}
 
     template <typename T>
     void call(T* data, std::size_t size)
     {
-        auto it = Memory::byte_cast<item_type>(data);
+        auto it = memory_t::byte_cast<item_type>(data);
         while (size > 0)
         {
             *it++ = storage[offset++];
@@ -1939,34 +1939,34 @@ public:
 };
 
 template <typename OutStream>
-class OFileStream
+class ofile_stream_t
 {
 public:
     OutStream& file;
 
 public:
-    OFileStream(OutStream& stream) noexcept : file(stream) {}
+    ofile_stream_t(OutStream& stream) noexcept : file(stream) {}
 
     template <typename T>
     void call(const T* data, std::size_t memory_size)
     {
-        file.write(Memory::const_byte_cast(data), memory_size);
+        file.write(memory_t::const_byte_cast(data), memory_size);
     }
 };
 
 template <typename InStream>
-class IFileStream
+class ifile_stream_t
 {
 public:
     InStream& file;
 
 public:
-    IFileStream(InStream& stream) noexcept : file(stream) {}
+    ifile_stream_t(InStream& stream) noexcept : file(stream) {}
 
     template <typename T>
     void call(T* data, std::size_t memory_size)
     {
-        file.read(Memory::byte_cast(data), memory_size);
+        file.read(memory_t::byte_cast(data), memory_size);
     }
 };
 
@@ -1978,15 +1978,15 @@ namespace sf
 {
 
 template <class StreamWrapper,
-          class Registry = dynamic::ExternRegistry>
-class OArchive : public core::IOArchive, public core::OArchiveType
+          class Registry = dynamic::extern_registry_t>
+class oarchive_t : public core::ioarchive_t, public core::oarchive_common_t
 {
-    SERIALIZATION_ARCHIVE(OArchive)
+    SERIALIZATION_ARCHIVE(oarchive_t)
 
 public:
     using TrackingKeyType = std::uintptr_t;
     using TrackingTable = std::unordered_map<TrackingKeyType, bool>;
-    using HierarchyTrackingTable = tracking::HierarchyTrack<TrackingKeyType>;
+    using HierarchyTrackingTable = tracking::hierarchy_track_t<TrackingKeyType>;
 
 private:
     StreamWrapper archive_;
@@ -1999,96 +1999,96 @@ private:
     Registry registry_;
 
 public:
-    template <typename OutStream> OArchive(OutStream& stream);
+    template <typename OutStream> oarchive_t(OutStream& stream);
 
     auto stream() noexcept -> StreamWrapper& { return archive_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_shared<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_shared<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable& { return track_shared_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_raw<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_raw<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable& { return track_raw_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_hierarchy<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_hierarchy<TrackType>::value)>
     auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
 
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator<< (T&& data) -> OArchive&;
+    auto operator<< (T&& data) -> oarchive_t&;
 
     template <typename T, typename... Tn>
-    auto operator() (T& data, Tn&... data_n) -> OArchive&;
+    auto operator() (T& data, Tn&... data_n) -> oarchive_t&;
 
-    auto operator() () noexcept -> OArchive& { return *this; }
+    auto operator() () noexcept -> oarchive_t& { return *this; }
 };
 
-// create default OArchive with wrapper::OByteStream<>
+// create default oarchive_t with wrapper::obyte_stream_t<>
 template <typename OutStream>
-OArchive<wrapper::OByteStream<OutStream>> oarchive(OutStream& stream)
+oarchive_t<wrapper::obyte_stream_t<OutStream>> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
 template <template <class, typename...> class StreamWrapper,
-          class Registry = dynamic::ExternRegistry,
+          class Registry = dynamic::extern_registry_t,
           typename OutStream>
-OArchive<StreamWrapper<OutStream>, Registry> oarchive(OutStream& stream)
+oarchive_t<StreamWrapper<OutStream>, Registry> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
 template <class StreamWrapper,
-          class Registry = dynamic::ExternRegistry,
+          class Registry = dynamic::extern_registry_t,
           typename OutStream>
-OArchive<StreamWrapper, Registry> oarchive(OutStream& stream)
+oarchive_t<StreamWrapper, Registry> oarchive(OutStream& stream)
 {
     return { stream };
 }
 
 template <class StreamWrapper, class Registry>
 template <typename OutStream>
-OArchive<StreamWrapper, Registry>::OArchive(OutStream& stream)
+oarchive_t<StreamWrapper, Registry>::oarchive_t(OutStream& stream)
     : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T>
-auto OArchive<StreamWrapper, Registry>::operator<< (T&& data) -> OArchive&
+auto oarchive_t<StreamWrapper, Registry>::operator<< (T&& data) -> oarchive_t&
 {
     return (*this) & std::forward<T>(data);
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto OArchive<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> OArchive&
+auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> oarchive_t&
 {
     (*this) & data;
     return operator()(data_n...);
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_unsupported<T>>::value)>
 Archive& operator& (Archive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unsupported type for the 'sf::OArchive'.");
+        "The 'T' is an unsupported type for the 'sf::oarchive_t'.");
 
     return archive;
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_registered_extern<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'sf::OArchive'.");
+        "The 'T' is an unregistered type for the 'sf::oarchive_t'.");
 
     return archive;
 }
@@ -2099,18 +2099,18 @@ namespace sf
 {
 
 template <class StreamWrapper,
-          class Registry = dynamic::ExternRegistry>
-class IArchive : public core::IOArchive, public core::IArchiveType
+          class Registry = dynamic::extern_registry_t>
+class iarchive_t : public core::ioarchive_t, public core::iarchive_common_t
 {
-    SERIALIZATION_ARCHIVE(IArchive)
+    SERIALIZATION_ARCHIVE(iarchive_t)
 
 private:
     template <typename VoidPointer>
     struct TrackData { VoidPointer address = nullptr; };
 
 public:
-    using Shared = TrackData<Memory::shared_ptr<void>>;
-    using Raw = TrackData<Memory::raw_ptr<void>>;
+    using Shared = TrackData<memory_t::shared_ptr<void>>;
+    using Raw = TrackData<memory_t::raw_ptr<void>>;
 
 public:
     using TrackingKeyType = std::uintptr_t;
@@ -2118,7 +2118,7 @@ public:
     template <typename TrackData>
     using TrackingTable = std::unordered_map<TrackingKeyType, TrackData>;
 
-    using HierarchyTrackingTable = tracking::HierarchyTrack<TrackingKeyType>;
+    using HierarchyTrackingTable = tracking::hierarchy_track_t<TrackingKeyType>;
 
 private:
     StreamWrapper archive_;
@@ -2131,96 +2131,96 @@ private:
     Registry registry_;
 
 public:
-    template <typename InStream> IArchive(InStream& stream);
+    template <typename InStream> iarchive_t(InStream& stream);
 
     auto stream() noexcept -> StreamWrapper& { return archive_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_shared<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_shared<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable<Shared>& { return track_shared_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_raw<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_raw<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable<Raw>& { return track_raw_; }
 
     template <typename TrackType,
-              SFREQUIRE(meta::is_track_hierarchy<TrackType>::value)>
+              SF_REQUIRE(meta::is_track_hierarchy<TrackType>::value)>
     auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
 
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator>> (T&& data) -> IArchive&;
+    auto operator>> (T&& data) -> iarchive_t&;
 
     template <typename T, typename... Tn>
-    auto operator() (T& data, Tn&... data_n) -> IArchive&;
+    auto operator() (T& data, Tn&... data_n) -> iarchive_t&;
 
-    auto operator() () -> IArchive& { return *this; }
+    auto operator() () -> iarchive_t& { return *this; }
 };
 
-// create default IArchive with wrapper::IByteStream<>
+// create default iarchive_t with wrapper::ibyte_stream_t<>
 template <typename InStream>
-IArchive<wrapper::IByteStream<InStream>> iarchive(InStream& stream)
+iarchive_t<wrapper::ibyte_stream_t<InStream>> iarchive(InStream& stream)
 {
     return { stream };
 }
 
 template <template <class, typename...> class StreamWrapper,
-          class Registry = dynamic::ExternRegistry,
+          class Registry = dynamic::extern_registry_t,
           typename InStream>
-IArchive<StreamWrapper<InStream>, Registry> iarchive(InStream& stream)
+iarchive_t<StreamWrapper<InStream>, Registry> iarchive(InStream& stream)
 {
     return { stream };
 }
 
 template <class StreamWrapper,
-          class Registry = dynamic::ExternRegistry,
+          class Registry = dynamic::extern_registry_t,
           typename InStream>
-IArchive<StreamWrapper, Registry> iarchive(InStream& stream)
+iarchive_t<StreamWrapper, Registry> iarchive(InStream& stream)
 {
     return { stream };
 }
 
 template <class StreamWrapper, class Registry>
 template <typename InStream>
-IArchive<StreamWrapper, Registry>::IArchive(InStream& stream)
+iarchive_t<StreamWrapper, Registry>::iarchive_t(InStream& stream)
     : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T>
-auto IArchive<StreamWrapper, Registry>::operator>> (T&& data) -> IArchive&
+auto iarchive_t<StreamWrapper, Registry>::operator>> (T&& data) -> iarchive_t&
 {
     return (*this) & std::forward<T>(data);
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto IArchive<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> IArchive&
+auto iarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> iarchive_t&
 {
     (*this) & data;
     return operator()(data_n...);
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_unsupported<T>>::value)>
 Archive& operator& (Archive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unsupported type for the 'sf::IArchive'.");
+        "The 'T' is an unsupported type for the 'sf::iarchive_t'.");
 
     return archive;
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::negation<meta::is_registered_extern<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'sf::IArchive'.");
+        "The 'T' is an unregistered type for the 'sf::iarchive_t'.");
 
     return archive;
 }
@@ -2229,7 +2229,7 @@ Archive& operator& (Archive& archive, T& unregistered)
 
 #define EXTERN_CONDITIONAL_SERIALIZATION(mode, parameter, ...)                                          \
     template <class Archive, typename T,                                                                \
-              SFREQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                 \
+              SF_REQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                 \
                                         ::sf::meta::is_registered_extern<T>,                            \
                                         ::sf::meta::boolean<bool(__VA_ARGS__)>>::value)>                \
     Archive& operator& (Archive& archive, T& parameter)
@@ -2237,7 +2237,7 @@ Archive& operator& (Archive& archive, T& unregistered)
 // require TYPE_REGISTRY before use if not def SF_TYPE_REGISTRY_DISABLE
 #define EXTERN_SERIALIZATION(mode, parameter, ...)                                                      \
     template <class Archive,                                                                            \
-              SFREQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                 \
+              SF_REQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                 \
                                         ::sf::meta::is_registered_extern<__VA_ARGS__>>::value)>         \
     Archive& operator& (Archive& archive, __VA_ARGS__& parameter)
 
@@ -2262,14 +2262,14 @@ namespace sf
 namespace apply
 {
 
-struct ApplyFunctor {};
+struct apply_functor_t {};
 
 } // namespace apply
 
 namespace meta
 {
 
-template <typename T> struct is_apply_functor : std::is_base_of<apply::ApplyFunctor, T> {};
+template <typename T> struct is_apply_functor : std::is_base_of<apply::apply_functor_t, T> {};
 
 } // namespace meta
 
@@ -2279,7 +2279,7 @@ inline namespace common
 
 template <typename Archive, typename T,
           typename dT = meta::decay<T>, // T can be lvalue
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::is_registered_extern<dT>,
                               meta::is_apply_functor<dT>>::value)>
 Archive& operator& (Archive& archive, T&& apply_functor)
@@ -2298,7 +2298,7 @@ namespace sf
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
+          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
 void binary(Archive& archive, T& data)
 {
     archive.stream().call(std::addressof(data), sizeof(T));
@@ -2308,11 +2308,11 @@ namespace apply
 {
 
 template <typename T>
-struct BinaryFunctor : ApplyFunctor
+struct binary_functor_t : apply_functor_t
 {
     T& data;
 
-    BinaryFunctor(T& data) noexcept : data(data) {}
+    binary_functor_t(T& data) noexcept : data(data) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { binary(archive, data); }
@@ -2320,7 +2320,7 @@ struct BinaryFunctor : ApplyFunctor
 
 } // namespace apply
 
-template <typename T> apply::BinaryFunctor<T> binary(T& object) noexcept { return { object }; }
+template <typename T> apply::binary_functor_t<T> binary(T& object) noexcept { return { object }; }
 
 } // namespace sf
 
@@ -2331,12 +2331,12 @@ namespace detail
 {
 
 template <class Archive, typename T, typename KeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
 void native_save(Archive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
 
 template <class Archive, typename T, typename KeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
 void native_save(Archive& archive, T& pointer, KeyType track_key)
 {
@@ -2344,17 +2344,17 @@ void native_save(Archive& archive, T& pointer, KeyType track_key)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address) noexcept
+void native_load(Archive& archive, T& pointer, memory_t::void_ptr<T>& address) noexcept
 {
-    Memory::assign<meta::dereference<T>>(pointer, address);
+    memory_t::assign<meta::dereference<T>>(pointer, address);
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(Archive& archive, T& pointer, Memory::void_ptr<T>& address)
+void native_load(Archive& archive, T& pointer, memory_t::void_ptr<T>& address)
 {
     auto& registry = archive.registry();
 
@@ -2370,7 +2370,7 @@ namespace sf
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_standard_layout<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
@@ -2381,25 +2381,25 @@ void strict(Archive& archive, T& pointer)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(Archive& archive, T& pointer, Memory::void_ptr<T>& cache)
+void strict(Archive& archive, T& pointer, memory_t::void_ptr<T>& cache)
 {
-    using item_type = typename Memory::ptr_trait<T>::item;
+    using item_type = typename memory_t::ptr_traits<T>::item;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-    Memory::allocate<item_type>(pointer);
-    cache = Memory::pure(pointer);
+    memory_t::allocate<item_type>(pointer);
+    cache = memory_t::pure(pointer);
 
     archive & (*pointer);
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
@@ -2410,9 +2410,9 @@ void strict(Archive& archive, T& pointer)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(Archive& archive, T& pointer, Memory::void_ptr<T>& cache)
+void strict(Archive& archive, T& pointer, memory_t::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
@@ -2422,11 +2422,11 @@ void strict(Archive& archive, T& pointer, Memory::void_ptr<T>& cache)
 
 // verison without cache using
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
-    Memory::void_ptr<T> cache = nullptr;
+    memory_t::void_ptr<T> cache = nullptr;
     strict(archive, pointer, cache);
 }
 
@@ -2435,12 +2435,12 @@ namespace detail
 
 template <class Archive, typename T,
           typename KeyType = typename Archive::TrackingKeyType,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
 KeyType refer_key(Archive& archive, T& pointer)
 {
-    auto pure = Memory::pure(pointer);
-    auto key = reinterpret_cast<KeyType>(Memory::raw(pure));
+    auto pure = memory_t::pure(pointer);
+    auto key = reinterpret_cast<KeyType>(memory_t::raw(pure));
 
     archive & key;
     return key;
@@ -2448,7 +2448,7 @@ KeyType refer_key(Archive& archive, T& pointer)
 
 template <class Archive, typename T,
           typename KeyType = typename Archive::TrackingKeyType,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_serializable_pointer<T>>::value)>
 KeyType refer_key(Archive& archive, T& pointer)
 {
@@ -2469,11 +2469,11 @@ namespace apply
 {
 
 template <typename T>
-struct StrictFunctor : public ApplyFunctor
+struct strict_functor_t : public apply_functor_t
 {
     T& data;
 
-    StrictFunctor(T& data) noexcept : data(data) {}
+    strict_functor_t(T& data) noexcept : data(data) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { strict(archive, data); }
@@ -2482,7 +2482,7 @@ struct StrictFunctor : public ApplyFunctor
 } // namespace apply
 
 template <typename T>
-apply::StrictFunctor<T> strict(T& parameter) noexcept { return { parameter }; }
+apply::strict_functor_t<T> strict(T& parameter) noexcept { return { parameter }; }
 
 } // namespace sf
 
@@ -2493,7 +2493,7 @@ namespace tracking
 {
 
 template <typename TrackType, class Archive, typename KeyType,
-          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
+          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
 bool is_track(Archive& archive, KeyType key)
 {
     auto& item = archive.template tracking<TrackType>();
@@ -2501,19 +2501,19 @@ bool is_track(Archive& archive, KeyType key)
 }
 
 template <typename TrackType, class Archive, typename KeyType,
-          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
+          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
 bool is_mixed(Archive& archive, KeyType key)
 {
-    using reverse_track_type = typename reverse_trait<TrackType>::type;
+    using reverse_track_type = typename reverse_traits<TrackType>::type;
     return is_track<reverse_track_type>(archive, key);
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::is_pointer<T>>::value)>
 void track(Archive& archive, T& pointer)
 {
-    using track_type = typename tracking::track_trait<T>::type;
+    using track_type = typename tracking::track_traits<T>::type;
 
     auto key = detail::refer_key(archive, pointer); // serialize refer info
     if (not key) return;
@@ -2537,13 +2537,13 @@ void track(Archive& archive, T& pointer)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
                               meta::negation<meta::is_pointer<T>>>::value)>
 void track(Archive& archive, T& data)
 {
     using key_type = typename Archive::TrackingKeyType;
 
-    auto address = Memory::pure(std::addressof(data));
+    auto address = memory_t::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
 
     auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
@@ -2558,11 +2558,11 @@ void track(Archive& archive, T& data)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::is_pointer<T>>::value)>
 void track(Archive& archive, T& pointer)
 {
-    using track_type = typename tracking::track_trait<T>::type;
+    using track_type = typename tracking::track_traits<T>::type;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
@@ -2586,7 +2586,7 @@ void track(Archive& archive, T& pointer)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
                               meta::negation<meta::is_pointer<T>>>::value)>
 void track(Archive& archive, T& data)
 {
@@ -2600,13 +2600,13 @@ void track(Archive& archive, T& data)
     if (item.address != nullptr)
         throw  "The read tracking data is already tracked.";
 
-    item.address = Memory::pure(std::addressof(data));
+    item.address = memory_t::pure(std::addressof(data));
 
     archive & data;
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<T>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<T>,
                               meta::is_serializable_raw_pointer<T>>::value)>
 void raw(Archive& archive, T& pointer)
 {
@@ -2620,22 +2620,22 @@ namespace apply
 {
 
 template <typename T>
-struct TrackFunctor : ApplyFunctor
+struct track_functor_t : apply_functor_t
 {
     T& data;
 
-    TrackFunctor(T& data) noexcept : data(data) {}
+    track_functor_t(T& data) noexcept : data(data) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { tracking::track(archive, data); }
 };
 
 template <typename T>
-struct RawFunctor : ApplyFunctor
+struct raw_functor_t : apply_functor_t
 {
     T& data;
 
-    RawFunctor(T& data) noexcept : data(data) {}
+    raw_functor_t(T& data) noexcept : data(data) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { tracking::raw(archive, data); }
@@ -2646,8 +2646,8 @@ struct RawFunctor : ApplyFunctor
 namespace tracking
 {
 
-template <typename T> apply::TrackFunctor<T> track(T& data) noexcept { return { data }; }
-template <typename T> apply::RawFunctor<T> raw(T& data) noexcept { return { data }; }
+template <typename T> apply::track_functor_t<T> track(T& data) noexcept { return { data }; }
+template <typename T> apply::raw_functor_t<T> raw(T& data) noexcept { return { data }; }
 
 } // namespace tracking
 
@@ -2693,7 +2693,7 @@ constexpr std::size_t size(const T (&array)[N]) noexcept
 }
 
 template <typename CharType,
-          SFREQUIRE(meta::is_character<CharType>::value)>
+          SF_REQUIRE(meta::is_character<CharType>::value)>
 std::size_t size(const CharType* str) noexcept
 {
     std::size_t count{};
@@ -2714,7 +2714,7 @@ namespace compress
 
 // always require compressible type for fast compression
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_compressible<T>>::value)>
 void fast(Archive& archive, T& object)
 {
@@ -2728,7 +2728,7 @@ void fast(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::is_ioarchive<Archive>::value)>
+          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
 void slow(Archive& archive, T& object)
 {
     for (auto&& item : object)
@@ -2736,7 +2736,7 @@ void slow(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_compressible<T>>::value)>
 void zip(Archive& archive, T& object)
 {
@@ -2744,7 +2744,7 @@ void zip(Archive& archive, T& object)
 }
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::negation<meta::is_compressible<T>>>::value)>
 void zip(Archive& archive, T& object)
 {
@@ -2762,15 +2762,15 @@ namespace sf
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, object, ::Serialization::has_save_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, object, ::__sf::has_save_mode<T>::value)
 {
-    ::Serialization::save(archive, object);
+    ::__sf::save(archive, object);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::Serialization::has_load_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::__sf::has_load_mode<T>::value)
 {
-    ::Serialization::load(archive, object);
+    ::__sf::load(archive, object);
     return archive;
 }
 
@@ -2821,7 +2821,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_po
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::all<::Serialization::has_save_mode<T>, ::Serialization::has_load_mode<T>>::value)
+CONDITIONAL_TYPE_REGISTRY(meta::all<::__sf::has_save_mode<T>, ::__sf::has_load_mode<T>>::value)
 
 CONDITIONAL_TYPE_REGISTRY(std::is_arithmetic<T>::value)
 CONDITIONAL_TYPE_REGISTRY(std::is_enum<T>::value)
@@ -2833,12 +2833,12 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>::value)
 #define _SF_CONCAT_IMPL(a, b) a##b
 
 // concatenation of two macro arguments
-#define SFCONCAT(a, b) _SF_CONCAT_IMPL(a, b)
+#define SF_CONCAT(a, b) _SF_CONCAT_IMPL(a, b)
 
 // return first argument from two
-#define SFFIRST_ARGUMENT(first, ...) first
+#define SF_FIRST_ARGUMENT(first, ...) first
 
-#define _SFVA_ARGS_SIZE_IMPL(                                                                           \
+#define _SF_VA_ARGS_SIZE_IMPL(                                                                          \
      _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, _10, _11, _12, _13, _14, _15, _16,                     \
     _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32,                     \
     _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48,                     \
@@ -2850,13 +2850,13 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>::value)
     31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16,                                     \
     15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0
 
-#define _SFVA_ARGS_SIZE(...) _SFVA_ARGS_SIZE_IMPL(__VA_ARGS__)
+#define _SF_VA_ARGS_SIZE(...) _SF_VA_ARGS_SIZE_IMPL(__VA_ARGS__)
 
 // return __VA_ARGS__ arguments count, for empty __VA_ARGS__ return 1
-#define SFVA_ARGS_SIZE(...) _SFVA_ARGS_SIZE(__VA_ARGS__, _REVERSE_INTEGER_SEQUENCE)
+#define SF_VA_ARGS_SIZE(...) _SF_VA_ARGS_SIZE(__VA_ARGS__, _REVERSE_INTEGER_SEQUENCE)
 
 // generate repeat sequance macro(1) macro(2) ... macro(count)
-#define SFREPEAT(macro, count) SFCONCAT(_REPEAT_, count)(macro)
+#define SF_REPEAT(macro, count) SF_CONCAT(_REPEAT_, count)(macro)
 
 #define _REPEAT_0(macro)
 
@@ -2934,7 +2934,7 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>::value)
 // and etc.
 
 // generate placeholder sequance _0, _1, _2, ..., _count
-#define SFPLACEHOLDERS(count) SFCONCAT(_PLACEHOLDER_, count)()
+#define SF_PLACEHOLDERS(count) SF_CONCAT(_PLACEHOLDER_, count)()
 
 #define _PLACEHOLDER_1() _0
 #define _PLACEHOLDER_2() _PLACEHOLDER_1(), _1
@@ -3012,8 +3012,8 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>::value)
 #define _SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                     \
     template <class Archive, typename T>                                                                \
     void aggregate_implementation(Archive& archive, T& object, meta::dispatch<count>) {                 \
-        auto& [SFPLACEHOLDERS(count)] = object;                                                         \
-        archive(SFPLACEHOLDERS(count));                                                                 \
+        auto& [SF_PLACEHOLDERS(count)] = object;                                                         \
+        archive(SF_PLACEHOLDERS(count));                                                                 \
     }
 
 namespace sf
@@ -3025,8 +3025,8 @@ namespace meta
 template <typename T> struct is_serializable_aggregate
     : all<is_aggregate<T>,
           negation<std::is_union<T>>,
-          negation<::Serialization::has_save_mode<T>>,
-          negation<::Serialization::has_save_mode<T>>> {};
+          negation<::__sf::has_save_mode<T>>,
+          negation<::__sf::has_save_mode<T>>> {};
 
 } // namespace meta
 
@@ -3036,12 +3036,12 @@ namespace detail
 template <class Archive, typename T>
 void aggregate_implementation(Archive& archive, T& object, meta::dispatch<0>) noexcept { /*pass*/ }
 
-SFREPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
+SF_REPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
 } // namespace detail
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_aggregate<T>>::value)>
 void aggregate(Archive& archive, T& object)
 {
@@ -3064,11 +3064,11 @@ namespace apply
 {
 
 template <typename T>
-struct AggregateFunctor : ApplyFunctor
+struct aggregate_functor_t : apply_functor_t
 {
     T& object;
 
-    AggregateFunctor(T& object) noexcept : object(object) {}
+    aggregate_functor_t(T& object) noexcept : object(object) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { aggregate(archive, object); }
@@ -3076,7 +3076,7 @@ struct AggregateFunctor : ApplyFunctor
 
 } // namespace apply
 
-template <typename T> apply::AggregateFunctor<T> aggregate(T& object) noexcept { return { object }; }
+template <typename T> apply::aggregate_functor_t<T> aggregate(T& object) noexcept { return { object }; }
 
 } // namespace sf
 
@@ -3095,8 +3095,8 @@ namespace meta
 
 template <typename T> struct is_serializable_union
     : all<std::is_union<T>,
-          negation<::Serialization::has_save_mode<T>>,
-          negation<::Serialization::has_save_mode<T>>> {};
+          negation<::__sf::has_save_mode<T>>,
+          negation<::__sf::has_save_mode<T>>> {};
 
 } // namespace meta
 
@@ -3114,32 +3114,32 @@ namespace sf
 {
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
 void base(Archive& archive, Derived& object)
 {
-    ::Serialization::serialize_base<Base>(archive, object);
+    ::__sf::serialize_base<Base>(archive, object);
 }
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               std::is_base_of<Base, Derived>>::value)>
 void virtual_base(Archive& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
-    if (::Serialization::trait(object) == ::Serialization::template trait<Derived>())
+    if (::__sf::traits(object) == ::__sf::template traits<Derived>())
         base<Base>(archive, object);
 #else
     using key_type = typename Archive::TrackingKeyType;
 
-    auto address = Memory::pure(std::addressof(object));
+    auto address = memory_t::pure(std::addressof(object));
 
     auto key = reinterpret_cast<key_type>(address);
-    auto trait = ::Serialization::trait<Base>();
+    auto traits = ::__sf::traits<Base>();
 
-    auto& hierarchy_tracking = archive.template tracking<tracking::Hierarchy>();
+    auto& hierarchy_tracking = archive.template tracking<tracking::hierarchy_t>();
 
-    auto& is_tracking = hierarchy_tracking[{key, trait}];
+    auto& is_tracking = hierarchy_tracking[{key, traits}];
     if (not is_tracking)
     {
         is_tracking = true;
@@ -3152,14 +3152,14 @@ namespace detail
 {
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(not ::Serialization::is_virtual_base_of<Base, Derived>::value)>
+          SF_REQUIRE(not ::__sf::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_base)
 {
     base<Base>(archive, object_with_base);
 }
 
 template <class Base, class Archive, class Derived,
-          SFREQUIRE(::Serialization::is_virtual_base_of<Base, Derived>::value)>
+          SF_REQUIRE(::__sf::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_virtual_base)
 {
     virtual_base<Base>(archive, object_with_virtual_base);
@@ -3171,22 +3171,22 @@ namespace apply
 {
 
 template <class Derived, class Base>
-struct BaseFunctor : ApplyFunctor
+struct base_functor_t : apply_functor_t
 {
     Derived& object;
 
-    BaseFunctor(Derived& object) noexcept : object(object) {}
+    base_functor_t(Derived& object) noexcept : object(object) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { base<Base>(archive, object); }
 };
 
 template <class Derived, class Base>
-struct VirtualBaseFunctor : ApplyFunctor
+struct virtual_base_functor_t : apply_functor_t
 {
     Derived& object;
 
-    VirtualBaseFunctor(Derived& object) noexcept : object(object) {}
+    virtual_base_functor_t(Derived& object) noexcept : object(object) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { virtual_base<Base>(archive, object); }
@@ -3195,12 +3195,12 @@ struct VirtualBaseFunctor : ApplyFunctor
 } // namespace apply
 
 template <class Base, class Derived,
-          SFREQUIRE(std::is_base_of<Base, Derived>::value)>
-apply::BaseFunctor<Derived, Base> base(Derived& object) noexcept { return { object }; }
+          SF_REQUIRE(std::is_base_of<Base, Derived>::value)>
+apply::base_functor_t<Derived, Base> base(Derived& object) noexcept { return { object }; }
 
 template <class Base, class Derived,
-          SFREQUIRE(std::is_base_of<Base, Derived>::value)>
-apply::VirtualBaseFunctor<Derived, Base> virtual_base(Derived& object) noexcept { return { object }; }
+          SF_REQUIRE(std::is_base_of<Base, Derived>::value)>
+apply::virtual_base_functor_t<Derived, Base> virtual_base(Derived& object) noexcept { return { object }; }
 
 // default empty implementation
 template <class Archive, class Derived>
@@ -3208,7 +3208,7 @@ void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
 
 // Variadic native_base function
 template <class Base, class... Base_n, class Archive, class Derived,
-          SFREQUIRE(meta::all<meta::is_ioarchive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
                               meta::is_derived_of<Derived, Base, Base_n...>>::value)>
 void hierarchy(Archive& archive, Derived& object)
 {
@@ -3220,11 +3220,11 @@ namespace apply
 {
 
 template <class Derived, class Base, class... Base_n>
-struct HierarchyFunctor : ApplyFunctor
+struct hierarchy_functor_t : apply_functor_t
 {
     Derived& object;
 
-    HierarchyFunctor(Derived& object) noexcept : object(object) {}
+    hierarchy_functor_t(Derived& object) noexcept : object(object) {}
 
     template <class Archive>
     void operator() (Archive& archive) const { hierarchy<Base, Base_n...>(archive, object); }
@@ -3233,8 +3233,8 @@ struct HierarchyFunctor : ApplyFunctor
 } // namespace apply
 
 template <class Base, class... Base_n, class Derived,
-          SFREQUIRE(meta::is_derived_of<Derived, Base, Base_n...>::value)>
-apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object) noexcept
+          SF_REQUIRE(meta::is_derived_of<Derived, Base, Base_n...>::value)>
+apply::hierarchy_functor_t<Derived, Base, Base_n...> hierarchy(Derived& object) noexcept
 {
     return { object };
 }
@@ -3242,14 +3242,14 @@ apply::HierarchyFunctor<Derived, Base, Base_n...> hierarchy(Derived& object) noe
 } // namespace sf
 
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class ::Serialization;
+    friend class ::__sf;
 
-// Alternative instantiable registration with library trait no-rtti
+// Alternative instantiable registration with library traits no-rtti
 #ifndef SERIALIZABLE
     #define SERIALIZABLE(...)                                                                           \
         SERIALIZATION_ACCESS(__VA_ARGS__)                                                               \
         SERIALIZATION_FIXTURE(__VA_ARGS__)                                                              \
-        SERIALIZATION_TRAIT(__VA_ARGS__)
+        SERIALIZATION_TRAITS(__VA_ARGS__)
 #endif // SERIALIZABLE
 
 namespace sf
@@ -3261,10 +3261,10 @@ template <typename T> void serializable()
     static_assert(not meta::is_unsupported<T>::value, "The 'T' is an unsupported type for serialization.");
     static_assert(meta::is_registered_extern<T>::value, "The 'T' is an unregistered type for serialization.");
 
-    dynamic::InstantiableFixture<T>::call();
+    dynamic::instantiable_fixture_t<T>::call();
 
 #if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
-    dynamic::AnyFixture<T>::call();
+    dynamic::any_fixture_t<T>::call();
 #endif // if
 }
 
@@ -3276,15 +3276,15 @@ template <typename T> T&& serializable(T&& object)
 
 } // namepsace sf
 
-EXPORT_SERIALIZATION_ARCHIVE(0, I, IArchive<wrapper::IByteStream<wrapper::ByteContainer>>)
-EXPORT_SERIALIZATION_ARCHIVE(0, O, OArchive<wrapper::OByteStream<wrapper::ByteContainer>>)
+EXPORT_SERIALIZATION_ARCHIVE(0, i, iarchive_t<wrapper::ibyte_stream_t<wrapper::byte_container_t>>)
+EXPORT_SERIALIZATION_ARCHIVE(0, o, oarchive_t<wrapper::obyte_stream_t<wrapper::byte_container_t>>)
 
 #ifndef SF_DEFAULT_DISABLE
 
 #include <fstream> // ifstream, ofstream
 
-EXPORT_SERIALIZATION_ARCHIVE(1, I, IArchive<wrapper::IFileStream<std::ifstream>>)
-EXPORT_SERIALIZATION_ARCHIVE(1, O, OArchive<wrapper::OFileStream<std::ofstream>>)
+EXPORT_SERIALIZATION_ARCHIVE(1, i, iarchive_t<wrapper::ifile_stream_t<std::ifstream>>)
+EXPORT_SERIALIZATION_ARCHIVE(1, o, oarchive_t<wrapper::ofile_stream_t<std::ofstream>>)
 
 #endif // SF_DEFAULT_DISABLE
 
@@ -3294,7 +3294,7 @@ namespace sf
 {
 
 template <typename T>
-class alias
+class alias_t
 {
 private:
     T* data_;
@@ -3303,20 +3303,20 @@ public:
     using type = T;
 
     // DONT use dereferencing of null data before rebinding
-    alias() noexcept : data_(nullptr) {}
+    alias_t() noexcept : data_(nullptr) {}
 
     template <typename dT,
-              SFREQUIRE(::Serialization::is_pointer_cast_allowed<dT, T>::value)>
-    alias(dT& data) noexcept
+              SF_REQUIRE(::__sf::is_pointer_cast_allowed<dT, T>::value)>
+    alias_t(dT& data) noexcept
         : data_(std::addressof(data)) {}
 
     template <typename dT>
-    alias(const alias<dT>& data) noexcept : alias(data.get()) {}
+    alias_t(const alias_t<dT>& data) noexcept : alias_t(data.get()) {}
 
 public:
     // rebinding data
-    alias(const alias&) = default;
-    alias& operator=(const alias&) = default;
+    alias_t(const alias_t&) = default;
+    alias_t& operator=(const alias_t&) = default;
 
     bool is_refer() const noexcept { return data_ != nullptr; }
 
@@ -3334,7 +3334,7 @@ namespace meta
 
 template <typename> struct is_alias : std::false_type {};
 template <typename T>
-struct is_alias<alias<T>> : std::true_type {};
+struct is_alias<alias_t<T>> : std::true_type {};
 
 } // namespace meta
 
@@ -3342,27 +3342,27 @@ struct is_alias<alias<T>> : std::true_type {};
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, alias_t, meta::is_alias<T>::value)
 {
     using key_type = typename Archive::TrackingKeyType;
 
-    if (not alias.is_refer())
-        throw "The write alias must be initialized.";
+    if (not alias_t.is_refer())
+        throw "The write alias_t must be initialized.";
 
-    auto pointer = std::addressof(alias.get());
+    auto pointer = std::addressof(alias_t.get());
     auto key = detail::refer_key(archive, pointer);
 
     auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
 
     if (not is_tracking)
-        throw "The write alias must be tracked before.";
+        throw "The write alias_t must be tracked before.";
 
     detail::native_save(archive, pointer, key);
 
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, alias_t, meta::is_alias<T>::value)
 {
     using key_type   = typename Archive::TrackingKeyType;
     using value_type = typename T::type;
@@ -3370,8 +3370,8 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
     using track_type = tracking::Raw;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
-    if (alias.is_refer())
-        throw "The read alias must be null.";
+    if (alias_t.is_refer())
+        throw "The read alias_t must be null.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
     key_type key{};
@@ -3380,13 +3380,13 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
     auto& item = archive.template tracking<tracking::Raw>()[key];
 
     if (item.address == nullptr)
-        throw "The read alias must be tracked before.";
+        throw "The read alias_t must be tracked before.";
 
     value_type* pointer = nullptr;
 
     detail::native_load(archive, pointer, item.address);
 
-    alias.set(*pointer); // pointer will never nullptr
+    alias_t.set(*pointer); // pointer will never nullptr
 
     return archive;
 }
@@ -3404,14 +3404,14 @@ namespace utility
 {
 
 template <typename T, std::size_t N>
-class Span;
+class span_t;
 
 template <typename T, std::size_t N>
-class SpanBase
+class span_base_t
 {
 public:
     using size_type         = std::size_t;
-    using value_type        = Span<T, N - 1>;
+    using value_type        = span_t<T, N - 1>;
 
     using pointer           = meta::pointer<T, N>;
     using const_pointer     = const meta::pointer<T, N>;
@@ -3420,20 +3420,20 @@ protected:
     using Dimension         = size_type[N];
 
 protected:
-    alias<pointer> data_;
+    alias_t<pointer> data_;
     Dimension dim_;
 
 protected:
-    SpanBase(pointer& data) noexcept
+    span_base_t(pointer& data) noexcept
         : data_(data), dim_() {}
 
     template <typename D, typename... Dn>
-    SpanBase(pointer& data, D d, Dn... dn) noexcept
+    span_base_t(pointer& data, D d, Dn... dn) noexcept
         : data_(data), dim_{d, dn...} {}
 
 public:
     void init(pointer data) noexcept { data_.get() = data; }
-    void data(alias<pointer> data) noexcept { data_ = data; }
+    void data(alias_t<pointer> data) noexcept { data_ = data; }
 
     pointer& data() noexcept { return data_; }
     size_type size() const noexcept { return dim_[0]; }
@@ -3441,17 +3441,17 @@ public:
 };
 
 template <typename T, std::size_t N>
-class Span : public SpanBase<T, N>
+class span_t : public span_base_t<T, N>
 {
 protected:
-    using Core = SpanBase<T, N>;
+    using Core = span_base_t<T, N>;
 
 public:
     using typename Core::size_type;
     using typename Core::pointer;
 
 public:
-    using value_type        = Span<T, N - 1>;
+    using value_type        = span_t<T, N - 1>;
     using dereference_type  = meta::pointer<T, N - 1>;
 
     using reference         = value_type&;
@@ -3464,7 +3464,7 @@ private:
     mutable value_type child_scope_;
 
 public:
-    Span(pointer& data, Dimension dim) noexcept
+    span_t(pointer& data, Dimension dim) noexcept
         : Core(data), child_scope_(data[0], dim + 1)
     {
         for (size_type i = 0; i < N; ++i)
@@ -3472,8 +3472,8 @@ public:
     }
 
     template <typename D, typename... Dn,
-              SFREQUIRE(not std::is_array<D>::value)>
-    Span(pointer& data, D d, Dn... dn) noexcept
+              SF_REQUIRE(not std::is_array<D>::value)>
+    span_t(pointer& data, D d, Dn... dn) noexcept
         : Core(data, d, dn...), child_scope_(data[0], dn...) {}
 
     void size(size_type value) noexcept { this->dim_[0] = value; }
@@ -3489,10 +3489,10 @@ public:
 };
 
 template <typename T>
-class Span<T, 1> : public SpanBase<T, 1>
+class span_t<T, 1> : public span_base_t<T, 1>
 {
 protected:
-    using Core = SpanBase<T, 1>;
+    using Core = span_base_t<T, 1>;
 
 public:
     using typename Core::size_type;
@@ -3509,13 +3509,13 @@ protected:
     using typename Core::Dimension;
 
 public:
-    Span(pointer& data, Dimension size) noexcept
+    span_t(pointer& data, Dimension size) noexcept
         : Core(data)
     {
         this->dim_[0] = size[0];
     }
 
-    Span(pointer& data, size_type size) noexcept
+    span_t(pointer& data, size_type size) noexcept
         : Core(data, size) {}
 
     reference operator[] (size_type i) noexcept { return this->data_[i]; }
@@ -3528,7 +3528,7 @@ namespace meta
 
 template <typename> struct is_span : std::false_type {};
 template <typename T, std::size_t N>
-struct is_span<utility::Span<T, N>> : std::true_type {};
+struct is_span<utility::span_t<T, N>> : std::true_type {};
 
 template <typename Pointer, typename D, typename... Dn>
 struct is_span_set
@@ -3544,10 +3544,10 @@ namespace utility
 template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
           typename Type = meta::remove_pointer<Pointer, N>,
-          SFREQUIRE(meta::is_span_set<Pointer, D, Dn...>::value)>
-Span<Type, N> make_span(Pointer& data, D d, Dn... dn)
+          SF_REQUIRE(meta::is_span_set<Pointer, D, Dn...>::value)>
+span_t<Type, N> make_span(Pointer& data, D d, Dn... dn)
 {
-    using size_type = typename Span<Type, N>::size_type;
+    using size_type = typename span_t<Type, N>::size_type;
     return { data, static_cast<size_type>(d), static_cast<size_type>(dn)... };
 }
 
@@ -3557,7 +3557,7 @@ namespace detail
 {
 
 template <class Archive, typename T,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::negation<meta::is_span<T>>>::value)>
 void span_implementation(Archive& archive, T& data)
 {
@@ -3565,10 +3565,10 @@ void span_implementation(Archive& archive, T& data)
 }
 
 // serialization of scoped data with previous dimension initialization
-template <class OArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_oarchive<OArchive>,
+template <class oarchive_t, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<oarchive_t>,
                               meta::is_span<T>>::value)>
-void span_implementation(OArchive& archive, T& array)
+void span_implementation(oarchive_t& archive, T& array)
 {
     using size_type = typename T::size_type;
 
@@ -3576,10 +3576,10 @@ void span_implementation(OArchive& archive, T& array)
         span_implementation(archive, array[i]);
 }
 
-template <class IArchive, typename T,
-          SFREQUIRE(meta::all<meta::is_iarchive<IArchive>,
+template <class iarchive_t, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<iarchive_t>,
                               meta::is_span<T>>::value)>
-void span_implementation(IArchive& archive, T& array)
+void span_implementation(iarchive_t& archive, T& array)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
@@ -3601,7 +3601,7 @@ inline namespace common
 
 template <class Archive, typename T,
           typename D, typename... Dn,
-          SFREQUIRE(meta::all<meta::is_archive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::is_span_set<T, D, Dn...>>::value)>
 void span(Archive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
@@ -3618,13 +3618,13 @@ namespace apply
 {
 
 template <typename T, typename D, typename... Dn>
-struct SpanFunctor : ApplyFunctor
+struct span_functor_t : apply_functor_t
 {
     using Pack = std::tuple<T&, D&, Dn&...>;
 
     Pack pack;
 
-    SpanFunctor(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
+    span_functor_t(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
 
     template <class Archive>
     void operator() (Archive& archive) const
@@ -3647,8 +3647,8 @@ inline namespace common
 {
 
 template <typename T, typename D, typename... Dn,
-          SFREQUIRE(meta::is_span_set<T, D, Dn...>::value)>
-apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n) noexcept
+          SF_REQUIRE(meta::is_span_set<T, D, Dn...>::value)>
+apply::span_functor_t<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n) noexcept
 {
     return { pointer, dimension, dimension_n... };
 }
@@ -3657,11 +3657,11 @@ apply::SpanFunctor<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_
 
 } // namespace sf
 
-#define _BITPACK_N(...) SFCONCAT(_BITPACK_, SFVA_ARGS_SIZE(__VA_ARGS__))(__VA_ARGS__)
+#define _BITPACK_N(...) SF_CONCAT(_BITPACK_, SF_VA_ARGS_SIZE(__VA_ARGS__))(__VA_ARGS__)
 #define _BITPACK_BODY(archive, ...) archive); _BITPACK_N(__VA_ARGS__) }
 #define _BITPACK_IMPLEMENTATION(...) { auto __bitpack = ::sf::bitpack<__VA_ARGS__>( _BITPACK_BODY
 
-#define _BITFIELD(field_and_bits) SFFIRST_ARGUMENT field_and_bits = __bitpack field_and_bits;
+#define _BITFIELD(field_and_bits) SF_FIRST_ARGUMENT field_and_bits = __bitpack field_and_bits;
 
 #define _BITPACK_1(field_and_bits) _BITFIELD(field_and_bits)
 #define _BITPACK_2(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_1(__VA_ARGS__)
@@ -3724,17 +3724,17 @@ namespace detail
 {
 
 template <class Archive, typename T, typename enable = void>
-struct BitPack;
+struct bitpack_t;
 
 template <class Archive, typename T>
-struct BitPack<Archive, T, SFWHEN(sf::meta::is_oarchive<Archive>::value)>
+struct bitpack_t<Archive, T, SF_WHEN(sf::meta::is_oarchive<Archive>::value)>
 {
     Archive& archive;
     T data{};
     std::size_t offset{};
 
-    BitPack(Archive& archive) : archive(archive) {}
-    ~BitPack() { archive & data; }
+    bitpack_t(Archive& archive) : archive(archive) {}
+    ~bitpack_t() { archive & data; }
 
     T operator()(T field, std::size_t bits) noexcept
     {
@@ -3747,12 +3747,12 @@ struct BitPack<Archive, T, SFWHEN(sf::meta::is_oarchive<Archive>::value)>
 };
 
 template <class Archive, typename T>
-struct BitPack<Archive, T, SFWHEN(sf::meta::is_iarchive<Archive>::value)>
+struct bitpack_t<Archive, T, SF_WHEN(sf::meta::is_iarchive<Archive>::value)>
 {
     Archive& archive;
     T data{};
 
-    BitPack(Archive& archive) : archive(archive) { archive & data; }
+    bitpack_t(Archive& archive) : archive(archive) { archive & data; }
 
     T operator()(T field, std::size_t bits) noexcept
     {
@@ -3767,7 +3767,7 @@ struct BitPack<Archive, T, SFWHEN(sf::meta::is_iarchive<Archive>::value)>
 } // namespace detail
 
 template <typename PackType = let::u32, class Archive>
-detail::BitPack<Archive, PackType> bitpack(Archive& archive) noexcept { return { archive }; }
+detail::bitpack_t<Archive, PackType> bitpack(Archive& archive) noexcept { return { archive }; }
 
 } // namespace sf
 
@@ -3885,8 +3885,8 @@ namespace meta
 template <typename>
 struct is_std_basic_string : std::false_type {};
 
-template <typename Char, typename Traits, typename Alloc>
-struct is_std_basic_string<std::basic_string<Char, Traits, Alloc>> : std::true_type {};
+template <typename Char, typename Traitss, typename Alloc>
+struct is_std_basic_string<std::basic_string<Char, Traitss, Alloc>> : std::true_type {};
 
 } // namespace meta
 
@@ -3967,7 +3967,7 @@ namespace detail
 {
 
 template <class Archive, class T, std::size_t... I,
-          SFREQUIRE(meta::is_std_tuple<T>::value)>
+          SF_REQUIRE(meta::is_std_tuple<T>::value)>
 void expand(Archive& archive, T& tuple, meta::index_sequence<I...>)
 {
     archive(std::get<I>(tuple)...);
@@ -4114,11 +4114,11 @@ namespace detail
 {
 
 template <class T,
-          SFREQUIRE(not meta::is_std_any_unordered_set<T>::value)>
+          SF_REQUIRE(not meta::is_std_any_unordered_set<T>::value)>
 void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
 
 template <class T,
-          SFREQUIRE(meta::is_std_any_unordered_set<T>::value)>
+          SF_REQUIRE(meta::is_std_any_unordered_set<T>::value)>
 void reserve_unordered(T& unordered, std::size_t size)
 {
     unordered.reserve(size);
@@ -4195,7 +4195,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::v
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
-    using item_type = typename Memory::ptr_trait<T>::item;
+    using item_type = typename memory_t::ptr_traits<T>::item;
 
     item_type* data = nullptr;
     archive & data;
@@ -4255,7 +4255,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
-    using item_type = typename Memory::ptr_trait<T>::item;
+    using item_type = typename memory_t::ptr_traits<T>::item;
 
     std::shared_ptr<item_type> sptr;
     archive & sptr;
@@ -4306,11 +4306,11 @@ namespace detail
 {
 
 template <class T,
-          SFREQUIRE(not meta::is_std_any_unordered_map<T>::value)>
+          SF_REQUIRE(not meta::is_std_any_unordered_map<T>::value)>
 void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
 
 template <class T,
-          SFREQUIRE(meta::is_std_any_unordered_map<T>::value)>
+          SF_REQUIRE(meta::is_std_any_unordered_map<T>::value)>
 void reserve_unordered(T& unordered, std::size_t size)
 {
     unordered.reserve(size);
@@ -4604,8 +4604,8 @@ namespace meta
 template <typename> struct is_std_atomic : std::false_type {};
 template <typename T> struct is_std_atomic<std::atomic<T>> : std::true_type {};
 
-template <typename T> struct atomic_trait;
-template <typename T> struct atomic_trait<std::atomic<T>> { using value_type = T; };
+template <typename T> struct atomic_traits;
+template <typename T> struct atomic_traits<std::atomic<T>> { using value_type = T; };
 
 } // namespace meta
 
@@ -4622,7 +4622,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, atomic, meta::is_std_atomic<T>::value)
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, atomic, meta::is_std_atomic<T>::value)
 {
-    using object_type = typename meta::atomic_trait<T>::value_type;
+    using object_type = typename meta::atomic_traits<T>::value_type;
 
     object_type object{};
     archive & object;
@@ -4756,11 +4756,11 @@ namespace detail
 {
 
 template <let::u64 I, class Archive, class Variant,
-          SFREQUIRE(I == std::variant_size<Variant>::value)>
+          SF_REQUIRE(I == std::variant_size<Variant>::value)>
 void variant_save(Archive& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
 
 template <let::u64 I = 0, class Archive, class Variant,
-          SFREQUIRE(I < std::variant_size<Variant>::value)>
+          SF_REQUIRE(I < std::variant_size<Variant>::value)>
 void variant_save(Archive& archive, Variant& variant, let::u64 index)
 {
     if (I < index) return variant_save<I + 1>(archive, variant, index);
@@ -4768,25 +4768,25 @@ void variant_save(Archive& archive, Variant& variant, let::u64 index)
 }
 
 template <typename Type, class Archive, class Variant,
-          SFREQUIRE(not std::is_constructible<Type>::value)>
+          SF_REQUIRE(not std::is_constructible<Type>::value)>
 void variant_load_implementation(Archive& archive, Variant& variant)
 {
     throw "Require default constructor for specify type.";
 }
 
 template <typename Type, class Archive, class Variant,
-          SFREQUIRE(std::is_constructible<Type>::value)>
+          SF_REQUIRE(std::is_constructible<Type>::value)>
 void variant_load_implementation(Archive& archive, Variant& variant)
 {
     archive & variant.template emplace<Type>();
 }
 
 template <let::u64 I, class Archive, class Variant,
-          SFREQUIRE(I == std::variant_size<Variant>::value)>
+          SF_REQUIRE(I == std::variant_size<Variant>::value)>
 void variant_load(Archive& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
 
 template <let::u64 I = 0, class Archive, class Variant,
-          SFREQUIRE(I < std::variant_size<Variant>::value)>
+          SF_REQUIRE(I < std::variant_size<Variant>::value)>
 void variant_load(Archive& archive, Variant& variant, let::u64 index)
 {
     if (I < index) return variant_load<I + 1>(archive, variant, index);
@@ -4852,7 +4852,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
     let::u64 hash = SF_TYPE_HASH(any.type());
     archive & hash;
 
-    dynamic::AnyRegistry::instance().save(archive, any, hash);
+    dynamic::any_registry_t::instance().save(archive, any, hash);
 
     return archive;
 }
@@ -4862,7 +4862,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, any, meta::is_std_any<T>::value)
     let::u64 hash{};
     archive & hash;
 
-    dynamic::AnyRegistry::instance().load(archive, any, hash);
+    dynamic::any_registry_t::instance().load(archive, any, hash);
 
     return archive;
 }
