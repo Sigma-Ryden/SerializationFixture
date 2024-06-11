@@ -202,8 +202,8 @@ template <typename T> constexpr std::size_t pointer_count() noexcept
          : 0;
 }
 
-struct shared_type {};
-struct raw_type {};
+struct shared_common_t {};
+struct raw_common_t {};
 
 struct dummy_type
 {
@@ -563,12 +563,12 @@ template <> struct word_type_implementation<Word::x32> { using type = let::u32; 
 template <> struct word_type_implementation<Word::x64> { using type = let::u64; };
 
 template <Word word>
-using WordType = typename detail::word_type_implementation<word>::type;
+using word_t = typename detail::word_type_implementation<word>::type;
 
-template <typename T> struct WordTraits { static constexpr auto value = Word::x64; };
+template <typename T> struct word_traits { static constexpr auto value = Word::x64; };
 
-template <> struct WordTraits<let::u32> { static constexpr auto value = Word::x32; };
-template <> struct WordTraits<let::u64> { static constexpr auto value = Word::x64; };
+template <> struct word_traits<let::u32> { static constexpr auto value = Word::x32; };
+template <> struct word_traits<let::u64> { static constexpr auto value = Word::x64; };
 
 template <typename HashType, HashType FnvPrime, HashType OffsetBasis>
 HashType fnv_1a(const char* text)
@@ -642,18 +642,18 @@ template <typename key_type = let::u64>
 inline key_type hash(const char* text)
 {
     using detail::hash_t;
-    using detail::WordTraits;
+    using detail::word_traits;
 
-    return hash_t<detail::WordTraits<key_type>::value>::run(text);
+    return hash_t<detail::word_traits<key_type>::value>::run(text);
 }
 
 template <typename key_type = let::u64>
 constexpr key_type static_hash(const char* text) noexcept
 {
     using detail::hash_t;
-    using detail::WordTraits;
+    using detail::word_traits;
 
-    return hash_t<detail::WordTraits<key_type>::value>::static_run(text);
+    return hash_t<detail::word_traits<key_type>::value>::static_run(text);
 }
 
 inline std::size_t type_hash(const std::type_info& type) noexcept
@@ -839,7 +839,7 @@ public:
 
     template <typename Base, class Archive, class Derived,
               SF_REQUIRE(sf::meta::all<sf::meta::is_ioarchive<Archive>,
-                                      std::is_base_of<Base, Derived>>::value)>
+                                       std::is_base_of<Base, Derived>>::value)>
     static void serialize_base(Archive& archive, Derived& object)
     {
         archive & static_cast<Base&>(object);
@@ -910,259 +910,261 @@ public:
 namespace sf
 {
 
+namespace memory
+{
+
+using shared_t = meta::shared_common_t;
+using raw_t = meta::raw_common_t;
+
+} // namespace memory
+
 namespace meta
 {
 
-template <typename T> struct is_memory_shared : std::is_same<T, shared_type> {};
-template <typename T> struct is_memory_raw : std::is_same<T, raw_type> {};
+template <typename T> struct is_memory_shared : std::is_same<T, memory::shared_t> {};
+template <typename T> struct is_memory_raw : std::is_same<T, memory::raw_t> {};
 
 template <typename T> struct is_memory : one<is_memory_shared<T>, is_memory_raw<T>> {};
 
 } // namespace meta
 
-class memory_t
+namespace memory
 {
-public:
-    using Shared = meta::shared_type;
-    using Raw = meta::raw_type;
 
-    template <typename T>
-    using shared_ptr = std::shared_ptr<T>;
+template <typename T>
+using shared_ptr = std::shared_ptr<T>;
 
-    template <typename T>
-    using raw_ptr = T*;
+template <typename T>
+using raw_ptr = T*;
 
-public:
-    template <typename T>
-    struct ptr_traits
+template <typename T>
+struct ptr_traits
+{
+    using item = std::nullptr_t;
+};
+
+template <typename T>
+struct ptr_traits<std::shared_ptr<T>>
+{
+    using traits    = shared_t;
+
+    template <typename U>
+    using wrapper  = shared_ptr<U>;
+
+    using type     = std::shared_ptr<T>;
+    using item     = T;
+
+    using void_ptr = std::shared_ptr<void>;
+};
+
+template <typename T>
+struct ptr_traits<T*>
+{
+    using traits    = raw_t;
+
+    template <typename U>
+    using wrapper  = raw_ptr<U>;
+
+    using type     = T*;
+    using item     = T;
+
+    using void_ptr = void*;
+};
+
+template <typename T>
+struct ptr_traits<std::weak_ptr<T>>
+{
+    using type     = std::weak_ptr<T>;
+    using item     = T;
+};
+
+template <typename T>
+struct ptr_traits<std::unique_ptr<T>>
+{
+    using type     = std::unique_ptr<T>;
+    using item     = T;
+};
+
+template <typename T>
+using void_ptr = typename ptr_traits<T>::void_ptr;
+
+template <typename T>
+struct factory_t
+{
+    static std::shared_ptr<T> shared()
     {
-        using item = std::nullptr_t;
-    };
-
-    template <typename T>
-    struct ptr_traits<std::shared_ptr<T>>
-    {
-        using traits    = Shared;
-
-        template <typename U>
-        using wrapper  = shared_ptr<U>;
-
-        using type     = std::shared_ptr<T>;
-        using item     = T;
-
-        using void_ptr = std::shared_ptr<void>;
-    };
-
-    template <typename T>
-    struct ptr_traits<T*>
-    {
-        using traits    = Raw;
-
-        template <typename U>
-        using wrapper  = raw_ptr<U>;
-
-        using type     = T*;
-        using item     = T;
-
-        using void_ptr = void*;
-    };
-
-    template <typename T>
-    struct ptr_traits<std::weak_ptr<T>>
-    {
-        using type     = std::weak_ptr<T>;
-        using item     = T;
-    };
-
-    template <typename T>
-    struct ptr_traits<std::unique_ptr<T>>
-    {
-        using type     = std::unique_ptr<T>;
-        using item     = T;
-    };
-
-public:
-    template <typename T>
-    using void_ptr = typename ptr_traits<T>::void_ptr;
-
-public:
-    template <typename T>
-    struct Factory
-    {
-        static std::shared_ptr<T> shared()
-        {
-            return std::make_shared<T>();
-        }
-
-        static T* raw()
-        {
-            return new T{};
-        }
-    };
-
-private:
-    template <class From, class To> struct is_pointer_cast_allowed
-        : ::__sf::is_pointer_cast_allowed<From, To> {};
-
-public:
-    template <typename To, typename T,
-              SF_REQUIRE(meta::is_shared_pointer<T>::value)>
-    static shared_ptr<To> dynamic_pointer_cast(const T& pointer)
-    {
-        auto address = dynamic_pointer_cast<To>(pointer.get());
-        return address == nullptr ? shared_ptr<To>() : shared_ptr<To>(pointer, address);
+        return std::make_shared<T>();
     }
 
-    template <typename To, typename T,
-              SF_REQUIRE(meta::is_raw_pointer<T>::value)>
-    static raw_ptr<To> dynamic_pointer_cast(const T& pointer)
+    static T* raw()
     {
-        return dynamic_cast<raw_ptr<To>>(pointer);
-    }
-
-    template <typename To, typename T,
-              typename Traits = ptr_traits<T>,
-              SF_REQUIRE(meta::one<meta::is_null_pointer<T>,
-                                  meta::all<meta::is_pointer<T>,
-                                            meta::negation<is_pointer_cast_allowed<typename Traits::item, To>>>>::value)>
-    static typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
-    {
-        return nullptr;
-    }
-
-    template <typename To, typename T,
-              SF_REQUIRE(meta::all<meta::is_shared_pointer<T>,
-                                  is_pointer_cast_allowed<typename ptr_traits<T>::item, To>>::value)>
-    static shared_ptr<To> static_pointer_cast(const T& pointer) noexcept
-    {
-        auto address = static_pointer_cast<To>(pointer.get());
-        return shared_ptr<To>(pointer, address);
-    }
-
-    template <typename To, typename T,
-              SF_REQUIRE(meta::all<meta::is_raw_pointer<T>,
-                                  is_pointer_cast_allowed<typename ptr_traits<T>::item, To>>::value)>
-    static raw_ptr<To> static_pointer_cast(const T& pointer) noexcept
-    {
-        return static_cast<raw_ptr<To>>(pointer);
-    }
-
-    template <typename To, typename From, typename T,
-              typename Traits = ptr_traits<T>,
-              SF_REQUIRE(meta::all<meta::is_pointer<T>,
-                                  meta::negation<is_pointer_cast_allowed<From, To>>>::value)>
-    static typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
-    {
-        return nullptr;
-    }
-
-    template <typename To, typename From, typename T,
-              typename Traits = ptr_traits<T>,
-              SF_REQUIRE(meta::all<meta::is_pointer<T>,
-                                  is_pointer_cast_allowed<typename Traits::item, From>,
-                                  is_pointer_cast_allowed<From, To>>::value)>
-    static typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
-    {
-        return static_pointer_cast<To>(static_pointer_cast<From>(pointer));
-    }
-
-public:
-    template <typename T,
-              SF_REQUIRE(meta::all<meta::is_pointer<T>,
-                                  meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-    static void_ptr<T> pure(const T& pointer) noexcept
-    {
-        return static_pointer_cast<void>(pointer);
-    }
-
-    template <typename T,
-              SF_REQUIRE(meta::all<meta::is_pointer<T>,
-                                  meta::is_pointer_to_polymorphic<T>>::value)>
-    static void_ptr<T> pure(const T& pointer_to_polymorphic)
-    {
-        return dynamic_pointer_cast<void>(pointer_to_polymorphic);
-    }
-
-    static raw_ptr<void> pure(std::nullptr_t pointer) noexcept { return nullptr; }
-
-    template <typename dT, typename T,
-              SF_REQUIRE(meta::is_pointer<T>::value)>
-    static void assign(T& pointer, const void_ptr<T>& address) noexcept
-    {
-        pointer = static_pointer_cast<dT>(address);
-    }
-
-public:
-    template <typename To, typename From = To, typename TraitsType,
-              SF_REQUIRE(meta::all<meta::is_memory<TraitsType>,
-                                  meta::one<meta::negation<is_pointer_cast_allowed<From, To>>,
-                                            std::is_abstract<From>>>::value)>
-    static std::nullptr_t allocate() noexcept
-    {
-        return nullptr;
-    }
-
-    template <typename To, typename From = To, typename TraitsType,
-              SF_REQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
-                                  meta::is_memory_shared<TraitsType>,
-                                  is_pointer_cast_allowed<From, To>>::value)>
-    static shared_ptr<To> allocate()
-    {
-        auto instance = Factory<From>::shared();
-        return static_pointer_cast<To>(instance);
-    }
-
-    template <typename To, typename From = To, typename TraitsType,
-              SF_REQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
-                                  meta::is_memory_raw<TraitsType>,
-                                  is_pointer_cast_allowed<From, To>>::value)>
-    static raw_ptr<To> allocate()
-    {
-        auto instance = Factory<From>::raw();
-        return static_pointer_cast<To>(instance);
-    }
-
-    template <typename To, typename From = To>
-    static shared_ptr<To> allocate_shared()
-    {
-        return allocate<To, From, Shared>();
-    }
-
-    template <typename To, typename From = To>
-    static raw_ptr<To> allocate_raw()
-    {
-        return allocate<To, From, Raw>();
-    }
-
-    template <typename To, typename From = To, typename T,
-              SF_REQUIRE(meta::is_pointer<T>::value)>
-    static void allocate(T& pointer)
-    {
-        pointer = allocate<To, From, typename ptr_traits<T>::traits>();
-    }
-
-public:
-    template <typename T, typename dT = typename ptr_traits<T>::item,
-              SF_REQUIRE(meta::is_raw_pointer<T>::value)>
-    static raw_ptr<dT> raw(const T& pointer) { return pointer; }
-
-    template <typename T, typename dT = typename ptr_traits<T>::item,
-              SF_REQUIRE(meta::is_shared_pointer<T>::value)>
-    static raw_ptr<dT> raw(const T& pointer) { return pointer.get(); }
-
-public:
-    template <typename ByteType = char, typename T>
-    static const ByteType* const_byte_cast(T* data) noexcept
-    {
-        return reinterpret_cast<const ByteType*>(data);
-    }
-
-    template <typename ByteType = char, typename T>
-    static ByteType* byte_cast(T* data) noexcept
-    {
-        return reinterpret_cast<ByteType*>(data);
+        return new T{};
     }
 };
+
+namespace detail
+{
+
+template <class From, class To> struct is_pointer_cast_allowed
+    : ::__sf::is_pointer_cast_allowed<From, To> {};
+
+} // namespace detail
+
+template <typename To, typename T,
+          SF_REQUIRE(meta::is_raw_pointer<T>::value)>
+raw_ptr<To> dynamic_pointer_cast(const T& pointer)
+{
+    return dynamic_cast<raw_ptr<To>>(pointer);
+}
+
+template <typename To, typename T,
+          SF_REQUIRE(meta::is_shared_pointer<T>::value)>
+shared_ptr<To> dynamic_pointer_cast(const T& pointer)
+{
+    auto address = memory::dynamic_pointer_cast<To>(pointer.get());
+    return address == nullptr ? shared_ptr<To>() : shared_ptr<To>(pointer, address);
+}
+
+template <typename To, typename T,
+          typename Traits = ptr_traits<T>,
+          SF_REQUIRE(meta::one<meta::is_null_pointer<T>,
+                               meta::all<meta::is_pointer<T>,
+                                         meta::negation<detail::is_pointer_cast_allowed<typename Traits::item, To>>>>::value)>
+typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
+{
+    return nullptr;
+}
+
+template <typename To, typename T,
+          SF_REQUIRE(meta::all<meta::is_raw_pointer<T>,
+                               detail::is_pointer_cast_allowed<typename ptr_traits<T>::item, To>>::value)>
+raw_ptr<To> static_pointer_cast(const T& pointer) noexcept
+{
+    return static_cast<raw_ptr<To>>(pointer);
+}
+
+template <typename To, typename From, typename T,
+          typename Traits = ptr_traits<T>,
+          SF_REQUIRE(meta::all<meta::is_pointer<T>,
+                               meta::negation<detail::is_pointer_cast_allowed<From, To>>>::value)>
+typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
+{
+    return nullptr;
+}
+
+template <typename To, typename T,
+          SF_REQUIRE(meta::all<meta::is_shared_pointer<T>,
+                               detail::is_pointer_cast_allowed<typename ptr_traits<T>::item, To>>::value)>
+shared_ptr<To> static_pointer_cast(const T& pointer) noexcept
+{
+    auto address = memory::static_pointer_cast<To>(pointer.get());
+    return shared_ptr<To>(pointer, address);
+}
+
+template <typename To, typename From, typename T,
+          typename Traits = ptr_traits<T>,
+          SF_REQUIRE(meta::all<meta::is_pointer<T>,
+                               detail::is_pointer_cast_allowed<typename Traits::item, From>,
+                               detail::is_pointer_cast_allowed<From, To>>::value)>
+typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
+{
+    return memory::static_pointer_cast<To>(memory::static_pointer_cast<From>(pointer));
+}
+
+template <typename T,
+          SF_REQUIRE(meta::all<meta::is_pointer<T>,
+                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
+void_ptr<T> pure(const T& pointer) noexcept
+{
+    return memory::static_pointer_cast<void>(pointer);
+}
+
+template <typename T,
+          SF_REQUIRE(meta::all<meta::is_pointer<T>,
+                               meta::is_pointer_to_polymorphic<T>>::value)>
+void_ptr<T> pure(const T& pointer_to_polymorphic)
+{
+    return memory::dynamic_pointer_cast<void>(pointer_to_polymorphic);
+}
+
+inline raw_ptr<void> pure(std::nullptr_t pointer) noexcept { return nullptr; }
+
+template <typename dT, typename T,
+          SF_REQUIRE(meta::is_pointer<T>::value)>
+void assign(T& pointer, const void_ptr<T>& address) noexcept
+{
+    pointer = memory::static_pointer_cast<dT>(address);
+}
+
+template <typename To, typename From = To, typename TraitsType,
+          SF_REQUIRE(meta::all<meta::is_memory<TraitsType>,
+                               meta::one<meta::negation<detail::is_pointer_cast_allowed<From, To>>,
+                                         std::is_abstract<From>>>::value)>
+std::nullptr_t allocate() noexcept
+{
+    return nullptr;
+}
+
+template <typename To, typename From = To, typename TraitsType,
+          SF_REQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
+                               meta::is_memory_shared<TraitsType>,
+                               detail::is_pointer_cast_allowed<From, To>>::value)>
+shared_ptr<To> allocate()
+{
+    auto instance = factory_t<From>::shared();
+    return memory::static_pointer_cast<To>(instance);
+}
+
+template <typename To, typename From = To, typename TraitsType,
+          SF_REQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
+                               meta::is_memory_raw<TraitsType>,
+                               detail::is_pointer_cast_allowed<From, To>>::value)>
+raw_ptr<To> allocate()
+{
+    auto instance = factory_t<From>::raw();
+    return memory::static_pointer_cast<To>(instance);
+}
+
+template <typename To, typename From = To>
+shared_ptr<To> allocate_shared()
+{
+    return memory::allocate<To, From, shared_t>();
+}
+
+template <typename To, typename From = To>
+raw_ptr<To> allocate_raw()
+{
+    return memory::allocate<To, From, raw_t>();
+}
+
+template <typename To, typename From = To, typename T,
+          SF_REQUIRE(meta::is_pointer<T>::value)>
+void allocate(T& pointer)
+{
+    pointer = memory::allocate<To, From, typename ptr_traits<T>::traits>();
+}
+
+template <typename T, typename dT = typename ptr_traits<T>::item,
+          SF_REQUIRE(meta::is_raw_pointer<T>::value)>
+raw_ptr<dT> raw(const T& pointer) { return pointer; }
+
+template <typename T, typename dT = typename ptr_traits<T>::item,
+          SF_REQUIRE(meta::is_shared_pointer<T>::value)>
+raw_ptr<dT> raw(const T& pointer) { return pointer.get(); }
+
+template <typename ByteType = char, typename T>
+const ByteType* const_byte_cast(T* data) noexcept
+{
+    return reinterpret_cast<const ByteType*>(data);
+}
+
+template <typename ByteType = char, typename T>
+ByteType* byte_cast(T* data) noexcept
+{
+    return reinterpret_cast<ByteType*>(data);
+}
+
+} // namespace memory
 
 } // namespace sf
 
@@ -1261,7 +1263,7 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
-                                  ::__sf::has_save_mode<T>>::value)>
+                                   ::__sf::has_save_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
         ::__sf::save(archive, object);
@@ -1269,7 +1271,7 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
-                                  ::__sf::has_load_mode<T>>::value)>
+                                   ::__sf::has_load_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
         ::__sf::load(archive, object);
@@ -1277,8 +1279,8 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
-                                  meta::negation<::__sf::has_save_mode<T>>,
-                                  meta::negation<::__sf::has_load_mode<T>>>::value)>
+                                   meta::negation<::__sf::has_save_mode<T>>,
+                                   meta::negation<::__sf::has_load_mode<T>>>::value)>
     static void proccess(DerivedArchive& archive, T& data)
     {
         process_data(archive, data);
@@ -1418,30 +1420,30 @@ public:
 
         instantiable_proxy_t proxy;
 
-        proxy.__instance = memory_t::allocate_raw<instantiable_type, T>();
+        proxy.__instance = memory::allocate_raw<instantiable_type, T>();
 
-        proxy.__shared = [] { return memory_t::allocate_shared<instantiable_type, T>(); };
+        proxy.__shared = [] { return memory::allocate_shared<instantiable_type, T>(); };
 
         proxy.__cast_shared = [](std::shared_ptr<void> address)
         {
-            return memory_t::static_pointer_cast<instantiable_type, T>(address);
+            return memory::static_pointer_cast<instantiable_type, T>(address);
         };
 
-        proxy.__raw = [] { return memory_t::allocate_raw<instantiable_type, T>(); };
+        proxy.__raw = [] { return memory::allocate_raw<instantiable_type, T>(); };
 
         proxy.__cast_raw = [](void* address)
         {
-            return memory_t::static_pointer_cast<instantiable_type, T>(address);
+            return memory::static_pointer_cast<instantiable_type, T>(address);
         };
 
         proxy.__save = [](archive_type& archive, instantiable_type* instance)
         {
-            archive << *memory_t::dynamic_pointer_cast<T>(instance);
+            archive << *memory::dynamic_pointer_cast<T>(instance);
         };
 
         proxy.__load = [](archive_type& archive, instantiable_type* instance)
         {
-            archive >> *memory_t::dynamic_pointer_cast<T>(instance);
+            archive >> *memory::dynamic_pointer_cast<T>(instance);
         };
 
         registry_.emplace(key, proxy);
@@ -1727,14 +1729,14 @@ public:
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto raw_pointer = memory_t::raw(pointer);
+        auto raw_pointer = memory::raw(pointer);
         instantiable_registry_t::instance().save(archive, raw_pointer);
     }
 
     template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void load(core::ioarchive_t& archive, T& pointer, key_type key, memory_t::void_ptr<T>& cache)
+    static void load(core::ioarchive_t& archive, T& pointer, key_type key, memory::void_ptr<T>& cache)
     {
-        using TraitsType = typename memory_t::ptr_traits<T>::traits;
+        using TraitsType = typename memory::ptr_traits<T>::traits;
         using dT = meta::dereference<T>;
 
     #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -1746,15 +1748,15 @@ public:
 
         auto cloned = registry.clone<TraitsType>(key);
 
-        pointer = memory_t::dynamic_pointer_cast<dT>(cloned);
-        cache = memory_t::pure(pointer);
+        pointer = memory::dynamic_pointer_cast<dT>(cloned);
+        cache = memory::pure(pointer);
 
-        auto raw_pointer = memory_t::raw(pointer);
+        auto raw_pointer = memory::raw(pointer);
         registry.load(archive, raw_pointer);
     }
 
     template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void assign(T& pointer, const memory_t::void_ptr<T>& address, key_type key)
+    static void assign(T& pointer, const memory::void_ptr<T>& address, key_type key)
     {
         using dT = meta::dereference<T>;
 
@@ -1764,7 +1766,7 @@ public:
     #endif // SF_GARBAGE_CHECK_DISABLE
 
         auto casted = instantiable_registry_t::instance().cast(address, key);
-        pointer = memory_t::dynamic_pointer_cast<dT>(casted);
+        pointer = memory::dynamic_pointer_cast<dT>(casted);
     }
 };
 
@@ -1780,37 +1782,37 @@ namespace sf
 namespace tracking
 {
 
-using Shared = meta::shared_type;
-using Raw = meta::raw_type;
+using shared_t = meta::shared_common_t;
+using raw_t = meta::raw_common_t;
 
 template <typename T>
 struct track_traits;
 
 template <typename T>
-struct track_traits<memory_t::shared_ptr<T>>
+struct track_traits<memory::shared_ptr<T>>
 {
-    using type = tracking::Shared;
+    using type = tracking::shared_t;
 };
 
 template <typename T>
-struct track_traits<memory_t::raw_ptr<T>>
+struct track_traits<memory::raw_ptr<T>>
 {
-    using type = tracking::Raw;
+    using type = tracking::raw_t;
 };
 
 template <typename T>
 struct reverse_traits;
 
 template <>
-struct reverse_traits<Shared>
+struct reverse_traits<shared_t>
 {
-    using type = Raw;
+    using type = raw_t;
 };
 
 template <>
-struct reverse_traits<Raw>
+struct reverse_traits<raw_t>
 {
-    using type = Shared;
+    using type = shared_t;
 };
 
 } // namespace tracking
@@ -1818,8 +1820,8 @@ struct reverse_traits<Raw>
 namespace meta
 {
 
-template <typename T> struct is_track_shared : std::is_same<T, tracking::Shared> {};
-template <typename T> struct is_track_raw : std::is_same<T, tracking::Raw> {};
+template <typename T> struct is_track_shared : std::is_same<T, tracking::shared_t> {};
+template <typename T> struct is_track_raw : std::is_same<T, tracking::raw_t> {};
 
 } // namespace meta
 
@@ -1902,7 +1904,7 @@ public:
     template <typename T>
     void call(const T* data, std::size_t size)
     {
-        auto it = memory_t::const_byte_cast<item_type>(data);
+        auto it = memory::const_byte_cast<item_type>(data);
         while (size > 0)
         {
             storage.emplace_back(*it++);
@@ -1929,7 +1931,7 @@ public:
     template <typename T>
     void call(T* data, std::size_t size)
     {
-        auto it = memory_t::byte_cast<item_type>(data);
+        auto it = memory::byte_cast<item_type>(data);
         while (size > 0)
         {
             *it++ = storage[offset++];
@@ -1950,7 +1952,7 @@ public:
     template <typename T>
     void call(const T* data, std::size_t memory_size)
     {
-        file.write(memory_t::const_byte_cast(data), memory_size);
+        file.write(memory::const_byte_cast(data), memory_size);
     }
 };
 
@@ -1966,7 +1968,7 @@ public:
     template <typename T>
     void call(T* data, std::size_t memory_size)
     {
-        file.read(memory_t::byte_cast(data), memory_size);
+        file.read(memory::byte_cast(data), memory_size);
     }
 };
 
@@ -2073,7 +2075,7 @@ auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) ->
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_unsupported<T>>::value)>
+                               meta::is_unsupported<T>>::value)>
 Archive& operator& (Archive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
@@ -2084,7 +2086,7 @@ Archive& operator& (Archive& archive, T& unsupported)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::negation<meta::is_registered_extern<T>>>::value)>
+                               meta::negation<meta::is_registered_extern<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),
@@ -2106,11 +2108,11 @@ class iarchive_t : public core::ioarchive_t, public core::iarchive_common_t
 
 private:
     template <typename VoidPointer>
-    struct TrackData { VoidPointer address = nullptr; };
+    struct track_data_t { VoidPointer address = nullptr; };
 
 public:
-    using Shared = TrackData<memory_t::shared_ptr<void>>;
-    using Raw = TrackData<memory_t::raw_ptr<void>>;
+    using shared_t = track_data_t<memory::shared_ptr<void>>;
+    using raw_t = track_data_t<memory::raw_ptr<void>>;
 
 public:
     using TrackingKeyType = std::uintptr_t;
@@ -2123,8 +2125,8 @@ public:
 private:
     StreamWrapper archive_;
 
-    TrackingTable<Shared> track_shared_;
-    TrackingTable<Raw> track_raw_;
+    TrackingTable<shared_t> track_shared_;
+    TrackingTable<raw_t> track_raw_;
 
     HierarchyTrackingTable track_hierarchy_;
 
@@ -2137,11 +2139,11 @@ public:
 
     template <typename TrackType,
               SF_REQUIRE(meta::is_track_shared<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable<Shared>& { return track_shared_; }
+    auto tracking() noexcept -> TrackingTable<shared_t>& { return track_shared_; }
 
     template <typename TrackType,
               SF_REQUIRE(meta::is_track_raw<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable<Raw>& { return track_raw_; }
+    auto tracking() noexcept -> TrackingTable<raw_t>& { return track_raw_; }
 
     template <typename TrackType,
               SF_REQUIRE(meta::is_track_hierarchy<TrackType>::value)>
@@ -2229,7 +2231,7 @@ Archive& operator& (Archive& archive, T& unregistered)
 
 #define EXTERN_CONDITIONAL_SERIALIZATION(mode, parameter, ...)                                          \
     template <class Archive, typename T,                                                                \
-              SF_REQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                 \
+              SF_REQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                \
                                         ::sf::meta::is_registered_extern<T>,                            \
                                         ::sf::meta::boolean<bool(__VA_ARGS__)>>::value)>                \
     Archive& operator& (Archive& archive, T& parameter)
@@ -2237,7 +2239,7 @@ Archive& operator& (Archive& archive, T& unregistered)
 // require TYPE_REGISTRY before use if not def SF_TYPE_REGISTRY_DISABLE
 #define EXTERN_SERIALIZATION(mode, parameter, ...)                                                      \
     template <class Archive,                                                                            \
-              SF_REQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                 \
+              SF_REQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                \
                                         ::sf::meta::is_registered_extern<__VA_ARGS__>>::value)>         \
     Archive& operator& (Archive& archive, __VA_ARGS__& parameter)
 
@@ -2280,8 +2282,8 @@ inline namespace common
 template <typename Archive, typename T,
           typename dT = meta::decay<T>, // T can be lvalue
           SF_REQUIRE(meta::all<meta::is_archive<Archive>,
-                              meta::is_registered_extern<dT>,
-                              meta::is_apply_functor<dT>>::value)>
+                               meta::is_registered_extern<dT>,
+                               meta::is_apply_functor<dT>>::value)>
 Archive& operator& (Archive& archive, T&& apply_functor)
 {
     apply_functor(archive);
@@ -2332,12 +2334,12 @@ namespace detail
 
 template <class Archive, typename T, typename KeyType,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
+                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
 void native_save(Archive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
 
 template <class Archive, typename T, typename KeyType,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_pointer_to_polymorphic<T>>::value)>
+                               meta::is_pointer_to_polymorphic<T>>::value)>
 void native_save(Archive& archive, T& pointer, KeyType track_key)
 {
     archive.registry().save_key(archive, pointer); // write class info
@@ -2345,16 +2347,16 @@ void native_save(Archive& archive, T& pointer, KeyType track_key)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(Archive& archive, T& pointer, memory_t::void_ptr<T>& address) noexcept
+                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
+void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address) noexcept
 {
-    memory_t::assign<meta::dereference<T>>(pointer, address);
+    memory::assign<meta::dereference<T>>(pointer, address);
 }
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(Archive& archive, T& pointer, memory_t::void_ptr<T>& address)
+                               meta::is_pointer_to_polymorphic<T>>::value)>
+void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address)
 {
     auto& registry = archive.registry();
 
@@ -2371,7 +2373,7 @@ namespace sf
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_pointer_to_standard_layout<T>>::value)>
+                               meta::is_pointer_to_standard_layout<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
     if (pointer == nullptr)
@@ -2382,25 +2384,25 @@ void strict(Archive& archive, T& pointer)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(Archive& archive, T& pointer, memory_t::void_ptr<T>& cache)
+                               meta::is_pointer_to_standard_layout<T>>::value)>
+void strict(Archive& archive, T& pointer, memory::void_ptr<T>& cache)
 {
-    using item_type = typename memory_t::ptr_traits<T>::item;
+    using item_type = typename memory::ptr_traits<T>::item;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-    memory_t::allocate<item_type>(pointer);
-    cache = memory_t::pure(pointer);
+    memory::allocate<item_type>(pointer);
+    cache = memory::pure(pointer);
 
     archive & (*pointer);
 }
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_pointer_to_polymorphic<T>>::value)>
+                               meta::is_pointer_to_polymorphic<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
     auto& registry = archive.registry();
@@ -2411,8 +2413,8 @@ void strict(Archive& archive, T& pointer)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(Archive& archive, T& pointer, memory_t::void_ptr<T>& cache)
+                               meta::is_pointer_to_polymorphic<T>>::value)>
+void strict(Archive& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
@@ -2423,10 +2425,10 @@ void strict(Archive& archive, T& pointer, memory_t::void_ptr<T>& cache)
 // verison without cache using
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_serializable_pointer<T>>::value)>
+                               meta::is_serializable_pointer<T>>::value)>
 void strict(Archive& archive, T& pointer)
 {
-    memory_t::void_ptr<T> cache = nullptr;
+    memory::void_ptr<T> cache = nullptr;
     strict(archive, pointer, cache);
 }
 
@@ -2436,11 +2438,11 @@ namespace detail
 template <class Archive, typename T,
           typename KeyType = typename Archive::TrackingKeyType,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_serializable_pointer<T>>::value)>
+                               meta::is_serializable_pointer<T>>::value)>
 KeyType refer_key(Archive& archive, T& pointer)
 {
-    auto pure = memory_t::pure(pointer);
-    auto key = reinterpret_cast<KeyType>(memory_t::raw(pure));
+    auto pure = memory::pure(pointer);
+    auto key = reinterpret_cast<KeyType>(memory::raw(pure));
 
     archive & key;
     return key;
@@ -2449,7 +2451,7 @@ KeyType refer_key(Archive& archive, T& pointer)
 template <class Archive, typename T,
           typename KeyType = typename Archive::TrackingKeyType,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_serializable_pointer<T>>::value)>
+                               meta::is_serializable_pointer<T>>::value)>
 KeyType refer_key(Archive& archive, T& pointer)
 {
 #ifdef SF_DEBUG
@@ -2510,7 +2512,7 @@ bool is_mixed(Archive& archive, KeyType key)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_pointer<T>>::value)>
+                               meta::is_pointer<T>>::value)>
 void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
@@ -2538,15 +2540,15 @@ void track(Archive& archive, T& pointer)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::negation<meta::is_pointer<T>>>::value)>
+                               meta::negation<meta::is_pointer<T>>>::value)>
 void track(Archive& archive, T& data)
 {
     using key_type = typename Archive::TrackingKeyType;
 
-    auto address = memory_t::pure(std::addressof(data));
+    auto address = memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
 
-    auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
+    auto& is_tracking = archive.template tracking<tracking::raw_t>()[key];
 
     if (is_tracking)
         throw "The write tracking data is already tracked.";
@@ -2559,7 +2561,7 @@ void track(Archive& archive, T& data)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_pointer<T>>::value)>
+                               meta::is_pointer<T>>::value)>
 void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
@@ -2587,7 +2589,7 @@ void track(Archive& archive, T& pointer)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::negation<meta::is_pointer<T>>>::value)>
+                               meta::negation<meta::is_pointer<T>>>::value)>
 void track(Archive& archive, T& data)
 {
     using key_type = typename Archive::TrackingKeyType;
@@ -2595,19 +2597,19 @@ void track(Archive& archive, T& data)
     key_type key{};
     archive & key;
 
-    auto& item = archive.template tracking<tracking::Raw>()[key];
+    auto& item = archive.template tracking<tracking::raw_t>()[key];
 
     if (item.address != nullptr)
         throw  "The read tracking data is already tracked.";
 
-    item.address = memory_t::pure(std::addressof(data));
+    item.address = memory::pure(std::addressof(data));
 
     archive & data;
 }
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_ioarchive<T>,
-                              meta::is_serializable_raw_pointer<T>>::value)>
+                               meta::is_serializable_raw_pointer<T>>::value)>
 void raw(Archive& archive, T& pointer)
 {
     if (detail::refer_key(archive, pointer)) // serialize refer info
@@ -2715,7 +2717,7 @@ namespace compress
 // always require compressible type for fast compression
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              meta::is_compressible<T>>::value)>
+                               meta::is_compressible<T>>::value)>
 void fast(Archive& archive, T& object)
 {
     using item_type = meta::value_type<T>;
@@ -2737,7 +2739,7 @@ void slow(Archive& archive, T& object)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              meta::is_compressible<T>>::value)>
+                               meta::is_compressible<T>>::value)>
 void zip(Archive& archive, T& object)
 {
     fast(archive, object);
@@ -2745,7 +2747,7 @@ void zip(Archive& archive, T& object)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              meta::negation<meta::is_compressible<T>>>::value)>
+                               meta::negation<meta::is_compressible<T>>>::value)>
 void zip(Archive& archive, T& object)
 {
     slow(archive, object);
@@ -3012,8 +3014,8 @@ CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>::value)
 #define _SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                     \
     template <class Archive, typename T>                                                                \
     void aggregate_implementation(Archive& archive, T& object, meta::dispatch<count>) {                 \
-        auto& [SF_PLACEHOLDERS(count)] = object;                                                         \
-        archive(SF_PLACEHOLDERS(count));                                                                 \
+        auto& [SF_PLACEHOLDERS(count)] = object;                                                        \
+        archive(SF_PLACEHOLDERS(count));                                                                \
     }
 
 namespace sf
@@ -3115,7 +3117,7 @@ namespace sf
 
 template <class Base, class Archive, class Derived,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              std::is_base_of<Base, Derived>>::value)>
+                               std::is_base_of<Base, Derived>>::value)>
 void base(Archive& archive, Derived& object)
 {
     ::__sf::serialize_base<Base>(archive, object);
@@ -3123,7 +3125,7 @@ void base(Archive& archive, Derived& object)
 
 template <class Base, class Archive, class Derived,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              std::is_base_of<Base, Derived>>::value)>
+                               std::is_base_of<Base, Derived>>::value)>
 void virtual_base(Archive& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
@@ -3132,7 +3134,7 @@ void virtual_base(Archive& archive, Derived& object)
 #else
     using key_type = typename Archive::TrackingKeyType;
 
-    auto address = memory_t::pure(std::addressof(object));
+    auto address = memory::pure(std::addressof(object));
 
     auto key = reinterpret_cast<key_type>(address);
     auto traits = ::__sf::traits<Base>();
@@ -3209,7 +3211,7 @@ void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
 // Variadic native_base function
 template <class Base, class... Base_n, class Archive, class Derived,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              meta::is_derived_of<Derived, Base, Base_n...>>::value)>
+                               meta::is_derived_of<Derived, Base, Base_n...>>::value)>
 void hierarchy(Archive& archive, Derived& object)
 {
     detail::native_base<Base>(archive, object);
@@ -3342,17 +3344,17 @@ struct is_alias<alias_t<T>> : std::true_type {};
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, alias_t, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
 {
     using key_type = typename Archive::TrackingKeyType;
 
-    if (not alias_t.is_refer())
+    if (not alias.is_refer())
         throw "The write alias_t must be initialized.";
 
-    auto pointer = std::addressof(alias_t.get());
+    auto pointer = std::addressof(alias.get());
     auto key = detail::refer_key(archive, pointer);
 
-    auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
+    auto& is_tracking = archive.template tracking<tracking::raw_t>()[key];
 
     if (not is_tracking)
         throw "The write alias_t must be tracked before.";
@@ -3362,22 +3364,20 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, alias_t, meta::is_alias<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, alias_t, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
 {
     using key_type   = typename Archive::TrackingKeyType;
     using value_type = typename T::type;
 
-    using track_type = tracking::Raw;
-
 #ifndef SF_GARBAGE_CHECK_DISABLE
-    if (alias_t.is_refer())
+    if (alias.is_refer())
         throw "The read alias_t must be null.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
     key_type key{};
     archive & key;
 
-    auto& item = archive.template tracking<tracking::Raw>()[key];
+    auto& item = archive.template tracking<tracking::raw_t>()[key];
 
     if (item.address == nullptr)
         throw "The read alias_t must be tracked before.";
@@ -3386,7 +3386,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias_t, meta::is_alias<T>::value)
 
     detail::native_load(archive, pointer, item.address);
 
-    alias_t.set(*pointer); // pointer will never nullptr
+    alias.set(*pointer); // pointer will never nullptr
 
     return archive;
 }
@@ -4195,7 +4195,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::v
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
-    using item_type = typename memory_t::ptr_traits<T>::item;
+    using item_type = typename memory::ptr_traits<T>::item;
 
     item_type* data = nullptr;
     archive & data;
@@ -4255,7 +4255,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
-    using item_type = typename memory_t::ptr_traits<T>::item;
+    using item_type = typename memory::ptr_traits<T>::item;
 
     std::shared_ptr<item_type> sptr;
     archive & sptr;

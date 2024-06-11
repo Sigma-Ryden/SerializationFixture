@@ -11,37 +11,37 @@ namespace sf
 namespace tracking
 {
 
-using Shared = meta::shared_type;
-using Raw = meta::raw_type;
+using shared_t = meta::shared_common_t;
+using raw_t = meta::raw_common_t;
 
 template <typename T>
 struct track_traits;
 
 template <typename T>
-struct track_traits<memory_t::shared_ptr<T>>
+struct track_traits<memory::shared_ptr<T>>
 {
-    using type = tracking::Shared;
+    using type = tracking::shared_t;
 };
 
 template <typename T>
-struct track_traits<memory_t::raw_ptr<T>>
+struct track_traits<memory::raw_ptr<T>>
 {
-    using type = tracking::Raw;
+    using type = tracking::raw_t;
 };
 
 template <typename T>
 struct reverse_traits;
 
 template <>
-struct reverse_traits<Shared>
+struct reverse_traits<shared_t>
 {
-    using type = Raw;
+    using type = raw_t;
 };
 
 template <>
-struct reverse_traits<Raw>
+struct reverse_traits<raw_t>
 {
-    using type = Shared;
+    using type = shared_t;
 };
 
 } // namespace tracking
@@ -49,8 +49,8 @@ struct reverse_traits<Raw>
 namespace meta
 {
 
-template <typename T> struct is_track_shared : std::is_same<T, tracking::Shared> {};
-template <typename T> struct is_track_raw : std::is_same<T, tracking::Raw> {};
+template <typename T> struct is_track_shared : std::is_same<T, tracking::shared_t> {};
+template <typename T> struct is_track_raw : std::is_same<T, tracking::raw_t> {};
 
 } // namespace meta
 

@@ -14,8 +14,8 @@
 #define _SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                     \
     template <class Archive, typename T>                                                                \
     void aggregate_implementation(Archive& archive, T& object, meta::dispatch<count>) {                 \
-        auto& [SF_PLACEHOLDERS(count)] = object;                                                         \
-        archive(SF_PLACEHOLDERS(count));                                                                 \
+        auto& [SF_PLACEHOLDERS(count)] = object;                                                        \
+        archive(SF_PLACEHOLDERS(count));                                                                \
     }
 
 namespace sf

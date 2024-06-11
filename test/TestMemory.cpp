@@ -168,8 +168,6 @@ TEST(TestMemory, TestSharedPtr)
             ar & s_c & s_a & s_d & s_b; // one more shuffle
         }
 
-        using sf::memory_t;
-    	
         ASSERT("std::shared_ptr<polymorphic>.inited",
             s_a != nullptr && s_b != nullptr && s_c != nullptr && s_d != nullptr);
     	
@@ -178,9 +176,9 @@ TEST(TestMemory, TestSharedPtr)
             s_c.use_count() == 4 && s_d.use_count() == 4);
 
         EXPECT("std::shared_ptr<polymorphic>.pure",
-            memory_t::pure(s_a) == memory_t::pure(s_b) &&
-            memory_t::pure(s_b) == memory_t::pure(s_c) &&
-            memory_t::pure(s_c) == memory_t::pure(s_d));
+            sf::memory::pure(s_a) == sf::memory::pure(s_b) &&
+            sf::memory::pure(s_b) == sf::memory::pure(s_c) &&
+            sf::memory::pure(s_c) == sf::memory::pure(s_d));
     	
     	auto raw_s_d = s_d.get();
     	auto raw_s_b = s_b.get();

@@ -31,11 +31,11 @@ class iarchive_t : public core::ioarchive_t, public core::iarchive_common_t
 
 private:
     template <typename VoidPointer>
-    struct TrackData { VoidPointer address = nullptr; };
+    struct track_data_t { VoidPointer address = nullptr; };
 
 public:
-    using Shared = TrackData<memory_t::shared_ptr<void>>;
-    using Raw = TrackData<memory_t::raw_ptr<void>>;
+    using shared_t = track_data_t<memory::shared_ptr<void>>;
+    using raw_t = track_data_t<memory::raw_ptr<void>>;
 
 public:
     using TrackingKeyType = std::uintptr_t;
@@ -48,8 +48,8 @@ public:
 private:
     StreamWrapper archive_;
 
-    TrackingTable<Shared> track_shared_;
-    TrackingTable<Raw> track_raw_;
+    TrackingTable<shared_t> track_shared_;
+    TrackingTable<raw_t> track_raw_;
 
     HierarchyTrackingTable track_hierarchy_;
 
@@ -62,11 +62,11 @@ public:
 
     template <typename TrackType,
               SF_REQUIRE(meta::is_track_shared<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable<Shared>& { return track_shared_; }
+    auto tracking() noexcept -> TrackingTable<shared_t>& { return track_shared_; }
 
     template <typename TrackType,
               SF_REQUIRE(meta::is_track_raw<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable<Raw>& { return track_raw_; }
+    auto tracking() noexcept -> TrackingTable<raw_t>& { return track_raw_; }
 
     template <typename TrackType,
               SF_REQUIRE(meta::is_track_hierarchy<TrackType>::value)>

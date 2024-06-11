@@ -63,14 +63,14 @@ public:
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto raw_pointer = memory_t::raw(pointer);
+        auto raw_pointer = memory::raw(pointer);
         instantiable_registry_t::instance().save(archive, raw_pointer);
     }
 
     template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void load(core::ioarchive_t& archive, T& pointer, key_type key, memory_t::void_ptr<T>& cache)
+    static void load(core::ioarchive_t& archive, T& pointer, key_type key, memory::void_ptr<T>& cache)
     {
-        using TraitsType = typename memory_t::ptr_traits<T>::traits;
+        using TraitsType = typename memory::ptr_traits<T>::traits;
         using dT = meta::dereference<T>;
 
     #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -82,15 +82,15 @@ public:
 
         auto cloned = registry.clone<TraitsType>(key);
 
-        pointer = memory_t::dynamic_pointer_cast<dT>(cloned);
-        cache = memory_t::pure(pointer);
+        pointer = memory::dynamic_pointer_cast<dT>(cloned);
+        cache = memory::pure(pointer);
 
-        auto raw_pointer = memory_t::raw(pointer);
+        auto raw_pointer = memory::raw(pointer);
         registry.load(archive, raw_pointer);
     }
 
     template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void assign(T& pointer, const memory_t::void_ptr<T>& address, key_type key)
+    static void assign(T& pointer, const memory::void_ptr<T>& address, key_type key)
     {
         using dT = meta::dereference<T>;
 
@@ -100,7 +100,7 @@ public:
     #endif // SF_GARBAGE_CHECK_DISABLE
 
         auto casted = instantiable_registry_t::instance().cast(address, key);
-        pointer = memory_t::dynamic_pointer_cast<dT>(casted);
+        pointer = memory::dynamic_pointer_cast<dT>(casted);
     }
 };
 

@@ -37,7 +37,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
-    using item_type = typename memory_t::ptr_traits<T>::item;
+    using item_type = typename memory::ptr_traits<T>::item;
 
     std::shared_ptr<item_type> sptr;
     archive & sptr;

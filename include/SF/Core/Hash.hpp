@@ -33,12 +33,12 @@ template <> struct word_type_implementation<Word::x32> { using type = let::u32; 
 template <> struct word_type_implementation<Word::x64> { using type = let::u64; };
 
 template <Word word>
-using WordType = typename detail::word_type_implementation<word>::type;
+using word_t = typename detail::word_type_implementation<word>::type;
 
-template <typename T> struct WordTraits { static constexpr auto value = Word::x64; };
+template <typename T> struct word_traits { static constexpr auto value = Word::x64; };
 
-template <> struct WordTraits<let::u32> { static constexpr auto value = Word::x32; };
-template <> struct WordTraits<let::u64> { static constexpr auto value = Word::x64; };
+template <> struct word_traits<let::u32> { static constexpr auto value = Word::x32; };
+template <> struct word_traits<let::u64> { static constexpr auto value = Word::x64; };
 
 template <typename HashType, HashType FnvPrime, HashType OffsetBasis>
 HashType fnv_1a(const char* text)
@@ -112,18 +112,18 @@ template <typename key_type = let::u64>
 inline key_type hash(const char* text)
 {
     using detail::hash_t;
-    using detail::WordTraits;
+    using detail::word_traits;
 
-    return hash_t<detail::WordTraits<key_type>::value>::run(text);
+    return hash_t<detail::word_traits<key_type>::value>::run(text);
 }
 
 template <typename key_type = let::u64>
 constexpr key_type static_hash(const char* text) noexcept
 {
     using detail::hash_t;
-    using detail::WordTraits;
+    using detail::word_traits;
 
-    return hash_t<detail::WordTraits<key_type>::value>::static_run(text);
+    return hash_t<detail::word_traits<key_type>::value>::static_run(text);
 }
 
 inline std::size_t type_hash(const std::type_info& type) noexcept

@@ -64,17 +64,17 @@ struct is_alias<alias_t<T>> : std::true_type {};
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, alias_t, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
 {
     using key_type = typename Archive::TrackingKeyType;
 
-    if (not alias_t.is_refer())
+    if (not alias.is_refer())
         throw "The write alias_t must be initialized.";
 
-    auto pointer = std::addressof(alias_t.get());
+    auto pointer = std::addressof(alias.get());
     auto key = detail::refer_key(archive, pointer);
 
-    auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
+    auto& is_tracking = archive.template tracking<tracking::raw_t>()[key];
 
     if (not is_tracking)
         throw "The write alias_t must be tracked before.";
@@ -84,22 +84,20 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, alias_t, meta::is_alias<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, alias_t, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
 {
     using key_type   = typename Archive::TrackingKeyType;
     using value_type = typename T::type;
 
-    using track_type = tracking::Raw;
-
 #ifndef SF_GARBAGE_CHECK_DISABLE
-    if (alias_t.is_refer())
+    if (alias.is_refer())
         throw "The read alias_t must be null.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
     key_type key{};
     archive & key;
 
-    auto& item = archive.template tracking<tracking::Raw>()[key];
+    auto& item = archive.template tracking<tracking::raw_t>()[key];
 
     if (item.address == nullptr)
         throw "The read alias_t must be tracked before.";
@@ -108,7 +106,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, alias_t, meta::is_alias<T>::value)
 
     detail::native_load(archive, pointer, item.address);
 
-    alias_t.set(*pointer); // pointer will never nullptr
+    alias.set(*pointer); // pointer will never nullptr
 
     return archive;
 }

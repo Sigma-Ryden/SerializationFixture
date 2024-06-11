@@ -119,7 +119,7 @@ auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) ->
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_unsupported<T>>::value)>
+                               meta::is_unsupported<T>>::value)>
 Archive& operator& (Archive& archive, T& unsupported)
 {
     static_assert(meta::to_false<T>(),
@@ -130,7 +130,7 @@ Archive& operator& (Archive& archive, T& unsupported)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::negation<meta::is_registered_extern<T>>>::value)>
+                               meta::negation<meta::is_registered_extern<T>>>::value)>
 Archive& operator& (Archive& archive, T& unregistered)
 {
     static_assert(meta::to_false<T>(),

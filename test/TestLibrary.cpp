@@ -127,17 +127,15 @@ TEST(TestLibrary, TestInstantiableRegistry)
         EXPECT("non-instantiable type", success);
     }
 
-    using sf::memory_t;
-
     {
         auto success = false;
-        try { registry.clone<memory_t::Raw>(key); } catch(...) { success = true; }
+        try { registry.clone<sf::memory::raw_t>(key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable raw", success);
     }
     {
         auto success = false;
-        try { registry.clone<memory_t::Shared>(key); } catch(...) { success = true; }
+        try { registry.clone<sf::memory::shared_t>(key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable shared", success);
     }

@@ -179,8 +179,8 @@ template <typename T> constexpr std::size_t pointer_count() noexcept
          : 0;
 }
 
-struct shared_type {};
-struct raw_type {};
+struct shared_common_t {};
+struct raw_common_t {};
 
 struct dummy_type
 {

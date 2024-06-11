@@ -15,12 +15,12 @@ namespace detail
 
 template <class Archive, typename T, typename KeyType,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
+                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
 void native_save(Archive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
 
 template <class Archive, typename T, typename KeyType,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_pointer_to_polymorphic<T>>::value)>
+                               meta::is_pointer_to_polymorphic<T>>::value)>
 void native_save(Archive& archive, T& pointer, KeyType track_key)
 {
     archive.registry().save_key(archive, pointer); // write class info
@@ -28,16 +28,16 @@ void native_save(Archive& archive, T& pointer, KeyType track_key)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(Archive& archive, T& pointer, memory_t::void_ptr<T>& address) noexcept
+                               meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
+void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address) noexcept
 {
-    memory_t::assign<meta::dereference<T>>(pointer, address);
+    memory::assign<meta::dereference<T>>(pointer, address);
 }
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(Archive& archive, T& pointer, memory_t::void_ptr<T>& address)
+                               meta::is_pointer_to_polymorphic<T>>::value)>
+void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address)
 {
     auto& registry = archive.registry();
 

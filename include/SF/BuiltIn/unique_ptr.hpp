@@ -35,7 +35,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::v
 
 EXTERN_CONDITIONAL_SERIALIZATION(Load, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
-    using item_type = typename memory_t::ptr_traits<T>::item;
+    using item_type = typename memory::ptr_traits<T>::item;
 
     item_type* data = nullptr;
     archive & data;

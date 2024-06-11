@@ -39,7 +39,7 @@ public:
     template <typename T>
     void call(const T* data, std::size_t size)
     {
-        auto it = memory_t::const_byte_cast<item_type>(data);
+        auto it = memory::const_byte_cast<item_type>(data);
         while (size > 0)
         {
             storage.emplace_back(*it++);
@@ -66,7 +66,7 @@ public:
     template <typename T>
     void call(T* data, std::size_t size)
     {
-        auto it = memory_t::byte_cast<item_type>(data);
+        auto it = memory::byte_cast<item_type>(data);
         while (size > 0)
         {
             *it++ = storage[offset++];
@@ -87,7 +87,7 @@ public:
     template <typename T>
     void call(const T* data, std::size_t memory_size)
     {
-        file.write(memory_t::const_byte_cast(data), memory_size);
+        file.write(memory::const_byte_cast(data), memory_size);
     }
 };
 
@@ -103,7 +103,7 @@ public:
     template <typename T>
     void call(T* data, std::size_t memory_size)
     {
-        file.read(memory_t::byte_cast(data), memory_size);
+        file.read(memory::byte_cast(data), memory_size);
     }
 };
 

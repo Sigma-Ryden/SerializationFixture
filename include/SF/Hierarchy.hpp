@@ -17,7 +17,7 @@ namespace sf
 
 template <class Base, class Archive, class Derived,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              std::is_base_of<Base, Derived>>::value)>
+                               std::is_base_of<Base, Derived>>::value)>
 void base(Archive& archive, Derived& object)
 {
     ::__sf::serialize_base<Base>(archive, object);
@@ -25,7 +25,7 @@ void base(Archive& archive, Derived& object)
 
 template <class Base, class Archive, class Derived,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              std::is_base_of<Base, Derived>>::value)>
+                               std::is_base_of<Base, Derived>>::value)>
 void virtual_base(Archive& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
@@ -34,7 +34,7 @@ void virtual_base(Archive& archive, Derived& object)
 #else
     using key_type = typename Archive::TrackingKeyType;
 
-    auto address = memory_t::pure(std::addressof(object));
+    auto address = memory::pure(std::addressof(object));
 
     auto key = reinterpret_cast<key_type>(address);
     auto traits = ::__sf::traits<Base>();
@@ -111,7 +111,7 @@ void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
 // Variadic native_base function
 template <class Base, class... Base_n, class Archive, class Derived,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              meta::is_derived_of<Derived, Base, Base_n...>>::value)>
+                               meta::is_derived_of<Derived, Base, Base_n...>>::value)>
 void hierarchy(Archive& archive, Derived& object)
 {
     detail::native_base<Base>(archive, object);

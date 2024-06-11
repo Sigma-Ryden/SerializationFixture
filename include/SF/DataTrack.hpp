@@ -38,7 +38,7 @@ bool is_mixed(Archive& archive, KeyType key)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::is_pointer<T>>::value)>
+                               meta::is_pointer<T>>::value)>
 void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
@@ -66,15 +66,15 @@ void track(Archive& archive, T& pointer)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                              meta::negation<meta::is_pointer<T>>>::value)>
+                               meta::negation<meta::is_pointer<T>>>::value)>
 void track(Archive& archive, T& data)
 {
     using key_type = typename Archive::TrackingKeyType;
 
-    auto address = memory_t::pure(std::addressof(data));
+    auto address = memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
 
-    auto& is_tracking = archive.template tracking<tracking::Raw>()[key];
+    auto& is_tracking = archive.template tracking<tracking::raw_t>()[key];
 
     if (is_tracking)
         throw "The write tracking data is already tracked.";
@@ -87,7 +87,7 @@ void track(Archive& archive, T& data)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_pointer<T>>::value)>
+                               meta::is_pointer<T>>::value)>
 void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
@@ -115,7 +115,7 @@ void track(Archive& archive, T& pointer)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::negation<meta::is_pointer<T>>>::value)>
+                               meta::negation<meta::is_pointer<T>>>::value)>
 void track(Archive& archive, T& data)
 {
     using key_type = typename Archive::TrackingKeyType;
@@ -123,19 +123,19 @@ void track(Archive& archive, T& data)
     key_type key{};
     archive & key;
 
-    auto& item = archive.template tracking<tracking::Raw>()[key];
+    auto& item = archive.template tracking<tracking::raw_t>()[key];
 
     if (item.address != nullptr)
         throw  "The read tracking data is already tracked.";
 
-    item.address = memory_t::pure(std::addressof(data));
+    item.address = memory::pure(std::addressof(data));
 
     archive & data;
 }
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_ioarchive<T>,
-                              meta::is_serializable_raw_pointer<T>>::value)>
+                               meta::is_serializable_raw_pointer<T>>::value)>
 void raw(Archive& archive, T& pointer)
 {
     if (detail::refer_key(archive, pointer)) // serialize refer info

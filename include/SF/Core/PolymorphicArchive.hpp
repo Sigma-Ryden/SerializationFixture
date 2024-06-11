@@ -85,7 +85,7 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
-                                  ::__sf::has_save_mode<T>>::value)>
+                                   ::__sf::has_save_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
         ::__sf::save(archive, object);
@@ -93,7 +93,7 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
-                                  ::__sf::has_load_mode<T>>::value)>
+                                   ::__sf::has_load_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
         ::__sf::load(archive, object);
@@ -101,8 +101,8 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
-                                  meta::negation<::__sf::has_save_mode<T>>,
-                                  meta::negation<::__sf::has_load_mode<T>>>::value)>
+                                   meta::negation<::__sf::has_save_mode<T>>,
+                                   meta::negation<::__sf::has_load_mode<T>>>::value)>
     static void proccess(DerivedArchive& archive, T& data)
     {
         process_data(archive, data);

@@ -98,30 +98,30 @@ public:
 
         instantiable_proxy_t proxy;
 
-        proxy.__instance = memory_t::allocate_raw<instantiable_type, T>();
+        proxy.__instance = memory::allocate_raw<instantiable_type, T>();
 
-        proxy.__shared = [] { return memory_t::allocate_shared<instantiable_type, T>(); };
+        proxy.__shared = [] { return memory::allocate_shared<instantiable_type, T>(); };
 
         proxy.__cast_shared = [](std::shared_ptr<void> address)
         {
-            return memory_t::static_pointer_cast<instantiable_type, T>(address);
+            return memory::static_pointer_cast<instantiable_type, T>(address);
         };
 
-        proxy.__raw = [] { return memory_t::allocate_raw<instantiable_type, T>(); };
+        proxy.__raw = [] { return memory::allocate_raw<instantiable_type, T>(); };
 
         proxy.__cast_raw = [](void* address)
         {
-            return memory_t::static_pointer_cast<instantiable_type, T>(address);
+            return memory::static_pointer_cast<instantiable_type, T>(address);
         };
 
         proxy.__save = [](archive_type& archive, instantiable_type* instance)
         {
-            archive << *memory_t::dynamic_pointer_cast<T>(instance);
+            archive << *memory::dynamic_pointer_cast<T>(instance);
         };
 
         proxy.__load = [](archive_type& archive, instantiable_type* instance)
         {
-            archive >> *memory_t::dynamic_pointer_cast<T>(instance);
+            archive >> *memory::dynamic_pointer_cast<T>(instance);
         };
 
         registry_.emplace(key, proxy);
