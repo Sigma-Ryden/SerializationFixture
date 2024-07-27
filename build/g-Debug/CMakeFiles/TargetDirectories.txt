@@ -1,3 +1,0 @@
-/home/user/Documents/CppProjects/SerializationFixture/build/g-Debug/CMakeFiles/SerializationFixture.dir
-/home/user/Documents/CppProjects/SerializationFixture/build/g-Debug/CMakeFiles/edit_cache.dir
-/home/user/Documents/CppProjects/SerializationFixture/build/g-Debug/CMakeFiles/rebuild_cache.dir
