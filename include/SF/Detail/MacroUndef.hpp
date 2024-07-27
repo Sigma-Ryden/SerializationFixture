@@ -1,6 +1,5 @@
 // If you want to undef all external lib's macros
 // you should include given file only after library files
-// note that: MACRO - is public macro, _MACRO - is private
 
 // clean up
 #undef SERIALIZATION_ACCESS
@@ -27,7 +26,6 @@
 #undef TYPE_REGISTRY
 
 #undef BITPACK
-#undef FBITPACK
 
 #undef SF_STATIC_HASH
 #undef SF_STATIC_HASH_KEY_TYPE
