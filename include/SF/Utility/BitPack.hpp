@@ -6,14 +6,14 @@
 #include <SF/OArchive.hpp>
 #include <SF/IArchive.hpp>
 
-#include <SF/Utility/Detail/Macro.hpp> // _BITPACK_IMPLEMENTATION
+#include <SF/Utility/Detail/Macro.hpp> // SF_BITPACK_IMPLEMENTATION
 
 #include <SF/Detail/MetaMacro.hpp>
 #include <SF/Detail/Preprocessor.hpp> // SF_FIRST_ARGUMENT, SF_CONCAT
 
 // Signature:
 // BITPACK(common_fields_type)(archive, (object.field0, field0_bits), (object.field1, field1_bits), ...)
-#define BITPACK(...) _BITPACK_IMPLEMENTATION(__VA_ARGS__)
+#define BITPACK(...) SF_BITPACK_IMPLEMENTATION(__VA_ARGS__)
 
 // Signature:
 // FBITPACK(archive, (object.field0, field0_bits), (object.field1, field1_bits), ...)

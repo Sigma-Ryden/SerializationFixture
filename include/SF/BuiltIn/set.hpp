@@ -14,7 +14,7 @@
 #include <SF/Compress.hpp>
 #include <SF/ExternSerialization.hpp>
 
-#define _SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                      \
+#define SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                       \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
     template <typename Key, typename Compare, typename Alloc>                                           \
     struct is_std_##set_type<std::set_type<Key, Compare, Alloc>> : std::true_type {};
@@ -25,10 +25,10 @@ namespace sf
 namespace meta
 {
 
-_SF_IS_STD_SET_TYPE_META_GENERIC(set)
-_SF_IS_STD_SET_TYPE_META_GENERIC(unordered_set)
-_SF_IS_STD_SET_TYPE_META_GENERIC(multiset)
-_SF_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
+SF_IS_STD_SET_TYPE_META_GENERIC(set)
+SF_IS_STD_SET_TYPE_META_GENERIC(unordered_set)
+SF_IS_STD_SET_TYPE_META_GENERIC(multiset)
+SF_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
 
 template <class T> struct is_std_any_unordered_set
     : one<is_std_unordered_set<T>,
@@ -99,6 +99,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>::value)
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_set<T>::value)
 
 // clean up
-#undef _SF_IS_STD_SET_TYPE_META_GENERIC
+#undef SF_IS_STD_SET_TYPE_META_GENERIC
 
 #endif // SF_BUILT_IN_SET_HPP

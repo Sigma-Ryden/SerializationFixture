@@ -11,7 +11,7 @@
 
 #include <SF/Detail/Preprocessor.hpp>
 
-#define _SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                     \
+#define SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                      \
     template <class Archive, typename T>                                                                \
     void aggregate_impl(Archive& archive, T& object, std::integral_constant<std::size_t, count>) {      \
         auto& [SF_PLACEHOLDERS(count)] = object;                                                        \
@@ -38,7 +38,7 @@ namespace detail
 template <class Archive, typename T>
 void aggregate_impl(Archive& archive, T& object, std::integral_constant<std::size_t, 0>) noexcept { /*pass*/ }
 
-SF_REPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
+SF_REPEAT(SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
 } // namespace detail
 
@@ -85,7 +85,7 @@ template <typename T> apply::aggregate_functor_t<T> aggregate(T& object) noexcep
 CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_aggregate<T>::value)
 
 // clean up
-#undef _SF_AGGREGATE_IMPLEMENTATION_GENERIC
+#undef SF_AGGREGATE_IMPLEMENTATION_GENERIC
 
 #endif // if
 

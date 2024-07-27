@@ -17,7 +17,7 @@
 // serialization of core map value_type
 #include <SF/BuiltIn/pair.hpp>
 
-#define _SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                      \
+#define SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                       \
     template <typename> struct is_std_##map_type : std::false_type {};                                  \
     template <typename Key, typename Type, typename Compare, typename Alloc>                            \
     struct is_std_##map_type<std::map_type<Key, Type, Compare, Alloc>> : std::true_type {};
@@ -28,10 +28,10 @@ namespace sf
 namespace meta
 {
 
-_SF_IS_STD_MAP_TYPE_META_GENERIC(map)
-_SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_map)
-_SF_IS_STD_MAP_TYPE_META_GENERIC(multimap)
-_SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_multimap)
+SF_IS_STD_MAP_TYPE_META_GENERIC(map)
+SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_map)
+SF_IS_STD_MAP_TYPE_META_GENERIC(multimap)
+SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_multimap)
 
 template <class T> struct is_std_any_unordered_map
     : one<is_std_unordered_map<T>,
@@ -105,6 +105,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, map, meta::is_std_any_map<T>::value)
 CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_map<T>::value)
 
 //clear
-#undef _SF_IS_STD_MAP_TYPE_META_GENERIC
+#undef SF_IS_STD_MAP_TYPE_META_GENERIC
 
 #endif // SF_BUILT_IN_MAP_HPP
