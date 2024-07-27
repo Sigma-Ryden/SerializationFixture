@@ -97,7 +97,7 @@ void track(Archive& archive, T& pointer)
         throw "The read track pointer must be initialized to nullptr.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-    auto key = detail::refer_key(archive, pointer); // serialize refer info
+    const auto key = detail::refer_key(archive, pointer); // serialize refer info
     if (not key) return;
 
     auto& item = archive.template tracking<track_type>()[key];

@@ -7,7 +7,7 @@
 #include <SF/Dynamic/AnyRegistry.hpp>
 
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class ::__sf;
+    friend class ::xxsf;
 
 // Alternative instantiable registration with library traits no-rtti
 #ifndef SERIALIZABLE
@@ -35,7 +35,7 @@ template <typename T> void serializable()
 
 template <typename T> T&& serializable(T&& object)
 {
-    serializable<meta::decay<T>>();
+    serializable<typename std::decay<T>::type>();
     return std::forward<T>(object);
 }
 

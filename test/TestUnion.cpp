@@ -23,7 +23,7 @@ union Variant
 
 SERIALIZATION(SaveLoad, Variant)
 {
-    // specify implementation here
+    // specify impl here
     archive & self.a;
 }
 

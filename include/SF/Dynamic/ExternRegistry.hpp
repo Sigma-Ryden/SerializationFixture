@@ -30,7 +30,7 @@ public:
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto key = ::__sf::traits(*pointer);
+        auto key = ::xxsf::traits(*pointer);
         archive & key;
 
         return key;
@@ -53,7 +53,7 @@ public:
 
 private:
     template <typename T> struct is_pointer_to_instantiable
-        : meta::all<instantiable_registry_t::is_instantiable<meta::dereference<T>>,
+        : meta::all<instantiable_registry_t::is_instantiable<typename meta::dereference<T>::type>,
                     meta::is_pointer_to_polymorphic<T>> {};
 
 public:
@@ -71,7 +71,7 @@ public:
     static void load(core::ioarchive_t& archive, T& pointer, key_type key, memory::void_ptr<T>& cache)
     {
         using TraitsType = typename memory::ptr_traits<T>::traits;
-        using dT = meta::dereference<T>;
+        using dT = typename meta::dereference<T>::type;
 
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
@@ -92,7 +92,7 @@ public:
     template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
     static void assign(T& pointer, const memory::void_ptr<T>& address, key_type key)
     {
-        using dT = meta::dereference<T>;
+        using dT = typename meta::dereference<T>::type;
 
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)

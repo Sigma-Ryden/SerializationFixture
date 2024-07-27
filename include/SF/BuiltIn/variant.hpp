@@ -43,14 +43,14 @@ void variant_save(Archive& archive, Variant& variant, let::u64 index)
 
 template <typename Type, class Archive, class Variant,
           SF_REQUIRE(not std::is_constructible<Type>::value)>
-void variant_load_implementation(Archive& archive, Variant& variant)
+void variant_load_impl(Archive& archive, Variant& variant)
 {
     throw "Require default constructor for specify type.";
 }
 
 template <typename Type, class Archive, class Variant,
           SF_REQUIRE(std::is_constructible<Type>::value)>
-void variant_load_implementation(Archive& archive, Variant& variant)
+void variant_load_impl(Archive& archive, Variant& variant)
 {
     archive & variant.template emplace<Type>();
 }
@@ -66,7 +66,7 @@ void variant_load(Archive& archive, Variant& variant, let::u64 index)
     if (I < index) return variant_load<I + 1>(archive, variant, index);
 
     using type = typename std::variant_alternative<I, Variant>::type;
-    variant_load_implementation<type>(archive, variant);
+    variant_load_impl<type>(archive, variant);
 }
 
 } // namespace detail

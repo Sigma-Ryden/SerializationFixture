@@ -12,32 +12,26 @@
 
 #define SERIALIZATION(mode, ...)                                                                        \
     template <>                                                                                         \
-    struct __sf::mode<__VA_ARGS__> {                                                                    \
-        template <class Archive> mode(Archive&, __VA_ARGS__&);                                          \
-    };                                                                                                  \
+    struct xxsf::mode<__VA_ARGS__> { template <class Archive> mode(Archive&, __VA_ARGS__&); };          \
     template <class Archive>                                                                            \
-    __sf::mode<__VA_ARGS__>::mode(Archive& archive, __VA_ARGS__& self)
+    xxsf::mode<__VA_ARGS__>::mode(Archive& archive, __VA_ARGS__& self)
 
 #define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
     template <class T>                                                                                  \
-    struct __sf::mode<T, SF_WHEN(__VA_ARGS__)> {                                                        \
-        template <class Archive> mode(Archive&, T&);                                                    \
-    };                                                                                                  \
+    struct xxsf::mode<T, SF_WHEN(__VA_ARGS__)> { template <class Archive> mode(Archive&, T&); };        \
     template <class T> template <class Archive>                                                         \
-    __sf::mode<T, SF_WHEN(__VA_ARGS__)>::mode(Archive& archive, T& self)
+    xxsf::mode<T, SF_WHEN(__VA_ARGS__)>::mode(Archive& archive, T& self)
 
-// Allow to hide implementationementation to translation unit, and declare interface in header
+// Allow to hide implementation to translation unit, and declare interface in header
 #define SERIALIZATION_INTERFACE(mode, ...)                                                              \
     template <>                                                                                         \
-    struct __sf::mode<__VA_ARGS__> {                                                                    \
-        mode(::sf::core::ioarchive_t&, __VA_ARGS__&);                                                   \
-    };
+    struct xxsf::mode<__VA_ARGS__> { mode(::sf::core::ioarchive_t&, __VA_ARGS__&); };
 
 #define SERIALIZATION_IMPLEMENTATION(mode, ...)                                                         \
-    __sf::mode<__VA_ARGS__>::mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
+    xxsf::mode<__VA_ARGS__>::mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
 
 // should be in global namespace
-class __sf
+class xxsf
 {
 public:
     template <class T, typename enable = void> struct SaveLoad;
@@ -56,26 +50,26 @@ public:
 public:
     template <class Archive, class T> static void call(Archive& archive, T& self)
     {
-        throw "The 'T' type cannot be saved/loaded."; // default implementation
+        throw "The 'T' type cannot be saved/loaded."; // default impl
     }
 
 private:
     template <class T>
     struct SaveModeMeta
     {
-        static constexpr auto index = sf::meta::with<is_save_class<T>, is_saveload_class<T>>::value;
+        static constexpr auto index = sf::meta::with<0, is_save_class<T>, is_saveload_class<T>>::value;
 
-        using mode_array = sf::meta::type_array<Save<T>, SaveLoad<T>, __sf>;
-        using mode = typename mode_array::template type<index>;
+        using mode_array = std::tuple<Save<T>, SaveLoad<T>, xxsf>;
+        using mode = typename std::tuple_element<index, mode_array>::type;
     };
 
     template <class T>
     struct LoadModeMeta
     {
-        static constexpr auto index = sf::meta::with<is_load_class<T>, is_saveload_class<T>>::value;
+        static constexpr auto index = sf::meta::with<0, is_load_class<T>, is_saveload_class<T>>::value;
 
-        using mode_array = sf::meta::type_array<Load<T>, SaveLoad<T>, __sf>;
-        using mode = typename mode_array::template type<index>;
+        using mode_array = std::tuple<Load<T>, SaveLoad<T>, xxsf>;
+        using mode = typename std::tuple_element<index, mode_array>::type;
     };
 
 public:
@@ -84,10 +78,10 @@ public:
 
 public:
     template <class T, typename = void> struct has_static_traits : std::false_type {};
-    template <class T> struct has_static_traits<T, SF_VOID(&T::__static_traits)> : std::true_type {};
+    template <class T> struct has_static_traits<T, SF_VOID(&T::xxstatic_traits)> : std::true_type {};
 
     template <class T, typename = void> struct has_traits : std::false_type {};
-    template <class T> struct has_traits<T, SF_VOID(&T::__trait)> : std::true_type {};
+    template <class T> struct has_traits<T, SF_VOID(&T::xxtrait)> : std::true_type {};
 
 public:
     template <class T> struct has_inner_traits
@@ -159,7 +153,7 @@ public:
     template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
     static instantiable_traits_t::key_type traits(T& object) noexcept
     {
-        return object.__trait();
+        return object.xxtrait();
     }
 
     template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
@@ -175,7 +169,7 @@ public:
     template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
     static constexpr instantiable_traits_t::key_type static_traits() noexcept
     {
-        return T::__static_traits();
+        return T::xxstatic_traits();
     }
 
     template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>

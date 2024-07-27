@@ -118,7 +118,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
     using sf::dynamic::extern_registry_t;
 
     auto& registry = instantiable_registry_t::instance();
-    auto key = __sf::traits<Square>();
+    auto key = xxsf::traits<Square>();
 
     {
         auto success = false;
@@ -199,12 +199,12 @@ TEST(TestLibrary, TestExportInstantiable)
 
     {
         EXPECT("export instantiable key.traits",
-            __sf::traits<MyStruct>() == sv_s &&
-            __sf::traits<MyClass>() == sv_c);
+            xxsf::traits<MyStruct>() == sv_s &&
+            xxsf::traits<MyClass>() == sv_c);
 
         EXPECT("export instantiable key.static_traits",
-            __sf::static_traits<MyStruct>() == sv_c &&
-            __sf::static_traits<MyClass>() == sv_s);
+            xxsf::static_traits<MyStruct>() == sv_c &&
+            xxsf::static_traits<MyClass>() == sv_s);
     }
 
     using sf::dynamic::extern_registry_t;
@@ -213,15 +213,15 @@ TEST(TestLibrary, TestExportInstantiable)
 
     {
         EXPECT("export instantiable.equivalent",
-            __sf::traits<MyCustomType>() == sv_ct &&
-            __sf::static_traits<MyCustomType>() == sv_ct);
+            xxsf::traits<MyCustomType>() == sv_ct &&
+            xxsf::static_traits<MyCustomType>() == sv_ct);
     }
 
     static auto sv_dc = SF_STATIC_HASH("MyDerived");
 
     {
         std::shared_ptr<MyClass> b = std::make_shared<MyDerivedClass>();
-        EXPECT("instantiable runtime key.traits", __sf::traits(*b) == sv_dc);
+        EXPECT("instantiable runtime key.traits", xxsf::traits(*b) == sv_dc);
     }
 }
 
@@ -633,7 +633,7 @@ TEST(TestLibrary, TestAggregateOverload)
         AggregateObject ao = s_ao;
 
         auto ar = oarchive(storage);
-        ar & nao // will serialize as user type by __sf::SaveLoad
+        ar & nao // will serialize as user type by xxsf::SaveLoad
            & aggregate(ao); // will serialize as aggregate type
     }
     {
@@ -694,7 +694,7 @@ TEST(TestLibrary, TestAbstract)
         ar & i;
 
         ASSERT("inited", i != nullptr);
-        EXPECT("traits", __sf::traits(*i) == __sf::traits<Implementation>());
+        EXPECT("traits", xxsf::traits(*i) == xxsf::traits<Implementation>());
     }
 }
 
@@ -732,7 +732,7 @@ Archive& operator& (Archive& archive, NoMacroObject& self)
 
 // inner serialization - useful for open/close class attributes (standard serialization)
 template <>
-struct __sf::SaveLoad<NoMacroDerived>
+struct xxsf::SaveLoad<NoMacroDerived>
 {
     template <class Archive>
     SaveLoad(Archive& archive, NoMacroDerived& self)
@@ -744,7 +744,7 @@ struct __sf::SaveLoad<NoMacroDerived>
 // inner serialization with split
 // polymorphic archive - useful for hide impl to translation unit
 template <>
-struct __sf::Save<NoMacroBase>
+struct xxsf::Save<NoMacroBase>
 {
     Save(sf::core::ioarchive_t& archive, NoMacroBase& self)
     {
@@ -754,7 +754,7 @@ struct __sf::Save<NoMacroBase>
 
 // for non polymorphic archive we can use operator&, and not only operator>>
 template <>
-struct __sf::Load<NoMacroBase>
+struct xxsf::Load<NoMacroBase>
 {
     template <class Archive>
     Load(Archive& archive, NoMacroBase& self)

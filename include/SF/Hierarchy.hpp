@@ -20,7 +20,7 @@ template <class Base, class Archive, class Derived,
                                std::is_base_of<Base, Derived>>::value)>
 void base(Archive& archive, Derived& object)
 {
-    ::__sf::serialize_base<Base>(archive, object);
+    ::xxsf::serialize_base<Base>(archive, object);
 }
 
 template <class Base, class Archive, class Derived,
@@ -29,15 +29,15 @@ template <class Base, class Archive, class Derived,
 void virtual_base(Archive& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
-    if (::__sf::traits(object) == ::__sf::template traits<Derived>())
+    if (::xxsf::traits(object) == ::xxsf::template traits<Derived>())
         base<Base>(archive, object);
 #else
     using key_type = typename Archive::TrackingKeyType;
 
     auto address = memory::pure(std::addressof(object));
 
-    auto key = reinterpret_cast<key_type>(address);
-    auto traits = ::__sf::traits<Base>();
+    const auto key = reinterpret_cast<key_type>(address);
+    const auto traits = ::xxsf::traits<Base>();
 
     auto& hierarchy_tracking = archive.template tracking<tracking::hierarchy_t>();
 
@@ -54,14 +54,14 @@ namespace detail
 {
 
 template <class Base, class Archive, class Derived,
-          SF_REQUIRE(not ::__sf::is_virtual_base_of<Base, Derived>::value)>
+          SF_REQUIRE(not ::xxsf::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_base)
 {
     base<Base>(archive, object_with_base);
 }
 
 template <class Base, class Archive, class Derived,
-          SF_REQUIRE(::__sf::is_virtual_base_of<Base, Derived>::value)>
+          SF_REQUIRE(::xxsf::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_virtual_base)
 {
     virtual_base<Base>(archive, object_with_virtual_base);
@@ -104,7 +104,7 @@ template <class Base, class Derived,
           SF_REQUIRE(std::is_base_of<Base, Derived>::value)>
 apply::virtual_base_functor_t<Derived, Base> virtual_base(Derived& object) noexcept { return { object }; }
 
-// default empty implementation
+// default empty impl
 template <class Archive, class Derived>
 void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
 

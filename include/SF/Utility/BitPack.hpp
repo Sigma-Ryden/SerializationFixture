@@ -22,9 +22,9 @@
 // FBITPACK use fixed common_fields_type size version.
 // BITPACK macro will generate code:
 // {
-//     auto __bitpack = ::sf::bitpack<common_fields_type>(archive);
-//     object.field0 = __bitpack(object.field0, field0_bits);
-//     object.field1 = __bitpack(object.field1, field1_bits);
+//     auto xxbitpack = ::sf::bitpack<common_fields_type>(archive);
+//     object.field0 = xxbitpack(object.field0, field0_bits);
+//     object.field1 = xxbitpack(object.field1, field1_bits);
 //     and etc.
 // }
 

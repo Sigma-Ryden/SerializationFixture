@@ -9,7 +9,7 @@
 // return first argument from two
 #define SF_FIRST_ARGUMENT(first, ...) first
 
-#define _SF_VA_ARGS_SIZE_IMPL(                                                                          \
+#define _SF___VA_ARGS___SIZE_IMPL(                                                                          \
      _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, _10, _11, _12, _13, _14, _15, _16,                     \
     _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32,                     \
     _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48,                     \
@@ -21,12 +21,12 @@
     31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16,                                     \
     15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0
 
-#define _SF_VA_ARGS_SIZE(...) _SF_VA_ARGS_SIZE_IMPL(__VA_ARGS__)
+#define _SF___VA_ARGS___SIZE(...) _SF___VA_ARGS___SIZE_IMPL(__VA_ARGS__)
 
 // return __VA_ARGS__ arguments count, for empty __VA_ARGS__ return 1
-#define SF_VA_ARGS_SIZE(...) _SF_VA_ARGS_SIZE(__VA_ARGS__, _REVERSE_INTEGER_SEQUENCE)
+#define SF___VA_ARGS___SIZE(...) _SF___VA_ARGS___SIZE(__VA_ARGS__, _REVERSE_INTEGER_SEQUENCE)
 
-// generate repeat sequance macro(1) macro(2) ... macro(count)
+// generate repeat sequence macro(1) macro(2) ... macro(count)
 #define SF_REPEAT(macro, count) SF_CONCAT(_REPEAT_, count)(macro)
 
 #define _REPEAT_0(macro)
@@ -104,7 +104,7 @@
 #define _REPEAT_64(macro) _REPEAT_63(macro) macro(64)
 // and etc.
 
-// generate placeholder sequance _0, _1, _2, ..., _count
+// generate placeholder sequence _0, _1, _2, ..., _count
 #define SF_PLACEHOLDERS(count) SF_CONCAT(_PLACEHOLDER_, count)()
 
 #define _PLACEHOLDER_1() _0

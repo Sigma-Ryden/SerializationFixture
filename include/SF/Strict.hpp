@@ -49,7 +49,7 @@ void strict(Archive& archive, T& pointer)
 {
     auto& registry = archive.registry();
 
-    auto id = registry.save_key(archive, pointer);
+    const auto id = registry.save_key(archive, pointer);
     registry.save(archive, pointer, id);
 }
 
@@ -60,7 +60,7 @@ void strict(Archive& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
-    auto id = registry.load_key(archive, pointer);
+    const auto id = registry.load_key(archive, pointer);
     registry.load(archive, pointer, id, cache);
 }
 

@@ -29,7 +29,7 @@ inline namespace common
 {
 
 template <typename Archive, typename T,
-          typename dT = meta::decay<T>, // T can be lvalue
+          typename dT = typename std::decay<T>::type, // T can be lvalue
           SF_REQUIRE(meta::all<meta::is_archive<Archive>,
                                meta::is_registered_extern<dT>,
                                meta::is_apply_functor<dT>>::value)>

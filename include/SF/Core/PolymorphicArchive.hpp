@@ -40,7 +40,7 @@ public:
 
 private:
     template <class Archive> struct is_valid_archive
-        : meta::boolean<archive_traits_key_t<Archive>::key != archive_traits::base_key> {};
+        : std::integral_constant<bool, archive_traits_key_t<Archive>::key != archive_traits::base_key> {};
 
 private:
     template <template <key_type> class archive_traits,
@@ -85,24 +85,24 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
-                                   ::__sf::has_save_mode<T>>::value)>
+                                   ::xxsf::has_save_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        ::__sf::save(archive, object);
+        ::xxsf::save(archive, object);
     }
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
-                                   ::__sf::has_load_mode<T>>::value)>
+                                   ::xxsf::has_load_mode<T>>::value)>
     static void proccess(DerivedArchive& archive, T& object)
     {
-        ::__sf::load(archive, object);
+        ::xxsf::load(archive, object);
     }
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
-                                   meta::negation<::__sf::has_save_mode<T>>,
-                                   meta::negation<::__sf::has_load_mode<T>>>::value)>
+                                   meta::negation<::xxsf::has_save_mode<T>>,
+                                   meta::negation<::xxsf::has_load_mode<T>>>::value)>
     static void proccess(DerivedArchive& archive, T& data)
     {
         process_data(archive, data);

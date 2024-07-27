@@ -27,13 +27,13 @@ namespace detail
 
 enum class Word { x32, x64 }; // word size: x* - number of bits
 
-template <Word word> struct word_type_implementation;
+template <Word word> struct word_type_impl;
 
-template <> struct word_type_implementation<Word::x32> { using type = let::u32; };
-template <> struct word_type_implementation<Word::x64> { using type = let::u64; };
+template <> struct word_type_impl<Word::x32> { using type = let::u32; };
+template <> struct word_type_impl<Word::x64> { using type = let::u64; };
 
 template <Word word>
-using word_t = typename detail::word_type_implementation<word>::type;
+using word_t = typename detail::word_type_impl<word>::type;
 
 template <typename T> struct word_traits { static constexpr auto value = Word::x64; };
 
@@ -128,7 +128,7 @@ constexpr key_type static_hash(const char* text) noexcept
 
 inline std::size_t type_hash(const std::type_info& type) noexcept
 {
-    // not portable implementation - will be changed
+    // not portable impl - will be changed
     return type.hash_code();
 }
 

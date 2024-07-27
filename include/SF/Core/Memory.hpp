@@ -108,7 +108,7 @@ namespace detail
 {
 
 template <class From, class To> struct is_pointer_cast_allowed
-    : ::__sf::is_pointer_cast_allowed<From, To> {};
+    : ::xxsf::is_pointer_cast_allowed<From, To> {};
 
 } // namespace detail
 

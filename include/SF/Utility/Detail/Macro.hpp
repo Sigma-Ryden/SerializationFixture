@@ -1,11 +1,11 @@
 #ifndef SF_UTILITY_DETAIL_MACRO_HPP
 #define SF_UTILITY_DETAIL_MACRO_HPP
 
-#define _BITPACK_N(...) SF_CONCAT(_BITPACK_, SF_VA_ARGS_SIZE(__VA_ARGS__))(__VA_ARGS__)
+#define _BITPACK_N(...) SF_CONCAT(_BITPACK_, SF___VA_ARGS___SIZE(__VA_ARGS__))(__VA_ARGS__)
 #define _BITPACK_BODY(archive, ...) archive); _BITPACK_N(__VA_ARGS__) }
-#define _BITPACK_IMPLEMENTATION(...) { auto __bitpack = ::sf::bitpack<__VA_ARGS__>( _BITPACK_BODY
+#define _BITPACK_IMPLEMENTATION(...) { auto xxbitpack = ::sf::bitpack<__VA_ARGS__>( _BITPACK_BODY
 
-#define _BITFIELD(field_and_bits) SF_FIRST_ARGUMENT field_and_bits = __bitpack field_and_bits;
+#define _BITFIELD(field_and_bits) SF_FIRST_ARGUMENT field_and_bits = xxbitpack field_and_bits;
 
 #define _BITPACK_1(field_and_bits) _BITFIELD(field_and_bits)
 #define _BITPACK_2(field_and_bits, ...) _BITFIELD(field_and_bits) _BITPACK_1(__VA_ARGS__)

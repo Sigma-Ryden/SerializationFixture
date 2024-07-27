@@ -13,7 +13,7 @@
 
 #define _SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                     \
     template <class Archive, typename T>                                                                \
-    void aggregate_implementation(Archive& archive, T& object, meta::dispatch<count>) {                 \
+    void aggregate_impl(Archive& archive, T& object, std::integral_constant<std::size_t, count>) {      \
         auto& [SF_PLACEHOLDERS(count)] = object;                                                        \
         archive(SF_PLACEHOLDERS(count));                                                                \
     }
@@ -27,8 +27,8 @@ namespace meta
 template <typename T> struct is_serializable_aggregate
     : all<is_aggregate<T>,
           negation<std::is_union<T>>,
-          negation<::__sf::has_save_mode<T>>,
-          negation<::__sf::has_save_mode<T>>> {};
+          negation<::xxsf::has_save_mode<T>>,
+          negation<::xxsf::has_save_mode<T>>> {};
 
 } // namespace meta
 
@@ -36,7 +36,7 @@ namespace detail
 {
 
 template <class Archive, typename T>
-void aggregate_implementation(Archive& archive, T& object, meta::dispatch<0>) noexcept { /*pass*/ }
+void aggregate_impl(Archive& archive, T& object, std::integral_constant<std::size_t, 0>) noexcept { /*pass*/ }
 
 SF_REPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
@@ -44,11 +44,11 @@ SF_REPEAT(_SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
-                              meta::is_aggregate<T>>::value)>
+                               meta::is_aggregate<T>>::value)>
 void aggregate(Archive& archive, T& object)
 {
     constexpr auto size = meta::aggregate_size<T>::value;
-    detail::aggregate_implementation(archive, object, meta::dispatch<size>{});
+    detail::aggregate_impl(archive, object, std::integral_constant<std::size_t, size>{});
 }
 
 inline namespace common

@@ -28,8 +28,8 @@ private:
     struct any_proxy_t
     {
         // we use raw function ptr instead std::function to reach perfomance
-        void(*__save)(archive_type&, std::any&) = nullptr;
-        void(*__load)(archive_type&, std::any&) = nullptr;
+        void(*save)(archive_type&, std::any&) = nullptr;
+        void(*load)(archive_type&, std::any&) = nullptr;
     };
 
 private:
@@ -57,12 +57,12 @@ public:
 
         any_proxy_t proxy;
 
-        proxy.__save = [](archive_type& archive, std::any& any)
+        proxy.save = [](archive_type& archive, std::any& any)
         {
             archive << std::any_cast<T&>(any);
         };
 
-        proxy.__load = [](archive_type& archive, std::any& any)
+        proxy.load = [](archive_type& archive, std::any& any)
         {
             any.emplace<T>();
             archive >> std::any_cast<T&>(any);
@@ -74,12 +74,12 @@ public:
 public:
     void save(archive_type& archive, std::any& any, let::u64 hash)
     {
-        registry(hash).__save(archive, any);
+        registry(hash).save(archive, any);
     }
 
     void load(archive_type& archive, std::any& any, let::u64 hash)
     {
-        registry(hash).__load(archive, any);
+        registry(hash).load(archive, any);
     }
 
 public:
@@ -106,7 +106,7 @@ template <typename T>
 class any_fixture_t
 {
 private:
-    static bool lock_;
+    static bool lock;
 
 public:
     any_fixture_t() { call(); }
@@ -114,8 +114,8 @@ public:
 public:
     static void call()
     {
-        if (lock_) return;
-        lock_ = true; // lock before creating clone instance to prevent recursive call
+        if (lock) return;
+        lock = true; // lock before creating clone instance to prevent recursive call
 
         auto& registry = any_registry_t::instance();
 
@@ -130,7 +130,7 @@ public:
 };
 
 template <typename T>
-bool any_fixture_t<T>::lock_ = false;
+bool any_fixture_t<T>::lock = false;
 
 } // namespace dynamic
 

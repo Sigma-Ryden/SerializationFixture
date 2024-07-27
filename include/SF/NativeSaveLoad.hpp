@@ -31,7 +31,7 @@ template <class Archive, typename T,
                                meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
 void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address) noexcept
 {
-    memory::assign<meta::dereference<T>>(pointer, address);
+    memory::assign<typename meta::dereference<T>::type>(pointer, address);
 }
 
 template <class Archive, typename T,

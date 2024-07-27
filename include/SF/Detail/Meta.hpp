@@ -29,109 +29,67 @@ template <typename... Tn> constexpr bool to_false() noexcept { return false; }
 template <typename T, std::size_t I = 0>
 auto declval() noexcept -> decltype(std::declval<T>()) { return std::declval<T>(); }
 
-template <bool condition, typename T = void>
-using when = typename std::enable_if<condition, T>::type;
-
-template <bool condition>
-using require = when<condition, int>;
-
-template <std::size_t I>
-using dispatch = std::integral_constant<std::size_t, I>;
-
-template <bool condition>
-using boolean = std::integral_constant<bool, condition>;
-
-template <bool condition, typename if_true, typename if_false>
-using conditional = typename std::conditional<condition, if_true, if_false>::type;
-
-template <typename T>
-using decay = typename std::decay<T>::type;
-
 template <class...> struct all : std::true_type {};
 template <class B1> struct all<B1> : B1 {};
 template <class B1, class... Bn>
-struct all<B1, Bn...> : conditional<bool(B1::value), all<Bn...>, B1> {};
+struct all<B1, Bn...> : std::conditional<bool(B1::value), all<Bn...>, B1>::type {};
 
 template <class...> struct one : std::false_type {};
 template <class B1> struct one<B1> : B1 {};
 template <class B1, class... Bn>
-struct one<B1, Bn...> : conditional<bool(B1::value), B1, one<Bn...>> {};
+struct one<B1, Bn...> : std::conditional<bool(B1::value), B1, one<Bn...>>::type {};
 
-template <class B> struct negation : boolean<not bool(B::value)> {};
+template <class B> struct negation : std::integral_constant<bool, not bool(B::value)> {};
 
 template <typename T, typename... Tn> struct is_same : all<std::is_same<T, Tn>...> {};
 
 template <typename... Args>
 using to_void = void;
 
-namespace detail
-{
-
-template <typename T, std::size_t N>
-struct remove_pointer_implementation
+template <typename T, std::size_t N = 1>
+struct remove_pointer
 {
     using type = T;
 };
 
 template <typename T>
-struct remove_pointer_implementation<T*, 1>
+struct remove_pointer<T*, 1>
 {
     using type = T;
 };
 
 template <typename T, std::size_t N>
-struct remove_pointer_implementation<T*, N>
+struct remove_pointer<T*, N>
 {
-    using type = typename remove_pointer_implementation<T, N - 1>::type;
+    using type = typename remove_pointer<T, N - 1>::type;
 };
 
-} // namespace detail
+template <typename T, typename = void> struct dereference { using type = T; };
 
-template <typename T, std::size_t N = 1>
-using remove_pointer = typename detail::remove_pointer_implementation<T, N>::type;
+template <typename T> struct dereference<T*> { using type = T; };
+template <typename T> struct dereference<std::weak_ptr<T>> { using type = T; };
+template <typename T> struct dereference<std::shared_ptr<T>> { using type = T; };
+template <typename T> struct dereference<std::unique_ptr<T>> { using type = T; };
 
-namespace detail
-{
-
-template <typename T, typename = void> struct dereference_implementation { using type = T; };
-
-template <typename T> struct dereference_implementation<T*> { using type = T; };
-template <typename T> struct dereference_implementation<std::weak_ptr<T>> { using type = T; };
-template <typename T> struct dereference_implementation<std::shared_ptr<T>> { using type = T; };
-template <typename T> struct dereference_implementation<std::unique_ptr<T>> { using type = T; };
-
-template <typename T> struct dereference_implementation<T, SF_VOID(*std::declval<T>())>
+template <typename T> struct dereference<T, SF_VOID(*std::declval<T>())>
     : std::remove_reference<decltype(*std::declval<T>())> {};
 
-} // namespace detail
-
-template <typename T>
-using dereference = typename detail::dereference_implementation<T>::type;
-
-namespace detail
+template <typename T, std::size_t N = 1>
+struct pointer
 {
-
-template <typename T, std::size_t N>
-struct pointer_implementation
-{
-    using type = typename pointer_implementation<T, N - 1>::type*;
+    using type = typename pointer<T, N - 1>::type*;
 };
 
 template <typename T>
-struct pointer_implementation<T, 0>
+struct pointer<T, 0>
 {
     using type = T;
 };
-
-} // namespace detail
-
-template <typename T, std::size_t N = 1>
-using pointer = typename detail::pointer_implementation<T, N>::type;
 
  // limited by template depth
 template <std::size_t... I> struct index_sequence
 {
-    static constexpr std::size_t size() noexcept { return sizeof...(I); }
+    static constexpr auto value = sizeof...(I);
 };
 
 namespace detail
@@ -151,13 +109,6 @@ struct index_sequence_helper<0, In...>
 template <std::size_t N>
 using make_index_sequence = typename detail::index_sequence_helper<N>::type;
 
-template <typename... Tn>
-struct type_array
-{
-    template <std::size_t I>
-    using type = typename std::tuple_element<I, std::tuple<Tn...>>::type;
-};
-
 // meta
 template <typename T, typename enable = void>
 struct is_complete : std::false_type {};
@@ -172,17 +123,22 @@ template <typename From, typename To>
 struct can_static_cast<From, To,
     SF_VOID( static_cast<To*>(std::declval<From*>()) )> : std::true_type {};
 
-template <typename T> constexpr std::size_t pointer_count() noexcept
+template <typename T, bool = std::is_pointer<T>::value>
+struct pointer_count
 {
-    return std::is_pointer<T>::value
-         ? 1 + pointer_count<remove_pointer<T>>()
-         : 0;
-}
+    static constexpr auto value = pointer_count<typename remove_pointer<T>::type>::value + 1;
+};
+
+template <typename T>
+struct pointer_count<T, false>
+{
+    static constexpr auto value = std::size_t(0);
+};
 
 struct shared_common_t {};
 struct raw_common_t {};
 
-struct dummy_type
+struct dummy_t
 {
 #if __cplusplus >= 201703L
     template <typename T, SF_REQUIRE(not std::is_same<T, std::any>::value)> operator T();
@@ -192,40 +148,19 @@ struct dummy_type
 };
 
 #if __cplusplus >= 201703L
-namespace detail
-{
-
 template <class C, typename S = index_sequence<>, typename overload = void>
-struct aggregate_size_implementation : S {};
+struct aggregate_size : S {};
 
 template <class C, std::size_t... I>
-struct aggregate_size_implementation<C, index_sequence<I...>,
-    SF_VOID(C{ declval<dummy_type>(), declval<dummy_type, I>()... })>
-    : aggregate_size_implementation<C, index_sequence<I..., sizeof...(I)>> {};
-
-} // namespace detail
-
-template <class T, bool condition = std::is_aggregate<T>::value>
-struct aggregate_size
-{
-    static constexpr auto value = detail::aggregate_size_implementation<T>::size();
-};
-
-template <class T>
-struct aggregate_size<T, false>
-{
-    static constexpr auto value = 0;
-};
-
+struct aggregate_size<C, index_sequence<I...>,
+                      SF_VOID(C{ declval<dummy_t>(), declval<dummy_t, I>()... })>
+    : aggregate_size<C, index_sequence<I..., sizeof...(I)>> {};
 #endif // if
-
-namespace detail
-{
 
 template <class T, typename enable = void>
 struct object_value_type
 {
-    using type = dummy_type;
+    using type = dummy_t;
 };
 
 template <class T>
@@ -237,7 +172,7 @@ struct object_value_type<T, to_void<typename T::value_type>>
 template <typename T>
 struct array_value_type
 {
-    using type = dummy_type;
+    using type = dummy_t;
 };
 
 template <typename T>
@@ -253,39 +188,27 @@ struct array_value_type<T[N]>
 };
 
 template <typename T, typename enable = void>
-struct value_type_implementation
+struct value_type
 {
-    using type = dummy_type;
+    using type = dummy_t;
 };
 
 template <typename T>
-struct value_type_implementation<T, when<std::is_class<T>::value>>
+struct value_type<T, typename std::enable_if<std::is_class<T>::value>::type>
 {
     using type = typename object_value_type<T>::type;
 };
 
 template <typename T>
-struct value_type_implementation<T, when<std::is_array<T>::value>>
+struct value_type<T, typename std::enable_if<std::is_array<T>::value>::type>
 {
     using type = typename array_value_type<T>::type;
 };
 
-} // namespace detail
+template <std::size_t I, typename... Bn> struct with : std::integral_constant<std::size_t, I> {};
 
-template <typename T>
-using value_type = typename detail::value_type_implementation<T>::type;
-
-namespace detail
-{
-
-template <std::size_t I, typename... Bn> struct with_implementation : dispatch<I> {};
-
-template <std::size_t I, typename B, typename... Bn> struct with_implementation<I, B, Bn...>
-    : conditional<bool(B::value), with_implementation<I>, with_implementation<I + 1, Bn...>> {};
-
-} // namespace detail
-
-template <typename... Bn> struct with : detail::with_implementation<0, Bn...> {};
+template <std::size_t I, typename B, typename... Bn> struct with<I, B, Bn...>
+    : std::conditional<bool(B::value), with<I>, with<I + 1, Bn...>>::type {};
 
 template <typename From, typename To> struct is_cast_allowed
     : one<can_static_cast<From, To>, std::is_convertible<From, To>> {};
@@ -293,22 +216,22 @@ template <typename From, typename To> struct is_cast_allowed
 namespace detail
 {
 
-template <typename> struct is_character_implementation : std::false_type {};
+template <typename> struct is_character_impl : std::false_type {};
 
-template <> struct is_character_implementation<char> : std::true_type {};
-template <> struct is_character_implementation<signed char> : std::true_type {};
-template <> struct is_character_implementation<unsigned char> : std::true_type {};
+template <> struct is_character_impl<char> : std::true_type {};
+template <> struct is_character_impl<signed char> : std::true_type {};
+template <> struct is_character_impl<unsigned char> : std::true_type {};
 
-template <> struct is_character_implementation<wchar_t> : std::true_type {};
-template <> struct is_character_implementation<char16_t> : std::true_type {};
-template <> struct is_character_implementation<char32_t> : std::true_type {};
+template <> struct is_character_impl<wchar_t> : std::true_type {};
+template <> struct is_character_impl<char16_t> : std::true_type {};
+template <> struct is_character_impl<char32_t> : std::true_type {};
 
 } // namespace detail
 
 template <typename T>
-struct is_character : detail::is_character_implementation<typename std::remove_cv<T>::type> {};
+struct is_character : detail::is_character_impl<typename std::remove_cv<T>::type> {};
 
-template <class T> struct is_compressible : std::is_arithmetic<value_type<T>> {};
+template <class T> struct is_compressible : std::is_arithmetic<typename value_type<T>::type> {};
 
 template <class Derived, class Base, class... Base_n> struct is_derived_of
     : all<std::is_base_of<Base, Derived>,
@@ -330,9 +253,9 @@ template <typename T> struct is_raw_pointer : std::is_pointer<T> {};
 template <typename T> struct is_pointer : one<is_shared_pointer<T>, is_raw_pointer<T>> {};
 
 template <typename T> struct is_pointer_to_polymorphic
-    : all<is_pointer<T>, std::is_polymorphic<dereference<T>>> {};
+    : all<is_pointer<T>, std::is_polymorphic<typename dereference<T>::type>> {};
 
-template <typename T> struct is_void_pointer : all<is_pointer<T>, is_void<dereference<T>>> {};
+template <typename T> struct is_void_pointer : all<is_pointer<T>, is_void<typename dereference<T>::type>> {};
 template <typename T> struct is_null_pointer : std::is_same<T, std::nullptr_t> {};
 
 template <typename> struct is_function_pointer : std::false_type {};

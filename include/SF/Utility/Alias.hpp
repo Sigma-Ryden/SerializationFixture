@@ -28,7 +28,7 @@ public:
     alias_t() noexcept : data_(nullptr) {}
 
     template <typename dT,
-              SF_REQUIRE(::__sf::is_pointer_cast_allowed<dT, T>::value)>
+              SF_REQUIRE(::xxsf::is_pointer_cast_allowed<dT, T>::value)>
     alias_t(dT& data) noexcept
         : data_(std::addressof(data)) {}
 
@@ -72,7 +72,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
         throw "The write alias_t must be initialized.";
 
     auto pointer = std::addressof(alias.get());
-    auto key = detail::refer_key(archive, pointer);
+    const auto key = detail::refer_key(archive, pointer);
 
     auto& is_tracking = archive.template tracking<tracking::raw_t>()[key];
 

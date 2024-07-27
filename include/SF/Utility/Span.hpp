@@ -31,8 +31,8 @@ public:
     using size_type         = std::size_t;
     using value_type        = span_t<T, N - 1>;
 
-    using pointer           = meta::pointer<T, N>;
-    using const_pointer     = const meta::pointer<T, N>;
+    using pointer           = typename meta::pointer<T, N>::type;
+    using const_pointer     = const pointer;
 
 protected:
     using Dimension         = size_type[N];
@@ -70,7 +70,7 @@ public:
 
 public:
     using value_type        = span_t<T, N - 1>;
-    using dereference_type  = meta::pointer<T, N - 1>;
+    using dereference_type  = typename meta::pointer<T, N - 1>::type;
 
     using reference         = value_type&;
     using const_reference   = const value_type&;
@@ -150,7 +150,7 @@ struct is_span<utility::span_t<T, N>> : std::true_type {};
 
 template <typename Pointer, typename D, typename... Dn>
 struct is_span_set
-    : meta::all<meta::boolean<meta::pointer_count<Pointer>() >= sizeof...(Dn) + 1>,
+    : meta::all<std::integral_constant<bool, meta::pointer_count<Pointer>::value >= sizeof...(Dn) + 1>,
                 meta::all<std::is_arithmetic<D>,
                           std::is_arithmetic<Dn>...>> {};
 
@@ -161,7 +161,7 @@ namespace utility
 
 template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
-          typename Type = meta::remove_pointer<Pointer, N>,
+          typename Type = typename meta::remove_pointer<Pointer, N>::type,
           SF_REQUIRE(meta::is_span_set<Pointer, D, Dn...>::value)>
 span_t<Type, N> make_span(Pointer& data, D d, Dn... dn)
 {
@@ -177,7 +177,7 @@ namespace detail
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_archive<Archive>,
                               meta::negation<meta::is_span<T>>>::value)>
-void span_implementation(Archive& archive, T& data)
+void span_impl(Archive& archive, T& data)
 {
     archive & data;
 }
@@ -185,19 +185,19 @@ void span_implementation(Archive& archive, T& data)
 // serialization of scoped data with previous dimension initialization
 template <class oarchive_t, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<oarchive_t>,
-                              meta::is_span<T>>::value)>
-void span_implementation(oarchive_t& archive, T& array)
+                               meta::is_span<T>>::value)>
+void span_impl(oarchive_t& archive, T& array)
 {
     using size_type = typename T::size_type;
 
     for (size_type i = 0; i < array.size(); ++i)
-        span_implementation(archive, array[i]);
+        span_impl(archive, array[i]);
 }
 
 template <class iarchive_t, typename T,
           SF_REQUIRE(meta::all<meta::is_iarchive<iarchive_t>,
-                              meta::is_span<T>>::value)>
-void span_implementation(iarchive_t& archive, T& array)
+                               meta::is_span<T>>::value)>
+void span_impl(iarchive_t& archive, T& array)
 {
     using size_type        = typename T::size_type;
     using dereference_type = typename T::dereference_type;
@@ -208,7 +208,7 @@ void span_implementation(iarchive_t& archive, T& array)
     array.init(ptr);
 
     for (size_type i = 0; i < array.size(); ++i)
-        span_implementation(archive, array[i]);
+        span_impl(archive, array[i]);
 }
 
 } // namespace detail
@@ -220,14 +220,14 @@ inline namespace common
 template <class Archive, typename T,
           typename D, typename... Dn,
           SF_REQUIRE(meta::all<meta::is_archive<Archive>,
-                              meta::is_span_set<T, D, Dn...>>::value)>
+                               meta::is_span_set<T, D, Dn...>>::value)>
 void span(Archive& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (not detail::refer_key(archive, pointer)) return; // serialize refer info
     archive(dimension, dimension_n...);
 
     auto span_data = utility::make_span(pointer, dimension, dimension_n...);
-    detail::span_implementation(archive, span_data);
+    detail::span_impl(archive, span_data);
 }
 
 } // inline namespace common
