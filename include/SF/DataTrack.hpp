@@ -43,7 +43,7 @@ void track(Archive& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
 
-    auto key = detail::refer_key(archive, pointer); // serialize refer info
+    const auto key = detail::refer_key(archive, pointer); // serialize refer info
     if (not key) return;
 
 #ifdef SF_DEBUG

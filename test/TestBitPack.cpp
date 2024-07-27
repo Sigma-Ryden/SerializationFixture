@@ -31,7 +31,7 @@ TEST(Common, TestBitPack)
         object.c1 = s_c1;
         object.c2 = s_c2;
 
-        BITPACK(std::uint8_t)(ar, (object.c0, 3), (object.c1, 1), (object.c2, 4));
+        BITPACK(std::uint8_t, ar, (object.c0, 3), (object.c1, 1), (object.c2, 4));
     }
     {
         auto ar = sf::iarchive(storage);

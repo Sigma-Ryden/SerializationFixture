@@ -46,8 +46,6 @@ private:
 private:
     struct instantiable_proxy_t
     {
-        instantiable_type* instance = nullptr;
-
         std::shared_ptr<instantiable_type>(*shared)() = nullptr;
         std::shared_ptr<instantiable_type>(*cast_shared)(std::shared_ptr<void>) = nullptr;
 
@@ -64,12 +62,6 @@ private:
 private:
 
     instantiable_registry_t() : registry_() {}
-
-    ~instantiable_registry_t()
-    {
-        for (const auto& pair : registry_) delete pair.second.instance;
-    }
-
     instantiable_registry_t(const instantiable_registry_t&) = delete;
     instantiable_registry_t& operator=(const instantiable_registry_t&) = delete;
 
@@ -97,8 +89,6 @@ public:
         if (is_registered(key)) return;
 
         instantiable_proxy_t proxy;
-
-        proxy.instance = memory::allocate_raw<instantiable_type, T>();
 
         proxy.shared = [] { return memory::allocate_shared<instantiable_type, T>(); };
 
