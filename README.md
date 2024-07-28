@@ -80,18 +80,18 @@ struct Handbook
 ```
 Lets write serialization functions (since C++17 we can ommit it, for aggregate types).
 ```C++
-SERIALIZATION(SaveLoad, Prototype)
+SERIALIZATION(saveload, Prototype)
 {
     archive & self.name & self.properties;
 }
 
-SERIALIZATION(SaveLoad, Handbook)
+SERIALIZATION(saveload, Handbook)
 {
     archive & self.prototypes;
 }
 ```
 Explaining of using macros above:
-- ```SERIALIZATION(<mode>, <type>)``` - Generate Save/Load/SaveLoad serialization functions for given class.
+- ```SERIALIZATION(<mode>, <type>)``` - Generate save/load/saveload serialization functions for given class.
 
 ### Using of serialization library:
 
