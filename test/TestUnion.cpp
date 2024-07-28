@@ -21,7 +21,7 @@ union Variant
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, Variant)
+SERIALIZATION(saveload, Variant)
 {
     // specify impl here
     archive & self.a;

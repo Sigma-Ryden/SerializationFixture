@@ -26,7 +26,7 @@ inline namespace library
 {
 
 // slow impl
-EXTERN_CONDITIONAL_SERIALIZATION(Save, bitset, meta::is_std_bitset<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, bitset, meta::is_std_bitset<T>::value)
 {
     auto data = bitset.to_string();
     archive & data;
@@ -34,7 +34,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, bitset, meta::is_std_bitset<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, bitset, meta::is_std_bitset<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, bitset, meta::is_std_bitset<T>::value)
 {
     std::string data;
     archive & data;

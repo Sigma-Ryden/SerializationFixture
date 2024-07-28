@@ -20,25 +20,25 @@ namespace sf
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, object, ::xxsf::has_save_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, object, ::xxsf::has_save_mode<T>::value)
 {
     ::xxsf::save(archive, object);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::xxsf::has_load_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, object, ::xxsf::has_load_mode<T>::value)
 {
     ::xxsf::load(archive, object);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, number, std::is_arithmetic<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, number, std::is_arithmetic<T>::value)
 {
     binary(archive, number);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, enumerator, std::is_enum<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, enumerator, std::is_enum<T>::value)
 {
     using underlying_type = typename std::underlying_type<T>::type;
     auto value = static_cast<underlying_type>(enumerator);
@@ -46,7 +46,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, enumerator, std::is_enum<T>::value)
     return archive & value;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, enumerator, std::is_enum<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, enumerator, std::is_enum<T>::value)
 {
     using underlying_type = typename std::underlying_type<T>::type;
 
@@ -58,13 +58,13 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, enumerator, std::is_enum<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, array, std::is_array<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, array, std::is_array<T>::value)
 {
     compress::zip(archive, array);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_pointer<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, pointer, meta::is_serializable_raw_pointer<T>::value)
 {
 #ifdef SF_PTRTRACK_DISABLE
     tracking::raw(archive, pointer);

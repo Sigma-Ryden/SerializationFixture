@@ -16,7 +16,7 @@ namespace sf
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, shared_ptr, meta::is_std_shared_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, shared_ptr, meta::is_std_shared_ptr<T>::value)
 {
     tracking::track(archive, shared_ptr);
     return archive;

@@ -25,7 +25,7 @@ struct is_std_unique_ptr<std::unique_ptr<T, Deleter>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     auto data = unique_ptr.get();
     archive & data;
@@ -33,7 +33,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::v
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, unique_ptr, meta::is_std_unique_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     using item_type = typename memory::ptr_traits<T>::item;
 

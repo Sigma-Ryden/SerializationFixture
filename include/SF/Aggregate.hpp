@@ -54,7 +54,7 @@ void aggregate(Archive& archive, T& object)
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, object, meta::is_serializable_aggregate<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, object, meta::is_serializable_aggregate<T>::value)
 {
     aggregate(archive, object);
     return archive;

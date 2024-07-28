@@ -25,7 +25,7 @@ template <typename T> struct atomic_traits<std::atomic<T>> { using value_type = 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, atomic, meta::is_std_atomic<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, atomic, meta::is_std_atomic<T>::value)
 {
     auto object = atomic.load();
     archive & object;
@@ -33,7 +33,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, atomic, meta::is_std_atomic<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, atomic, meta::is_std_atomic<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, atomic, meta::is_std_atomic<T>::value)
 {
     using object_type = typename meta::atomic_traits<T>::value_type;
 

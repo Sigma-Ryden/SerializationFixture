@@ -24,7 +24,7 @@ template <typename T> struct is_std_optional<std::optional<T>> : std::true_type 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, optional, meta::is_std_optional<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, optional, meta::is_std_optional<T>::value)
 {
     auto is_init = optional.has_value();
     archive & is_init;
@@ -34,7 +34,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, optional, meta::is_std_optional<T>::value
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, optional, meta::is_std_optional<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, optional, meta::is_std_optional<T>::value)
 {
     auto is_init = false;
     archive & is_init;

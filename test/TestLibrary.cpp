@@ -328,42 +328,42 @@ struct DecorativeFoliageObject : DecorativeObject, FoliageObjectInstance
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, WorldObject)
+SERIALIZATION(saveload, WorldObject)
 {
     ++self.wo;
 }
 
-SERIALIZATION(SaveLoad, EnvironmentObject)
+SERIALIZATION(saveload, EnvironmentObject)
 {
     ++self.eo;
     archive & hierarchy<WorldObject>(self);
 }
 
-SERIALIZATION(SaveLoad, MoveableObject)
+SERIALIZATION(saveload, MoveableObject)
 {
     ++self.mo;
     archive & hierarchy<EnvironmentObject>(self);
 }
 
-SERIALIZATION(SaveLoad, DestructibleObject)
+SERIALIZATION(saveload, DestructibleObject)
 {
     ++self.dso;
     archive & hierarchy<EnvironmentObject>(self);
 }
 
-SERIALIZATION(SaveLoad, DecorativeObject)
+SERIALIZATION(saveload, DecorativeObject)
 {
     ++self.dco;
     archive & hierarchy<DestructibleObject, MoveableObject>(self);
 }
 
-SERIALIZATION(SaveLoad, FoliageObject)
+SERIALIZATION(saveload, FoliageObject)
 {
     ++self.fo;
     archive & hierarchy<WorldObject>(self);
 }
 
-SERIALIZATION(SaveLoad, DecorativeFoliageObject)
+SERIALIZATION(saveload, DecorativeFoliageObject)
 {
     ++self.dcfo;
     archive & hierarchy<DecorativeObject, FoliageObject>(self);
@@ -425,7 +425,7 @@ public:
     bool operator== (const SomeObject& s)
     {
         return data_ == s.data_ && inner_data_ == s.inner_data_;
-    };
+    }
 
 private:
     int inner_data_;
@@ -448,24 +448,24 @@ struct PolymorphicDerived : public PolymorphicBase
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, SomeObjectImpl)
+SERIALIZATION(saveload, SomeObjectImpl)
 {
     archive & self.data_;
 }
 
-SERIALIZATION(SaveLoad, SomeObject)
+SERIALIZATION(saveload, SomeObject)
 {
     archive & hierarchy<SomeObjectImpl>(self) & self.inner_data_;
 }
 
-SERIALIZATION(SaveLoad, PolymorphicBaseImpl) {}
+SERIALIZATION(saveload, PolymorphicBaseImpl) {}
 
-SERIALIZATION(SaveLoad, PolymorphicBase)
+SERIALIZATION(saveload, PolymorphicBase)
 {
     archive & hierarchy<PolymorphicBaseImpl>(self);
 }
 
-SERIALIZATION(SaveLoad, PolymorphicDerived)
+SERIALIZATION(saveload, PolymorphicDerived)
 {
     archive & hierarchy<PolymorphicBase>(self);
 }
@@ -523,12 +523,12 @@ struct NoTraitsDerived : NoTraitsBase
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, NoTraitsBase)
+SERIALIZATION(saveload, NoTraitsBase)
 {
     archive & self.b;
 }
 
-SERIALIZATION(SaveLoad, NoTraitsDerived)
+SERIALIZATION(saveload, NoTraitsDerived)
 {
     archive & hierarchy<NoTraitsBase>(self) & self.d;
 }
@@ -615,7 +615,7 @@ struct AggregateObject
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, AggregateObject)
+SERIALIZATION(saveload, AggregateObject)
 {
     archive & self.i & self.f; // ignoring self.c
 }
@@ -633,7 +633,7 @@ TEST(TestLibrary, TestAggregateOverload)
         AggregateObject ao = s_ao;
 
         auto ar = oarchive(storage);
-        ar & nao // will serialize as user type by xxsf::SaveLoad
+        ar & nao // will serialize as user type by ::xxsfsaveloadd
            & aggregate(ao); // will serialize as aggregate type
     }
     {
@@ -672,11 +672,11 @@ struct Implementation : Interface
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, Interface) {}
-SERIALIZATION(SaveLoad, Implementation) {}
+SERIALIZATION(saveload, Interface) {}
+SERIALIZATION(saveload, Implementation) {}
 
 // or general solution
-// CONDITIONAL_SERIALIZATION(SaveLoad, std::is_base_of<Interface, T>::value) {}
+// CONDITIONAL_SERIALIZATION(saveload, std::is_base_of<Interface, T>::value) {}
 
 TEST(TestLibrary, TestAbstract)
 {
@@ -732,10 +732,10 @@ Archive& operator& (Archive& archive, NoMacroObject& self)
 
 // inner serialization - useful for open/close class attributes (standard serialization)
 template <>
-struct xxsf::SaveLoad<NoMacroDerived>
+struct xxsf_saveload<NoMacroDerived>
 {
     template <class Archive>
-    SaveLoad(Archive& archive, NoMacroDerived& self)
+    xxsf_saveload(Archive& archive, NoMacroDerived& self)
     {
         archive & sf::hierarchy<NoMacroBase>(self) & self.d;
     }
@@ -744,9 +744,9 @@ struct xxsf::SaveLoad<NoMacroDerived>
 // inner serialization with split
 // polymorphic archive - useful for hide impl to translation unit
 template <>
-struct xxsf::Save<NoMacroBase>
+struct xxsf_save<NoMacroBase>
 {
-    Save(sf::core::ioarchive_t& archive, NoMacroBase& self)
+    xxsf_save(sf::core::ioarchive_t& archive, NoMacroBase& self)
     {
         archive << self.b;
     }
@@ -754,10 +754,10 @@ struct xxsf::Save<NoMacroBase>
 
 // for non polymorphic archive we can use operator&, and not only operator>>
 template <>
-struct xxsf::Load<NoMacroBase>
+struct xxsf_load<NoMacroBase>
 {
     template <class Archive>
-    Load(Archive& archive, NoMacroBase& self)
+    xxsf_load(Archive& archive, NoMacroBase& self)
     {
         archive & self.b; // or archive >> self.b
     }

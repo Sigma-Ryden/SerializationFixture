@@ -12,46 +12,48 @@
 
 #define SERIALIZATION(mode, ...)                                                                        \
     template <>                                                                                         \
-    struct xxsf::mode<__VA_ARGS__> { template <class Archive> mode(Archive&, __VA_ARGS__&); };          \
+    struct xxsf_##mode<__VA_ARGS__> { template <class Archive> xxsf_##mode(Archive&, __VA_ARGS__&); };  \
     template <class Archive>                                                                            \
-    xxsf::mode<__VA_ARGS__>::mode(Archive& archive, __VA_ARGS__& self)
+    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(Archive& archive, __VA_ARGS__& self)
 
 #define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
     template <class T>                                                                                  \
-    struct xxsf::mode<T, SF_WHEN(__VA_ARGS__)> { template <class Archive> mode(Archive&, T&); };        \
+    struct xxsf_##mode<T, SF_WHEN(__VA_ARGS__)> { template <class Archive> xxsf_##mode(Archive&, T&); };\
     template <class T> template <class Archive>                                                         \
-    xxsf::mode<T, SF_WHEN(__VA_ARGS__)>::mode(Archive& archive, T& self)
+    xxsf_##mode<T, SF_WHEN(__VA_ARGS__)>::xxsf_##mode(Archive& archive, T& self)
 
 // Allow to hide implementation to translation unit, and declare interface in header
 #define SERIALIZATION_INTERFACE(mode, ...)                                                              \
     template <>                                                                                         \
-    struct xxsf::mode<__VA_ARGS__> { mode(::sf::core::ioarchive_t&, __VA_ARGS__&); };
+    struct xxsf_##mode<__VA_ARGS__> { xxsf_##mode(::sf::core::ioarchive_t&, __VA_ARGS__&); };
 
 #define SERIALIZATION_IMPLEMENTATION(mode, ...)                                                         \
-    xxsf::mode<__VA_ARGS__>::mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
+    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
 
 // should be in global namespace
+
+template <class T, typename enable = void>
+struct xxsf_save;
+
+template <class T, typename enable = void>
+struct xxsf_load;
+
+template <class T, typename enable = void>
+struct xxsf_saveload;
+
 class xxsf
 {
 public:
-    template <class T, typename enable = void> struct SaveLoad;
-    template <class T, typename enable = void> struct Save;
-    template <class T, typename enable = void> struct Load;
+    using key_type = ::xxsf_traits<void>::key_type;
 
 public:
-    template <class T> struct is_save_class : sf::meta::is_complete<Save<T>> {};
-    template <class T> struct is_load_class : sf::meta::is_complete<Load<T>> {};
-    template <class T> struct is_saveload_class : sf::meta::is_complete<SaveLoad<T>> {};
+    template <class T> struct is_save_class : sf::meta::is_complete<::xxsf_save<T>> {};
+    template <class T> struct is_load_class : sf::meta::is_complete<::xxsf_load<T>> {};
+    template <class T> struct is_saveload_class : sf::meta::is_complete<::xxsf_saveload<T>> {};
 
 public:
     template <class T> struct has_save_mode : sf::meta::one<is_save_class<T>, is_saveload_class<T>> {};
     template <class T> struct has_load_mode : sf::meta::one<is_load_class<T>, is_saveload_class<T>> {};
-
-public:
-    template <class Archive, class T> static void call(Archive& archive, T& self)
-    {
-        throw "The 'T' type cannot be saved/loaded."; // default impl
-    }
 
 private:
     template <class T>
@@ -59,7 +61,7 @@ private:
     {
         static constexpr auto index = sf::meta::with<0, is_save_class<T>, is_saveload_class<T>>::value;
 
-        using mode_array = std::tuple<Save<T>, SaveLoad<T>, xxsf>;
+        using mode_array = std::tuple<::xxsf_save<T>, ::xxsf_saveload<T>>;
         using mode = typename std::tuple_element<index, mode_array>::type;
     };
 
@@ -68,13 +70,9 @@ private:
     {
         static constexpr auto index = sf::meta::with<0, is_load_class<T>, is_saveload_class<T>>::value;
 
-        using mode_array = std::tuple<Load<T>, SaveLoad<T>, xxsf>;
+        using mode_array = std::tuple<::xxsf_load<T>, ::xxsf_saveload<T>>;
         using mode = typename std::tuple_element<index, mode_array>::type;
     };
-
-public:
-    template <class T> using SaveMode = typename SaveModeMeta<T>::mode;
-    template <class T> using LoadMode = typename LoadModeMeta<T>::mode;
 
 public:
     template <class T, typename = void> struct has_static_traits : std::false_type {};
@@ -116,20 +114,16 @@ public:
                         sf::meta::negation<can_static_cast<Base*, Derived*>>> {};
 
 public:
-    using ioarchive_t = sf::core::ioarchive_t;
-    using instantiable_traits_t = sf::core::instantiable_traits_t;
-
-public:
     template <typename Archive, class T>
     static void save(Archive& archive, T& data)
     {
-        SaveMode<T>(archive, data);
+        typename SaveModeMeta<T>::mode(archive, data);
     }
 
     template <typename Archive, class T>
     static void load(Archive& archive, T& data)
     {
-        LoadMode<T>(archive, data);
+        typename LoadModeMeta<T>::mode(archive, data);
     }
 
     template <typename Base, class Archive, class Derived,
@@ -141,7 +135,7 @@ public:
     }
 
     template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
-    static instantiable_traits_t::key_type traits(T& object)
+    static key_type traits(T& object)
     {
     #ifdef SF_EXTERN_RUNTIME_TRAIT
         return SF_EXTERN_RUNTIME_TRAIT(object);
@@ -151,13 +145,13 @@ public:
     }
 
     template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
-    static instantiable_traits_t::key_type traits(T& object) noexcept
+    static key_type traits(T& object) noexcept
     {
         return object.xxtrait();
     }
 
     template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
-    static instantiable_traits_t::key_type static_traits() noexcept
+    static key_type static_traits() noexcept
     {
     #ifdef SF_EXTERN_TRAIT
         return SF_EXTERN_TRAIT(T);
@@ -167,17 +161,17 @@ public:
     }
 
     template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
-    static constexpr instantiable_traits_t::key_type static_traits() noexcept
+    static constexpr key_type static_traits() noexcept
     {
         return T::xxstatic_traits();
     }
 
     template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
-    static instantiable_traits_t::key_type traits() noexcept
+    static key_type traits() noexcept
     {
-        constexpr auto traits_key = sf::core::instantiable_traits_key_t<T>::key;
+        constexpr auto traits_key = ::xxsf_traits<T>::key;
 
-        static_assert(traits_key == instantiable_traits_t::base_key,
+        static_assert(traits_key == ::xxsf_traits<void>::base_key,
             "Export instantiable traits is not allowed using typeid.");
 
         return static_traits<T>();
@@ -187,12 +181,12 @@ public:
 #ifdef SF_EXPORT_INSTANTIABLE_DISABLE
     static constexpr InstantiableTraitsBase::key_type traits() noexcept
 #else
-    static instantiable_traits_t::key_type traits() noexcept
+    static key_type traits() noexcept
 #endif // SF_EXPORT_INSTANTIABLE_DISABLE
     {
-        constexpr auto traits_key = sf::core::instantiable_traits_key_t<T>::key;
+        constexpr auto traits_key = ::xxsf_traits<T>::key;
 
-        return traits_key == instantiable_traits_t::base_key
+        return traits_key == ::xxsf_traits<void>::base_key
              ? static_traits<T>()
              : traits_key;
     }

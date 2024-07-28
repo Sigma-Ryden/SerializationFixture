@@ -26,7 +26,7 @@ struct is_std_deque<std::deque<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, deque, meta::is_std_deque<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, deque, meta::is_std_deque<T>::value)
 {
     let::u64 size = deque.size();
     archive & size;
@@ -36,7 +36,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, deque, meta::is_std_deque<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, deque, meta::is_std_deque<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, deque, meta::is_std_deque<T>::value)
 {
     let::u64 size{};
     archive & size;

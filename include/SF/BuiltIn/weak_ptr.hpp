@@ -27,7 +27,7 @@ template <typename T> struct is_std_weak_ptr<std::weak_ptr<T>> : std::true_type 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
     auto sptr = weak_ptr.lock();
     archive & sptr;
@@ -35,7 +35,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, weak_ptr, meta::is_std_weak_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
     using item_type = typename memory::ptr_traits<T>::item;
 

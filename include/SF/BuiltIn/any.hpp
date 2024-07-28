@@ -30,7 +30,7 @@ inline namespace library
 {
 
 // please, use 'sf::serializable' for type any registry before std::any serialization
-EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, any, meta::is_std_any<T>::value)
 {
     let::u64 hash = SF_TYPE_HASH(any.type());
     archive & hash;
@@ -40,7 +40,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, any, meta::is_std_any<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, any, meta::is_std_any<T>::value)
 {
     let::u64 hash{};
     archive & hash;

@@ -599,81 +599,72 @@ inline void hash_combine(HashType& seed, const T& object) noexcept
 
 } // namepace sf
 
-#define EXPORT_INSTANTIABLE_KEY(unique_name, ...)                                                       \
-    namespace sf { namespace core {                                                                     \
-        template <> struct instantiable_traits_key_t<__VA_ARGS__> {                                     \
-            static constexpr auto key = SF_STATIC_HASH(unique_name);                                    \
-        };                                                                                              \
-    }}
+#define EXPORT_INSTANTIABLE_KEY(name, ...)                                                              \
+    template <> struct xxsf_traits<__VA_ARGS__> { static constexpr auto key = SF_STATIC_HASH(name); };  \
 
 #define EXPORT_INSTANTIABLE(...)                                                                        \
     EXPORT_INSTANTIABLE_KEY(#__VA_ARGS__, __VA_ARGS__)
 
-namespace sf
-{
+template <class T>
+struct xxsf_traits;
 
-namespace core
-{
-
-struct instantiable_traits_t
+template <>
+struct xxsf_traits<void>
 {
     using key_type = SF_STATIC_HASH_KEY_TYPE;
-    
     static constexpr auto base_key = key_type(-1);
 };
 
 template <class T>
-struct instantiable_traits_key_t
+struct xxsf_traits
 {
-    static constexpr auto key = instantiable_traits_t::base_key;
+    static constexpr auto key = xxsf_traits<void>::base_key;
 };
-
-} // namespace core
-
-} // namespace sf
 
 #define SERIALIZATION(mode, ...)                                                                        \
     template <>                                                                                         \
-    struct xxsf::mode<__VA_ARGS__> { template <class Archive> mode(Archive&, __VA_ARGS__&); };          \
+    struct xxsf_##mode<__VA_ARGS__> { template <class Archive> xxsf_##mode(Archive&, __VA_ARGS__&); };  \
     template <class Archive>                                                                            \
-    xxsf::mode<__VA_ARGS__>::mode(Archive& archive, __VA_ARGS__& self)
+    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(Archive& archive, __VA_ARGS__& self)
 
 #define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
     template <class T>                                                                                  \
-    struct xxsf::mode<T, SF_WHEN(__VA_ARGS__)> { template <class Archive> mode(Archive&, T&); };        \
+    struct xxsf_##mode<T, SF_WHEN(__VA_ARGS__)> { template <class Archive> xxsf_##mode(Archive&, T&); };\
     template <class T> template <class Archive>                                                         \
-    xxsf::mode<T, SF_WHEN(__VA_ARGS__)>::mode(Archive& archive, T& self)
+    xxsf_##mode<T, SF_WHEN(__VA_ARGS__)>::xxsf_##mode(Archive& archive, T& self)
 
 // Allow to hide implementation to translation unit, and declare interface in header
 #define SERIALIZATION_INTERFACE(mode, ...)                                                              \
     template <>                                                                                         \
-    struct xxsf::mode<__VA_ARGS__> { mode(::sf::core::ioarchive_t&, __VA_ARGS__&); };
+    struct xxsf_##mode<__VA_ARGS__> { xxsf_##mode(::sf::core::ioarchive_t&, __VA_ARGS__&); };
 
 #define SERIALIZATION_IMPLEMENTATION(mode, ...)                                                         \
-    xxsf::mode<__VA_ARGS__>::mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
+    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
 
 // should be in global namespace
+
+template <class T, typename enable = void>
+struct xxsf_save;
+
+template <class T, typename enable = void>
+struct xxsf_load;
+
+template <class T, typename enable = void>
+struct xxsf_saveload;
+
 class xxsf
 {
 public:
-    template <class T, typename enable = void> struct SaveLoad;
-    template <class T, typename enable = void> struct Save;
-    template <class T, typename enable = void> struct Load;
+    using key_type = ::xxsf_traits<void>::key_type;
 
 public:
-    template <class T> struct is_save_class : sf::meta::is_complete<Save<T>> {};
-    template <class T> struct is_load_class : sf::meta::is_complete<Load<T>> {};
-    template <class T> struct is_saveload_class : sf::meta::is_complete<SaveLoad<T>> {};
+    template <class T> struct is_save_class : sf::meta::is_complete<::xxsf_save<T>> {};
+    template <class T> struct is_load_class : sf::meta::is_complete<::xxsf_load<T>> {};
+    template <class T> struct is_saveload_class : sf::meta::is_complete<::xxsf_saveload<T>> {};
 
 public:
     template <class T> struct has_save_mode : sf::meta::one<is_save_class<T>, is_saveload_class<T>> {};
     template <class T> struct has_load_mode : sf::meta::one<is_load_class<T>, is_saveload_class<T>> {};
-
-public:
-    template <class Archive, class T> static void call(Archive& archive, T& self)
-    {
-        throw "The 'T' type cannot be saved/loaded."; // default impl
-    }
 
 private:
     template <class T>
@@ -681,7 +672,7 @@ private:
     {
         static constexpr auto index = sf::meta::with<0, is_save_class<T>, is_saveload_class<T>>::value;
 
-        using mode_array = std::tuple<Save<T>, SaveLoad<T>, xxsf>;
+        using mode_array = std::tuple<::xxsf_save<T>, ::xxsf_saveload<T>>;
         using mode = typename std::tuple_element<index, mode_array>::type;
     };
 
@@ -690,13 +681,9 @@ private:
     {
         static constexpr auto index = sf::meta::with<0, is_load_class<T>, is_saveload_class<T>>::value;
 
-        using mode_array = std::tuple<Load<T>, SaveLoad<T>, xxsf>;
+        using mode_array = std::tuple<::xxsf_load<T>, ::xxsf_saveload<T>>;
         using mode = typename std::tuple_element<index, mode_array>::type;
     };
-
-public:
-    template <class T> using SaveMode = typename SaveModeMeta<T>::mode;
-    template <class T> using LoadMode = typename LoadModeMeta<T>::mode;
 
 public:
     template <class T, typename = void> struct has_static_traits : std::false_type {};
@@ -738,20 +725,16 @@ public:
                         sf::meta::negation<can_static_cast<Base*, Derived*>>> {};
 
 public:
-    using ioarchive_t = sf::core::ioarchive_t;
-    using instantiable_traits_t = sf::core::instantiable_traits_t;
-
-public:
     template <typename Archive, class T>
     static void save(Archive& archive, T& data)
     {
-        SaveMode<T>(archive, data);
+        typename SaveModeMeta<T>::mode(archive, data);
     }
 
     template <typename Archive, class T>
     static void load(Archive& archive, T& data)
     {
-        LoadMode<T>(archive, data);
+        typename LoadModeMeta<T>::mode(archive, data);
     }
 
     template <typename Base, class Archive, class Derived,
@@ -763,7 +746,7 @@ public:
     }
 
     template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
-    static instantiable_traits_t::key_type traits(T& object)
+    static key_type traits(T& object)
     {
     #ifdef SF_EXTERN_RUNTIME_TRAIT
         return SF_EXTERN_RUNTIME_TRAIT(object);
@@ -773,13 +756,13 @@ public:
     }
 
     template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
-    static instantiable_traits_t::key_type traits(T& object) noexcept
+    static key_type traits(T& object) noexcept
     {
         return object.xxtrait();
     }
 
     template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
-    static instantiable_traits_t::key_type static_traits() noexcept
+    static key_type static_traits() noexcept
     {
     #ifdef SF_EXTERN_TRAIT
         return SF_EXTERN_TRAIT(T);
@@ -789,17 +772,17 @@ public:
     }
 
     template <class T, SF_REQUIRE(has_inner_traits<T>::value)>
-    static constexpr instantiable_traits_t::key_type static_traits() noexcept
+    static constexpr key_type static_traits() noexcept
     {
         return T::xxstatic_traits();
     }
 
     template <class T, SF_REQUIRE(not has_inner_traits<T>::value)>
-    static instantiable_traits_t::key_type traits() noexcept
+    static key_type traits() noexcept
     {
-        constexpr auto traits_key = sf::core::instantiable_traits_key_t<T>::key;
+        constexpr auto traits_key = ::xxsf_traits<T>::key;
 
-        static_assert(traits_key == instantiable_traits_t::base_key,
+        static_assert(traits_key == ::xxsf_traits<void>::base_key,
             "Export instantiable traits is not allowed using typeid.");
 
         return static_traits<T>();
@@ -809,12 +792,12 @@ public:
 #ifdef SF_EXPORT_INSTANTIABLE_DISABLE
     static constexpr InstantiableTraitsBase::key_type traits() noexcept
 #else
-    static instantiable_traits_t::key_type traits() noexcept
+    static key_type traits() noexcept
 #endif // SF_EXPORT_INSTANTIABLE_DISABLE
     {
-        constexpr auto traits_key = sf::core::instantiable_traits_key_t<T>::key;
+        constexpr auto traits_key = ::xxsf_traits<T>::key;
 
-        return traits_key == instantiable_traits_t::base_key
+        return traits_key == ::xxsf_traits<void>::base_key
              ? static_traits<T>()
              : traits_key;
     }
@@ -1260,7 +1243,7 @@ struct instantiable_t { virtual ~instantiable_t() = default; };
 
 #define SERIALIZATION_TRAITS(...)                                                                       \
     private:                                                                                            \
-    using xxkey_type = ::sf::core::instantiable_traits_t::key_type;                                     \
+    using xxkey_type = ::xxsf_traits<void>::key_type;                                                   \
     static constexpr xxkey_type xxstatic_traits() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }     \
     virtual xxkey_type xxtrait() const noexcept { return ::xxsf::traits<__VA_ARGS__>(); }               \
     public:
@@ -1274,7 +1257,7 @@ namespace dynamic
 class instantiable_registry_t
 {
 public:
-    using key_type          = core::instantiable_traits_t::key_type;
+    using key_type          = ::xxsf_traits<void>::key_type;
     using instantiable_type = INSTANTIABLE_TYPE;
     using archive_type      = core::ioarchive_t;
 
@@ -1593,7 +1576,7 @@ namespace dynamic
 class extern_registry_t
 {
 public:
-    using key_type = core::instantiable_traits_t::key_type;
+    using key_type = ::xxsf_traits<void>::key_type;
 
 public:
     template <class Archive, typename T,
@@ -1762,7 +1745,7 @@ namespace tracking
 
 struct hierarchy_t {};
 
-template <typename KeyType, typename TraitsType = core::instantiable_traits_t::key_type>
+template <typename KeyType, typename TraitsType = ::xxsf_traits<void>::key_type>
 using hierarchy_track_t = std::unordered_map<std::pair<KeyType, TraitsType>, bool, detail::pair_hash_t<TraitsType>>;
 
 } // namespace tracking
@@ -2156,10 +2139,10 @@ namespace sf
 namespace meta
 {
 
-template <class T> struct is_Save : is_oarchive<T> {};
-template <class T> struct is_Load : is_iarchive<T> {};
+template <class T> struct is_save : is_oarchive<T> {};
+template <class T> struct is_load : is_iarchive<T> {};
 
-template <class T> struct is_SaveLoad : is_ioarchive<T> {};
+template <class T> struct is_saveload : is_ioarchive<T> {};
 
 } // namespace meta
 
@@ -2671,25 +2654,25 @@ namespace sf
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, object, ::xxsf::has_save_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, object, ::xxsf::has_save_mode<T>::value)
 {
     ::xxsf::save(archive, object);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, object, ::xxsf::has_load_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, object, ::xxsf::has_load_mode<T>::value)
 {
     ::xxsf::load(archive, object);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, number, std::is_arithmetic<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, number, std::is_arithmetic<T>::value)
 {
     binary(archive, number);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, enumerator, std::is_enum<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, enumerator, std::is_enum<T>::value)
 {
     using underlying_type = typename std::underlying_type<T>::type;
     auto value = static_cast<underlying_type>(enumerator);
@@ -2697,7 +2680,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, enumerator, std::is_enum<T>::value)
     return archive & value;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, enumerator, std::is_enum<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, enumerator, std::is_enum<T>::value)
 {
     using underlying_type = typename std::underlying_type<T>::type;
 
@@ -2709,13 +2692,13 @@ EXTERN_CONDITIONAL_SERIALIZATION(Load, enumerator, std::is_enum<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, array, std::is_array<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, array, std::is_array<T>::value)
 {
     compress::zip(archive, array);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pointer, meta::is_serializable_raw_pointer<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, pointer, meta::is_serializable_raw_pointer<T>::value)
 {
 #ifdef SF_PTRTRACK_DISABLE
     tracking::raw(archive, pointer);
@@ -2961,7 +2944,7 @@ void aggregate(Archive& archive, T& object)
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, object, meta::is_serializable_aggregate<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, object, meta::is_serializable_aggregate<T>::value)
 {
     aggregate(archive, object);
     return archive;
@@ -3009,7 +2992,7 @@ template <typename T> struct is_serializable_union
 
 } // namespace meta
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, data, meta::is_serializable_union<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, data, meta::is_serializable_union<T>::value)
 {
     binary(archive, data);
     return archive;
@@ -3151,7 +3134,10 @@ apply::hierarchy_functor_t<Derived, Base, Base_n...> hierarchy(Derived& object) 
 } // namespace sf
 
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class ::xxsf;
+    friend struct ::xxsf;                                                                               \
+    template <typename, typename> friend struct ::xxsf_save;                                            \
+    template <typename, typename> friend struct ::xxsf_load;                                            \
+    template <typename, typename> friend struct ::xxsf_saveload;
 
 // Alternative instantiable registration with library traits no-rtti
 #ifndef SERIALIZABLE
@@ -3251,7 +3237,7 @@ struct is_alias<alias_t<T>> : std::true_type {};
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, alias, meta::is_alias<T>::value)
 {
     using key_type = typename Archive::TrackingKeyType;
 
@@ -3271,7 +3257,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, alias, meta::is_alias<T>::value)
 {
     using key_type   = typename Archive::TrackingKeyType;
     using value_type = typename T::type;
@@ -3724,7 +3710,7 @@ struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, vector, meta::is_std_vector<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, vector, meta::is_std_vector<T>::value)
 {
     let::u64 size = vector.size();
     archive & size;
@@ -3734,7 +3720,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, vector, meta::is_std_vector<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, vector, meta::is_std_vector<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, vector, meta::is_std_vector<T>::value)
 {
     let::u64 size{};
     archive & size;
@@ -3759,7 +3745,7 @@ inline namespace library
 {
 
 // slow impl
-EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
+EXTERN_SERIALIZATION(save, vector, std::vector<bool>)
 {
     let::u64 size = vector.size();
     archive & size;
@@ -3773,7 +3759,7 @@ EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
     return archive;
 }
 
-EXTERN_SERIALIZATION(Load, vector, std::vector<bool>)
+EXTERN_SERIALIZATION(load, vector, std::vector<bool>)
 {
     let::u64 size{};
     archive & size;
@@ -3800,7 +3786,7 @@ namespace sf
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, array, meta::is_std_array<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, array, meta::is_std_array<T>::value)
 {
     compress::zip(archive, array);
     return archive;
@@ -3831,7 +3817,7 @@ struct is_std_basic_string<std::basic_string<Char, Traitss, Alloc>> : std::true_
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, string, meta::is_std_basic_string<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, string, meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
@@ -3843,7 +3829,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, string, meta::is_std_basic_string<T>::val
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, string, meta::is_std_basic_string<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, string, meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
@@ -3877,7 +3863,7 @@ struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pair, meta::is_std_pair<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, pair, meta::is_std_pair<T>::value)
 {
     archive & pair.first & pair.second;
     return archive;
@@ -3916,7 +3902,7 @@ void expand(Archive& archive, T& tuple, meta::index_sequence<I...>)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, tuple, meta::is_std_tuple<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, tuple, meta::is_std_tuple<T>::value)
 {
     constexpr auto size = std::tuple_size<T>::value;
     detail::expand(archive, tuple, meta::make_index_sequence<size>{});
@@ -3947,7 +3933,7 @@ struct is_std_list<std::list<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, list, meta::is_std_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, list, meta::is_std_list<T>::value)
 {
     let::u64 size = list.size();
     archive & size;
@@ -3957,7 +3943,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, list, meta::is_std_list<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, list, meta::is_std_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, list, meta::is_std_list<T>::value)
 {
     let::u64 size{};
     archive & size;
@@ -3991,7 +3977,7 @@ struct is_std_forward_list<std::forward_list<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, forward_list, meta::is_std_forward_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, forward_list, meta::is_std_forward_list<T>::value)
 {
     let::u64 size = std::distance(forward_list.begin(), forward_list.end());
     archive & size;
@@ -4001,7 +3987,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, forward_list, meta::is_std_forward_list<T
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, forward_list, meta::is_std_forward_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, forward_list, meta::is_std_forward_list<T>::value)
 {
     let::u64 size{};
     archive & size;
@@ -4067,7 +4053,7 @@ void reserve_unordered(T& unordered, std::size_t size)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, set, meta::is_std_any_set<T>::value)
 {
     let::u64 size = set.size();
     archive & size;
@@ -4077,7 +4063,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, set, meta::is_std_any_set<T>::value)
 {
     using value_type = typename T::value_type;
 
@@ -4123,7 +4109,7 @@ struct is_std_unique_ptr<std::unique_ptr<T, Deleter>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     auto data = unique_ptr.get();
     archive & data;
@@ -4131,7 +4117,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, unique_ptr, meta::is_std_unique_ptr<T>::v
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, unique_ptr, meta::is_std_unique_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, unique_ptr, meta::is_std_unique_ptr<T>::value)
 {
     using item_type = typename memory::ptr_traits<T>::item;
 
@@ -4155,7 +4141,7 @@ namespace sf
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, shared_ptr, meta::is_std_shared_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, shared_ptr, meta::is_std_shared_ptr<T>::value)
 {
     tracking::track(archive, shared_ptr);
     return archive;
@@ -4183,7 +4169,7 @@ template <typename T> struct is_std_weak_ptr<std::weak_ptr<T>> : std::true_type 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
     auto sptr = weak_ptr.lock();
     archive & sptr;
@@ -4191,7 +4177,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, weak_ptr, meta::is_std_weak_ptr<T>::value
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, weak_ptr, meta::is_std_weak_ptr<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, weak_ptr, meta::is_std_weak_ptr<T>::value)
 {
     using item_type = typename memory::ptr_traits<T>::item;
 
@@ -4259,7 +4245,7 @@ void reserve_unordered(T& unordered, std::size_t size)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, map, meta::is_std_any_map<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, map, meta::is_std_any_map<T>::value)
 {
     let::u64 size = map.size();
     archive & size;
@@ -4269,7 +4255,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, map, meta::is_std_any_map<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, map, meta::is_std_any_map<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, map, meta::is_std_any_map<T>::value)
 {
     using key_type   = typename T::key_type;
     using value_type = typename T::mapped_type;
@@ -4320,7 +4306,7 @@ struct is_std_deque<std::deque<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, deque, meta::is_std_deque<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, deque, meta::is_std_deque<T>::value)
 {
     let::u64 size = deque.size();
     archive & size;
@@ -4330,7 +4316,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, deque, meta::is_std_deque<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, deque, meta::is_std_deque<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, deque, meta::is_std_deque<T>::value)
 {
     let::u64 size{};
     archive & size;
@@ -4394,7 +4380,7 @@ struct is_std_stack<std::stack<T, Container>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, stack, meta::is_std_stack<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, stack, meta::is_std_stack<T>::value)
 {
     archive & meta::underlying(stack);
     return archive;
@@ -4435,7 +4421,7 @@ template <class T> struct is_std_any_queue
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, queue, meta::is_std_any_queue<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, queue, meta::is_std_any_queue<T>::value)
 {
     archive & meta::underlying(queue);
     return archive;
@@ -4461,7 +4447,7 @@ template <typename T> struct is_std_valarray<std::valarray<T>> : std::true_type 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, valarray, meta::is_std_valarray<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, valarray, meta::is_std_valarray<T>::value)
 {
     let::u64 size = valarray.size();
     archive & size;
@@ -4471,7 +4457,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, valarray, meta::is_std_valarray<T>::value
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, valarray, meta::is_std_valarray<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, valarray, meta::is_std_valarray<T>::value)
 {
     let::u64 size{};
     archive & size;
@@ -4507,7 +4493,7 @@ inline namespace library
 {
 
 // slow impl
-EXTERN_CONDITIONAL_SERIALIZATION(Save, bitset, meta::is_std_bitset<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, bitset, meta::is_std_bitset<T>::value)
 {
     auto data = bitset.to_string();
     archive & data;
@@ -4515,7 +4501,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, bitset, meta::is_std_bitset<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, bitset, meta::is_std_bitset<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, bitset, meta::is_std_bitset<T>::value)
 {
     std::string data;
     archive & data;
@@ -4550,7 +4536,7 @@ template <typename T> struct atomic_traits<std::atomic<T>> { using value_type = 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, atomic, meta::is_std_atomic<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, atomic, meta::is_std_atomic<T>::value)
 {
     auto object = atomic.load();
     archive & object;
@@ -4558,7 +4544,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, atomic, meta::is_std_atomic<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, atomic, meta::is_std_atomic<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, atomic, meta::is_std_atomic<T>::value)
 {
     using object_type = typename meta::atomic_traits<T>::value_type;
 
@@ -4592,7 +4578,7 @@ template <typename T> struct is_std_complex<std::complex<T>> : std::true_type {}
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, complex, meta::is_std_complex<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, complex, meta::is_std_complex<T>::value)
 {
     auto re = complex.real();
     auto im = complex.imag();
@@ -4602,7 +4588,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, complex, meta::is_std_complex<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, complex, meta::is_std_complex<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, complex, meta::is_std_complex<T>::value)
 {
     using integral_type = typename T::value_type;
 
@@ -4641,7 +4627,7 @@ template <typename T> struct is_std_optional<std::optional<T>> : std::true_type 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, optional, meta::is_std_optional<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, optional, meta::is_std_optional<T>::value)
 {
     auto is_init = optional.has_value();
     archive & is_init;
@@ -4651,7 +4637,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, optional, meta::is_std_optional<T>::value
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, optional, meta::is_std_optional<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, optional, meta::is_std_optional<T>::value)
 {
     auto is_init = false;
     archive & is_init;
@@ -4738,7 +4724,7 @@ void variant_load(Archive& archive, Variant& variant, let::u64 index)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, variant, meta::is_std_variant<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, variant, meta::is_std_variant<T>::value)
 {
     let::u64 index = variant.index();
     archive & index;
@@ -4749,7 +4735,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, variant, meta::is_std_variant<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, variant, meta::is_std_variant<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, variant, meta::is_std_variant<T>::value)
 {
     let::u64 index{};
     archive & index;
@@ -4785,7 +4771,7 @@ inline namespace library
 {
 
 // please, use 'sf::serializable' for type any registry before std::any serialization
-EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, any, meta::is_std_any<T>::value)
 {
     let::u64 hash = SF_TYPE_HASH(any.type());
     archive & hash;
@@ -4795,7 +4781,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, any, meta::is_std_any<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, any, meta::is_std_any<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, any, meta::is_std_any<T>::value)
 {
     let::u64 hash{};
     archive & hash;

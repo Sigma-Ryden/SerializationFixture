@@ -74,7 +74,7 @@ void variant_load(Archive& archive, Variant& variant, let::u64 index)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, variant, meta::is_std_variant<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, variant, meta::is_std_variant<T>::value)
 {
     let::u64 index = variant.index();
     archive & index;
@@ -85,7 +85,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, variant, meta::is_std_variant<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, variant, meta::is_std_variant<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, variant, meta::is_std_variant<T>::value)
 {
     let::u64 index{};
     archive & index;

@@ -3,37 +3,26 @@
 
 #include <SF/Core/Hash.hpp>
 
-#define EXPORT_INSTANTIABLE_KEY(unique_name, ...)                                                       \
-    namespace sf { namespace core {                                                                     \
-        template <> struct instantiable_traits_key_t<__VA_ARGS__> {                                     \
-            static constexpr auto key = SF_STATIC_HASH(unique_name);                                    \
-        };                                                                                              \
-    }}
+#define EXPORT_INSTANTIABLE_KEY(name, ...)                                                              \
+    template <> struct xxsf_traits<__VA_ARGS__> { static constexpr auto key = SF_STATIC_HASH(name); };  \
 
 #define EXPORT_INSTANTIABLE(...)                                                                        \
     EXPORT_INSTANTIABLE_KEY(#__VA_ARGS__, __VA_ARGS__)
 
-namespace sf
-{
+template <class T>
+struct xxsf_traits;
 
-namespace core
-{
-
-struct instantiable_traits_t
+template <>
+struct xxsf_traits<void>
 {
     using key_type = SF_STATIC_HASH_KEY_TYPE;
-    
     static constexpr auto base_key = key_type(-1);
 };
 
 template <class T>
-struct instantiable_traits_key_t
+struct xxsf_traits
 {
-    static constexpr auto key = instantiable_traits_t::base_key;
+    static constexpr auto key = xxsf_traits<void>::base_key;
 };
-
-} // namespace core
-
-} // namespace sf
 
 #endif // SF_CORE_INSTANTIABLE_TRAITS_HPP

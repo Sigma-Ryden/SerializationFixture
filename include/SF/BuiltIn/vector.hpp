@@ -26,7 +26,7 @@ struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, vector, meta::is_std_vector<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, vector, meta::is_std_vector<T>::value)
 {
     let::u64 size = vector.size();
     archive & size;
@@ -36,7 +36,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, vector, meta::is_std_vector<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, vector, meta::is_std_vector<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, vector, meta::is_std_vector<T>::value)
 {
     let::u64 size{};
     archive & size;
@@ -61,7 +61,7 @@ inline namespace library
 {
 
 // slow impl
-EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
+EXTERN_SERIALIZATION(save, vector, std::vector<bool>)
 {
     let::u64 size = vector.size();
     archive & size;
@@ -75,7 +75,7 @@ EXTERN_SERIALIZATION(Save, vector, std::vector<bool>)
     return archive;
 }
 
-EXTERN_SERIALIZATION(Load, vector, std::vector<bool>)
+EXTERN_SERIALIZATION(load, vector, std::vector<bool>)
 {
     let::u64 size{};
     archive & size;

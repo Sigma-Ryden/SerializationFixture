@@ -60,7 +60,7 @@ void reserve_unordered(T& unordered, std::size_t size)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, set, meta::is_std_any_set<T>::value)
 {
     let::u64 size = set.size();
     archive & size;
@@ -70,7 +70,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, set, meta::is_std_any_set<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, set, meta::is_std_any_set<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, set, meta::is_std_any_set<T>::value)
 {
     using value_type = typename T::value_type;
 

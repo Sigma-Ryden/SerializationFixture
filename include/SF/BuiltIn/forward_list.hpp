@@ -26,7 +26,7 @@ struct is_std_forward_list<std::forward_list<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, forward_list, meta::is_std_forward_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, forward_list, meta::is_std_forward_list<T>::value)
 {
     let::u64 size = std::distance(forward_list.begin(), forward_list.end());
     archive & size;
@@ -36,7 +36,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, forward_list, meta::is_std_forward_list<T
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, forward_list, meta::is_std_forward_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, forward_list, meta::is_std_forward_list<T>::value)
 {
     let::u64 size{};
     archive & size;

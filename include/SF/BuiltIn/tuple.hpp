@@ -35,7 +35,7 @@ void expand(Archive& archive, T& tuple, meta::index_sequence<I...>)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, tuple, meta::is_std_tuple<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, tuple, meta::is_std_tuple<T>::value)
 {
     constexpr auto size = std::tuple_size<T>::value;
     detail::expand(archive, tuple, meta::make_index_sequence<size>{});

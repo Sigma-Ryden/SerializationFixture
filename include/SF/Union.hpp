@@ -19,7 +19,7 @@ template <typename T> struct is_serializable_union
 
 } // namespace meta
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, data, meta::is_serializable_union<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, data, meta::is_serializable_union<T>::value)
 {
     binary(archive, data);
     return archive;

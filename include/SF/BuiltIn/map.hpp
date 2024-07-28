@@ -63,7 +63,7 @@ void reserve_unordered(T& unordered, std::size_t size)
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, map, meta::is_std_any_map<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, map, meta::is_std_any_map<T>::value)
 {
     let::u64 size = map.size();
     archive & size;
@@ -73,7 +73,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, map, meta::is_std_any_map<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, map, meta::is_std_any_map<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, map, meta::is_std_any_map<T>::value)
 {
     using key_type   = typename T::key_type;
     using value_type = typename T::mapped_type;

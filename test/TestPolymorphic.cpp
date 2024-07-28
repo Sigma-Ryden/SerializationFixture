@@ -40,18 +40,18 @@ public:
 
 } // TEST_SPACE
 
-SERIALIZATION(Save, Base<std::string>)
+SERIALIZATION(save, Base<std::string>)
 {
     // more specialize version
     archive & self.data;
 }
 
-CONDITIONAL_SERIALIZATION(SaveLoad, is_base<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, is_base<T>::value)
 {
     archive & self.data;
 }
 
-SERIALIZATION(SaveLoad, internal::Derived)
+SERIALIZATION(saveload, internal::Derived)
 {
     archive & hierarchy<Base<std::string>>(self);
     archive & self.value;

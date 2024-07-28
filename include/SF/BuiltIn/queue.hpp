@@ -39,7 +39,7 @@ template <class T> struct is_std_any_queue
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, queue, meta::is_std_any_queue<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, queue, meta::is_std_any_queue<T>::value)
 {
     archive & meta::underlying(queue);
     return archive;

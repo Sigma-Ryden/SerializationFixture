@@ -15,7 +15,7 @@ namespace sf
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, array, meta::is_std_array<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, array, meta::is_std_array<T>::value)
 {
     compress::zip(archive, array);
     return archive;

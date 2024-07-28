@@ -34,17 +34,17 @@ struct Girl : Entity
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, Boy)
+SERIALIZATION(saveload, Boy)
 {
     archive & hierarchy<Entity>(self) & self.b;
 }
 
-SERIALIZATION(SaveLoad, Girl)
+SERIALIZATION(saveload, Girl)
 {
     archive & hierarchy<Entity>(self) & self.g;
 }
 
-SERIALIZATION(SaveLoad, Entity)
+SERIALIZATION(saveload, Entity)
 {
     archive & self.e;
 }

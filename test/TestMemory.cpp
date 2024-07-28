@@ -27,12 +27,12 @@ bool operator== (const Child& lhs, const Child& rhs)
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, Parent)
+SERIALIZATION(saveload, Parent)
 {
     archive & self.p;
 }
 
-SERIALIZATION(SaveLoad, Child)
+SERIALIZATION(saveload, Child)
 {
     archive & hierarchy<Parent>(self) & self.c;
 }
@@ -115,24 +115,24 @@ bool operator== (const D& lhs, const D& rhs)
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, A)
+SERIALIZATION(saveload, A)
 {
     archive & self.a;
 }
 
-SERIALIZATION(SaveLoad, B)
+SERIALIZATION(saveload, B)
 {
     archive & hierarchy<A>(self)
             & self.b;
 }
 
-SERIALIZATION(SaveLoad, C)
+SERIALIZATION(saveload, C)
 {
     archive & hierarchy<A>(self)
             & self.c;
 }
 
-SERIALIZATION(SaveLoad, D)
+SERIALIZATION(saveload, D)
 {
     archive & hierarchy<B, C>(self) // type order does not matter
             & self.d;
@@ -283,7 +283,7 @@ struct Human
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, Human)
+SERIALIZATION(saveload, Human)
 {
     archive & self.name & self.partner;
 }

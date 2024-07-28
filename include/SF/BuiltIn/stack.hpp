@@ -28,7 +28,7 @@ struct is_std_stack<std::stack<T, Container>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, stack, meta::is_std_stack<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, stack, meta::is_std_stack<T>::value)
 {
     archive & meta::underlying(stack);
     return archive;

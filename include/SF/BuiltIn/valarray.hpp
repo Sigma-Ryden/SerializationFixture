@@ -26,7 +26,7 @@ template <typename T> struct is_std_valarray<std::valarray<T>> : std::true_type 
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, valarray, meta::is_std_valarray<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, valarray, meta::is_std_valarray<T>::value)
 {
     let::u64 size = valarray.size();
     archive & size;
@@ -36,7 +36,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, valarray, meta::is_std_valarray<T>::value
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, valarray, meta::is_std_valarray<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, valarray, meta::is_std_valarray<T>::value)
 {
     let::u64 size{};
     archive & size;

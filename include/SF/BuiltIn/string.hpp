@@ -28,7 +28,7 @@ struct is_std_basic_string<std::basic_string<Char, Traitss, Alloc>> : std::true_
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, string, meta::is_std_basic_string<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, string, meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
@@ -40,7 +40,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, string, meta::is_std_basic_string<T>::val
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, string, meta::is_std_basic_string<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, string, meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 

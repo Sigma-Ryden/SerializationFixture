@@ -20,7 +20,7 @@ namespace dynamic
 class extern_registry_t
 {
 public:
-    using key_type = core::instantiable_traits_t::key_type;
+    using key_type = ::xxsf_traits<void>::key_type;
 
 public:
     template <class Archive, typename T,

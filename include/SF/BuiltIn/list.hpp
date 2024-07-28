@@ -26,7 +26,7 @@ struct is_std_list<std::list<T, Alloc>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, list, meta::is_std_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, list, meta::is_std_list<T>::value)
 {
     let::u64 size = list.size();
     archive & size;
@@ -36,7 +36,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, list, meta::is_std_list<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, list, meta::is_std_list<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, list, meta::is_std_list<T>::value)
 {
     let::u64 size{};
     archive & size;

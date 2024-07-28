@@ -22,7 +22,7 @@ template <typename T> struct is_std_complex<std::complex<T>> : std::true_type {}
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, complex, meta::is_std_complex<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, complex, meta::is_std_complex<T>::value)
 {
     auto re = complex.real();
     auto im = complex.imag();
@@ -32,7 +32,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, complex, meta::is_std_complex<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, complex, meta::is_std_complex<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, complex, meta::is_std_complex<T>::value)
 {
     using integral_type = typename T::value_type;
 

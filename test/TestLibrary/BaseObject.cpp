@@ -2,12 +2,12 @@
 
 #include <SF/BuiltIn/string.hpp>
 
-SERIALIZATION_IMPLEMENTATION(Save, BaseObject)
+SERIALIZATION_IMPLEMENTATION(save, BaseObject)
 {
     archive << self.id << self.name;
 }
 
-SERIALIZATION_IMPLEMENTATION(Load, BaseObject)
+SERIALIZATION_IMPLEMENTATION(load, BaseObject)
 {
     archive >> self.id >> self.name;
 }

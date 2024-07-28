@@ -27,10 +27,10 @@ namespace sf
 namespace meta
 {
 
-template <class T> struct is_Save : is_oarchive<T> {};
-template <class T> struct is_Load : is_iarchive<T> {};
+template <class T> struct is_save : is_oarchive<T> {};
+template <class T> struct is_load : is_iarchive<T> {};
 
-template <class T> struct is_SaveLoad : is_ioarchive<T> {};
+template <class T> struct is_saveload : is_ioarchive<T> {};
 
 } // namespace meta
 

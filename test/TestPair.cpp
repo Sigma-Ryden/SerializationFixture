@@ -18,7 +18,7 @@ constexpr bool operator== (const IntPoint& A, const IntPoint& B) noexcept
 
 } // TEST_SPACE
 
-SERIALIZATION(SaveLoad, IntPoint)
+SERIALIZATION(saveload, IntPoint)
 {
     archive & self.X & self.Y;
 }

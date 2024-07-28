@@ -7,7 +7,10 @@
 #include <SF/Dynamic/AnyRegistry.hpp>
 
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend class ::xxsf;
+    friend struct ::xxsf;                                                                               \
+    template <typename, typename> friend struct ::xxsf_save;                                            \
+    template <typename, typename> friend struct ::xxsf_load;                                            \
+    template <typename, typename> friend struct ::xxsf_saveload;
 
 // Alternative instantiable registration with library traits no-rtti
 #ifndef SERIALIZABLE

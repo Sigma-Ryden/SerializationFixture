@@ -64,7 +64,7 @@ struct is_alias<alias_t<T>> : std::true_type {};
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, alias, meta::is_alias<T>::value)
 {
     using key_type = typename Archive::TrackingKeyType;
 
@@ -84,7 +84,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(Save, alias, meta::is_alias<T>::value)
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(Load, alias, meta::is_alias<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, alias, meta::is_alias<T>::value)
 {
     using key_type   = typename Archive::TrackingKeyType;
     using value_type = typename T::type;

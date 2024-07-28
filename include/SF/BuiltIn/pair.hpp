@@ -23,7 +23,7 @@ struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
 inline namespace library
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(SaveLoad, pair, meta::is_std_pair<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(saveload, pair, meta::is_std_pair<T>::value)
 {
     archive & pair.first & pair.second;
     return archive;
