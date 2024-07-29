@@ -20,13 +20,13 @@ namespace sf
 inline namespace common
 {
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, object, ::xxsf::has_save_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(save, object, meta::is_has_any_save_mode<T>::value)
 {
     ::xxsf::save(archive, object);
     return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, object, ::xxsf::has_load_mode<T>::value)
+EXTERN_CONDITIONAL_SERIALIZATION(load, object, meta::is_has_any_load_mode<T>::value)
 {
     ::xxsf::load(archive, object);
     return archive;
@@ -79,11 +79,11 @@ EXTERN_CONDITIONAL_SERIALIZATION(saveload, pointer, meta::is_serializable_raw_po
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::all<::xxsf::has_save_mode<T>, ::xxsf::has_load_mode<T>>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::all<::sf::meta::is_has_any_save_mode<T>, ::sf::meta::is_has_any_load_mode<T>>::value)
 
 CONDITIONAL_TYPE_REGISTRY(std::is_arithmetic<T>::value)
 CONDITIONAL_TYPE_REGISTRY(std::is_enum<T>::value)
 CONDITIONAL_TYPE_REGISTRY(std::is_array<T>::value)
-CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_raw_pointer<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_serializable_raw_pointer<T>::value)
 
 #endif // SF_COMMON_HPP

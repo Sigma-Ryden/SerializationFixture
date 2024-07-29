@@ -32,7 +32,7 @@ template <class Archive, typename T, typename enable = void>
 struct bitpack_t;
 
 template <class Archive, typename T>
-struct bitpack_t<Archive, T, SF_WHEN(sf::meta::is_oarchive<Archive>::value)>
+struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_oarchive<Archive>::value>::type>
 {
     Archive& archive;
     T data{};
@@ -52,7 +52,7 @@ struct bitpack_t<Archive, T, SF_WHEN(sf::meta::is_oarchive<Archive>::value)>
 };
 
 template <class Archive, typename T>
-struct bitpack_t<Archive, T, SF_WHEN(sf::meta::is_iarchive<Archive>::value)>
+struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_iarchive<Archive>::value>::type>
 {
     Archive& archive;
     T data{};

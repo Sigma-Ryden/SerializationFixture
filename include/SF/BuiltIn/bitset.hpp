@@ -48,6 +48,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, bitset, meta::is_std_bitset<T>::value)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_bitset<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_bitset<T>::value)
 
 #endif // SF_BUILT_IN_BITSET_HPP

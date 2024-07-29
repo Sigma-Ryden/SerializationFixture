@@ -142,7 +142,7 @@ public:
     }
 
     template <typename Pointer,
-              SF_REQUIRE(::xxsf::has_save_mode<typename meta::dereference<Pointer>::type>::value)>
+              SF_REQUIRE(meta::is_has_any_save_mode<typename meta::dereference<Pointer>::type>::value)>
     void save(archive_type& archive, Pointer& pointer)
     {
         const auto key = ::xxsf::traits(*pointer);
@@ -150,7 +150,7 @@ public:
     }
 
     template <typename Pointer,
-              SF_REQUIRE(::xxsf::has_load_mode<typename meta::dereference<Pointer>::type>::value)>
+              SF_REQUIRE(meta::is_has_any_load_mode<typename meta::dereference<Pointer>::type>::value)>
     void load(archive_type& archive, Pointer& pointer)
     {
         const auto key = ::xxsf::traits(*pointer);

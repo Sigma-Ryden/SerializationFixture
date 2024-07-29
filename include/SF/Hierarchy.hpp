@@ -54,14 +54,14 @@ namespace detail
 {
 
 template <class Base, class Archive, class Derived,
-          SF_REQUIRE(not ::xxsf::is_virtual_base_of<Base, Derived>::value)>
+          SF_REQUIRE(not meta::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_base)
 {
     base<Base>(archive, object_with_base);
 }
 
 template <class Base, class Archive, class Derived,
-          SF_REQUIRE(::xxsf::is_virtual_base_of<Base, Derived>::value)>
+          SF_REQUIRE(meta::is_virtual_base_of<Base, Derived>::value)>
 void native_base(Archive& archive, Derived& object_with_virtual_base)
 {
     virtual_base<Base>(archive, object_with_virtual_base);

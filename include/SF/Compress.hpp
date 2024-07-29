@@ -20,7 +20,7 @@ template <class Archive, typename T,
                                meta::is_compressible<T>>::value)>
 void fast(Archive& archive, T& object)
 {
-    using item_type = typename meta::value_type<T>::type;
+    using item_type = typename meta::value<T>::type;
 
     archive.stream().call
     (

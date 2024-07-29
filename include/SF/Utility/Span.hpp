@@ -2,7 +2,6 @@
 #define SF_UTILITY_SPAN_HPP
 
 #include <cstddef> // size_t
-#include <initializer_list> // initializer_list
 #include <tuple> // tuple
 
 #include <SF/Core/SerializatonBase.hpp>

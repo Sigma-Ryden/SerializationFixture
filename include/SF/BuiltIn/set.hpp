@@ -96,7 +96,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, set, meta::is_std_any_set<T>::value)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_set<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any_set<T>::value)
 
 // clean up
 #undef SF_IS_STD_SET_TYPE_META_GENERIC

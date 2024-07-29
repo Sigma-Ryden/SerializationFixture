@@ -51,6 +51,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, deque, meta::is_std_deque<T>::value)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_deque<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_deque<T>::value)
 
 #endif // SF_BUILT_IN_DEQUE_HPP

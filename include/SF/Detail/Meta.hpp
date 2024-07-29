@@ -1,4 +1,4 @@
-#ifndef SF_DETAIL_META_HPP
+﻿#ifndef SF_DETAIL_META_HPP
 #define SF_DETAIL_META_HPP
 
 #include <cstddef> // size_t
@@ -14,9 +14,7 @@
 #include <memory> // shared_ptr
 #include <array> // array
 
-#include <tuple> // tuple_element
-
-#include <SF/Detail/MetaMacro.hpp> // SF_VOID
+#include <SF/Detail/MetaMacro.hpp>
 
 namespace sf
 {
@@ -43,48 +41,25 @@ template <class B> struct negation : std::integral_constant<bool, not bool(B::va
 
 template <typename T, typename... Tn> struct is_same : all<std::is_same<T, Tn>...> {};
 
-template <typename... Args>
-using to_void = void;
+template <typename... Args> using void_t = void;
 
-template <typename T, std::size_t N = 1>
-struct remove_pointer
-{
-    using type = T;
-};
-
-template <typename T>
-struct remove_pointer<T*, 1>
-{
-    using type = T;
-};
+template <typename T, std::size_t N = 1> struct remove_pointer { using type = T; };
+template <typename T> struct remove_pointer<T*, 1> { using type = T; };
 
 template <typename T, std::size_t N>
-struct remove_pointer<T*, N>
-{
-    using type = typename remove_pointer<T, N - 1>::type;
-};
+struct remove_pointer<T*, N> { using type = typename remove_pointer<T, N - 1>::type; };
 
-template <typename T, typename = void> struct dereference { using type = T; };
-
+template <typename T, typename = void_t<>> struct dereference { using type = T; };
 template <typename T> struct dereference<T*> { using type = T; };
 template <typename T> struct dereference<std::weak_ptr<T>> { using type = T; };
 template <typename T> struct dereference<std::shared_ptr<T>> { using type = T; };
 template <typename T> struct dereference<std::unique_ptr<T>> { using type = T; };
-
-template <typename T> struct dereference<T, SF_VOID(*std::declval<T>())>
+template <typename T> struct dereference<T, void_t<decltype(*std::declval<T>())>>
     : std::remove_reference<decltype(*std::declval<T>())> {};
 
 template <typename T, std::size_t N = 1>
-struct pointer
-{
-    using type = typename pointer<T, N - 1>::type*;
-};
-
-template <typename T>
-struct pointer<T, 0>
-{
-    using type = T;
-};
+struct pointer { using type = typename pointer<T, N - 1>::type*; };
+template <typename T> struct pointer<T, 0> { using type = T; };
 
  // limited by template depth
 template <std::size_t... I> struct index_sequence
@@ -97,12 +72,8 @@ namespace detail
 
 template <std::size_t I, std::size_t... In>
 struct index_sequence_helper : index_sequence_helper<I - 1, I - 1, In...> {};
-
 template <std::size_t... In>
-struct index_sequence_helper<0, In...>
-{
-    using type = index_sequence<In...>;
-};
+struct index_sequence_helper<0, In...> { using type = index_sequence<In...>; };
 
 } // namespace detail
 
@@ -110,18 +81,14 @@ template <std::size_t N>
 using make_index_sequence = typename detail::index_sequence_helper<N>::type;
 
 // meta
-template <typename T, typename enable = void>
-struct is_complete : std::false_type {};
-
-template <typename T>
-struct is_complete<T, SF_VOID(sizeof(T))> : std::true_type {};
+template <typename T, typename enable = void> struct is_complete : std::false_type {};
+template <typename T> struct is_complete<T, void_t<decltype(sizeof(T))>> : std::true_type {};
 
 template <typename From, typename To, typename enable = void>
-struct can_static_cast : std::false_type {};
+struct is_static_castable : std::false_type {};
 
 template <typename From, typename To>
-struct can_static_cast<From, To,
-    SF_VOID( static_cast<To*>(std::declval<From*>()) )> : std::true_type {};
+struct is_static_castable<From, To, void_t<decltype( static_cast<To>(std::declval<From>()) )>> : std::true_type {};
 
 template <typename T, bool = std::is_pointer<T>::value>
 struct pointer_count
@@ -153,91 +120,47 @@ struct aggregate_size : S {};
 
 template <class C, std::size_t... I>
 struct aggregate_size<C, index_sequence<I...>,
-                      SF_VOID(C{ declval<dummy_t>(), declval<dummy_t, I>()... })>
+                      void_t<decltype(C{ declval<dummy_t>(), declval<dummy_t, I>()... })>>
     : aggregate_size<C, index_sequence<I..., sizeof...(I)>> {};
 #endif // if
 
 template <class T, typename enable = void>
-struct object_value_type
-{
-    using type = dummy_t;
-};
+struct object_value { using type = dummy_t; };
 
 template <class T>
-struct object_value_type<T, to_void<typename T::value_type>>
-{
-    using type = typename T::value_type;
-};
+struct object_value<T, void_t<typename T::value_type>> { using type = typename T::value_type; };
 
-template <typename T>
-struct array_value_type
-{
-    using type = dummy_t;
-};
-
-template <typename T>
-struct array_value_type<T[]>
-{
-    using type = T;
-};
-
-template <typename T, std::size_t N>
-struct array_value_type<T[N]>
-{
-    using type = T;
-};
+template <typename T> struct array_value { using type = dummy_t; };
+template <typename T> struct array_value<T[]> { using type = T; };
+template <typename T, std::size_t N> struct array_value<T[N]> { using type = T; };
 
 template <typename T, typename enable = void>
-struct value_type
+struct value { using type = dummy_t; };
+
+template <typename T>
+struct value<T, typename std::enable_if<std::is_class<T>::value>::type>
 {
-    using type = dummy_t;
+    using type = typename object_value<T>::type;
 };
 
 template <typename T>
-struct value_type<T, typename std::enable_if<std::is_class<T>::value>::type>
+struct value<T, typename std::enable_if<std::is_array<T>::value>::type>
 {
-    using type = typename object_value_type<T>::type;
+    using type = typename array_value<T>::type;
 };
-
-template <typename T>
-struct value_type<T, typename std::enable_if<std::is_array<T>::value>::type>
-{
-    using type = typename array_value_type<T>::type;
-};
-
-template <std::size_t I, typename... Bn> struct with : std::integral_constant<std::size_t, I> {};
-
-template <std::size_t I, typename B, typename... Bn> struct with<I, B, Bn...>
-    : std::conditional<bool(B::value), with<I>, with<I + 1, Bn...>>::type {};
 
 template <typename From, typename To> struct is_cast_allowed
-    : one<can_static_cast<From, To>, std::is_convertible<From, To>> {};
+    : one<is_static_castable<From, To>, std::is_convertible<From, To>> {};
 
-namespace detail
-{
-
-template <typename> struct is_character_impl : std::false_type {};
-
-template <> struct is_character_impl<char> : std::true_type {};
-template <> struct is_character_impl<signed char> : std::true_type {};
-template <> struct is_character_impl<unsigned char> : std::true_type {};
-
-template <> struct is_character_impl<wchar_t> : std::true_type {};
-template <> struct is_character_impl<char16_t> : std::true_type {};
-template <> struct is_character_impl<char32_t> : std::true_type {};
-
-} // namespace detail
-
-template <typename T>
-struct is_character : detail::is_character_impl<typename std::remove_cv<T>::type> {};
-
-template <class T> struct is_compressible : std::is_arithmetic<typename value_type<T>::type> {};
+template <class T> struct is_compressible : std::is_arithmetic<typename value<T>::type> {};
 
 template <class Derived, class Base, class... Base_n> struct is_derived_of
     : all<std::is_base_of<Base, Derived>,
           std::is_base_of<Base_n, Derived>...> {};
 
-template <typename T> struct is_void : std::is_same<T, void> {};
+template <class Base, class Derived> struct is_virtual_base_of
+    : all<std::is_base_of<Base, Derived>,
+          negation<is_static_castable<Base*, Derived*>>> {};
 
 template <typename> struct is_std_shared_ptr : std::false_type {};
 template <typename T>
@@ -255,7 +178,7 @@ template <typename T> struct is_pointer : one<is_shared_pointer<T>, is_raw_point
 template <typename T> struct is_pointer_to_polymorphic
     : all<is_pointer<T>, std::is_polymorphic<typename dereference<T>::type>> {};
 
-template <typename T> struct is_void_pointer : all<is_pointer<T>, is_void<typename dereference<T>::type>> {};
+template <typename T> struct is_void_pointer : all<is_pointer<T>, std::is_void<typename dereference<T>::type>> {};
 template <typename T> struct is_null_pointer : std::is_same<T, std::nullptr_t> {};
 
 template <typename> struct is_function_pointer : std::false_type {};

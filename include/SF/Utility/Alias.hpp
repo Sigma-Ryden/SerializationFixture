@@ -28,7 +28,7 @@ public:
     alias_t() noexcept : data_(nullptr) {}
 
     template <typename dT,
-              SF_REQUIRE(::xxsf::is_pointer_cast_allowed<dT, T>::value)>
+              SF_REQUIRE(meta::is_static_castable<dT*, T*>::value)>
     alias_t(dT& data) noexcept
         : data_(std::addressof(data)) {}
 
@@ -115,6 +115,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, alias, meta::is_alias<T>::value)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_alias<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_alias<T>::value)
 
 #endif // SF_UTILITY_ALIAS_HPP

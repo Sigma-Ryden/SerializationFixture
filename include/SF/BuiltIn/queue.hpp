@@ -49,6 +49,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(saveload, queue, meta::is_std_any_queue<T>::val
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_any_queue<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any_queue<T>::value)
 
 #endif // SF_BUILT_IN_QUEUE_HPP

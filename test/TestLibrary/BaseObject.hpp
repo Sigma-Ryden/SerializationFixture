@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "SFTestingBase.hpp"
+#include <SFTestingBase.hpp>
 
 struct BaseObject : sf::instantiable_t
 {

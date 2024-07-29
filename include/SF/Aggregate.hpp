@@ -27,8 +27,8 @@ namespace meta
 template <typename T> struct is_serializable_aggregate
     : all<is_aggregate<T>,
           negation<std::is_union<T>>,
-          negation<::xxsf::has_save_mode<T>>,
-          negation<::xxsf::has_save_mode<T>>> {};
+          negation<meta::is_has_any_save_mode<T>>,
+          negation<meta::is_has_any_save_mode<T>>> {};
 
 } // namespace meta
 
@@ -82,7 +82,7 @@ template <typename T> apply::aggregate_functor_t<T> aggregate(T& object) noexcep
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_aggregate<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_serializable_aggregate<T>::value)
 
 // clean up
 #undef SF_AGGREGATE_IMPLEMENTATION_GENERIC

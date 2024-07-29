@@ -25,6 +25,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(saveload, array, meta::is_std_array<T>::value)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_array<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_array<T>::value)
 
 #endif // SF_BUILT_IN_ARRAY_HPP

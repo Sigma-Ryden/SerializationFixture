@@ -49,6 +49,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, unique_ptr, meta::is_std_unique_ptr<T>::v
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_unique_ptr<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_unique_ptr<T>::value)
 
 #endif // SF_BUILT_IN_UNIQUE_PTR_HPP

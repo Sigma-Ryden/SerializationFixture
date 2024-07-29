@@ -1,4 +1,4 @@
-#include "SFTestingBase.hpp"
+#include <SFTestingBase.hpp>
 
 #include <SF/BuiltIn/unique_ptr.hpp>
 
@@ -161,8 +161,7 @@ TEST(TestMemory, TestSharedPtr)
         std::shared_ptr<B> s_b;
         std::shared_ptr<C> s_c;
         std::shared_ptr<A> s_a;
-    	
-        constexpr auto xxx = ::xxsf::is_cast_allowed<B*, D*>();
+
         {
             auto ar = iarchive(storage);
             ar & s_c & s_a & s_d & s_b; // one more shuffle

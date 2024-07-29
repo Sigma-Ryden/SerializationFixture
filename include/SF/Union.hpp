@@ -14,8 +14,8 @@ namespace meta
 
 template <typename T> struct is_serializable_union
     : all<std::is_union<T>,
-          negation<::xxsf::has_save_mode<T>>,
-          negation<::xxsf::has_save_mode<T>>> {};
+          negation<meta::is_has_any_save_mode<T>>,
+          negation<meta::is_has_any_save_mode<T>>> {};
 
 } // namespace meta
 
@@ -27,6 +27,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(saveload, data, meta::is_serializable_union<T>:
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_serializable_union<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_serializable_union<T>::value)
 
 #endif // SF_UNION_HPP

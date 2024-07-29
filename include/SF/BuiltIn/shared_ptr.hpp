@@ -26,6 +26,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(saveload, shared_ptr, meta::is_std_shared_ptr<T
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_shared_ptr<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_shared_ptr<T>::value)
 
 #endif // SF_BUILT_IN_SHARED_PTR_HPP

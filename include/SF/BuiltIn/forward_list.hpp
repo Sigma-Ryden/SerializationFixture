@@ -51,6 +51,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, forward_list, meta::is_std_forward_list<T
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_forward_list<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_forward_list<T>::value)
 
 #endif // SF_BUILT_IN_FORWARD_LIST_HPP

@@ -57,6 +57,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, string, meta::is_std_basic_string<T>::val
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_basic_string<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_basic_string<T>::value)
 
 #endif // SF_BUILT_IN_STRING_HPP

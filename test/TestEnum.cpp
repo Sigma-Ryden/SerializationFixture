@@ -1,4 +1,4 @@
-#include "SFTestingBase.hpp"
+#include <SFTestingBase.hpp>
 
 TEST(TestCommon, TestEnum)
 {

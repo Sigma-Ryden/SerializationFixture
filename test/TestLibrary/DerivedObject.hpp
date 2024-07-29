@@ -1,7 +1,7 @@
 #ifndef DERIVED_OBJECT_HPP
 #define DERIVED_OBJECT_HPP
 
-#include "SFTestingBase.hpp"
+#include <SFTestingBase.hpp>
 #include "BaseObject.hpp"
 
 struct DerivedObject : BaseObject

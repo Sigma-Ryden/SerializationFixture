@@ -6,6 +6,7 @@
 #include <SF/Dynamic/InstantiableRegistry.hpp>
 #include <SF/Dynamic/AnyRegistry.hpp>
 
+// TODO: remove xxsf
 #define SERIALIZATION_ACCESS(...)                                                                       \
     friend struct ::xxsf;                                                                               \
     template <typename, typename> friend struct ::xxsf_save;                                            \

@@ -51,6 +51,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, weak_ptr, meta::is_std_weak_ptr<T>::value
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_weak_ptr<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_weak_ptr<T>::value)
 
 #endif // SF_BUILT_IN_WEAK_PTR_HPP

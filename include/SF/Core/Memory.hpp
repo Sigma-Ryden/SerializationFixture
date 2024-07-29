@@ -104,14 +104,6 @@ struct factory_t
     }
 };
 
-namespace detail
-{
-
-template <class From, class To> struct is_pointer_cast_allowed
-    : ::xxsf::is_pointer_cast_allowed<From, To> {};
-
-} // namespace detail
-
 template <typename To, typename T,
           SF_REQUIRE(meta::is_raw_pointer<T>::value)>
 raw_ptr<To> dynamic_pointer_cast(const T& pointer)
@@ -131,7 +123,7 @@ template <typename To, typename T,
           typename Traits = ptr_traits<T>,
           SF_REQUIRE(meta::one<meta::is_null_pointer<T>,
                                meta::all<meta::is_pointer<T>,
-                                         meta::negation<detail::is_pointer_cast_allowed<typename Traits::item, To>>>>::value)>
+                                         meta::negation<meta::is_static_castable<typename Traits::item*, To*>>>>::value)>
 typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
 {
     return nullptr;
@@ -139,7 +131,7 @@ typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noex
 
 template <typename To, typename T,
           SF_REQUIRE(meta::all<meta::is_raw_pointer<T>,
-                               detail::is_pointer_cast_allowed<typename ptr_traits<T>::item, To>>::value)>
+                               meta::is_static_castable<typename ptr_traits<T>::item*, To*>>::value)>
 raw_ptr<To> static_pointer_cast(const T& pointer) noexcept
 {
     return static_cast<raw_ptr<To>>(pointer);
@@ -148,7 +140,7 @@ raw_ptr<To> static_pointer_cast(const T& pointer) noexcept
 template <typename To, typename From, typename T,
           typename Traits = ptr_traits<T>,
           SF_REQUIRE(meta::all<meta::is_pointer<T>,
-                               meta::negation<detail::is_pointer_cast_allowed<From, To>>>::value)>
+                               meta::negation<meta::is_static_castable<From*, To*>>>::value)>
 typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
 {
     return nullptr;
@@ -156,7 +148,7 @@ typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noex
 
 template <typename To, typename T,
           SF_REQUIRE(meta::all<meta::is_shared_pointer<T>,
-                               detail::is_pointer_cast_allowed<typename ptr_traits<T>::item, To>>::value)>
+                               meta::is_static_castable<typename ptr_traits<T>::item*, To*>>::value)>
 shared_ptr<To> static_pointer_cast(const T& pointer) noexcept
 {
     auto address = memory::static_pointer_cast<To>(pointer.get());
@@ -166,8 +158,8 @@ shared_ptr<To> static_pointer_cast(const T& pointer) noexcept
 template <typename To, typename From, typename T,
           typename Traits = ptr_traits<T>,
           SF_REQUIRE(meta::all<meta::is_pointer<T>,
-                               detail::is_pointer_cast_allowed<typename Traits::item, From>,
-                               detail::is_pointer_cast_allowed<From, To>>::value)>
+                               meta::is_static_castable<typename Traits::item*, From*>,
+                               meta::is_static_castable<From*, To*>>::value)>
 typename Traits::template wrapper<To> static_pointer_cast(const T& pointer) noexcept
 {
     return memory::static_pointer_cast<To>(memory::static_pointer_cast<From>(pointer));
@@ -200,7 +192,7 @@ void assign(T& pointer, const void_ptr<T>& address) noexcept
 
 template <typename To, typename From = To, typename TraitsType,
           SF_REQUIRE(meta::all<meta::is_memory<TraitsType>,
-                               meta::one<meta::negation<detail::is_pointer_cast_allowed<From, To>>,
+                               meta::one<meta::negation<meta::is_static_castable<From*, To*>>,
                                          std::is_abstract<From>>>::value)>
 std::nullptr_t allocate() noexcept
 {
@@ -210,7 +202,7 @@ std::nullptr_t allocate() noexcept
 template <typename To, typename From = To, typename TraitsType,
           SF_REQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
                                meta::is_memory_shared<TraitsType>,
-                               detail::is_pointer_cast_allowed<From, To>>::value)>
+                               meta::is_static_castable<From*, To*>>::value)>
 shared_ptr<To> allocate()
 {
     auto instance = factory_t<From>::shared();
@@ -220,7 +212,7 @@ shared_ptr<To> allocate()
 template <typename To, typename From = To, typename TraitsType,
           SF_REQUIRE(meta::all<meta::negation<std::is_abstract<From>>,
                                meta::is_memory_raw<TraitsType>,
-                               detail::is_pointer_cast_allowed<From, To>>::value)>
+                               meta::is_static_castable<From*, To*>>::value)>
 raw_ptr<To> allocate()
 {
     auto instance = factory_t<From>::raw();

@@ -49,6 +49,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, atomic, meta::is_std_atomic<T>::value)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_atomic<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_atomic<T>::value)
 
 #endif // SF_BUILT_IN_ATOMIC_HPP

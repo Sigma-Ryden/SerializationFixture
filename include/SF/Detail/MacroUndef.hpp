@@ -47,5 +47,3 @@
 // #undef SF_GARBAGE_CHECK_DISABLE
 
 #undef SF_REQUIRE
-#undef SF_WHEN
-#undef SF_VOID

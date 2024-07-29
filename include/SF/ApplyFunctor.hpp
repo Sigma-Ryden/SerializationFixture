@@ -43,6 +43,6 @@ Archive& operator& (Archive& archive, T&& apply_functor)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_apply_functor<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_apply_functor<T>::value)
 
 #endif // SF_APPLY_FUNCTOR_HPP

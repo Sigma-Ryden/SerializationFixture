@@ -7,7 +7,6 @@
 #include <valarray> // valarray
 
 #include <SF/Detail/Meta.hpp>
-#include <SF/Detail/MetaMacro.hpp>
 
 namespace sf
 {
@@ -44,16 +43,6 @@ template <class T, std::size_t N>
 constexpr std::size_t size(const T (&array)[N]) noexcept
 {
     return N;
-}
-
-template <typename CharType,
-          SF_REQUIRE(meta::is_character<CharType>::value)>
-std::size_t size(const CharType* str) noexcept
-{
-    std::size_t count{};
-    while (*str++ != CharType{}) ++count;
-
-    return count;
 }
 
 } // namespace utility

@@ -47,6 +47,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(saveload, tuple, meta::is_std_tuple<T>::value)
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(meta::is_std_tuple<T>::value)
+CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_tuple<T>::value)
 
 #endif // SF_BUILT_IN_TUPLE_HPP
