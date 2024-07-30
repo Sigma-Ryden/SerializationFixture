@@ -5,11 +5,10 @@
 
 #include <deque> // deque
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/Compress.hpp>
-#include <SF/ExternSerialization.hpp>
 
 namespace sf
 {
@@ -23,34 +22,23 @@ struct is_std_deque<std::deque<T, Alloc>> : std::true_type {};
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, deque, meta::is_std_deque<T>::value)
+CONDITIONAL_SERIALIZATION(save, deque, ::sf::meta::is_std_deque<T>::value)
 {
-    let::u64 size = deque.size();
+    ::sf::let::u64 size = deque.size();
     archive & size;
 
-    compress::slow(archive, deque);
-
-    return archive;
+    ::sf::compress::slow(archive, deque);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, deque, meta::is_std_deque<T>::value)
+CONDITIONAL_SERIALIZATION(load, deque, ::sf::meta::is_std_deque<T>::value)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     deque.resize(size);
-    compress::slow(archive, deque);
-
-    return archive;
+    ::sf::compress::slow(archive, deque);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_deque<T>::value)
 
 #endif // SF_BUILT_IN_DEQUE_HPP

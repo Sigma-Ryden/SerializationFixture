@@ -5,10 +5,8 @@
 
 #include <memory> // unique_ptr
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/Memory.hpp>
-
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 namespace sf
 {
@@ -22,33 +20,22 @@ struct is_std_unique_ptr<std::unique_ptr<T, Deleter>> : std::true_type {};
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, unique_ptr, meta::is_std_unique_ptr<T>::value)
+CONDITIONAL_SERIALIZATION(save, unique_ptr, ::sf::meta::is_std_unique_ptr<T>::value)
 {
     auto data = unique_ptr.get();
     archive & data;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, unique_ptr, meta::is_std_unique_ptr<T>::value)
+CONDITIONAL_SERIALIZATION(load, unique_ptr, ::sf::meta::is_std_unique_ptr<T>::value)
 {
-    using item_type = typename memory::ptr_traits<T>::item;
+    using item_type = typename ::sf::memory::ptr_traits<T>::item;
 
     item_type* data = nullptr;
     archive & data;
 
     unique_ptr.reset(data);
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_unique_ptr<T>::value)
 
 #endif // SF_BUILT_IN_UNIQUE_PTR_HPP

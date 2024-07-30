@@ -25,12 +25,12 @@ struct Box
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, Vector)
+SERIALIZATION(saveload, self, Vector)
 {
     archive & self.X & self.Y & self.Z;
 }
 
-SERIALIZATION(saveload, Box)
+SERIALIZATION(saveload, self, Box)
 {
     archive & self.Min & self.Max;
 }
@@ -84,12 +84,12 @@ struct Printer : Product
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, Product)
+SERIALIZATION(saveload, self, Product)
 {
     archive & self.name & self.series & self.price;
 }
 
-SERIALIZATION(saveload, Printer)
+SERIALIZATION(saveload, self, Printer)
 {
     archive & hierarchy<Product>(self);
 #if __cplusplus >= 201703L

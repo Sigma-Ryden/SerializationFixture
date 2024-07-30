@@ -5,8 +5,7 @@
 
 #include <stack> // stack
 
-#include <SF/Core/TypeRegistry.hpp>
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/BuiltIn/Detail/Meta.hpp>
 
@@ -25,19 +24,11 @@ struct is_std_stack<std::stack<T, Container>> : std::true_type {};
 
 } // namespace meta
 
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, stack, meta::is_std_stack<T>::value)
-{
-    archive & meta::underlying(stack);
-    return archive;
-}
-
-} // inline namespace library
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_stack<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, stack, ::sf::meta::is_std_stack<T>::value)
+{
+    archive & ::sf::meta::underlying(stack);
+}
 
 #endif // SF_BUILT_IN_STACK_HPP

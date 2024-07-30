@@ -5,10 +5,8 @@
 
 #include <memory> // weak_ptr
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/Memory.hpp>
-
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 // serialization of shared_ptr
 #include <SF/BuiltIn/shared_ptr.hpp>
@@ -24,33 +22,22 @@ template <typename T> struct is_std_weak_ptr<std::weak_ptr<T>> : std::true_type 
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, weak_ptr, meta::is_std_weak_ptr<T>::value)
+CONDITIONAL_SERIALIZATION(save, weak_ptr, ::sf::meta::is_std_weak_ptr<T>::value)
 {
     auto sptr = weak_ptr.lock();
     archive & sptr;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, weak_ptr, meta::is_std_weak_ptr<T>::value)
+CONDITIONAL_SERIALIZATION(load, weak_ptr, ::sf::meta::is_std_weak_ptr<T>::value)
 {
-    using item_type = typename memory::ptr_traits<T>::item;
+    using item_type = typename ::sf::memory::ptr_traits<T>::item;
 
     std::shared_ptr<item_type> sptr;
     archive & sptr;
 
     weak_ptr = sptr;
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_weak_ptr<T>::value)
 
 #endif // SF_BUILT_IN_WEAK_PTR_HPP

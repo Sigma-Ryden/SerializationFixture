@@ -5,8 +5,7 @@
 
 #include <atomic> // atomic
 
-#include <SF/Core/TypeRegistry.hpp>
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 namespace sf
 {
@@ -22,33 +21,22 @@ template <typename T> struct atomic_traits<std::atomic<T>> { using value_type = 
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, atomic, meta::is_std_atomic<T>::value)
+CONDITIONAL_SERIALIZATION(save, atomic, ::sf::meta::is_std_atomic<T>::value)
 {
     auto object = atomic.load();
     archive & object;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, atomic, meta::is_std_atomic<T>::value)
+CONDITIONAL_SERIALIZATION(load, atomic, ::sf::meta::is_std_atomic<T>::value)
 {
-    using object_type = typename meta::atomic_traits<T>::value_type;
+    using object_type = typename ::sf::meta::atomic_traits<T>::value_type;
 
     object_type object{};
     archive & object;
 
     atomic.store(object);
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_atomic<T>::value)
 
 #endif // SF_BUILT_IN_ATOMIC_HPP

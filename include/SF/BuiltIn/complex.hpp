@@ -5,8 +5,7 @@
 
 #include <complex> // complex
 
-#include <SF/Core/TypeRegistry.hpp>
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 namespace sf
 {
@@ -19,20 +18,17 @@ template <typename T> struct is_std_complex<std::complex<T>> : std::true_type {}
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, complex, meta::is_std_complex<T>::value)
+CONDITIONAL_SERIALIZATION(save, complex, ::sf::meta::is_std_complex<T>::value)
 {
     auto re = complex.real();
     auto im = complex.imag();
 
     archive & re & im;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, complex, meta::is_std_complex<T>::value)
+CONDITIONAL_SERIALIZATION(load, complex, ::sf::meta::is_std_complex<T>::value)
 {
     using integral_type = typename T::value_type;
 
@@ -43,14 +39,6 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, complex, meta::is_std_complex<T>::value)
 
     complex.real(re);
     complex.imag(im);
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_complex<T>::value)
 
 #endif // SF_BUILT_IN_COMPLEX_HPP

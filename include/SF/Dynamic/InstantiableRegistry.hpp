@@ -21,7 +21,7 @@
 
 #define SERIALIZATION_TRAITS(...)                                                                       \
     private:                                                                                            \
-    using xxkey_type = ::xxsf_traits<void>::key_type;                                                   \
+    using xxkey_type = ::xxsf_instantiable_traits<void>::key_type;                                      \
     static constexpr xxkey_type xxstatic_traits() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }     \
     virtual xxkey_type xxtrait() const noexcept { return ::xxsf::traits<__VA_ARGS__>(); }               \
     public:
@@ -35,7 +35,7 @@ namespace dynamic
 class instantiable_registry_t
 {
 public:
-    using key_type          = ::xxsf_traits<void>::key_type;
+    using key_type          = ::xxsf_instantiable_traits<void>::key_type;
     using instantiable_type = INSTANTIABLE_TYPE;
     using archive_type      = core::ioarchive_t;
 

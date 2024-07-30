@@ -5,10 +5,8 @@
 
 #include <string> // basic_string
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
 
-#include <SF/ExternSerialization.hpp>
 #include <SF/Compress.hpp>
 
 namespace sf
@@ -25,38 +23,27 @@ struct is_std_basic_string<std::basic_string<Char, Traitss, Alloc>> : std::true_
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, string, meta::is_std_basic_string<T>::value)
+CONDITIONAL_SERIALIZATION(save, string, ::sf::meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
-    let::u64 size = string.size();
+    ::sf::let::u64 size = string.size();
     archive & size;
 
-    compress::zip(archive, string);
-
-    return archive;
+    ::sf::compress::zip(archive, string);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, string, meta::is_std_basic_string<T>::value)
+CONDITIONAL_SERIALIZATION(load, string, ::sf::meta::is_std_basic_string<T>::value)
 {
     using char_type = typename T::value_type;
 
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     string.resize(size);
-    compress::zip(archive, string);
-
-    return archive;
+    ::sf::compress::zip(archive, string);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_basic_string<T>::value)
 
 #endif // SF_BUILT_IN_STRING_HPP

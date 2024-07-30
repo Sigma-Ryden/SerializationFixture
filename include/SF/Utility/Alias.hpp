@@ -4,9 +4,7 @@
 #include <memory> // addressof
 
 #include <SF/Core/SerializatonBase.hpp>
-#include <SF/Core/TypeRegistry.hpp>
 
-#include <SF/ExternSerialization.hpp>
 #include <SF/DataTrack.hpp>
 
 #include <SF/Detail/Meta.hpp>
@@ -60,11 +58,9 @@ struct is_alias<alias_t<T>> : std::true_type {};
 
 } // namespace meta
 
-// inline namespace common also used in namespace library
-inline namespace common
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, alias, meta::is_alias<T>::value)
+CONDITIONAL_SERIALIZATION(save, alias, ::sf::meta::is_alias<T>::value)
 {
     using key_type = typename Archive::TrackingKeyType;
 
@@ -72,19 +68,17 @@ EXTERN_CONDITIONAL_SERIALIZATION(save, alias, meta::is_alias<T>::value)
         throw "The write alias_t must be initialized.";
 
     auto pointer = std::addressof(alias.get());
-    const auto key = detail::refer_key(archive, pointer);
+    const auto key = ::sf::detail::refer_key(archive, pointer);
 
-    auto& is_tracking = archive.template tracking<tracking::raw_t>()[key];
+    auto& is_tracking = archive.template tracking<::sf::tracking::raw_t>()[key];
 
     if (not is_tracking)
         throw "The write alias_t must be tracked before.";
 
-    detail::native_save(archive, pointer, key);
-
-    return archive;
+    ::sf::detail::native_save(archive, pointer, key);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, alias, meta::is_alias<T>::value)
+CONDITIONAL_SERIALIZATION(load, alias, ::sf::meta::is_alias<T>::value)
 {
     using key_type   = typename Archive::TrackingKeyType;
     using value_type = typename T::type;
@@ -97,24 +91,16 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, alias, meta::is_alias<T>::value)
     key_type key{};
     archive & key;
 
-    auto& item = archive.template tracking<tracking::raw_t>()[key];
+    auto& item = archive.template tracking<::sf::tracking::raw_t>()[key];
 
     if (item.address == nullptr)
         throw "The read alias_t must be tracked before.";
 
     value_type* pointer = nullptr;
 
-    detail::native_load(archive, pointer, item.address);
+    ::sf::detail::native_load(archive, pointer, item.address);
 
     alias.set(*pointer); // pointer will never nullptr
-
-    return archive;
 }
-
-} // inline namespace common
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_alias<T>::value)
 
 #endif // SF_UTILITY_ALIAS_HPP

@@ -7,7 +7,6 @@
 
 #include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/ArchiveBase.hpp>
-#include <SF/Core/TypeRegistry.hpp>
 
 #include <SF/Dynamic/ExternRegistry.hpp>
 
@@ -119,8 +118,8 @@ auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) ->
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                               meta::is_unsupported<T>>::value)>
-Archive& operator& (Archive& archive, T& unsupported)
+                               meta::is_unsupported<typename std::decay<T>::type>>::value)>
+Archive& operator& (Archive& archive, T&& unsupported)
 {
     static_assert(meta::to_false<T>(),
         "The 'T' is an unsupported type for the 'sf::oarchive_t'.");
@@ -128,14 +127,12 @@ Archive& operator& (Archive& archive, T& unsupported)
     return archive;
 }
 
-template <class Archive, typename T,
+template <class Archive, typename T, typename dT = typename std::decay<T>::type,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                               meta::negation<meta::is_registered_extern<T>>>::value)>
-Archive& operator& (Archive& archive, T& unregistered)
+                               meta::negation<meta::is_unsupported<dT>>>::value)>
+Archive& operator& (Archive& archive, T&& data)
 {
-    static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'sf::oarchive_t'.");
-
+    typename ::sf::meta::select_save_mode<dT>::type(archive, data);
     return archive;
 }
 

@@ -9,7 +9,6 @@
 
 #include <SF/Core/PolymorphicArchive.hpp>
 #include <SF/Core/TypeCore.hpp>
-#include <SF/Core/TypeRegistry.hpp>
 
 #include <SF/Detail/Meta.hpp>
 

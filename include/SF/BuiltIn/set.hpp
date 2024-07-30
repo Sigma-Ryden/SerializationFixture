@@ -8,11 +8,10 @@
 
 #include <utility> // move
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/Compress.hpp>
-#include <SF/ExternSerialization.hpp>
 
 #define SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                       \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
@@ -57,46 +56,35 @@ void reserve_unordered(T& unordered, std::size_t size)
 
 } // namespace detail
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, set, meta::is_std_any_set<T>::value)
+CONDITIONAL_SERIALIZATION(save, set, ::sf::meta::is_std_any_set<T>::value)
 {
-    let::u64 size = set.size();
+    ::sf::let::u64 size = set.size();
     archive & size;
 
-    compress::slow(archive, set);
-
-    return archive;
+    ::sf::compress::slow(archive, set);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, set, meta::is_std_any_set<T>::value)
+CONDITIONAL_SERIALIZATION(load, set, ::sf::meta::is_std_any_set<T>::value)
 {
     using value_type = typename T::value_type;
 
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     set.clear();
-    detail::reserve_unordered(set, size);
+    ::sf::detail::reserve_unordered(set, size);
 
     auto hint = set.begin();
-    for (let::u64 i = 0; i < size; ++i)
+    for (::sf::let::u64 i = 0; i < size; ++i)
     {
         value_type item{}; // temp
         archive & item;
 
         hint = set.emplace_hint(hint, std::move(item));
     }
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any_set<T>::value)
 
 // clean up
 #undef SF_IS_STD_SET_TYPE_META_GENERIC

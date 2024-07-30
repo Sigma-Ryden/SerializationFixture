@@ -3,7 +3,6 @@
 
 #include <SF/Core/Config.hpp>
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/Serialization.hpp>
 #include <SF/Core/Hash.hpp>
 

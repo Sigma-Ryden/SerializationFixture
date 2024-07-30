@@ -10,27 +10,27 @@
 #include <SF/Detail/Meta.hpp>
 #include <SF/Detail/MetaMacro.hpp>
 
-#define SERIALIZATION(mode, ...)                                                                        \
+#define SERIALIZATION(mode, object, ...)                                                                \
     template <>                                                                                         \
     struct xxsf_##mode<__VA_ARGS__> { template <class Archive> xxsf_##mode(Archive&, __VA_ARGS__&); };  \
     template <class Archive>                                                                            \
-    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(Archive& archive, __VA_ARGS__& self)
+    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(Archive& archive, __VA_ARGS__& object)
 
-#define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
+#define CONDITIONAL_SERIALIZATION(mode, object, ...)                                                    \
     template <class T>                                                                                  \
     struct xxsf_##mode<T, typename std::enable_if<__VA_ARGS__>::type> {                                 \
         template <class Archive> xxsf_##mode(Archive&, T&);                                             \
     };                                                                                                  \
     template <class T> template <class Archive>                                                         \
-    xxsf_##mode<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_##mode(Archive& archive, T& self)
+    xxsf_##mode<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_##mode(Archive& archive, T& object)
 
 // Allow to hide implementation to translation unit, and declare interface in header
 #define SERIALIZATION_INTERFACE(mode, ...)                                                              \
     template <>                                                                                         \
     struct xxsf_##mode<__VA_ARGS__> { xxsf_##mode(::sf::core::ioarchive_t&, __VA_ARGS__&); };
 
-#define SERIALIZATION_IMPLEMENTATION(mode, ...)                                                         \
-    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
+#define SERIALIZATION_IMPLEMENTATION(mode, object, ...)                                                 \
+    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& object)
 
 // should be in global namespace
 template <class T, typename enable = void> struct xxsf_save;
@@ -88,7 +88,7 @@ struct select_load_mode<T,
 class xxsf
 {
 public:
-    using trait_type = ::xxsf_traits<void>::key_type;
+    using trait_type = ::xxsf_instantiable_traits<void>::key_type;
 
 public:
     template <class T, typename = void> struct is_has_static_traits : std::false_type {};
@@ -104,19 +104,6 @@ public:
     {
         static constexpr bool value = is_has_static_traits<T>::value and is_has_traits<T>::value; // delay access
     };
-
-public:
-    template <class Archive, typename T>
-    static void save(Archive& archive, T& data)
-    {
-        typename ::sf::meta::select_save_mode<T>::type(archive, data);
-    }
-
-    template <class Archive, typename T>
-    static void load(Archive& archive, T& data)
-    {
-        typename ::sf::meta::select_load_mode<T>::type(archive, data);
-    }
 
 public:
     template <typename Base, class Archive, class Derived>
@@ -161,7 +148,7 @@ public:
     template <class T, SF_REQUIRE(not is_has_inner_traits<T>::value)>
     static trait_type traits() noexcept
     {
-        static_assert(::xxsf_traits<T>::key == ::xxsf_traits<void>::base_key,
+        static_assert(::xxsf_instantiable_traits<T>::key == ::xxsf_instantiable_traits<void>::base_key,
             "Export instantiable traits is not allowed using typeid.");
 
         return static_traits<T>();
@@ -174,9 +161,9 @@ public:
     static trait_type traits() noexcept
 #endif // SF_EXPORT_INSTANTIABLE_DISABLE
     {
-        constexpr auto traits_key = ::xxsf_traits<T>::key;
+        constexpr auto traits_key = ::xxsf_instantiable_traits<T>::key;
 
-        return traits_key == ::xxsf_traits<void>::base_key
+        return traits_key == ::xxsf_instantiable_traits<void>::base_key
              ? static_traits<T>()
              : traits_key;
     }

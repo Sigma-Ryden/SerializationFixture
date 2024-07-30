@@ -5,10 +5,9 @@
 
 #include <vector> // vector
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
+#include <SF/Core/Serialization.hpp>
 
-#include <SF/ExternSerialization.hpp>
 #include <SF/Compress.hpp>
 
 namespace sf
@@ -23,47 +22,29 @@ struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, vector, meta::is_std_vector<T>::value)
+CONDITIONAL_SERIALIZATION(save, vector, ::sf::meta::is_std_vector<T>::value)
 {
-    let::u64 size = vector.size();
+    ::sf::let::u64 size = vector.size();
     archive & size;
 
-    compress::zip(archive, vector);
-
-    return archive;
+    ::sf::compress::zip(archive, vector);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, vector, meta::is_std_vector<T>::value)
+CONDITIONAL_SERIALIZATION(load, vector, ::sf::meta::is_std_vector<T>::value)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     vector.resize(size);
-    compress::zip(archive, vector);
-
-    return archive;
+    ::sf::compress::zip(archive, vector);
 }
 
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_vector<T>::value)
-TYPE_REGISTRY(std::vector<bool>)
-
-namespace sf
-{
-
-inline namespace library
-{
-
 // slow impl
-EXTERN_SERIALIZATION(save, vector, std::vector<bool>)
+SERIALIZATION(save, vector, std::vector<bool>)
 {
-    let::u64 size = vector.size();
+    ::sf::let::u64 size = vector.size();
     archive & size;
 
     for(auto item:vector)
@@ -71,13 +52,11 @@ EXTERN_SERIALIZATION(save, vector, std::vector<bool>)
         bool boolean = item;
         archive & boolean;
     }
-
-    return archive;
 }
 
-EXTERN_SERIALIZATION(load, vector, std::vector<bool>)
+SERIALIZATION(load, vector, std::vector<bool>)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     vector.resize(size);
@@ -88,12 +67,6 @@ EXTERN_SERIALIZATION(load, vector, std::vector<bool>)
         archive & boolean;
         item = boolean;
     }
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
 
 #endif // SF_BUILT_IN_VECTOR_HPP

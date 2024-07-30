@@ -5,8 +5,7 @@
 
 #include <queue> // queue
 
-#include <SF/Core/TypeRegistry.hpp>
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/BuiltIn/Detail/Meta.hpp>
 
@@ -36,19 +35,11 @@ template <class T> struct is_std_any_queue
 
 } // namespace meta
 
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, queue, meta::is_std_any_queue<T>::value)
-{
-    archive & meta::underlying(queue);
-    return archive;
-}
-
-} // inline namespace library
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any_queue<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, queue, ::sf::meta::is_std_any_queue<T>::value)
+{
+    archive & ::sf::meta::underlying(queue);
+}
 
 #endif // SF_BUILT_IN_QUEUE_HPP

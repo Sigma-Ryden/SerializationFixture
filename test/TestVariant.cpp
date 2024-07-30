@@ -17,7 +17,7 @@ struct OwnType
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, OwnType)
+SERIALIZATION(saveload, self, OwnType)
 {
     archive & self.var;
 }

@@ -2,9 +2,7 @@
 #define SF_UNION_HPP
 
 #include <SF/Core/Serialization.hpp>
-#include <SF/Core/TypeRegistry.hpp>
-
-#include <SF/ExternSerialization.hpp>
+#include <SF/Binary.hpp>
 
 namespace sf
 {
@@ -19,14 +17,11 @@ template <typename T> struct is_serializable_union
 
 } // namespace meta
 
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, data, meta::is_serializable_union<T>::value)
-{
-    binary(archive, data);
-    return archive;
-}
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_serializable_union<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, data, ::sf::meta::is_serializable_union<T>::value)
+{
+    ::sf::binary(archive, data);
+}
 
 #endif // SF_UNION_HPP

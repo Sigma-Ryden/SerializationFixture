@@ -19,12 +19,12 @@ struct Derived : Base
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, Base)
+SERIALIZATION(saveload, self, Base)
 {
     archive & self.x;
 }
 
-SERIALIZATION(saveload, Derived)
+SERIALIZATION(saveload, self, Derived)
 {
     archive & hierarchy<Base>(self) & self.y;
 }

@@ -28,7 +28,6 @@ namespace sf
 template <typename T> void serializable()
 {
     static_assert(not meta::is_unsupported<T>::value, "The 'T' is an unsupported type for serialization.");
-    static_assert(meta::is_registered_extern<T>::value, "The 'T' is an unregistered type for serialization.");
 
     dynamic::instantiable_fixture_t<T>::call();
 

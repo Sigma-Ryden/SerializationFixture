@@ -8,11 +8,10 @@
 
 #include <utility> // move
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/Compress.hpp>
-#include <SF/ExternSerialization.hpp>
 
 // serialization of core map value_type
 #include <SF/BuiltIn/pair.hpp>
@@ -60,32 +59,29 @@ void reserve_unordered(T& unordered, std::size_t size)
 
 } // namespace detail
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, map, meta::is_std_any_map<T>::value)
+CONDITIONAL_SERIALIZATION(save, map, ::sf::meta::is_std_any_map<T>::value)
 {
-    let::u64 size = map.size();
+    ::sf::let::u64 size = map.size();
     archive & size;
 
-    compress::slow(archive, map);
-
-    return archive;
+    ::sf::compress::slow(archive, map);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, map, meta::is_std_any_map<T>::value)
+CONDITIONAL_SERIALIZATION(load, map, ::sf::meta::is_std_any_map<T>::value)
 {
     using key_type   = typename T::key_type;
     using value_type = typename T::mapped_type;
 
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     map.clear();
-    detail::reserve_unordered(map, size);
+    ::sf::detail::reserve_unordered(map, size);
 
     auto hint = map.begin();
-    for (let::u64 i = 0; i < size; ++i)
+    for (::sf::let::u64 i = 0; i < size; ++i)
     {
         key_type key{};
         value_type value{};
@@ -94,15 +90,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, map, meta::is_std_any_map<T>::value)
 
         hint = map.emplace_hint(hint, std::move(key), std::move(value));
     }
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any_map<T>::value)
 
 //clear
 #undef SF_IS_STD_MAP_TYPE_META_GENERIC

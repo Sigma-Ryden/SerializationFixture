@@ -5,8 +5,7 @@
 
 #include <utility> // pair
 
-#include <SF/Core/TypeRegistry.hpp>
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 namespace sf
 {
@@ -20,19 +19,11 @@ struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
 
 } // namespace meta
 
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, pair, meta::is_std_pair<T>::value)
-{
-    archive & pair.first & pair.second;
-    return archive;
-}
-
-} // inline namespace library
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_pair<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, pair, ::sf::meta::is_std_pair<T>::value)
+{
+    archive & pair.first & pair.second;
+}
 
 #endif // SF_BUILT_IN_PAIR_HPP

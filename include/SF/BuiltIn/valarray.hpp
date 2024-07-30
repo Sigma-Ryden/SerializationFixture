@@ -5,10 +5,8 @@
 
 #include <valarray> // valarray
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
-
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/Compress.hpp>
 
@@ -23,34 +21,23 @@ template <typename T> struct is_std_valarray<std::valarray<T>> : std::true_type 
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, valarray, meta::is_std_valarray<T>::value)
+CONDITIONAL_SERIALIZATION(save, valarray, ::sf::meta::is_std_valarray<T>::value)
 {
-    let::u64 size = valarray.size();
+    ::sf::let::u64 size = valarray.size();
     archive & size;
 
-    compress::zip(archive, valarray);
-
-    return archive;
+    ::sf::compress::zip(archive, valarray);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, valarray, meta::is_std_valarray<T>::value)
+CONDITIONAL_SERIALIZATION(load, valarray, ::sf::meta::is_std_valarray<T>::value)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     valarray.resize(size);
-    compress::zip(archive, valarray);
-
-    return archive;
+    ::sf::compress::zip(archive, valarray);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_valarray<T>::value)
 
 #endif // SF_BUILT_IN_VALARRAY_HPP

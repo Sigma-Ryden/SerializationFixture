@@ -5,8 +5,7 @@
 
 #include <bitset> // bitset
 
-#include <SF/Core/TypeRegistry.hpp>
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 // default array for bitset convertion
 #include <SF/BuiltIn/string.hpp>
@@ -22,32 +21,21 @@ template <std::size_t N> struct is_std_bitset<std::bitset<N>> : std::true_type {
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
 // slow impl
-EXTERN_CONDITIONAL_SERIALIZATION(save, bitset, meta::is_std_bitset<T>::value)
+CONDITIONAL_SERIALIZATION(save, bitset, ::sf::meta::is_std_bitset<T>::value)
 {
     auto data = bitset.to_string();
     archive & data;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, bitset, meta::is_std_bitset<T>::value)
+CONDITIONAL_SERIALIZATION(load, bitset, ::sf::meta::is_std_bitset<T>::value)
 {
     std::string data;
     archive & data;
 
     bitset = T(data);
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_bitset<T>::value)
 
 #endif // SF_BUILT_IN_BITSET_HPP

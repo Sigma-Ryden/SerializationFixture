@@ -101,6 +101,10 @@ class Square // non instantiable
 
 } // TEST_SPACE
 
+SERIALIZATION(saveload, self, Triangle) {}
+SERIALIZATION(saveload, self, Cyrcle) {}
+SERIALIZATION(saveload, self, Square) {}
+
 TEST(TestLibrary, TestInstantiableRegistry)
 {
     using sf::dynamic::instantiable_fixture_t;
@@ -328,42 +332,42 @@ struct DecorativeFoliageObject : DecorativeObject, FoliageObjectInstance
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, WorldObject)
+SERIALIZATION(saveload, self, WorldObject)
 {
     ++self.wo;
 }
 
-SERIALIZATION(saveload, EnvironmentObject)
+SERIALIZATION(saveload, self, EnvironmentObject)
 {
     ++self.eo;
     archive & hierarchy<WorldObject>(self);
 }
 
-SERIALIZATION(saveload, MoveableObject)
+SERIALIZATION(saveload, self, MoveableObject)
 {
     ++self.mo;
     archive & hierarchy<EnvironmentObject>(self);
 }
 
-SERIALIZATION(saveload, DestructibleObject)
+SERIALIZATION(saveload, self, DestructibleObject)
 {
     ++self.dso;
     archive & hierarchy<EnvironmentObject>(self);
 }
 
-SERIALIZATION(saveload, DecorativeObject)
+SERIALIZATION(saveload, self, DecorativeObject)
 {
     ++self.dco;
     archive & hierarchy<DestructibleObject, MoveableObject>(self);
 }
 
-SERIALIZATION(saveload, FoliageObject)
+SERIALIZATION(saveload, self, FoliageObject)
 {
     ++self.fo;
     archive & hierarchy<WorldObject>(self);
 }
 
-SERIALIZATION(saveload, DecorativeFoliageObject)
+SERIALIZATION(saveload, self, DecorativeFoliageObject)
 {
     ++self.dcfo;
     archive & hierarchy<DecorativeObject, FoliageObject>(self);
@@ -448,24 +452,24 @@ struct PolymorphicDerived : public PolymorphicBase
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, SomeObjectImpl)
+SERIALIZATION(saveload, self, SomeObjectImpl)
 {
     archive & self.data_;
 }
 
-SERIALIZATION(saveload, SomeObject)
+SERIALIZATION(saveload, self, SomeObject)
 {
     archive & hierarchy<SomeObjectImpl>(self) & self.inner_data_;
 }
 
-SERIALIZATION(saveload, PolymorphicBaseImpl) {}
+SERIALIZATION(saveload, self, PolymorphicBaseImpl) {}
 
-SERIALIZATION(saveload, PolymorphicBase)
+SERIALIZATION(saveload, self, PolymorphicBase)
 {
     archive & hierarchy<PolymorphicBaseImpl>(self);
 }
 
-SERIALIZATION(saveload, PolymorphicDerived)
+SERIALIZATION(saveload, self, PolymorphicDerived)
 {
     archive & hierarchy<PolymorphicBase>(self);
 }
@@ -523,12 +527,12 @@ struct NoTraitsDerived : NoTraitsBase
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, NoTraitsBase)
+SERIALIZATION(saveload, self, NoTraitsBase)
 {
     archive & self.b;
 }
 
-SERIALIZATION(saveload, NoTraitsDerived)
+SERIALIZATION(saveload, self, NoTraitsDerived)
 {
     archive & hierarchy<NoTraitsBase>(self) & self.d;
 }
@@ -672,8 +676,8 @@ struct Implementation : Interface
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, Interface) {}
-SERIALIZATION(saveload, Implementation) {}
+SERIALIZATION(saveload, self, nterface) {}
+SERIALIZATION(saveload, self, mplementation) {}
 
 // or general solution
 // CONDITIONAL_SERIALIZATION(saveload, std::is_base_of<Interface, T>::value) {}

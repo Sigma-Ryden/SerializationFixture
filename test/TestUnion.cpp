@@ -1,6 +1,7 @@
 #include <SFTestingBase.hpp>
 
 #include <SF/BuiltIn/array.hpp>
+#include <SF/Union.hpp>
 
 TEST_SPACE()
 {
@@ -21,7 +22,7 @@ union Variant
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, Variant)
+SERIALIZATION(saveload, self, Variant)
 {
     // specify impl here
     archive & self.a;

@@ -3,28 +3,15 @@
 
 #include <array> // array
 
-#include <SF/Core/TypeRegistry.hpp>
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
+
 #include <SF/Compress.hpp>
 
 #include <SF/Detail/Meta.hpp> // // is_std_array
 
-namespace sf
+CONDITIONAL_SERIALIZATION(saveload, array, ::sf::meta::is_std_array<T>::value)
 {
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, array, meta::is_std_array<T>::value)
-{
-    compress::zip(archive, array);
-    return archive;
+    ::sf::compress::zip(archive, array);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_array<T>::value)
 
 #endif // SF_BUILT_IN_ARRAY_HPP

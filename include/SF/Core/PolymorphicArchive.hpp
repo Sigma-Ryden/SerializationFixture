@@ -6,7 +6,6 @@
 #include <SF/Core/ArchiveTraits.hpp>
 
 #include <SF/Core/Serialization.hpp>
-#include <SF/Core/TypeRegistry.hpp>
 
 #include <SF/Core/Memory.hpp>
 
@@ -80,46 +79,7 @@ private:
             throw "The read/write archive was registered incorrect.";
     #endif // SF_DEBUG
 
-        proccess(*derived_archive, data);
-    }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
-                                   meta::is_has_any_save_mode<T>>::value)>
-    static void proccess(DerivedArchive& archive, T& object)
-    {
-        ::xxsf::save(archive, object);
-    }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
-                                   meta::is_has_any_load_mode<T>>::value)>
-    static void proccess(DerivedArchive& archive, T& object)
-    {
-        ::xxsf::load(archive, object);
-    }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
-                                   meta::negation<meta::is_has_any_save_mode<T>>,
-                                   meta::negation<meta::is_has_any_load_mode<T>>>::value)>
-    static void proccess(DerivedArchive& archive, T& data)
-    {
-        process_data(archive, data);
-    }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(meta::is_registered_extern<T>::value)>
-    static void process_data(DerivedArchive& archive, T& data)
-    {
-        archive & data;
-    }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(not meta::is_registered_extern<T>::value)>
-    static void process_data(DerivedArchive& archive, T& data)
-    {
-        throw "The 'T' type is unregistered.";
+        (*derived_archive) & data;
     }
 };
 

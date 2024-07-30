@@ -7,10 +7,8 @@
 
 #include <variant> // variant
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
-
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 // serialization of std::monostate
 #include <SF/Aggregate.hpp>
@@ -71,36 +69,25 @@ void variant_load(Archive& archive, Variant& variant, let::u64 index)
 
 } // namespace detail
 
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, variant, meta::is_std_variant<T>::value)
-{
-    let::u64 index = variant.index();
-    archive & index;
-
-    if (index != std::variant_npos)
-        detail::variant_save(archive, variant, index);
-
-    return archive;
-}
-
-EXTERN_CONDITIONAL_SERIALIZATION(load, variant, meta::is_std_variant<T>::value)
-{
-    let::u64 index{};
-    archive & index;
-
-    if (index != std::variant_npos)
-        detail::variant_load(archive, variant, index);
-
-    return archive;
-}
-
-} // inline namespace library
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_variant<T>::value)
+CONDITIONAL_SERIALIZATION(save, variant, ::sf::meta::is_std_variant<T>::value)
+{
+    ::sf::let::u64 index = variant.index();
+    archive & index;
+
+    if (index != std::variant_npos)
+        ::sf::detail::variant_save(archive, variant, index);
+}
+
+CONDITIONAL_SERIALIZATION(load, variant, ::sf::meta::is_std_variant<T>::value)
+{
+    ::sf::let::u64 index{};
+    archive & index;
+
+    if (index != std::variant_npos)
+        ::sf::detail::variant_load(archive, variant, index);
+}
 
 #endif // if
 

@@ -5,11 +5,10 @@
 
 #include <list> // list
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/Compress.hpp>
-#include <SF/ExternSerialization.hpp>
 
 namespace sf
 {
@@ -23,34 +22,23 @@ struct is_std_list<std::list<T, Alloc>> : std::true_type {};
 
 } // namespace meta
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, list, meta::is_std_list<T>::value)
+CONDITIONAL_SERIALIZATION(save, list, ::sf::meta::is_std_list<T>::value)
 {
-    let::u64 size = list.size();
+    ::sf::let::u64 size = list.size();
     archive & size;
 
-    compress::slow(archive, list);
-
-    return archive;
+    ::sf::compress::slow(archive, list);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, list, meta::is_std_list<T>::value)
+CONDITIONAL_SERIALIZATION(load, list, ::sf::meta::is_std_list<T>::value)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     list.resize(size);
-    compress::slow(archive, list);
-
-    return archive;
+    ::sf::compress::slow(archive, list);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_list<T>::value)
 
 #endif // SF_BUILT_IN_LIST_HPP

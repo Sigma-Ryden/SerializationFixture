@@ -4,9 +4,7 @@
 #if __cplusplus >= 201703L
 
 #include <SF/Core/Serialization.hpp>
-#include <SF/Core/TypeRegistry.hpp>
 
-#include <SF/ExternSerialization.hpp>
 #include <SF/ApplyFunctor.hpp>
 
 #include <SF/Detail/Preprocessor.hpp>
@@ -51,17 +49,6 @@ void aggregate(Archive& archive, T& object)
     detail::aggregate_impl(archive, object, std::integral_constant<std::size_t, size>{});
 }
 
-inline namespace common
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, object, meta::is_serializable_aggregate<T>::value)
-{
-    aggregate(archive, object);
-    return archive;
-}
-
-} // inline namespace common
-
 namespace apply
 {
 
@@ -82,7 +69,10 @@ template <typename T> apply::aggregate_functor_t<T> aggregate(T& object) noexcep
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_serializable_aggregate<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, object, ::sf::meta::is_serializable_aggregate<T>::value)
+{
+    ::sf::aggregate(archive, object);
+}
 
 // clean up
 #undef SF_AGGREGATE_IMPLEMENTATION_GENERIC

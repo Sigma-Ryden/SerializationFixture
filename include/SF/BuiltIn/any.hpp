@@ -7,13 +7,11 @@
 
 #include <any> // any
 
-#include <SF/Core/TypeRegistry.hpp>
 #include <SF/Core/TypeCore.hpp>
 #include <SF/Core/Hash.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/Dynamic/AnyRegistry.hpp>
-
-#include <SF/ExternSerialization.hpp>
 
 namespace sf
 {
@@ -26,35 +24,24 @@ template <> struct is_std_any<std::any> : std::true_type {};
 
 } // namespace meta
 
-inline namespace library
-{
-
-// please, use 'sf::serializable' for type any registry before std::any serialization
-EXTERN_CONDITIONAL_SERIALIZATION(save, any, meta::is_std_any<T>::value)
-{
-    let::u64 hash = SF_TYPE_HASH(any.type());
-    archive & hash;
-
-    dynamic::any_registry_t::instance().save(archive, any, hash);
-
-    return archive;
-}
-
-EXTERN_CONDITIONAL_SERIALIZATION(load, any, meta::is_std_any<T>::value)
-{
-    let::u64 hash{};
-    archive & hash;
-
-    dynamic::any_registry_t::instance().load(archive, any, hash);
-
-    return archive;
-}
-
-} // inline namespace library
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any<T>::value)
+// please, use 'sf::serializable' for type any registry before std::any serialization
+CONDITIONAL_SERIALIZATION(save, any, ::sf::meta::is_std_any<T>::value)
+{
+    ::sf::let::u64 hash = SF_TYPE_HASH(any.type());
+    archive & hash;
+
+    ::sf::dynamic::any_registry_t::instance().save(archive, any, hash);
+}
+
+CONDITIONAL_SERIALIZATION(load, any, ::sf::meta::is_std_any<T>::value)
+{
+    ::sf::let::u64 hash{};
+    archive & hash;
+
+    ::sf::dynamic::any_registry_t::instance().load(archive, any, hash);
+}
 
 #endif // if
 

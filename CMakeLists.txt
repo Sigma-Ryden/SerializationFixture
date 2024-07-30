@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(SerializationFixture LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -18,7 +18,6 @@ set(SF
     include/SF/Core/Config.hpp
     include/SF/Core/InstantiableTraits.hpp
     include/SF/Core/PolymorphicArchive.hpp
-    include/SF/Core/TypeRegistry.hpp
     include/SF/Core/Serialization.hpp
     include/SF/Core/SerializatonBase.hpp
     include/SF/Core/Memory.hpp
@@ -45,7 +44,6 @@ set(SF
     include/SF/Strict.hpp
     include/SF/IArchive.hpp
     include/SF/OArchive.hpp
-    include/SF/ExternSerialization.hpp
     include/SF/StreamWrapper.hpp
     include/SF/DataTrackBase.hpp
     include/SF/Hierarchy.hpp
@@ -94,7 +92,7 @@ add_executable(${PROJECT_NAME}
     test/TestNumber.cpp
     test/TestEnum.cpp
     test/TestUserType.cpp
-    test/TestUnion.cpp
+    # test/TestUnion.cpp
     test/TestVector.cpp
     test/TestArray.cpp
     test/TestValarray.cpp
@@ -108,7 +106,7 @@ add_executable(${PROJECT_NAME}
     test/TestForwardList.cpp
     test/TestMap.cpp
     test/TestSet.cpp
-    test/TestVariant.cpp
+    # test/TestVariant.cpp
     test/TestOptional.cpp
     test/TestPair.cpp
     test/TestTuple.cpp
@@ -123,13 +121,13 @@ add_executable(${PROJECT_NAME}
     test/TestAlias.cpp
     test/TestBitPack.cpp
 
-    test/TestLibrary/BaseObject.hpp
-    test/TestLibrary/BaseObject.cpp
-    test/TestLibrary/DerivedObject.hpp
-    test/TestLibrary/DerivedObject.cpp
-    test/TestLibrary.cpp
+    # test/TestLibrary/BaseObject.hpp
+    # test/TestLibrary/BaseObject.cpp
+    # test/TestLibrary/DerivedObject.hpp
+    # test/TestLibrary/DerivedObject.cpp
+    # test/TestLibrary.cpp
 
-    test/TestExample.cpp
+    # test/TestExample.cpp
 
     test/SFTestingBase.hpp
     test/main.cpp

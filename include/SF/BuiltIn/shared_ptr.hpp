@@ -3,29 +3,15 @@
 
 #include <memory> // shared_ptr
 
-#include <SF/Core/TypeRegistry.hpp>
-#include <SF/ExternSerialization.hpp>
+#include <SF/Core/Serialization.hpp>
 
 #include <SF/DataTrack.hpp>
 
 #include <SF/Detail/Meta.hpp> // is_std_shared_ptr
 
-namespace sf
+CONDITIONAL_SERIALIZATION(saveload, shared_ptr, ::sf::meta::is_std_shared_ptr<T>::value)
 {
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, shared_ptr, meta::is_std_shared_ptr<T>::value)
-{
-    tracking::track(archive, shared_ptr);
-    return archive;
+    ::sf::tracking::track(archive, shared_ptr);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_shared_ptr<T>::value)
 
 #endif // SF_BUILT_IN_SHARED_PTR_HPP
