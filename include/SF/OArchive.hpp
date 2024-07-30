@@ -118,8 +118,8 @@ auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) ->
 
 template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                               meta::is_unsupported<typename std::decay<T>::type>>::value)>
-Archive& operator& (Archive& archive, T&& unsupported)
+                               meta::is_unsupported<T>>::value)>
+Archive& operator& (Archive& archive, T const& unsupported)
 {
     static_assert(meta::to_false<T>(),
         "The 'T' is an unsupported type for the 'sf::oarchive_t'.");
@@ -127,12 +127,12 @@ Archive& operator& (Archive& archive, T&& unsupported)
     return archive;
 }
 
-template <class Archive, typename T, typename dT = typename std::decay<T>::type,
+template <class Archive, typename T,
           SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                               meta::negation<meta::is_unsupported<dT>>>::value)>
-Archive& operator& (Archive& archive, T&& data)
+                               meta::negation<meta::is_unsupported<T>>>::value)>
+Archive& operator& (Archive& archive, T const& data)
 {
-    typename ::sf::meta::select_save_mode<dT>::type(archive, data);
+    typename ::sf::meta::select_save_mode<T>::type(archive, const_cast<T&>(data));
     return archive;
 }
 

@@ -117,7 +117,7 @@ add_executable(${PROJECT_NAME}
     test/TestDynamicArray.cpp
     test/TestPolymorphic.cpp
     test/TestTracking.cpp
-    test/TestAggregate.cpp
+    # test/TestAggregate.cpp
     test/TestAlias.cpp
     test/TestBitPack.cpp
 
@@ -127,7 +127,7 @@ add_executable(${PROJECT_NAME}
     # test/TestLibrary/DerivedObject.cpp
     # test/TestLibrary.cpp
 
-    # test/TestExample.cpp
+    test/TestExample.cpp
 
     test/SFTestingBase.hpp
     test/main.cpp

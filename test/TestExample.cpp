@@ -29,12 +29,12 @@ struct Handbook
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, Prototype)
+SERIALIZATION(saveload, self, Prototype)
 {
     archive & self.name & self.properties;
 }
 
-SERIALIZATION(saveload, Handbook)
+SERIALIZATION(saveload, self, Handbook)
 {
     archive & self.prototypes;
 }
