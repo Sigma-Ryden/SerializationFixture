@@ -24,9 +24,9 @@ namespace meta
 
 template <typename T> struct is_serializable_aggregate
     : all<is_aggregate<T>,
-          negation<std::is_union<T>>,
+          negation<std::is_union<T>>/*,
           negation<meta::is_has_any_save_mode<T>>,
-          negation<meta::is_has_any_save_mode<T>>> {};
+          negation<meta::is_has_any_save_mode<T>>*/> {};
 
 } // namespace meta
 

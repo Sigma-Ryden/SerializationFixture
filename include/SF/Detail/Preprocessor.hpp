@@ -1,10 +1,10 @@
 #ifndef SF_DETAIL_PREPROCESSOR_HPP
 #define SF_DETAIL_PREPROCESSOR_HPP
 
-#define SF_CONCAT_IMPL(a, b) a##b
-
 // concatenation of two macro arguments
-#define SF_CONCAT(a, b) SF_CONCAT_IMPL(a, b)
+#define SF_CONCAT(lhs, rhs) SF_CONCAT_IMPL(lhs, rhs)
+#define SF_CONCAT_IMPL(lhs, rhs) SF_CONCAT_IMPL_(lhs, rhs)
+#define SF_CONCAT_IMPL_(lhs, rhs) lhs##rhs
 
 // return first argument from two
 #define SF_FIRST_ARGUMENT(first, ...) first
