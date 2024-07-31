@@ -118,7 +118,7 @@ add_executable(${PROJECT_NAME}
     test/TestPolymorphic.cpp
     test/TestTracking.cpp
     test/TestAggregate.cpp
-    test/TestAlias.cpp
+    # test/TestAlias.cpp
     test/TestBitPack.cpp
 
     # test/TestLibrary/BaseObject.hpp

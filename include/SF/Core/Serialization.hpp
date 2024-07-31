@@ -59,7 +59,7 @@
     };                                                                                                  \
         template <class T>                                                                                  \
     struct xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type> {                                 \
-        template <class Archive> xxsf_load(Archive& archive, T object) { ::xxsf_load<T>(archive, object); }      \
+        template <class Archive> xxsf_load(Archive& archive, T object) { ::xxsf_save<T>(archive, object); }      \
     }; \
     template <class T> template <class Archive>                                                         \
     xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_save(Archive& archive, T& object)

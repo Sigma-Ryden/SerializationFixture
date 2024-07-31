@@ -144,7 +144,7 @@ template <class Archive, typename T,
                                meta::negation<meta::is_unsupported<T>>>::value)>
 Archive& operator& (Archive& archive, T const& data)
 {
-    /*typename ::sf::meta::select_load_mode<T>::type*/::xxsf_save<T>(archive, const_cast<T&>(data));
+    /*typename ::sf::meta::select_load_mode<T>::type*/::xxsf_load<T>(archive, const_cast<T&>(data));
     return archive;
 }
 
