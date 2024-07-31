@@ -92,7 +92,7 @@ add_executable(${PROJECT_NAME}
     test/TestNumber.cpp
     test/TestEnum.cpp
     test/TestUserType.cpp
-    # test/TestUnion.cpp
+    test/TestUnion.cpp
     test/TestVector.cpp
     test/TestArray.cpp
     test/TestValarray.cpp
@@ -106,7 +106,7 @@ add_executable(${PROJECT_NAME}
     test/TestForwardList.cpp
     test/TestMap.cpp
     test/TestSet.cpp
-    # test/TestVariant.cpp
+    test/TestVariant.cpp
     test/TestOptional.cpp
     test/TestPair.cpp
     test/TestTuple.cpp
@@ -118,14 +118,14 @@ add_executable(${PROJECT_NAME}
     test/TestPolymorphic.cpp
     test/TestTracking.cpp
     test/TestAggregate.cpp
-    # test/TestAlias.cpp
+    test/TestAlias.cpp
     test/TestBitPack.cpp
 
-    # test/TestLibrary/BaseObject.hpp
-    # test/TestLibrary/BaseObject.cpp
-    # test/TestLibrary/DerivedObject.hpp
-    # test/TestLibrary/DerivedObject.cpp
-    # test/TestLibrary.cpp
+    test/TestLibrary/BaseObject.hpp
+    test/TestLibrary/BaseObject.cpp
+    test/TestLibrary/DerivedObject.hpp
+    test/TestLibrary/DerivedObject.cpp
+    test/TestLibrary.cpp
 
     test/TestExample.cpp
 

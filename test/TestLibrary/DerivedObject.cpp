@@ -1,6 +1,6 @@
 #include "DerivedObject.hpp"
 
-SERIALIZATION_IMPLEMENTATION(saveload, self, DerivedObject)
+SERIALIZATION_IMPLEMENTATION(save, self, DerivedObject)
 {
     archive << hierarchy<BaseObject>(self) << self.data;
 }

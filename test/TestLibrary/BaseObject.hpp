@@ -14,7 +14,7 @@ struct BaseObject : sf::instantiable_t
     std::string name;
 };
 
-SERIALIZATION_INTERFACE(save, BaseObject)
-SERIALIZATION_INTERFACE(load, BaseObject)
+SERIALIZATION_INTERFACE(save, self, BaseObject)
+SERIALIZATION_INTERFACE(load, self, BaseObject)
 
 #endif // BASE_OBJECT_HPP

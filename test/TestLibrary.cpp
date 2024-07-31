@@ -619,7 +619,8 @@ struct AggregateObject
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, AggregateObject)
+// it's works only for full template specialization
+SERIALIZATION(saveload, self, AggregateObject)
 {
     archive & self.i & self.f; // ignoring self.c
 }
@@ -676,8 +677,8 @@ struct Implementation : Interface
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, nterface) {}
-SERIALIZATION(saveload, self, mplementation) {}
+SERIALIZATION(saveload, self, Interface) {}
+SERIALIZATION(saveload, self, Implementation) {}
 
 // or general solution
 // CONDITIONAL_SERIALIZATION(saveload, std::is_base_of<Interface, T>::value) {}
@@ -736,15 +737,24 @@ Archive& operator& (Archive& archive, NoMacroObject& self)
 
 // inner serialization - useful for open/close class attributes (standard serialization)
 template <>
-struct xxsf_saveload<NoMacroDerived>
+struct xxsf_save<NoMacroDerived>
 {
     template <class Archive>
-    xxsf_saveload(Archive& archive, NoMacroDerived& self)
+    xxsf_save(Archive& archive, NoMacroDerived& self)
     {
         archive & sf::hierarchy<NoMacroBase>(self) & self.d;
     }
 };
 
+template <> // TODO: temp
+struct xxsf_load<NoMacroDerived>
+{
+    template <class Archive>
+    xxsf_load(Archive& archive, NoMacroDerived& self)
+    {
+        xxsf_save<NoMacroDerived>(archive, self);
+    }
+};
 // inner serialization with split
 // polymorphic archive - useful for hide impl to translation unit
 template <>

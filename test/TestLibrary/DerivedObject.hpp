@@ -11,7 +11,7 @@ struct DerivedObject : BaseObject
     float data;
 };
 
-SERIALIZATION_INTERFACE(saveload, DerivedObject) // will use as load
-SERIALIZATION_INTERFACE(load, DerivedObject)
+SERIALIZATION_INTERFACE(save, self, DerivedObject) // will use as load
+SERIALIZATION_INTERFACE(load, self, DerivedObject)
 
 #endif // DERIVED_OBJECT_HPP
