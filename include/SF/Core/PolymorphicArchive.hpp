@@ -27,12 +27,12 @@ public:
     static constexpr key_type max_key = archive_traits::max_key;
 
 public:
-    template <class T> static void save(Archive& archive, T& data)
+    template <class T> static void save(core::ioarchive_t& archive, T& data)
     {
         call<oarchive_traits>(archive, data);
     }
 
-    template <class T> static void load(Archive& archive, T& data)
+    template <class T> static void load(core::ioarchive_t& archive, T& data)
     {
         call<iarchive_traits>(archive, data);
     }
@@ -44,18 +44,18 @@ private:
 private:
     template <template <key_type> class archive_traits,
               key_type Key, class T, SF_REQUIRE(Key == max_key)>
-    static void call(Archive& archive, T& data)
+    static void call(core::ioarchive_t& archive, T& data)
     {
         throw "The read/write archive has invalid type key.";
     }
 
     template <template <key_type> class archive_traits,
               key_type Key = 0, class T, SF_REQUIRE(Key < max_key)>
-    static void call(Archive& archive, T& data)
+    static void call(core::ioarchive_t& archive, T& data)
     {
         using DerivedArchive = typename archive_traits<Key>::type;
 
-        if (archive_traits_key_t<DerivedArchive>::key == archive.trait())
+        if (archive_traits_key_t<DerivedArchive>::key == archive.trait)
             return try_call<DerivedArchive>(archive, data);
 
         call<archive_traits, Key + 1>(archive, data);
@@ -63,40 +63,69 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(not is_valid_archive<DerivedArchive>::value)>
-    static void try_call(Archive& archive, T& data)
+    static void try_call(core::ioarchive_t& archive, T& data)
     {
         throw "The read/write archive was not registered.";
     }
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(is_valid_archive<DerivedArchive>::value)>
-    static void try_call(Archive& archive, T& data)
+    static void try_call(core::ioarchive_t& archive, T& data)
     {
+    #ifdef SF_DEBUG
         auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
 
-    #ifdef SF_DEBUG
         if (derived_archive == nullptr)
             throw "The read/write archive was registered incorrect.";
+    #else
+        auto derived_archive = static_cast<DerivedArchive*>(&archive);
     #endif // SF_DEBUG
+        try_call_impl<DerivedArchive>(*derived_archive, data);
+    }
 
-        (*derived_archive) & data;
+    template <class DerivedArchive, class T>
+    static void try_call_impl(iarchive_common_t& archive, T& data)
+    {
+        ::xxsf_load<T>(static_cast<DerivedArchive&>(archive), data);
+    }
+    template <class DerivedArchive, class T>
+    static void try_call_impl(oarchive_common_t& archive, T& data)
+    {
+        ::xxsf_save<T>(static_cast<DerivedArchive&>(archive), data);
     }
 };
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::is_archive<Archive>::value)>
-Archive& operator<< (Archive& archive, T&& data)
+template <typename T,
+          SF_REQUIRE(meta::is_unsupported<T>::value)>
+ioarchive_t& operator& (ioarchive_t& archive, T const& unsupported)
 {
-    polymorphic_archive_t::save(archive, data);
+    static_assert(meta::to_false<T>(),
+        "The 'T' is an unsupported type for the 'sf::ioarchive_t'.");
+
     return archive;
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::is_archive<Archive>::value)>
-Archive& operator>> (Archive& archive, T&& data)
+template <typename T,
+          SF_REQUIRE(not meta::is_unsupported<T>::value)>
+ioarchive_t& operator<< (ioarchive_t& archive, T const& data)
 {
-    polymorphic_archive_t::load(archive, data);
+    polymorphic_archive_t::save(archive, const_cast<T&>(data));
     return archive;
+}
+
+template <typename T,
+          SF_REQUIRE(not meta::is_unsupported<T>::value)>
+ioarchive_t& operator>> (ioarchive_t& archive, T const& data)
+{
+    polymorphic_archive_t::load(archive, const_cast<T&>(data));
+    return archive;
+}
+
+template <typename T,
+          SF_REQUIRE(not meta::is_unsupported<T>::value)>
+ioarchive_t& operator& (ioarchive_t& archive, T const& data)
+{
+    return archive.readonly ? archive >> data : archive << data;
 }
 
 } // namespace core

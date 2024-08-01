@@ -26,8 +26,6 @@ template <class StreamWrapper,
           class Registry = dynamic::extern_registry_t>
 class oarchive_t : public core::ioarchive_t, public core::oarchive_common_t
 {
-    SERIALIZATION_ARCHIVE(oarchive_t)
-
 public:
     using TrackingKeyType = std::uintptr_t;
     using TrackingTable = std::unordered_map<TrackingKeyType, bool>;
@@ -97,7 +95,8 @@ oarchive_t<StreamWrapper, Registry> oarchive(OutStream& stream)
 template <class StreamWrapper, class Registry>
 template <typename OutStream>
 oarchive_t<StreamWrapper, Registry>::oarchive_t(OutStream& stream)
-    : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
+    : core::ioarchive_t(core::archive_traits_key_t<oarchive_t>::key, false)
+    , archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 
@@ -114,26 +113,6 @@ auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) ->
 {
     (*this) & data;
     return operator()(data_n...);
-}
-
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                               meta::is_unsupported<T>>::value)>
-Archive& operator& (Archive& archive, T const& unsupported)
-{
-    static_assert(meta::to_false<T>(),
-        "The 'T' is an unsupported type for the 'sf::oarchive_t'.");
-
-    return archive;
-}
-
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                               meta::negation<meta::is_unsupported<T>>>::value)>
-Archive& operator& (Archive& archive, T const& data)
-{
-    /*typename ::sf::meta::select_save_mode<T>::type*/::xxsf_save<T>(archive, const_cast<T&>(data));
-    return archive;
 }
 
 } // namespace sf

@@ -25,14 +25,24 @@ struct Box
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, Vector)
+SERIALIZATION(save, self, Vector)
 {
-    archive & self.X & self.Y & self.Z;
+    archive << self.X << self.Y << self.Z;
 }
 
-SERIALIZATION(saveload, self, Box)
+SERIALIZATION(load, self, Vector)
 {
-    archive & self.Min & self.Max;
+    archive >> self.X >> self.Y >> self.Z;
+}
+
+SERIALIZATION(save, self, Box)
+{
+    archive << self.Min << self.Max;
+}
+
+SERIALIZATION(load, self, Box)
+{
+    archive >> self.Min >> self.Max;
 }
 
 TEST(TestCommon, TestUserType)
@@ -84,16 +94,29 @@ struct Printer : Product
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, Product)
+SERIALIZATION(save, self, Product)
 {
-    archive & self.name & self.series & self.price;
+    archive << self.name << self.series << self.price;
 }
 
-SERIALIZATION(saveload, self, Printer)
+SERIALIZATION(load, self, Product)
 {
-    archive & hierarchy<Product>(self);
+    archive >> self.name >> self.series >> self.price;
+}
+
+SERIALIZATION(save, self, Printer)
+{
+    archive << hierarchy<Product>(self);
 #if __cplusplus >= 201703L
-    archive & self.owner;
+    archive << self.owner;
+#endif // if
+}
+
+SERIALIZATION(load, self, Printer)
+{
+    archive >> hierarchy<Product>(self);
+#if __cplusplus >= 201703L
+    archive >> self.owner;
 #endif // if
 }
 

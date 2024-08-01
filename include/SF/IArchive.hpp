@@ -26,8 +26,6 @@ template <class StreamWrapper,
           class Registry = dynamic::extern_registry_t>
 class iarchive_t : public core::ioarchive_t, public core::iarchive_common_t
 {
-    SERIALIZATION_ARCHIVE(iarchive_t)
-
 private:
     template <typename VoidPointer>
     struct track_data_t { VoidPointer address = nullptr; };
@@ -108,7 +106,8 @@ iarchive_t<StreamWrapper, Registry> iarchive(InStream& stream)
 template <class StreamWrapper, class Registry>
 template <typename InStream>
 iarchive_t<StreamWrapper, Registry>::iarchive_t(InStream& stream)
-    : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
+    : core::ioarchive_t(core::archive_traits_key_t<iarchive_t>::key, true)
+    , archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 
@@ -125,27 +124,6 @@ auto iarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) ->
 {
     (*this) & data;
     return operator()(data_n...);
-}
-
-
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                               meta::is_unsupported<T>>::value)>
-Archive& operator& (Archive& archive, T const& unsupported)
-{
-    static_assert(meta::to_false<T>(),
-        "The 'T' is an unsupported type for the 'sf::iarchive_t'.");
-
-    return archive;
-}
-
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                               meta::negation<meta::is_unsupported<T>>>::value)>
-Archive& operator& (Archive& archive, T const& data)
-{
-    /*typename ::sf::meta::select_load_mode<T>::type*/::xxsf_load<T>(archive, const_cast<T&>(data));
-    return archive;
 }
 
 } // namespace sf
