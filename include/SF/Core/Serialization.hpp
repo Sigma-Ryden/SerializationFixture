@@ -11,148 +11,97 @@
 #include <SF/Detail/MetaMacro.hpp>
 #include <SF/Detail/Preprocessor.hpp>
 
-#define SERIALIZATION_save(object, ...)                                                           \
-    template <>                                                                                         \
-    struct xxsf_save<__VA_ARGS__> { template <class Archive> xxsf_save(Archive&, __VA_ARGS__&); };  \
-    template <class Archive>                                                                            \
-    xxsf_save<__VA_ARGS__>::xxsf_save(Archive& archive, __VA_ARGS__& object)
+#define SERIALIZATION_save(object, ...)                                                                                 \
+    template <> struct xxsf_save<__VA_ARGS__> {                                                         \
+        template <class Archive> xxsf_save(Archive&, __VA_ARGS__&);\
+    };\
+    template <class Archive> xxsf_save<__VA_ARGS__>::xxsf_save(Archive& archive, __VA_ARGS__& object)
 
-#define SERIALIZATION_load(object, ...)                                                           \
-    template <>                                                                                         \
-    struct xxsf_load<__VA_ARGS__> { template <class Archive> xxsf_load(Archive&, __VA_ARGS__&); };  \
-    template <class Archive>                                                                            \
-    xxsf_load<__VA_ARGS__>::xxsf_load(Archive& archive, __VA_ARGS__& object)
+#define SERIALIZATION_load(object, ...)                                                                                 \
+    template <> struct xxsf_load<__VA_ARGS__> {\
+        template <class Archive> xxsf_load(Archive&, __VA_ARGS__&); \
+    };                    \
+    template <class Archive> xxsf_load<__VA_ARGS__>::xxsf_load(Archive& archive, __VA_ARGS__& object)
 
-#define SERIALIZATION_saveload(object, ...)                                                           \
-    template <>                                                                                         \
-    struct xxsf_save<__VA_ARGS__> { template <class Archive> xxsf_save(Archive&, __VA_ARGS__&); };  \
-    template <>                                                                                         \
-    struct xxsf_load<__VA_ARGS__> { template <class Archive> xxsf_load(Archive& archive, __VA_ARGS__& object) {\
-        ::xxsf_save<__VA_ARGS__>(archive, object); \
-    } };  \
-        template <class Archive>                                                                            \
-    xxsf_save<__VA_ARGS__>::xxsf_save(Archive& archive, __VA_ARGS__& object)
-
+#define SERIALIZATION_saveload(object, ...)                                                                             \
+    template <> struct xxsf_saveload<__VA_ARGS__>\
+    {\
+        template <class Archive> xxsf_saveload(Archive&, __VA_ARGS__&);\
+    };            \
+    template <> struct xxsf_save<__VA_ARGS__>\
+    {\
+        template <class Archive> xxsf_save(Archive& archive, __VA_ARGS__& object)\
+        {\
+            xxsf_saveload<__VA_ARGS__>(archive, object);\
+        }\
+    };\
+    template <> struct xxsf_load<__VA_ARGS__>\
+    { \
+        template <class Archive> xxsf_load(Archive& archive, __VA_ARGS__& object)\
+        {\
+            xxsf_saveload<__VA_ARGS__>(archive, object);\
+        }\
+    };                                          \
+    template <class Archive> xxsf_saveload<__VA_ARGS__>::xxsf_saveload(Archive& archive, __VA_ARGS__& object)
 
 #define SERIALIZATION(mode, object, ...) SF_CONCAT(SERIALIZATION_, mode)(object, __VA_ARGS__)
 
-#define CONDITIONAL_SERIALIZATION_save(object, ...)                                                           \
-    template <class T>                                                                                  \
-    struct xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type> {                                 \
-        template <class Archive> xxsf_save(Archive&, T&);                                             \
-    };                                                                                                  \
-    template <class T> template <class Archive>                                                         \
-    xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_save(Archive& archive, T& object)
+#define CONDITIONAL_SERIALIZATION_save(object, ...)                                                                     \
+    template <class T>                                                                                                  \
+    struct xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type> { template <class Archive> xxsf_save(Archive&, T&); };        \
+    template <class T>                                                                                                  \
+    template <class Archive> xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_save(Archive& archive, T& object)
 
-#define CONDITIONAL_SERIALIZATION_load(object, ...)                                                           \
-    template <class T>                                                                                  \
-    struct xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type> {                                 \
-        template <class Archive> xxsf_load(Archive&, T&);                                             \
-    };                                                                                                  \
-    template <class T> template <class Archive>                                                         \
-    xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_load(Archive& archive, T& object)
+#define CONDITIONAL_SERIALIZATION_load(object, ...)                                                                     \
+    template <class T>                                                                                                  \
+    struct xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type> { template <class Archive> xxsf_load(Archive&, T&); };        \
+    template <class T>                                                                                                  \
+    template <class Archive> xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_load(Archive& archive, T& object)
 
-#define CONDITIONAL_SERIALIZATION_saveload(object, ...)                                                           \
-    template <class T>                                                                                  \
-    struct xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type> {                                 \
-        template <class Archive> xxsf_save(Archive&, T&);                                             \
-    };                                                                                                  \
-        template <class T>                                                                                  \
-    struct xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type> {                                 \
-        template <class Archive> xxsf_load(Archive& archive, T& object) { ::xxsf_save<T>(archive, object); }      \
-    }; \
-    template <class T> template <class Archive>                                                         \
-    xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_save(Archive& archive, T& object)
+#define CONDITIONAL_SERIALIZATION_saveload(object, ...)                                                                 \
+    template <class T>                                                                                                  \
+    struct xxsf_saveload<T, typename std::enable_if<__VA_ARGS__>::type> { template <class Archive> xxsf_saveload(Archive&, T&); };\
+    template <class T> struct xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type> {\
+     template <class Archive> xxsf_save(Archive& archive, T& object) { xxsf_saveload<T>(archive, object); }\
+     };           \
+    template <class T> struct xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type> {           \
+     template <class Archive> xxsf_load(Archive& archive, T& object) { xxsf_saveload<T>(archive, object); }\
+     };           \
+    template <class T>                                                                                                  \
+    template <class Archive> xxsf_saveload<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_saveload(Archive& archive, T& object)
 
-
-#define CONDITIONAL_SERIALIZATION(mode, object, ...)\
-    SF_CONCAT(CONDITIONAL_SERIALIZATION_, mode)(object, __VA_ARGS__)
+#define CONDITIONAL_SERIALIZATION(mode, object, ...) SF_CONCAT(CONDITIONAL_SERIALIZATION_, mode)(object, __VA_ARGS__)
 
 // Allow to hide implementation to translation unit, and declare interface in header
-#define SERIALIZATION_INTERFACE_save(object, ...)                                                              \
-    template <>                                                                                         \
-    struct xxsf_save<__VA_ARGS__> { xxsf_save(::sf::core::ioarchive_t& archive, __VA_ARGS__& object); };
+#define SERIALIZATION_INTERFACE_save(object, ...)                                                                       \
+    template <> struct xxsf_save<__VA_ARGS__> { xxsf_save(::sf::core::ioarchive_t&, __VA_ARGS__& object); };
 
-#define SERIALIZATION_INTERFACE_load(object, ...)                                                              \
-    template <>                                                                                         \
-    struct xxsf_load<__VA_ARGS__> { xxsf_load(::sf::core::ioarchive_t& archive, __VA_ARGS__& object); };
+#define SERIALIZATION_INTERFACE_load(object, ...)                                                                       \
+    template <> struct xxsf_load<__VA_ARGS__> { xxsf_load(::sf::core::ioarchive_t&, __VA_ARGS__& object); };
 
-#define SERIALIZATION_INTERFACE_saveload(object, ...)                                                              \
-    template <>                                                                                         \
-    struct xxsf_save<__VA_ARGS__> { xxsf_save(::sf::core::ioarchive_t& archive, __VA_ARGS__& object); };\
-   template <>                                                                                         \
-    struct xxsf_load<__VA_ARGS__> { xxsf_load(::sf::core::ioarchive_t& archive, __VA_ARGS__& object); };
+#define SERIALIZATION_INTERFACE_saveload(object, ...)                                                                   \
+    template <> struct xxsf_saveload<__VA_ARGS__> { xxsf_saveload(::sf::core::ioarchive_t&, __VA_ARGS__& object); };    \
+    template <> struct xxsf_save<__VA_ARGS__> { xxsf_save(::sf::core::ioarchive_t&, __VA_ARGS__& object); }; \
+    template <> struct xxsf_load<__VA_ARGS__> : xxsf_saveload<__VA_ARGS__> {};
 
-#define SERIALIZATION_INTERFACE(mode, object, ...)                                                              \
-    SF_CONCAT(SERIALIZATION_INTERFACE_, mode)(object, __VA_ARGS__)
+#define SERIALIZATION_INTERFACE(mode, object, ...) SF_CONCAT(SERIALIZATION_INTERFACE_, mode)(object, __VA_ARGS__)
 
-#define SERIALIZATION_IMPLEMENTATION_save( object, ...)                                                 \
+#define SERIALIZATION_IMPLEMENTATION_save( object, ...)                                                                 \
     xxsf_save<__VA_ARGS__>::xxsf_save(::sf::core::ioarchive_t& archive, __VA_ARGS__& object)
 
-#define SERIALIZATION_IMPLEMENTATION_load(object, ...)                                                 \
+#define SERIALIZATION_IMPLEMENTATION_load(object, ...)                                                                  \
     xxsf_load<__VA_ARGS__>::xxsf_load(::sf::core::ioarchive_t& archive, __VA_ARGS__& object)
 
-#define SERIALIZATION_IMPLEMENTATION_saveload(object, ...)                                                 \
-    xxsf_load<__VA_ARGS__>::xxsf_load(::sf::core::ioarchive_t& archive, __VA_ARGS__& object) {\
-        xxsf_save<__VA_ARGS__>(archive, object);\
-    }\
-    xxsf_save<__VA_ARGS__>::xxsf_save(::sf::core::ioarchive_t& archive, __VA_ARGS__& object)
+#define SERIALIZATION_IMPLEMENTATION_saveload(object, ...)                                                              \
+    xxsf_saveload<__VA_ARGS__>::xxsf_saveload(::sf::core::ioarchive_t& archive, __VA_ARGS__& object)
 
-#define SERIALIZATION_IMPLEMENTATION(mode, object, ...)                                                 \
-    SF_CONCAT(SERIALIZATION_IMPLEMENTATION_, mode)(object, __VA_ARGS__)
+#define SERIALIZATION_IMPLEMENTATION(mode, object, ...) SF_CONCAT(SERIALIZATION_IMPLEMENTATION_, mode)(object, __VA_ARGS__)
+
 // should be in global namespace
 template <class T, typename enable = void> struct xxsf_save;
 template <class T, typename enable = void> struct xxsf_load;
 template <class T, typename enable = void> struct xxsf_saveload;
-/*
-namespace sf
-{
 
-namespace meta
-{
-
-template <class T> struct is_has_save_mode : is_complete<::xxsf_save<T>> {};
-template <class T> struct is_has_load_mode : is_complete<::xxsf_load<T>> {};
-template <class T> struct is_has_saveload_mode : is_complete<::xxsf_saveload<T>> {};
-template <class T> struct is_has_any_save_mode : one<is_has_save_mode<T>, is_complete<::xxsf_saveload<T>>> {};
-template <class T> struct is_has_any_load_mode : one<is_has_load_mode<T>, is_complete<::xxsf_saveload<T>>> {};
-
-template <class T, typename enable = void>
-struct select_save_mode;
-
-template <class T>
-struct select_save_mode<T, typename std::enable_if<is_has_save_mode<T>::value>::type>
-{
-    using type = ::xxsf_save<T>;
-};
-
-template <class T>
-struct select_save_mode<T,
-    typename std::enable_if<all<negation<is_has_save_mode<T>>, is_has_saveload_mode<T>>::value>::type>
-{
-    using type = ::xxsf_saveload<T>;
-};
-
-template <class T, typename enable = void>
-struct select_load_mode;
-
-template <class T>
-struct select_load_mode<T, typename std::enable_if<is_has_load_mode<T>::value>::type>
-{
-    using type = ::xxsf_load<T>;
-};
-
-template <class T>
-struct select_load_mode<T,
-    typename std::enable_if<all<negation<is_has_load_mode<T>>, is_has_saveload_mode<T>>::value>::type>
-{
-    using type = ::xxsf_saveload<T>;
-};
-
-} // namespace meta
-
-} // namespace sf
-*/
 class xxsf
 {
 public:
