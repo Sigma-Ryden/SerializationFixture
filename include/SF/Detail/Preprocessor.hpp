@@ -6,6 +6,13 @@
 #define SF_CONCAT_IMPL(lhs, rhs) SF_CONCAT_IMPL_(lhs, rhs)
 #define SF_CONCAT_IMPL_(lhs, rhs) lhs##rhs
 
+// deparen of macro argument
+#define SF_DEPAREN(arg) REW_DEPAREN_IMPL(REW_UATE arg)
+#define SF_UATE(...) REW_UATE __VA_ARGS__
+#define SF_DEPAREN_IMPL(...) REW_DEPAREN_IMPL_(__VA_ARGS__)
+#define SF_DEPAREN_IMPL_(...) REW_EVAL ## __VA_ARGS__
+#define SF_EVALREW_UATE
+
 // return first argument from two
 #define SF_FIRST_ARGUMENT(first, ...) first
 

@@ -11,60 +11,93 @@
 #include <SF/Detail/MetaMacro.hpp>
 #include <SF/Detail/Preprocessor.hpp>
 
-#define CONDITIONAL_SERIALIZATION_save(object, ...)                                                                     \
-    template <class T>                                                                                                  \
-    struct xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type> { xxsf_save(::sf::core::ioarchive_t&, T&); };        \
-    template <class T>                                                                                                  \
-    xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_save(::sf::core::ioarchive_t& archive, T& object)
-
-#define CONDITIONAL_SERIALIZATION_load(object, ...)                                                                     \
-    template <class T>                                                                                                  \
-    struct xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type> { xxsf_load(::sf::core::ioarchive_t&, T&); };        \
-    template <class T>                                                                                                  \
-    xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_load(::sf::core::ioarchive_t& archive, T& object)
-
-#define CONDITIONAL_SERIALIZATION_saveload(object, ...)                                                                 \
-    template <class T>                                                                                                  \
-    struct xxsf_saveload<T, typename std::enable_if<__VA_ARGS__>::type> { xxsf_saveload(::sf::core::ioarchive_t&, T&); };\
-    template <class T> struct xxsf_save<T, typename std::enable_if<__VA_ARGS__>::type> {\
-        xxsf_save(::sf::core::ioarchive_t& archive, T& object) { xxsf_saveload<T>(archive, object); }\
-     };           \
-    template <class T> struct xxsf_load<T, typename std::enable_if<__VA_ARGS__>::type> {           \
-        xxsf_load(::sf::core::ioarchive_t& archive, T& object) { xxsf_saveload<T>(archive, object); }\
-     };           \
-    template <class T>                                                                                                  \
-    xxsf_saveload<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_saveload(::sf::core::ioarchive_t& archive, T& object)
-
-#define CONDITIONAL_SERIALIZATION(mode, object, ...) SF_CONCAT(CONDITIONAL_SERIALIZATION_, mode)(object, __VA_ARGS__)
-
 // Allow to hide implementation to translation unit, and declare interface in header
-#define SERIALIZATION_INTERFACE_save(object, ...)                                                                       \
-    template <> struct xxsf_save<__VA_ARGS__> { xxsf_save(::sf::core::ioarchive_t&, __VA_ARGS__& object); };
+#define GENERIC_SERIALIZATION_DECLARATION(mode, object_template_header, object_type, archive_template_header, archive_type) \
+    SF_DEPAREN(object_template_header) \
+    struct xxsf_##mode<SF_DEPAREN(object_type)> { \
+        SF_DEPAREN(archive_template_header) \
+        xxsf_##mode(SF_DEPAREN(archive_type)&, SF_DEPAREN(object_type)&); \
+    };
 
-#define SERIALIZATION_INTERFACE_load(object, ...)                                                                       \
-    template <> struct xxsf_load<__VA_ARGS__> { xxsf_load(::sf::core::ioarchive_t&, __VA_ARGS__& object); };
+#define GENERIC_SERIALIZATION_DECLARATION_save(object_template_header, object_type, archive_template_header, archive_type, object) \
+    GENERIC_SERIALIZATION_DECLARATION(save, object_template_header, object_type, archive_template_header, archive_type, object)
 
-#define SERIALIZATION_INTERFACE_saveload(object, ...)                                                                   \
-    template <> struct xxsf_saveload<__VA_ARGS__> { xxsf_saveload(::sf::core::ioarchive_t&, __VA_ARGS__& object); };    \
-    template <> struct xxsf_save<__VA_ARGS__> { xxsf_save(::sf::core::ioarchive_t&, __VA_ARGS__& object); }; \
-    template <> struct xxsf_load<__VA_ARGS__> : xxsf_saveload<__VA_ARGS__> {};
+#define GENERIC_SERIALIZATION_DECLARATION_load(object_template_header, object_type, archive_template_header, archive_type, object) \
+    GENERIC_SERIALIZATION_DECLARATION(load, object_template_header, object_type, archive_template_header, archive_type, object)
 
-#define SERIALIZATION_INTERFACE(mode, object, ...) SF_CONCAT(SERIALIZATION_INTERFACE_, mode)(object, __VA_ARGS__)
+#define GENERIC_SERIALIZATION_DECLARATION_saveload(object_template_header, object_type, archive_template_header, archive_type, object) \
+    GENERIC_SERIALIZATION_DECLARATION(save, object_template_header, object_type, archive_template_header, archive_type, object) \
+    GENERIC_SERIALIZATION_DECLARATION(load, object_template_header, object_type, archive_template_header, archive_type, object) \
+    GENERIC_SERIALIZATION_DECLARATION(saveload, object_template_header, object_type, archive_template_header, archive_type, object)
 
-#define SERIALIZATION_IMPLEMENTATION_save( object, ...)                                                                 \
-    xxsf_save<__VA_ARGS__>::xxsf_save(::sf::core::ioarchive_t& archive, __VA_ARGS__& object)
+#define GENERIC_SERIALIZATION_DEFINITION(mode, object_template_header, object_type, archive_template_header, archive_type, object) \
+    SF_DEPAREN(object_template_header) \
+    SF_DEPAREN(archive_template_header) \
+    xxsf_##mode<SF_DEPAREN(object_type)>::xxsf_##mode(SF_DEPAREN(archive_type)& archive, SF_DEPAREN(object_type)& object)
 
-#define SERIALIZATION_IMPLEMENTATION_load(object, ...)                                                                  \
-    xxsf_load<__VA_ARGS__>::xxsf_load(::sf::core::ioarchive_t& archive, __VA_ARGS__& object)
+#define GENERIC_SERIALIZATION_DEFINITION_save(object_template_header, object_type, archive_template_header, archive_type, object) \
+    GENERIC_SERIALIZATION_DEFINITION(save, object_template_header, object_type, archive_template_header, archive_type, object)
 
-#define SERIALIZATION_IMPLEMENTATION_saveload(object, ...)                                                              \
-    xxsf_saveload<__VA_ARGS__>::xxsf_saveload(::sf::core::ioarchive_t& archive, __VA_ARGS__& object)
+#define GENERIC_SERIALIZATION_DEFINITION_load(object_template_header, object_type, archive_template_header, archive_type, object) \
+    GENERIC_SERIALIZATION_DEFINITION(load, object_template_header, object_type, archive_template_header, archive_type, object)
 
-#define SERIALIZATION_IMPLEMENTATION(mode, object, ...) SF_CONCAT(SERIALIZATION_IMPLEMENTATION_, mode)(object, __VA_ARGS__)
+#define GENERIC_SERIALIZATION_DEFINITION_saveload(object_template_header, object_type, archive_template_header, archive_type, object) \
+    GENERIC_SERIALIZATION_DEFINITION(save, object_template_header, object_type, archive_template_header, archive_type, object) \
+    { xxsf_saveload<SF_DEPAREN(object_type)>(archive, object); } \
+    GENERIC_SERIALIZATION_DEFINITION(load, object_template_header, object_type, archive_template_header, archive_type, object) \
+    { xxsf_saveload<SF_DEPAREN(object_type)>(archive, object); }\
+    GENERIC_SERIALIZATION_DEFINITION(saveload, object_template_header, object_type, archive_template_header, archive_type, object)
 
-#define SERIALIZATION(mode, object, ...) \
-    SERIALIZATION_INTERFACE(mode, object, __VA_ARGS__) \
-    SERIALIZATION_IMPLEMENTATION(mode, object, __VA_ARGS__)
+
+#define GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION(mode, object_type_condition, archive_template_header, archive_type) \
+    template <typename T> \
+    struct xxsf_##mode<T, typename std::enable_if<SF_DEPAREN(object_type_condition)>::typ> { \
+        SF_DEPAREN(archive_template_header) \
+        xxsf_##mode(SF_DEPAREN(archive_type)&, T&); \
+    };
+
+#define GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION_save(object_type_condition, archive_template_header, archive_type, object) \
+    GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION(save, object_type_condition, archive_template_header, archive_type, object)
+
+#define GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION_load(object_type_condition, archive_template_header, archive_type, object) \
+    GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION(load, object_type_condition, archive_template_header, archive_type, object)
+
+#define GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION_saveload(object_type_condition, archive_template_header, archive_type, object) \
+    GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION(save, object_type_condition, archive_template_header, archive_type, object) \
+    GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION(load, object_type_condition, archive_template_header, archive_type, object) \
+    GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION(saveload, object_type_condition, archive_template_header, archive_type, object)
+
+#define GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION(mode, object_type_condition, archive_template_header, archive_type, object) \
+    template <typename T> \
+    SF_DEPAREN(archive_template_header) \
+    xxsf_##mode<T, typename std::enable_if<SF_DEPAREN(object_type_condition)>::type>::xxsf_##mode(SF_DEPAREN(archive_type)& archive, T& object)
+
+#define GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION_save(object_type_condition, archive_template_header, archive_type, object) \
+    GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION(save, object_type_condition, archive_template_header, archive_type, object)
+
+#define GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION_load(object_type_condition, archive_template_header, archive_type, object) \
+    GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION(load, object_type_condition, archive_template_header, archive_type, object)
+
+#define GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION_saveload(object_type_condition, archive_template_header, archive_type, object) \
+    GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION(save, object_type_condition, archive_template_header, archive_type, object) \
+    { xxsf_saveload<T>(archive, object); } \
+    GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION(load, object_type_condition, archive_template_header, archive_type, object) \
+    { xxsf_saveload<T>(archive, object); }\
+    GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION(saveload, object_type_condition, archive_template_header, archive_type, object)
+
+#define TEMPLATE_SERIALIZATION(mode, object, ...) \
+     SF_CONCAT(GENERIC_SERIALIZATION_DECLARATION_, mode)((template <>), (__VA_ARGS__), (template <class Archive>), (Archive), object) \
+     SF_CONCAT(GENERIC_SERIALIZATION_DEFINITION_, mode)((template <>), (__VA_ARGS__), (template <class Archive>), (Archive), object)
+
+#define CONDITIONAL_SERIALIZATION(mode, object, ...) \
+    SF_CONCAT(GENERIC_CONDITIONAL_SERIALIZATION_DECLARATION_, mode)((__VA_ARGS__), (template <Archive>), (Archive), object) \
+    SF_CONCAT(GENERIC_CONDITIONAL_SERIALIZATION_DEFINITION_, mode)((__VA_ARGS__), (template <Archive>), (Archive), object)
+
+#define SERIALIZATION_DECLARATION(mode, object, ...) \
+     SF_CONCAT(GENERIC_SERIALIZATION_DECLARATION_, mode)((template <>), (__VA_ARGS__), (), (::sf::core::ioarchive_t), object)
+
+#define SERIALIZATION_DEFINITION(mode, object, ...) \
+     SF_CONCAT(GENERIC_SERIALIZATION_DECLARATION_, mode)((template <>), (__VA_ARGS__), (), (::sf::core::ioarchive_t), object)
 
 // should be in global namespace
 template <class T, typename enable = void> struct xxsf_save;
