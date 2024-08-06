@@ -13,20 +13,20 @@
 namespace sf
 {
 
-template <typename T>
+template <typename ElementType>
 class alias_t
 {
 private:
-    T* data_;
+    ElementType* data_;
 
 public:
-    using type = T;
+    using element_type = ElementType;
 
     // DONT use dereferencing of null data before rebinding
     alias_t() noexcept : data_(nullptr) {}
 
     template <typename dT,
-              SF_REQUIRE(meta::is_static_castable<dT*, T*>::value)>
+              SF_REQUIRE(meta::is_static_castable<dT*, element_type*>::value)>
     alias_t(dT& data) noexcept
         : data_(std::addressof(data)) {}
 
@@ -43,24 +43,15 @@ public:
     template <typename dT>
     bool is_refer(dT& data)  const noexcept { return data_ == std::addressof(data); }
 
-    operator T&() const noexcept { return get(); }
+    operator element_type&() const noexcept { return get(); }
 
-    T& get() const noexcept { return *data_; }
-    void set(T& data) noexcept { data_ = std::addressof(data); }
+    element_type& get() const noexcept { return *data_; }
+    void set(element_type& data) noexcept { data_ = std::addressof(data); }
 };
-
-namespace meta
-{
-
-template <typename> struct is_alias : std::false_type {};
-template <typename T>
-struct is_alias<alias_t<T>> : std::true_type {};
-
-} // namespace meta
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(save, alias, ::sf::meta::is_alias<T>::value)
+TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
 {
     using key_type = typename Archive::TrackingKeyType;
 
@@ -78,10 +69,9 @@ CONDITIONAL_SERIALIZATION(save, alias, ::sf::meta::is_alias<T>::value)
     ::sf::detail::native_save(archive, pointer, key);
 }
 
-CONDITIONAL_SERIALIZATION(load, alias, ::sf::meta::is_alias<T>::value)
+TEMPLATE_SERIALIZATION(load, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
 {
-    using key_type   = typename Archive::TrackingKeyType;
-    using value_type = typename T::type;
+    using key_type = typename Archive::TrackingKeyType;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (alias.is_refer())
@@ -96,7 +86,7 @@ CONDITIONAL_SERIALIZATION(load, alias, ::sf::meta::is_alias<T>::value)
     if (item.address == nullptr)
         throw "The read alias_t must be tracked before.";
 
-    value_type* pointer = nullptr;
+    ElementType* pointer = nullptr;
 
     ::sf::detail::native_load(archive, pointer, item.address);
 

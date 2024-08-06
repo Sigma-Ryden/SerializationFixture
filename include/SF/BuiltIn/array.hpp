@@ -7,9 +7,7 @@
 
 #include <SF/Compress.hpp>
 
-#include <SF/Detail/Meta.hpp> // // is_std_array
-
-CONDITIONAL_SERIALIZATION(saveload, array, ::sf::meta::is_std_array<T>::value)
+TEMPLATE_SERIALIZATION(saveload, array, (template <typename ValueType, std::size_t BitsetSize>), std::array<ValueType, BitsetSize>)
 {
     ::sf::compress::zip(archive, array);
 }

@@ -1,11 +1,11 @@
 #include "DerivedObject.hpp"
 
-SERIALIZATION_IMPLEMENTATION(save, self, DerivedObject)
+SERIALIZATION_DEFINITION(save, self, DerivedObject)
 {
     archive << hierarchy<BaseObject>(self) << self.data;
 }
 
-SERIALIZATION_IMPLEMENTATION(load, self, DerivedObject)
+SERIALIZATION_DEFINITION(load, self, DerivedObject)
 {
     archive >> hierarchy<BaseObject>(self) >> self.data;
 }

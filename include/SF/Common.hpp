@@ -10,25 +10,10 @@
 #include <SF/DataTrack.hpp>
 #include <SF/Compress.hpp>
 
-template <class T>
-struct xxsf_save<T, typename std::enable_if<std::is_arithmetic<T>::value>::type>
+CONDITIONAL_SERIALIZATION(saveload, number, std::is_arithmetic<T>::value)
 {
-    template <class Archive>
-    xxsf_save(Archive& archive, T& number)
-    {
-        ::sf::binary(archive, number);
-    }
-};
-
-template <class T>
-struct xxsf_load<T, typename std::enable_if<std::is_arithmetic<T>::value>::type>
-{
-    template <class Archive>
-    xxsf_load(Archive& archive, T& number)
-    {
-        ::sf::binary(archive, number);
-    }
-};
+    ::sf::binary(archive, number);
+}
 
 CONDITIONAL_SERIALIZATION(save, enumerator, std::is_enum<T>::value)
 {

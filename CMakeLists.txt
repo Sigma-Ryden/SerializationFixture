@@ -72,6 +72,7 @@ set(SF_BUILT_IN
     include/SF/BuiltIn/deque.hpp
     include/SF/BuiltIn/stack.hpp
     include/SF/BuiltIn/queue.hpp
+    include/SF/BuiltIn/priority_queue.hpp
     include/SF/BuiltIn/valarray.hpp
     include/SF/BuiltIn/bitset.hpp
     include/SF/BuiltIn/atomic.hpp
@@ -91,43 +92,43 @@ include_directories(test)
 add_executable(${PROJECT_NAME}
     test/TestNumber.cpp
     test/TestEnum.cpp
-    # test/TestUserType.cpp
-    # test/TestUnion.cpp
-    # test/TestVector.cpp
-    # test/TestArray.cpp
-    # test/TestValarray.cpp
-    # test/TestString.cpp
-    # test/TestDeque.cpp
-    # test/TestQueue.cpp
-    # test/TestPriorityQueue.cpp
-    # test/TestStack.cpp
-    # test/TestBitset.cpp
-    # test/TestList.cpp
-    # test/TestForwardList.cpp
-    # test/TestMap.cpp
-    # test/TestSet.cpp
-    # test/TestVariant.cpp
-    # test/TestOptional.cpp
-    # test/TestPair.cpp
-    # test/TestTuple.cpp
-    # test/TestMemory.cpp
-    # test/TestAtomic.cpp
-    # test/TestComplex.cpp
-    # test/TestAny.cpp
-    # test/TestDynamicArray.cpp
-    # test/TestPolymorphic.cpp
-    # test/TestTracking.cpp
-    # test/TestAggregate.cpp
-    # test/TestAlias.cpp
-    # test/TestBitPack.cpp
+    test/TestUserType.cpp
+    test/TestUnion.cpp
+    test/TestVector.cpp
+    test/TestArray.cpp
+    test/TestValarray.cpp
+    test/TestString.cpp
+    test/TestDeque.cpp
+    test/TestQueue.cpp
+    test/TestPriorityQueue.cpp
+    test/TestStack.cpp
+    test/TestBitset.cpp
+    test/TestList.cpp
+    test/TestForwardList.cpp
+    test/TestMap.cpp
+    test/TestSet.cpp
+    test/TestVariant.cpp
+    test/TestOptional.cpp
+    test/TestPair.cpp
+    test/TestTuple.cpp
+    test/TestMemory.cpp
+    test/TestAtomic.cpp
+    test/TestComplex.cpp
+    test/TestAny.cpp
+    test/TestDynamicArray.cpp
+    test/TestPolymorphic.cpp
+    test/TestTracking.cpp
+    test/TestAggregate.cpp
+    test/TestAlias.cpp
+    test/TestBitPack.cpp
 
-    # test/TestLibrary/BaseObject.hpp
-    # test/TestLibrary/BaseObject.cpp
-    # test/TestLibrary/DerivedObject.hpp
-    # test/TestLibrary/DerivedObject.cpp
-    # test/TestLibrary.cpp
+    test/TestLibrary/BaseObject.hpp
+    test/TestLibrary/BaseObject.cpp
+    test/TestLibrary/DerivedObject.hpp
+    test/TestLibrary/DerivedObject.cpp
+    test/TestLibrary.cpp
 
-    # test/TestExample.cpp
+    test/TestExample.cpp
 
     test/SFTestingBase.hpp
     test/main.cpp

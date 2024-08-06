@@ -18,9 +18,6 @@ public:
     Base(const SomeType& data) : data(data) {}
 };
 
-template <typename> struct is_base : std::false_type {};
-template <typename T> struct is_base<Base<T>> : std::true_type {};
-
 namespace internal // example namespace
 {
 
@@ -40,14 +37,9 @@ public:
 
 } // TEST_SPACE
 
-SERIALIZATION(save, self, Base<std::string>)
+TEMPLATE_SERIALIZATION(saveload, self, template <class SomeType>, Base<SomeType>)
 {
     // more specialize version
-    archive & self.data;
-}
-
-CONDITIONAL_SERIALIZATION(saveload, self, is_base<T>::value)
-{
     archive & self.data;
 }
 

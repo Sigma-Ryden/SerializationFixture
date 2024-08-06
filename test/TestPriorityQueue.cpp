@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SF/BuiltIn/queue.hpp>
+#include <SF/BuiltIn/priority_queue.hpp>
 
 TEST(TestSTLAdapter, TestPriorityQueue)
 {

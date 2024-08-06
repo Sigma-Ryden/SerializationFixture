@@ -3,8 +3,6 @@
 
 #if __cplusplus >= 201703L
 
-#include <type_traits> // true_type, false_type
-
 #include <variant> // variant
 
 #include <SF/Core/TypeCore.hpp>
@@ -15,14 +13,6 @@
 
 namespace sf
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_variant : std::false_type {};
-template <typename... Tn> struct is_std_variant<std::variant<Tn...>> : std::true_type {};
-
-} // namespace meta
 
 namespace detail
 {
@@ -71,7 +61,7 @@ void variant_load(Archive& archive, Variant& variant, let::u64 index)
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(save, variant, ::sf::meta::is_std_variant<T>::value)
+TEMPLATE_SERIALIZATION(save, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
 {
     ::sf::let::u64 index = variant.index();
     archive & index;
@@ -80,7 +70,7 @@ CONDITIONAL_SERIALIZATION(save, variant, ::sf::meta::is_std_variant<T>::value)
         ::sf::detail::variant_save(archive, variant, index);
 }
 
-CONDITIONAL_SERIALIZATION(load, variant, ::sf::meta::is_std_variant<T>::value)
+TEMPLATE_SERIALIZATION(load, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
 {
     ::sf::let::u64 index{};
     archive & index;

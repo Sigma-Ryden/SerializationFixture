@@ -7,9 +7,7 @@
 
 #include <SF/DataTrack.hpp>
 
-#include <SF/Detail/Meta.hpp> // is_std_shared_ptr
-
-CONDITIONAL_SERIALIZATION(saveload, shared_ptr, ::sf::meta::is_std_shared_ptr<T>::value)
+TEMPLATE_SERIALIZATION(saveload, shared_ptr, template <typename ElementType>, std::shared_ptr<ElementType>)
 {
     ::sf::tracking::track(archive, shared_ptr);
 }

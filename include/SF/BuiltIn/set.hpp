@@ -15,8 +15,8 @@
 
 #define SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                       \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
-    template <typename Key, typename Compare, typename Alloc>                                           \
-    struct is_std_##set_type<std::set_type<Key, Compare, Alloc>> : std::true_type {};
+    template <typename KeyType, typename Comparator, typename AllocatorType>                            \
+    struct is_std_##set_type<std::set_type<KeyType, Comparator, AllocatorType>> : std::true_type {};
 
 namespace sf
 {

@@ -18,8 +18,8 @@
 
 #define SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                       \
     template <typename> struct is_std_##map_type : std::false_type {};                                  \
-    template <typename Key, typename Type, typename Compare, typename Alloc>                            \
-    struct is_std_##map_type<std::map_type<Key, Type, Compare, Alloc>> : std::true_type {};
+    template <typename KeyType, typename ValueType, typename Comparator, typename AllocatorType>        \
+    struct is_std_##map_type<std::map_type<KeyType, ValueType, Comparator, AllocatorType>> : std::true_type {};
 
 namespace sf
 {
