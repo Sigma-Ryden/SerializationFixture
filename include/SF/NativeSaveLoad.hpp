@@ -13,31 +13,31 @@ namespace sf
 namespace detail
 {
 
-template <class Archive, typename T, typename KeyType,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T, typename KeyType,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_save(Archive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
+void native_save(ArchiveType& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
 
-template <class Archive, typename T, typename KeyType,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T, typename KeyType,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::is_pointer_to_polymorphic<T>>::value)>
-void native_save(Archive& archive, T& pointer, KeyType track_key)
+void native_save(ArchiveType& archive, T& pointer, KeyType track_key)
 {
     archive.registry().save_key(archive, pointer); // write class info
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address) noexcept
+void native_load(ArchiveType& archive, T& pointer, memory::void_ptr<T>& address) noexcept
 {
     memory::assign<typename meta::dereference<T>::type>(pointer, address);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address)
+void native_load(ArchiveType& archive, T& pointer, memory::void_ptr<T>& address)
 {
     auto& registry = archive.registry();
 

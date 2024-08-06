@@ -173,10 +173,10 @@ span_t<Type, N> make_span(Pointer& data, D d, Dn... dn)
 namespace detail
 {
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_archive<ArchiveType>,
                               meta::negation<meta::is_span<T>>>::value)>
-void span_impl(Archive& archive, T& data)
+void span_impl(ArchiveType& archive, T& data)
 {
     archive & data;
 }
@@ -216,11 +216,11 @@ void span_impl(iarchive_t& archive, T& array)
 inline namespace common
 {
 
-template <class Archive, typename T,
+template <class ArchiveType, typename T,
           typename D, typename... Dn,
-          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_archive<ArchiveType>,
                                meta::is_span_set<T, D, Dn...>>::value)>
-void span(Archive& archive, T& pointer, D& dimension, Dn&... dimension_n)
+void span(ArchiveType& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (not detail::refer_key(archive, pointer)) return; // serialize refer info
     archive(dimension, dimension_n...);
@@ -243,15 +243,15 @@ struct span_functor_t : apply_functor_t
 
     span_functor_t(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const
     {
         invoke(archive, meta::make_index_sequence<std::tuple_size<Pack>::value>{});
     }
 
 private:
-    template <class Archive, std::size_t... I>
-    void invoke(Archive& archive, meta::index_sequence<I...>) const
+    template <class ArchiveType, std::size_t... I>
+    void invoke(ArchiveType& archive, meta::index_sequence<I...>) const
     {
         span(archive, std::get<I>(pack)...);
     }

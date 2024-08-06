@@ -20,26 +20,26 @@ namespace sf
 namespace tracking
 {
 
-template <typename TrackType, class Archive, typename KeyType,
-          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
-bool is_track(Archive& archive, KeyType key)
+template <typename TrackType, class ArchiveType, typename KeyType,
+          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
+bool is_track(ArchiveType& archive, KeyType key)
 {
     auto& item = archive.template tracking<TrackType>();
     return item.find(key) != item.end();
 }
 
-template <typename TrackType, class Archive, typename KeyType,
-          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
-bool is_mixed(Archive& archive, KeyType key)
+template <typename TrackType, class ArchiveType, typename KeyType,
+          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
+bool is_mixed(ArchiveType& archive, KeyType key)
 {
     using reverse_track_type = typename reverse_traits<TrackType>::type;
     return is_track<reverse_track_type>(archive, key);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::is_pointer<T>>::value)>
-void track(Archive& archive, T& pointer)
+void track(ArchiveType& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
 
@@ -64,12 +64,12 @@ void track(Archive& archive, T& pointer)
     }
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::negation<meta::is_pointer<T>>>::value)>
-void track(Archive& archive, T& data)
+void track(ArchiveType& archive, T& data)
 {
-    using key_type = typename Archive::TrackingKeyType;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
     auto address = memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
@@ -85,10 +85,10 @@ void track(Archive& archive, T& data)
     archive & data;
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_pointer<T>>::value)>
-void track(Archive& archive, T& pointer)
+void track(ArchiveType& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
 
@@ -113,12 +113,12 @@ void track(Archive& archive, T& pointer)
     }
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::negation<meta::is_pointer<T>>>::value)>
-void track(Archive& archive, T& data)
+void track(ArchiveType& archive, T& data)
 {
-    using key_type = typename Archive::TrackingKeyType;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
     key_type key{};
     archive & key;
@@ -133,10 +133,10 @@ void track(Archive& archive, T& data)
     archive & data;
 }
 
-template <class Archive, typename T,
+template <class ArchiveType, typename T,
           SF_REQUIRE(meta::all<meta::is_ioarchive<T>,
                                meta::is_serializable_raw_pointer<T>>::value)>
-void raw(Archive& archive, T& pointer)
+void raw(ArchiveType& archive, T& pointer)
 {
     if (detail::refer_key(archive, pointer)) // serialize refer info
         strict(archive, pointer);
@@ -154,8 +154,8 @@ struct track_functor_t : apply_functor_t
 
     track_functor_t(T& data) noexcept : data(data) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { tracking::track(archive, data); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { tracking::track(archive, data); }
 };
 
 template <typename T>
@@ -165,8 +165,8 @@ struct raw_functor_t : apply_functor_t
 
     raw_functor_t(T& data) noexcept : data(data) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { tracking::raw(archive, data); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { tracking::raw(archive, data); }
 };
 
 } // namespace apply

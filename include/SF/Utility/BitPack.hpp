@@ -28,17 +28,17 @@ namespace sf
 namespace detail
 {
 
-template <class Archive, typename T, typename enable = void>
+template <class ArchiveType, typename T, typename enable = void>
 struct bitpack_t;
 
-template <class Archive, typename T>
-struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_oarchive<Archive>::value>::type>
+template <class ArchiveType, typename T>
+struct bitpack_t<ArchiveType, T, typename std::enable_if<sf::meta::is_oarchive<ArchiveType>::value>::type>
 {
-    Archive& archive;
+    ArchiveType& archive;
     T data{};
     std::size_t offset{};
 
-    bitpack_t(Archive& archive) : archive(archive) {}
+    bitpack_t(ArchiveType& archive) : archive(archive) {}
     ~bitpack_t() { archive & data; }
 
     T operator()(T field, std::size_t bits) noexcept
@@ -51,13 +51,13 @@ struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_oarchive<Archi
     }
 };
 
-template <class Archive, typename T>
-struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_iarchive<Archive>::value>::type>
+template <class ArchiveType, typename T>
+struct bitpack_t<ArchiveType, T, typename std::enable_if<sf::meta::is_iarchive<ArchiveType>::value>::type>
 {
-    Archive& archive;
+    ArchiveType& archive;
     T data{};
 
-    bitpack_t(Archive& archive) : archive(archive) { archive & data; }
+    bitpack_t(ArchiveType& archive) : archive(archive) { archive & data; }
 
     T operator()(T field, std::size_t bits) noexcept
     {
@@ -71,8 +71,8 @@ struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_iarchive<Archi
 
 } // namespace detail
 
-template <typename PackType = let::u32, class Archive>
-detail::bitpack_t<Archive, PackType> bitpack(Archive& archive) noexcept { return { archive }; }
+template <typename PackType = let::u32, class ArchiveType>
+detail::bitpack_t<ArchiveType, PackType> bitpack(ArchiveType& archive) noexcept { return { archive }; }
 
 } // namespace sf
 

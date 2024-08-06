@@ -7,9 +7,9 @@
 namespace sf
 {
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
-void binary(Archive& archive, T& data)
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
+void binary(ArchiveType& archive, T& data)
 {
     archive.stream().call(std::addressof(data), sizeof(T));
 }
@@ -24,8 +24,8 @@ struct binary_functor_t : apply_functor_t
 
     binary_functor_t(T& data) noexcept : data(data) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { binary(archive, data); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { binary(archive, data); }
 };
 
 } // namespace apply

@@ -15,10 +15,10 @@ namespace compress
 {
 
 // always require compressible type for fast compression
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::is_compressible<T>>::value)>
-void fast(Archive& archive, T& object)
+void fast(ArchiveType& archive, T& object)
 {
     using item_type = typename meta::value<T>::type;
 
@@ -29,26 +29,26 @@ void fast(Archive& archive, T& object)
     );
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
-void slow(Archive& archive, T& object)
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
+void slow(ArchiveType& archive, T& object)
 {
     for (auto&& item : object)
         archive & item;
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::is_compressible<T>>::value)>
-void zip(Archive& archive, T& object)
+void zip(ArchiveType& archive, T& object)
 {
     fast(archive, object);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::negation<meta::is_compressible<T>>>::value)>
-void zip(Archive& archive, T& object)
+void zip(ArchiveType& archive, T& object)
 {
     slow(archive, object);
 }

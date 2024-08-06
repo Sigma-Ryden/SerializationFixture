@@ -241,41 +241,6 @@ template <typename T> struct is_unsupported :
 
 } // namespace sf
 
-#define CONDITIONAL_TYPE_REGISTRY(...)                                                                  \
-    template <typename T>                                                                               \
-    struct xxsf_registry<T, typename std::enable_if<__VA_ARGS__>::type> : std::true_type {};
-
-// you should use TYPE_REGISTRY before using EXTERN_SERIALIZATION e.t.
-#define TYPE_REGISTRY(...)                                                                              \
-    template <> struct xxsf_registry<__VA_ARGS__> : std::true_type {};
-
-template <typename T, typename enable = void>
-struct xxsf_registry : std::false_type {};
-
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename T> struct is_registered : ::xxsf_registry<T> {};
-
-// use this function only for extern type registry check
-template <typename T> struct is_registered_extern
-#ifdef SF_TYPE_REGISTRY_DISABLE
-    : std::true_type {};
-#else
-    : is_registered<T> {};
-#endif // SF_TYPE_REGISTRY_DISABLE
-
-template <typename T> struct is_serializable : all<negation<is_unsupported<T>>, is_registered<T>> {};
-
-} // namespace meta
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_unsupported<T>::value)
-
 namespace sf
 {
 
@@ -328,11 +293,6 @@ using u64 = std::uint64_t;
     #define SF_ARCHIVE_TRAIT_MAX_KEY_SIZE 4
 #endif // SF_ARCHIVE_MAX_TRAIT_KEY
 
-#define SERIALIZATION_ARCHIVE(...)                                                                      \
-    virtual key_type trait() const noexcept override {                                                  \
-        return ::sf::core::archive_traits_key_t<__VA_ARGS__>::key;                                      \
-    }
-
 namespace sf
 {
 
@@ -347,7 +307,7 @@ struct archive_traits
     static constexpr auto max_key = key_type(SF_ARCHIVE_TRAIT_MAX_KEY_SIZE);
 };
 
-template <class Archive> struct archive_traits_key_t
+template <class ArchiveType> struct archive_traits_key_t
 {
     static constexpr auto key = archive_traits::base_key;
 };
@@ -357,16 +317,17 @@ class ioarchive_t
 public:
     using key_type = archive_traits::key_type;
 
+public:
+    ioarchive_t(key_type trait, bool readonly) : trait(trait), readonly(readonly) {}
+
 protected:
     virtual ~ioarchive_t() = default;
 
 public:
-    virtual key_type trait() const noexcept
-    {
-        return archive_traits_key_t<ioarchive_t>::key;
-    }
+    const key_type trait = archive_traits_key_t<ioarchive_t>::key;
+    const bool readonly = false;
 };
-
+// ~TODO: temp impl
 } // namespace core
 
 } // namespace sf
@@ -513,106 +474,316 @@ inline void hash_combine(HashType& seed, const T& object) noexcept
 } // namepace sf
 
 #define EXPORT_INSTANTIABLE_KEY(name, ...)                                                              \
-    template <> struct xxsf_traits<__VA_ARGS__> { static constexpr auto key = SF_STATIC_HASH(name); };  \
+    template <>                                                                                         \
+    struct xxsf_instantiable_traits<__VA_ARGS__> { static constexpr auto key = SF_STATIC_HASH(name); };
 
 #define EXPORT_INSTANTIABLE(...)                                                                        \
     EXPORT_INSTANTIABLE_KEY(#__VA_ARGS__, __VA_ARGS__)
 
 template <class T>
-struct xxsf_traits;
+struct xxsf_instantiable_traits;
 
 template <>
-struct xxsf_traits<void>
+struct xxsf_instantiable_traits<void>
 {
     using key_type = SF_STATIC_HASH_KEY_TYPE;
     static constexpr auto base_key = key_type(-1);
 };
 
 template <class T>
-struct xxsf_traits
+struct xxsf_instantiable_traits
 {
-    static constexpr auto key = xxsf_traits<void>::base_key;
+    static constexpr auto key = xxsf_instantiable_traits<void>::base_key;
 };
 
-#define SERIALIZATION(mode, ...)                                                                        \
-    template <>                                                                                         \
-    struct xxsf_##mode<__VA_ARGS__> { template <class Archive> xxsf_##mode(Archive&, __VA_ARGS__&); };  \
-    template <class Archive>                                                                            \
-    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(Archive& archive, __VA_ARGS__& self)
+// concatenation of two macro arguments
+#define SF_CONCAT(lhs, rhs) SF_CONCAT_IMPL(lhs, rhs)
+#define SF_CONCAT_IMPL(lhs, rhs) SF_CONCAT_IMPL_(lhs, rhs)
+#define SF_CONCAT_IMPL_(lhs, rhs) lhs##rhs
 
-#define CONDITIONAL_SERIALIZATION(mode, ...)                                                            \
-    template <class T>                                                                                  \
-    struct xxsf_##mode<T, typename std::enable_if<__VA_ARGS__>::type> {                                 \
-        template <class Archive> xxsf_##mode(Archive&, T&);                                             \
-    };                                                                                                  \
-    template <class T> template <class Archive>                                                         \
-    xxsf_##mode<T, typename std::enable_if<__VA_ARGS__>::type>::xxsf_##mode(Archive& archive, T& self)
+// deparen of macro argument
+#define SF_DEPAREN(arg) SF_DEPAREN_IMPL(SF_UATE arg)
+#define SF_UATE(...) SF_UATE __VA_ARGS__
+#define SF_DEPAREN_IMPL(...) SF_DEPAREN_IMPL_(__VA_ARGS__)
+#define SF_DEPAREN_IMPL_(...) SF_EVAL ## __VA_ARGS__
+#define SF_EVALSF_UATE
 
-// Allow to hide implementation to translation unit, and declare interface in header
-#define SERIALIZATION_INTERFACE(mode, ...)                                                              \
-    template <>                                                                                         \
-    struct xxsf_##mode<__VA_ARGS__> { xxsf_##mode(::sf::core::ioarchive_t&, __VA_ARGS__&); };
+// return first argument from two
+#define SF_FIRST_ARGUMENT(first, ...) first
 
-#define SERIALIZATION_IMPLEMENTATION(mode, ...)                                                         \
-    xxsf_##mode<__VA_ARGS__>::xxsf_##mode(::sf::core::ioarchive_t& archive, __VA_ARGS__& self)
+#define SF_VA_ARGS_SIZE_IMPL_(                                                                          \
+     _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, _10, _11, _12, _13, _14, _15, _16,                     \
+    _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32,                     \
+    _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48,                     \
+    _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, N, ...) N
+
+#define SF_REVERSE_INTEGER_SEQUENCE                                                                     \
+    63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48,                                     \
+    47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,                                     \
+    31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16,                                     \
+    15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0
+
+#define SF_VA_ARGS_SIZE_IMPL(...) SF_VA_ARGS_SIZE_IMPL_(__VA_ARGS__)
+
+// return __VA_ARGS__ arguments count, for empty __VA_ARGS__ return 1
+#define SF_VA_ARGS_SIZE(...) SF_VA_ARGS_SIZE_IMPL(__VA_ARGS__, SF_REVERSE_INTEGER_SEQUENCE)
+
+// generate repeat sequence macro(1) macro(2) ... macro(count)
+#define SF_REPEAT(macro, count) SF_CONCAT(SF_REPEAT_, count)(macro)
+
+#define SF_REPEAT_0(macro)
+
+#define SF_REPEAT_1(macro) SF_REPEAT_0(macro) macro(1)
+#define SF_REPEAT_2(macro) SF_REPEAT_1(macro) macro(2)
+#define SF_REPEAT_3(macro) SF_REPEAT_2(macro) macro(3)
+#define SF_REPEAT_4(macro) SF_REPEAT_3(macro) macro(4)
+#define SF_REPEAT_5(macro) SF_REPEAT_4(macro) macro(5)
+#define SF_REPEAT_6(macro) SF_REPEAT_5(macro) macro(6)
+#define SF_REPEAT_7(macro) SF_REPEAT_6(macro) macro(7)
+#define SF_REPEAT_8(macro) SF_REPEAT_7(macro) macro(8)
+
+#define SF_REPEAT_9(macro) SF_REPEAT_8(macro) macro(9)
+#define SF_REPEAT_10(macro) SF_REPEAT_9(macro) macro(10)
+#define SF_REPEAT_11(macro) SF_REPEAT_10(macro) macro(11)
+#define SF_REPEAT_12(macro) SF_REPEAT_11(macro) macro(12)
+#define SF_REPEAT_13(macro) SF_REPEAT_12(macro) macro(13)
+#define SF_REPEAT_14(macro) SF_REPEAT_13(macro) macro(14)
+#define SF_REPEAT_15(macro) SF_REPEAT_14(macro) macro(15)
+#define SF_REPEAT_16(macro) SF_REPEAT_15(macro) macro(16)
+
+#define SF_REPEAT_17(macro) SF_REPEAT_16(macro) macro(17)
+#define SF_REPEAT_18(macro) SF_REPEAT_17(macro) macro(18)
+#define SF_REPEAT_19(macro) SF_REPEAT_18(macro) macro(19)
+#define SF_REPEAT_20(macro) SF_REPEAT_19(macro) macro(20)
+#define SF_REPEAT_21(macro) SF_REPEAT_20(macro) macro(21)
+#define SF_REPEAT_22(macro) SF_REPEAT_21(macro) macro(22)
+#define SF_REPEAT_23(macro) SF_REPEAT_22(macro) macro(23)
+#define SF_REPEAT_24(macro) SF_REPEAT_23(macro) macro(24)
+
+#define SF_REPEAT_25(macro) SF_REPEAT_24(macro) macro(25)
+#define SF_REPEAT_26(macro) SF_REPEAT_25(macro) macro(26)
+#define SF_REPEAT_27(macro) SF_REPEAT_26(macro) macro(27)
+#define SF_REPEAT_28(macro) SF_REPEAT_27(macro) macro(28)
+#define SF_REPEAT_29(macro) SF_REPEAT_28(macro) macro(29)
+#define SF_REPEAT_30(macro) SF_REPEAT_29(macro) macro(30)
+#define SF_REPEAT_31(macro) SF_REPEAT_30(macro) macro(31)
+#define SF_REPEAT_32(macro) SF_REPEAT_31(macro) macro(32)
+
+#define SF_REPEAT_33(macro) SF_REPEAT_32(macro) macro(33)
+#define SF_REPEAT_34(macro) SF_REPEAT_33(macro) macro(34)
+#define SF_REPEAT_35(macro) SF_REPEAT_34(macro) macro(35)
+#define SF_REPEAT_36(macro) SF_REPEAT_35(macro) macro(36)
+#define SF_REPEAT_37(macro) SF_REPEAT_36(macro) macro(37)
+#define SF_REPEAT_38(macro) SF_REPEAT_37(macro) macro(38)
+#define SF_REPEAT_39(macro) SF_REPEAT_38(macro) macro(39)
+#define SF_REPEAT_40(macro) SF_REPEAT_39(macro) macro(40)
+
+#define SF_REPEAT_41(macro) SF_REPEAT_40(macro) macro(41)
+#define SF_REPEAT_42(macro) SF_REPEAT_41(macro) macro(42)
+#define SF_REPEAT_43(macro) SF_REPEAT_42(macro) macro(43)
+#define SF_REPEAT_44(macro) SF_REPEAT_43(macro) macro(44)
+#define SF_REPEAT_45(macro) SF_REPEAT_44(macro) macro(45)
+#define SF_REPEAT_46(macro) SF_REPEAT_45(macro) macro(46)
+#define SF_REPEAT_47(macro) SF_REPEAT_46(macro) macro(47)
+#define SF_REPEAT_48(macro) SF_REPEAT_47(macro) macro(48)
+
+#define SF_REPEAT_49(macro) SF_REPEAT_48(macro) macro(49)
+#define SF_REPEAT_50(macro) SF_REPEAT_49(macro) macro(50)
+#define SF_REPEAT_51(macro) SF_REPEAT_50(macro) macro(51)
+#define SF_REPEAT_52(macro) SF_REPEAT_51(macro) macro(52)
+#define SF_REPEAT_53(macro) SF_REPEAT_52(macro) macro(53)
+#define SF_REPEAT_54(macro) SF_REPEAT_53(macro) macro(54)
+#define SF_REPEAT_55(macro) SF_REPEAT_54(macro) macro(55)
+#define SF_REPEAT_56(macro) SF_REPEAT_55(macro) macro(56)
+
+#define SF_REPEAT_57(macro) SF_REPEAT_56(macro) macro(57)
+#define SF_REPEAT_58(macro) SF_REPEAT_57(macro) macro(58)
+#define SF_REPEAT_59(macro) SF_REPEAT_58(macro) macro(59)
+#define SF_REPEAT_60(macro) SF_REPEAT_59(macro) macro(60)
+#define SF_REPEAT_61(macro) SF_REPEAT_60(macro) macro(61)
+#define SF_REPEAT_62(macro) SF_REPEAT_61(macro) macro(62)
+#define SF_REPEAT_63(macro) SF_REPEAT_62(macro) macro(63)
+#define SF_REPEAT_64(macro) SF_REPEAT_63(macro) macro(64)
+// and etc.
+
+// generate placeholder sequence _0, _1, _2, ..., _count
+#define SF_PLACEHOLDERS(count) SF_CONCAT(SF_PLACEHOLDER_, count)()
+
+#define SF_PLACEHOLDER_1() _0
+#define SF_PLACEHOLDER_2() SF_PLACEHOLDER_1(), _1
+#define SF_PLACEHOLDER_3() SF_PLACEHOLDER_2(), _2
+#define SF_PLACEHOLDER_4() SF_PLACEHOLDER_3(), _3
+#define SF_PLACEHOLDER_5() SF_PLACEHOLDER_4(), _4
+#define SF_PLACEHOLDER_6() SF_PLACEHOLDER_5(), _5
+#define SF_PLACEHOLDER_7() SF_PLACEHOLDER_6(), _6
+#define SF_PLACEHOLDER_8() SF_PLACEHOLDER_7(), _7
+
+#define SF_PLACEHOLDER_9() SF_PLACEHOLDER_8(), _8
+#define SF_PLACEHOLDER_10() SF_PLACEHOLDER_9(), _9
+#define SF_PLACEHOLDER_11() SF_PLACEHOLDER_10(), _10
+#define SF_PLACEHOLDER_12() SF_PLACEHOLDER_11(), _11
+#define SF_PLACEHOLDER_13() SF_PLACEHOLDER_12(), _12
+#define SF_PLACEHOLDER_14() SF_PLACEHOLDER_13(), _13
+#define SF_PLACEHOLDER_15() SF_PLACEHOLDER_14(), _14
+#define SF_PLACEHOLDER_16() SF_PLACEHOLDER_15(), _15
+
+#define SF_PLACEHOLDER_17() SF_PLACEHOLDER_16(), _16
+#define SF_PLACEHOLDER_18() SF_PLACEHOLDER_17(), _17
+#define SF_PLACEHOLDER_19() SF_PLACEHOLDER_18(), _18
+#define SF_PLACEHOLDER_20() SF_PLACEHOLDER_19(), _19
+#define SF_PLACEHOLDER_21() SF_PLACEHOLDER_20(), _20
+#define SF_PLACEHOLDER_22() SF_PLACEHOLDER_21(), _21
+#define SF_PLACEHOLDER_23() SF_PLACEHOLDER_22(), _22
+#define SF_PLACEHOLDER_24() SF_PLACEHOLDER_23(), _23
+
+#define SF_PLACEHOLDER_25() SF_PLACEHOLDER_24(), _24
+#define SF_PLACEHOLDER_26() SF_PLACEHOLDER_25(), _25
+#define SF_PLACEHOLDER_27() SF_PLACEHOLDER_26(), _26
+#define SF_PLACEHOLDER_28() SF_PLACEHOLDER_27(), _27
+#define SF_PLACEHOLDER_29() SF_PLACEHOLDER_28(), _28
+#define SF_PLACEHOLDER_30() SF_PLACEHOLDER_29(), _29
+#define SF_PLACEHOLDER_31() SF_PLACEHOLDER_30(), _30
+#define SF_PLACEHOLDER_32() SF_PLACEHOLDER_31(), _31
+
+#define SF_PLACEHOLDER_33() SF_PLACEHOLDER_32(), _32
+#define SF_PLACEHOLDER_34() SF_PLACEHOLDER_33(), _33
+#define SF_PLACEHOLDER_35() SF_PLACEHOLDER_34(), _34
+#define SF_PLACEHOLDER_36() SF_PLACEHOLDER_35(), _35
+#define SF_PLACEHOLDER_37() SF_PLACEHOLDER_36(), _36
+#define SF_PLACEHOLDER_38() SF_PLACEHOLDER_37(), _37
+#define SF_PLACEHOLDER_39() SF_PLACEHOLDER_38(), _38
+#define SF_PLACEHOLDER_40() SF_PLACEHOLDER_39(), _39
+
+#define SF_PLACEHOLDER_41() SF_PLACEHOLDER_40(), _40
+#define SF_PLACEHOLDER_42() SF_PLACEHOLDER_41(), _41
+#define SF_PLACEHOLDER_43() SF_PLACEHOLDER_42(), _42
+#define SF_PLACEHOLDER_44() SF_PLACEHOLDER_43(), _43
+#define SF_PLACEHOLDER_45() SF_PLACEHOLDER_44(), _44
+#define SF_PLACEHOLDER_46() SF_PLACEHOLDER_45(), _45
+#define SF_PLACEHOLDER_47() SF_PLACEHOLDER_46(), _46
+#define SF_PLACEHOLDER_48() SF_PLACEHOLDER_47(), _47
+
+#define SF_PLACEHOLDER_49() SF_PLACEHOLDER_48(), _48
+#define SF_PLACEHOLDER_50() SF_PLACEHOLDER_49(), _49
+#define SF_PLACEHOLDER_51() SF_PLACEHOLDER_50(), _50
+#define SF_PLACEHOLDER_52() SF_PLACEHOLDER_51(), _51
+#define SF_PLACEHOLDER_53() SF_PLACEHOLDER_52(), _52
+#define SF_PLACEHOLDER_54() SF_PLACEHOLDER_53(), _53
+#define SF_PLACEHOLDER_55() SF_PLACEHOLDER_54(), _54
+#define SF_PLACEHOLDER_56() SF_PLACEHOLDER_55(), _55
+
+#define SF_PLACEHOLDER_57() SF_PLACEHOLDER_56(), _56
+#define SF_PLACEHOLDER_58() SF_PLACEHOLDER_57(), _57
+#define SF_PLACEHOLDER_59() SF_PLACEHOLDER_58(), _58
+#define SF_PLACEHOLDER_60() SF_PLACEHOLDER_59(), _59
+#define SF_PLACEHOLDER_61() SF_PLACEHOLDER_60(), _60
+#define SF_PLACEHOLDER_62() SF_PLACEHOLDER_61(), _61
+#define SF_PLACEHOLDER_63() SF_PLACEHOLDER_62(), _62
+#define SF_PLACEHOLDER_64() SF_PLACEHOLDER_63(), _63
+// and etc.
+
+#define SERIALIZATION(mode, object, ...) \
+     SF_CONCAT(SF_SERIALIZATION_DECLARATION_, mode)((template <>), (__VA_ARGS__), (template <class ArchiveType>), (ArchiveType)) \
+     SF_CONCAT(SF_SERIALIZATION_DEFINITION_, mode)((), (__VA_ARGS__), (template <class ArchiveType>), (ArchiveType), object)
+
+#define TEMPLATE_SERIALIZATION(mode, object, object_template_header, ...) \
+     SF_CONCAT(SF_SERIALIZATION_DECLARATION_, mode)(object_template_header, (__VA_ARGS__), (template <class ArchiveType>), (ArchiveType)) \
+     SF_CONCAT(SF_SERIALIZATION_DEFINITION_, mode)(object_template_header, (__VA_ARGS__), (template <class ArchiveType>), (ArchiveType), object)
+
+#define CONDITIONAL_SERIALIZATION(mode, object, ...) \
+    SF_CONCAT(SF_CONDITIONAL_SERIALIZATION_DECLARATION_, mode)((__VA_ARGS__), (template <class ArchiveType>), (ArchiveType)) \
+    SF_CONCAT(SF_CONDITIONAL_SERIALIZATION_DEFINITION_, mode)((__VA_ARGS__), (template <class ArchiveType>), (ArchiveType), object)
+
+// allow to hide implementation to translation unit, and declare interface in header
+#define SERIALIZATION_DECLARATION(mode, object, ...) \
+     SF_CONCAT(SF_SERIALIZATION_DECLARATION_, mode)((template <>), (__VA_ARGS__), (), (::sf::core::ioarchive_t))
+
+#define SERIALIZATION_DEFINITION(mode, object, ...) \
+     SF_CONCAT(SF_SERIALIZATION_DEFINITION_, mode)((), (__VA_ARGS__), (), (::sf::core::ioarchive_t), object)
+
+// Impl
+#define SF_SERIALIZATION_DECLARATION(mode, object_template_header, object_type, archive_template_header, archive_type) \
+    SF_DEPAREN(object_template_header) \
+    struct xxsf_##mode<SF_DEPAREN(object_type)> { \
+        SF_DEPAREN(archive_template_header) \
+        xxsf_##mode(SF_DEPAREN(archive_type)&, SF_DEPAREN(object_type)&); \
+    };
+
+#define SF_SERIALIZATION_DECLARATION_save(object_template_header, object_type, archive_template_header, archive_type) \
+    SF_SERIALIZATION_DECLARATION(save, object_template_header, object_type, archive_template_header, archive_type)
+
+#define SF_SERIALIZATION_DECLARATION_load(object_template_header, object_type, archive_template_header, archive_type) \
+    SF_SERIALIZATION_DECLARATION(load, object_template_header, object_type, archive_template_header, archive_type)
+
+#define SF_SERIALIZATION_DECLARATION_saveload(object_template_header, object_type, archive_template_header, archive_type) \
+    SF_SERIALIZATION_DECLARATION(save, object_template_header, object_type, archive_template_header, archive_type) \
+    SF_SERIALIZATION_DECLARATION(load, object_template_header, object_type, archive_template_header, archive_type) \
+    SF_SERIALIZATION_DECLARATION(saveload, object_template_header, object_type, archive_template_header, archive_type)
+
+#define SF_SERIALIZATION_DEFINITION(mode, object_template_header, object_type, archive_template_header, archive_type, object) \
+    SF_DEPAREN(object_template_header) \
+    SF_DEPAREN(archive_template_header) \
+    xxsf_##mode<SF_DEPAREN(object_type)>::xxsf_##mode(SF_DEPAREN(archive_type)& archive, SF_DEPAREN(object_type)& object)
+
+#define SF_SERIALIZATION_DEFINITION_save(object_template_header, object_type, archive_template_header, archive_type, object) \
+    SF_SERIALIZATION_DEFINITION(save, object_template_header, object_type, archive_template_header, archive_type, object)
+
+#define SF_SERIALIZATION_DEFINITION_load(object_template_header, object_type, archive_template_header, archive_type, object) \
+    SF_SERIALIZATION_DEFINITION(load, object_template_header, object_type, archive_template_header, archive_type, object)
+
+#define SF_SERIALIZATION_DEFINITION_saveload(object_template_header, object_type, archive_template_header, archive_type, object) \
+    SF_SERIALIZATION_DEFINITION(save, object_template_header, object_type, archive_template_header, archive_type, object) \
+    { xxsf_saveload<SF_DEPAREN(object_type)>(archive, object); } \
+    SF_SERIALIZATION_DEFINITION(load, object_template_header, object_type, archive_template_header, archive_type, object) \
+    { xxsf_saveload<SF_DEPAREN(object_type)>(archive, object); }\
+    SF_SERIALIZATION_DEFINITION(saveload, object_template_header, object_type, archive_template_header, archive_type, object)
+
+#define SF_CONDITIONAL_SERIALIZATION_DECLARATION(mode, object_type_condition, archive_template_header, archive_type) \
+    template <typename T> \
+    struct xxsf_##mode<T, typename std::enable_if<SF_DEPAREN(object_type_condition)>::type> { \
+        SF_DEPAREN(archive_template_header) \
+        xxsf_##mode(SF_DEPAREN(archive_type)&, T&); \
+    };
+
+#define SF_CONDITIONAL_SERIALIZATION_DECLARATION_save(object_type_condition, archive_template_header, archive_type) \
+    SF_CONDITIONAL_SERIALIZATION_DECLARATION(save, object_type_condition, archive_template_header, archive_type)
+
+#define SF_CONDITIONAL_SERIALIZATION_DECLARATION_load(object_type_condition, archive_template_header, archive_type) \
+    SF_CONDITIONAL_SERIALIZATION_DECLARATION(load, object_type_condition, archive_template_header, archive_type)
+
+#define SF_CONDITIONAL_SERIALIZATION_DECLARATION_saveload(object_type_condition, archive_template_header, archive_type) \
+    SF_CONDITIONAL_SERIALIZATION_DECLARATION(save, object_type_condition, archive_template_header, archive_type) \
+    SF_CONDITIONAL_SERIALIZATION_DECLARATION(load, object_type_condition, archive_template_header, archive_type) \
+    SF_CONDITIONAL_SERIALIZATION_DECLARATION(saveload, object_type_condition, archive_template_header, archive_type)
+
+#define SF_CONDITIONAL_SERIALIZATION_DEFINITION(mode, object_type_condition, archive_template_header, archive_type, object) \
+    template <typename T> \
+    SF_DEPAREN(archive_template_header) \
+    xxsf_##mode<T, typename std::enable_if<SF_DEPAREN(object_type_condition)>::type>::xxsf_##mode(SF_DEPAREN(archive_type)& archive, T& object)
+
+#define SF_CONDITIONAL_SERIALIZATION_DEFINITION_save(object_type_condition, archive_template_header, archive_type, object) \
+    SF_CONDITIONAL_SERIALIZATION_DEFINITION(save, object_type_condition, archive_template_header, archive_type, object)
+
+#define SF_CONDITIONAL_SERIALIZATION_DEFINITION_load(object_type_condition, archive_template_header, archive_type, object) \
+    SF_CONDITIONAL_SERIALIZATION_DEFINITION(load, object_type_condition, archive_template_header, archive_type, object)
+
+#define SF_CONDITIONAL_SERIALIZATION_DEFINITION_saveload(object_type_condition, archive_template_header, archive_type, object) \
+    SF_CONDITIONAL_SERIALIZATION_DEFINITION(save, object_type_condition, archive_template_header, archive_type, object) \
+    { ::xxsf_saveload<T>(archive, object); } \
+    SF_CONDITIONAL_SERIALIZATION_DEFINITION(load, object_type_condition, archive_template_header, archive_type, object) \
+    { ::xxsf_saveload<T>(archive, object); }\
+    SF_CONDITIONAL_SERIALIZATION_DEFINITION(saveload, object_type_condition, archive_template_header, archive_type, object)
+// ~Impl
 
 // should be in global namespace
 template <class T, typename enable = void> struct xxsf_save;
 template <class T, typename enable = void> struct xxsf_load;
 template <class T, typename enable = void> struct xxsf_saveload;
 
-namespace sf
-{
-
-namespace meta
-{
-
-template <class T> struct is_has_save_mode : is_complete<::xxsf_save<T>> {};
-template <class T> struct is_has_load_mode : is_complete<::xxsf_load<T>> {};
-template <class T> struct is_has_saveload_mode : is_complete<::xxsf_saveload<T>> {};
-template <class T> struct is_has_any_save_mode : one<is_has_save_mode<T>, is_complete<::xxsf_saveload<T>>> {};
-template <class T> struct is_has_any_load_mode : one<is_has_load_mode<T>, is_complete<::xxsf_saveload<T>>> {};
-
-template <class T, typename enable = void>
-struct select_save_mode;
-
-template <class T>
-struct select_save_mode<T, typename std::enable_if<is_has_save_mode<T>::value>::type>
-{
-    using type = ::xxsf_save<T>;
-};
-
-template <class T>
-struct select_save_mode<T,
-    typename std::enable_if<all<negation<is_has_save_mode<T>>, is_has_saveload_mode<T>>::value>::type>
-{
-    using type = ::xxsf_saveload<T>;
-};
-
-template <class T, typename enable = void>
-struct select_load_mode;
-
-template <class T>
-struct select_load_mode<T, typename std::enable_if<is_has_load_mode<T>::value>::type>
-{
-    using type = ::xxsf_load<T>;
-};
-
-template <class T>
-struct select_load_mode<T,
-    typename std::enable_if<all<negation<is_has_load_mode<T>>, is_has_saveload_mode<T>>::value>::type>
-{
-    using type = ::xxsf_saveload<T>;
-};
-
-} // namespace meta
-
-} // namespace sf
-
 class xxsf
 {
 public:
-    using trait_type = ::xxsf_traits<void>::key_type;
+    using trait_type = ::xxsf_instantiable_traits<void>::key_type;
 
 public:
     template <class T, typename = void> struct is_has_static_traits : std::false_type {};
@@ -630,21 +801,8 @@ public:
     };
 
 public:
-    template <class Archive, typename T>
-    static void save(Archive& archive, T& data)
-    {
-        typename ::sf::meta::select_save_mode<T>::type(archive, data);
-    }
-
-    template <class Archive, typename T>
-    static void load(Archive& archive, T& data)
-    {
-        typename ::sf::meta::select_load_mode<T>::type(archive, data);
-    }
-
-public:
-    template <typename Base, class Archive, class Derived>
-    static void serialize_base(Archive& archive, Derived& object)
+    template <typename Base, class ArchiveType, class Derived>
+    static void serialize_base(ArchiveType& archive, Derived& object)
     {
         archive & static_cast<Base&>(object);
     }
@@ -685,7 +843,7 @@ public:
     template <class T, SF_REQUIRE(not is_has_inner_traits<T>::value)>
     static trait_type traits() noexcept
     {
-        static_assert(::xxsf_traits<T>::key == ::xxsf_traits<void>::base_key,
+        static_assert(::xxsf_instantiable_traits<T>::key == ::xxsf_instantiable_traits<void>::base_key,
             "Export instantiable traits is not allowed using typeid.");
 
         return static_traits<T>();
@@ -698,9 +856,9 @@ public:
     static trait_type traits() noexcept
 #endif // SF_EXPORT_INSTANTIABLE_DISABLE
     {
-        constexpr auto traits_key = ::xxsf_traits<T>::key;
+        constexpr auto traits_key = ::xxsf_instantiable_traits<T>::key;
 
-        return traits_key == ::xxsf_traits<void>::base_key
+        return traits_key == ::xxsf_instantiable_traits<void>::base_key
              ? static_traits<T>()
              : traits_key;
     }
@@ -995,41 +1153,41 @@ namespace core
 class polymorphic_archive_t
 {
 public:
-    using Archive  = ioarchive_t;
+    using ArchiveType  = ioarchive_t;
     using key_type = ioarchive_t::key_type;
 
     static constexpr key_type max_key = archive_traits::max_key;
 
 public:
-    template <class T> static void save(Archive& archive, T& data)
+    template <class T> static void save(core::ioarchive_t& archive, T& data)
     {
         call<oarchive_traits>(archive, data);
     }
 
-    template <class T> static void load(Archive& archive, T& data)
+    template <class T> static void load(core::ioarchive_t& archive, T& data)
     {
         call<iarchive_traits>(archive, data);
     }
 
 private:
-    template <class Archive> struct is_valid_archive
-        : std::integral_constant<bool, archive_traits_key_t<Archive>::key != archive_traits::base_key> {};
+    template <class ArchiveType> struct is_valid_archive
+        : std::integral_constant<bool, archive_traits_key_t<ArchiveType>::key != archive_traits::base_key> {};
 
 private:
     template <template <key_type> class archive_traits,
               key_type Key, class T, SF_REQUIRE(Key == max_key)>
-    static void call(Archive& archive, T& data)
+    static void call(core::ioarchive_t& archive, T& data)
     {
         throw "The read/write archive has invalid type key.";
     }
 
     template <template <key_type> class archive_traits,
               key_type Key = 0, class T, SF_REQUIRE(Key < max_key)>
-    static void call(Archive& archive, T& data)
+    static void call(core::ioarchive_t& archive, T& data)
     {
         using DerivedArchive = typename archive_traits<Key>::type;
 
-        if (archive_traits_key_t<DerivedArchive>::key == archive.trait())
+        if (archive_traits_key_t<DerivedArchive>::key == archive.trait)
             return try_call<DerivedArchive>(archive, data);
 
         call<archive_traits, Key + 1>(archive, data);
@@ -1037,79 +1195,69 @@ private:
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(not is_valid_archive<DerivedArchive>::value)>
-    static void try_call(Archive& archive, T& data)
+    static void try_call(core::ioarchive_t& archive, T& data)
     {
         throw "The read/write archive was not registered.";
     }
 
     template <class DerivedArchive, class T,
               SF_REQUIRE(is_valid_archive<DerivedArchive>::value)>
-    static void try_call(Archive& archive, T& data)
+    static void try_call(core::ioarchive_t& archive, T& data)
     {
+    #ifdef SF_DEBUG
         auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
 
-    #ifdef SF_DEBUG
         if (derived_archive == nullptr)
             throw "The read/write archive was registered incorrect.";
+    #else
+        auto derived_archive = static_cast<DerivedArchive*>(&archive);
     #endif // SF_DEBUG
-
-        proccess(*derived_archive, data);
+        try_call_impl<DerivedArchive>(*derived_archive, data);
     }
 
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(meta::all<meta::is_oarchive<DerivedArchive>,
-                                   meta::is_has_any_save_mode<T>>::value)>
-    static void proccess(DerivedArchive& archive, T& object)
+    template <class DerivedArchive, class T>
+    static void try_call_impl(iarchive_common_t& archive, T& data)
     {
-        ::xxsf::save(archive, object);
+        ::xxsf_load<T>(static_cast<DerivedArchive&>(archive), data);
     }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(meta::all<meta::is_iarchive<DerivedArchive>,
-                                   meta::is_has_any_load_mode<T>>::value)>
-    static void proccess(DerivedArchive& archive, T& object)
+    template <class DerivedArchive, class T>
+    static void try_call_impl(oarchive_common_t& archive, T& data)
     {
-        ::xxsf::load(archive, object);
-    }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(meta::all<meta::is_ioarchive<DerivedArchive>,
-                                   meta::negation<meta::is_has_any_save_mode<T>>,
-                                   meta::negation<meta::is_has_any_load_mode<T>>>::value)>
-    static void proccess(DerivedArchive& archive, T& data)
-    {
-        process_data(archive, data);
-    }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(meta::is_registered_extern<T>::value)>
-    static void process_data(DerivedArchive& archive, T& data)
-    {
-        archive & data;
-    }
-
-    template <class DerivedArchive, class T,
-              SF_REQUIRE(not meta::is_registered_extern<T>::value)>
-    static void process_data(DerivedArchive& archive, T& data)
-    {
-        throw "The 'T' type is unregistered.";
+        ::xxsf_save<T>(static_cast<DerivedArchive&>(archive), data);
     }
 };
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::is_archive<Archive>::value)>
-Archive& operator<< (Archive& archive, T&& data)
+template <typename T,
+          SF_REQUIRE(meta::is_unsupported<T>::value)>
+ioarchive_t& operator& (ioarchive_t& archive, T const& unsupported)
 {
-    polymorphic_archive_t::save(archive, data);
+    static_assert(meta::to_false<T>(),
+        "The 'T' is an unsupported type for the 'sf::ioarchive_t'.");
+
     return archive;
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::is_archive<Archive>::value)>
-Archive& operator>> (Archive& archive, T&& data)
+template <typename T,
+          SF_REQUIRE(not meta::is_unsupported<T>::value)>
+ioarchive_t& operator<< (ioarchive_t& archive, T const& data)
 {
-    polymorphic_archive_t::load(archive, data);
+    polymorphic_archive_t::save(archive, const_cast<T&>(data));
     return archive;
+}
+
+template <typename T,
+          SF_REQUIRE(not meta::is_unsupported<T>::value)>
+ioarchive_t& operator>> (ioarchive_t& archive, T const& data)
+{
+    polymorphic_archive_t::load(archive, const_cast<T&>(data));
+    return archive;
+}
+
+template <typename T,
+          SF_REQUIRE(not meta::is_unsupported<T>::value)>
+ioarchive_t& operator& (ioarchive_t& archive, T const& data)
+{
+    return archive.readonly ? archive >> data : archive << data;
 }
 
 } // namespace core
@@ -1138,7 +1286,7 @@ struct instantiable_t { virtual ~instantiable_t() = default; };
 
 #define SERIALIZATION_TRAITS(...)                                                                       \
     private:                                                                                            \
-    using xxkey_type = ::xxsf_traits<void>::key_type;                                                   \
+    using xxkey_type = ::xxsf_instantiable_traits<void>::key_type;                                      \
     static constexpr xxkey_type xxstatic_traits() noexcept { return SF_STATIC_HASH(#__VA_ARGS__); }     \
     virtual xxkey_type xxtrait() const noexcept { return ::xxsf::traits<__VA_ARGS__>(); }               \
     public:
@@ -1152,7 +1300,7 @@ namespace dynamic
 class instantiable_registry_t
 {
 public:
-    using key_type          = ::xxsf_traits<void>::key_type;
+    using key_type          = ::xxsf_instantiable_traits<void>::key_type;
     using instantiable_type = INSTANTIABLE_TYPE;
     using archive_type      = core::ioarchive_t;
 
@@ -1258,16 +1406,16 @@ public:
         return registry(key).cast_raw(address);
     }
 
-    template <typename Pointer,
-              SF_REQUIRE(meta::is_has_any_save_mode<typename meta::dereference<Pointer>::type>::value)>
+    template <typename Pointer/*,
+              SF_REQUIRE(meta::is_has_any_save_mode<typename meta::dereference<Pointer>::type>::value)*/>
     void save(archive_type& archive, Pointer& pointer)
     {
         const auto key = ::xxsf::traits(*pointer);
         registry(key).save(archive, pointer);
     }
 
-    template <typename Pointer,
-              SF_REQUIRE(meta::is_has_any_load_mode<typename meta::dereference<Pointer>::type>::value)>
+    template <typename Pointer/*,
+              SF_REQUIRE(meta::is_has_any_load_mode<typename meta::dereference<Pointer>::type>::value)*/>
     void load(archive_type& archive, Pointer& pointer)
     {
         const auto key = ::xxsf::traits(*pointer);
@@ -1471,12 +1619,12 @@ namespace dynamic
 class extern_registry_t
 {
 public:
-    using key_type = ::xxsf_traits<void>::key_type;
+    using key_type = ::xxsf_instantiable_traits<void>::key_type;
 
 public:
-    template <class Archive, typename T,
+    template <class ArchiveType, typename T,
               SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static key_type save_key(Archive& archive, T& pointer)
+    static key_type save_key(ArchiveType& archive, T& pointer)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -1487,9 +1635,9 @@ public:
         return key;
     }
 
-    template <class Archive, typename T,
+    template <class ArchiveType, typename T,
               SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static key_type load_key(Archive& archive, T& pointer)
+    static key_type load_key(ArchiveType& archive, T& pointer)
     {
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
@@ -1640,7 +1788,7 @@ namespace tracking
 
 struct hierarchy_t {};
 
-template <typename KeyType, typename TraitsType = ::xxsf_traits<void>::key_type>
+template <typename KeyType, typename TraitsType = ::xxsf_instantiable_traits<void>::key_type>
 using hierarchy_track_t = std::unordered_map<std::pair<KeyType, TraitsType>, bool, detail::pair_hash_t<TraitsType>>;
 
 } // namespace tracking
@@ -1768,8 +1916,6 @@ template <class StreamWrapper,
           class Registry = dynamic::extern_registry_t>
 class oarchive_t : public core::ioarchive_t, public core::oarchive_common_t
 {
-    SERIALIZATION_ARCHIVE(oarchive_t)
-
 public:
     using TrackingKeyType = std::uintptr_t;
     using TrackingTable = std::unordered_map<TrackingKeyType, bool>;
@@ -1805,10 +1951,13 @@ public:
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator<< (T&& data) -> oarchive_t&;
+    auto operator<< (T const& data) -> oarchive_t&;
+
+    template <typename T>
+    auto operator& (T const& data) -> oarchive_t&;
 
     template <typename T, typename... Tn>
-    auto operator() (T& data, Tn&... data_n) -> oarchive_t&;
+    auto operator() (T const& data, Tn const&... data_n) -> oarchive_t&;
 
     auto operator() () noexcept -> oarchive_t& { return *this; }
 };
@@ -1839,45 +1988,31 @@ oarchive_t<StreamWrapper, Registry> oarchive(OutStream& stream)
 template <class StreamWrapper, class Registry>
 template <typename OutStream>
 oarchive_t<StreamWrapper, Registry>::oarchive_t(OutStream& stream)
-    : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
+    : core::ioarchive_t(core::archive_traits_key_t<oarchive_t>::key, false)
+    , archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T>
-auto oarchive_t<StreamWrapper, Registry>::operator<< (T&& data) -> oarchive_t&
+auto oarchive_t<StreamWrapper, Registry>::operator<< (T const& data) -> oarchive_t&
 {
-    return (*this) & std::forward<T>(data);
+    return operator()(data);
+}
+
+template <class StreamWrapper, class Registry>
+template <typename T>
+auto oarchive_t<StreamWrapper, Registry>::operator& (T const& data) -> oarchive_t&
+{
+    return operator()(data);
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> oarchive_t&
+auto oarchive_t<StreamWrapper, Registry>::operator() (T const& data, Tn const&... data_n) -> oarchive_t&
 {
-    (*this) & data;
+    ::xxsf_save<T>(*this, const_cast<T&>(data));
     return operator()(data_n...);
-}
-
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                               meta::is_unsupported<T>>::value)>
-Archive& operator& (Archive& archive, T& unsupported)
-{
-    static_assert(meta::to_false<T>(),
-        "The 'T' is an unsupported type for the 'sf::oarchive_t'.");
-
-    return archive;
-}
-
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
-                               meta::negation<meta::is_registered_extern<T>>>::value)>
-Archive& operator& (Archive& archive, T& unregistered)
-{
-    static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'sf::oarchive_t'.");
-
-    return archive;
 }
 
 } // namespace sf
@@ -1889,8 +2024,6 @@ template <class StreamWrapper,
           class Registry = dynamic::extern_registry_t>
 class iarchive_t : public core::ioarchive_t, public core::iarchive_common_t
 {
-    SERIALIZATION_ARCHIVE(iarchive_t)
-
 private:
     template <typename VoidPointer>
     struct track_data_t { VoidPointer address = nullptr; };
@@ -1937,10 +2070,13 @@ public:
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator>> (T&& data) -> iarchive_t&;
+    auto operator>> (T const& data) -> iarchive_t&;
+
+    template <typename T>
+    auto operator& (T const& data) -> iarchive_t&;
 
     template <typename T, typename... Tn>
-    auto operator() (T& data, Tn&... data_n) -> iarchive_t&;
+    auto operator() (T const& data, Tn const&... data_n) -> iarchive_t&;
 
     auto operator() () -> iarchive_t& { return *this; }
 };
@@ -1971,75 +2107,32 @@ iarchive_t<StreamWrapper, Registry> iarchive(InStream& stream)
 template <class StreamWrapper, class Registry>
 template <typename InStream>
 iarchive_t<StreamWrapper, Registry>::iarchive_t(InStream& stream)
-    : archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
+    : core::ioarchive_t(core::archive_traits_key_t<iarchive_t>::key, true)
+    , archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T>
-auto iarchive_t<StreamWrapper, Registry>::operator>> (T&& data) -> iarchive_t&
+auto iarchive_t<StreamWrapper, Registry>::operator>> (T const& data) -> iarchive_t&
 {
-    return (*this) & std::forward<T>(data);
+    return operator()(data);
+}
+
+template <class StreamWrapper, class Registry>
+template <typename T>
+auto iarchive_t<StreamWrapper, Registry>::operator& (T const& data) -> iarchive_t&
+{
+    return operator()(data);
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto iarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> iarchive_t&
+auto iarchive_t<StreamWrapper, Registry>::operator() (T const& data, Tn const&... data_n) -> iarchive_t&
 {
-    (*this) & data;
+    ::xxsf_load<T>(*this, const_cast<T&>(data));
     return operator()(data_n...);
 }
-
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::is_unsupported<T>>::value)>
-Archive& operator& (Archive& archive, T& unsupported)
-{
-    static_assert(meta::to_false<T>(),
-        "The 'T' is an unsupported type for the 'sf::iarchive_t'.");
-
-    return archive;
-}
-
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
-                              meta::negation<meta::is_registered_extern<T>>>::value)>
-Archive& operator& (Archive& archive, T& unregistered)
-{
-    static_assert(meta::to_false<T>(),
-        "The 'T' is an unregistered type for the 'sf::iarchive_t'.");
-
-    return archive;
-}
-
-} // namespace sf
-
-#define EXTERN_CONDITIONAL_SERIALIZATION(mode, parameter, ...)                                          \
-    template <class Archive, typename T,                                                                \
-              SF_REQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                \
-                                         ::sf::meta::is_registered_extern<T>,                           \
-                                         std::integral_constant<bool, bool(__VA_ARGS__)>>::value)>      \
-    Archive& operator& (Archive& archive, T& parameter)
-
-// require TYPE_REGISTRY before use if not def SF_TYPE_REGISTRY_DISABLE
-#define EXTERN_SERIALIZATION(mode, parameter, ...)                                                      \
-    template <class Archive,                                                                            \
-              SF_REQUIRE(::sf::meta::all<::sf::meta::is_##mode<Archive>,                                \
-                                        ::sf::meta::is_registered_extern<__VA_ARGS__>>::value)>         \
-    Archive& operator& (Archive& archive, __VA_ARGS__& parameter)
-
-namespace sf
-{
-
-namespace meta
-{
-
-template <class T> struct is_save : is_oarchive<T> {};
-template <class T> struct is_load : is_iarchive<T> {};
-
-template <class T> struct is_saveload : is_ioarchive<T> {};
-
-} // namespace meta
 
 } // namespace sf
 
@@ -2060,33 +2153,19 @@ template <typename T> struct is_apply_functor : std::is_base_of<apply::apply_fun
 
 } // namespace meta
 
-// inline namespace common also used in namespace library
-inline namespace common
-{
-
-template <typename Archive, typename T,
-          typename dT = typename std::decay<T>::type, // T can be lvalue
-          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
-                               meta::is_registered_extern<dT>,
-                               meta::is_apply_functor<dT>>::value)>
-Archive& operator& (Archive& archive, T&& apply_functor)
-{
-    apply_functor(archive);
-    return archive;
-}
-
-} // inline namespace common
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_apply_functor<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, apply_functor, ::sf::meta::is_apply_functor<typename std::decay<T>::type>::value)
+{
+    apply_functor(archive);
+}
 
 namespace sf
 {
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
-void binary(Archive& archive, T& data)
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
+void binary(ArchiveType& archive, T& data)
 {
     archive.stream().call(std::addressof(data), sizeof(T));
 }
@@ -2101,8 +2180,8 @@ struct binary_functor_t : apply_functor_t
 
     binary_functor_t(T& data) noexcept : data(data) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { binary(archive, data); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { binary(archive, data); }
 };
 
 } // namespace apply
@@ -2117,31 +2196,31 @@ namespace sf
 namespace detail
 {
 
-template <class Archive, typename T, typename KeyType,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T, typename KeyType,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_save(Archive& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
+void native_save(ArchiveType& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
 
-template <class Archive, typename T, typename KeyType,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T, typename KeyType,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::is_pointer_to_polymorphic<T>>::value)>
-void native_save(Archive& archive, T& pointer, KeyType track_key)
+void native_save(ArchiveType& archive, T& pointer, KeyType track_key)
 {
     archive.registry().save_key(archive, pointer); // write class info
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address) noexcept
+void native_load(ArchiveType& archive, T& pointer, memory::void_ptr<T>& address) noexcept
 {
     memory::assign<typename meta::dereference<T>::type>(pointer, address);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address)
+void native_load(ArchiveType& archive, T& pointer, memory::void_ptr<T>& address)
 {
     auto& registry = archive.registry();
 
@@ -2156,10 +2235,10 @@ void native_load(Archive& archive, T& pointer, memory::void_ptr<T>& address)
 namespace sf
 {
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(Archive& archive, T& pointer)
+void strict(ArchiveType& archive, T& pointer)
 {
     if (pointer == nullptr)
         throw "The write pointer must be allocated.";
@@ -2167,10 +2246,10 @@ void strict(Archive& archive, T& pointer)
     archive & (*pointer);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(Archive& archive, T& pointer, memory::void_ptr<T>& cache)
+void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     using item_type = typename memory::ptr_traits<T>::item;
 
@@ -2185,10 +2264,10 @@ void strict(Archive& archive, T& pointer, memory::void_ptr<T>& cache)
     archive & (*pointer);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(Archive& archive, T& pointer)
+void strict(ArchiveType& archive, T& pointer)
 {
     auto& registry = archive.registry();
 
@@ -2196,10 +2275,10 @@ void strict(Archive& archive, T& pointer)
     registry.save(archive, pointer, id);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(Archive& archive, T& pointer, memory::void_ptr<T>& cache)
+void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
 
@@ -2208,10 +2287,10 @@ void strict(Archive& archive, T& pointer, memory::void_ptr<T>& cache)
 }
 
 // verison without cache using
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_serializable_pointer<T>>::value)>
-void strict(Archive& archive, T& pointer)
+void strict(ArchiveType& archive, T& pointer)
 {
     memory::void_ptr<T> cache = nullptr;
     strict(archive, pointer, cache);
@@ -2220,11 +2299,11 @@ void strict(Archive& archive, T& pointer)
 namespace detail
 {
 
-template <class Archive, typename T,
-          typename KeyType = typename Archive::TrackingKeyType,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T,
+          typename KeyType = typename ArchiveType::TrackingKeyType,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::is_serializable_pointer<T>>::value)>
-KeyType refer_key(Archive& archive, T& pointer)
+KeyType refer_key(ArchiveType& archive, T& pointer)
 {
     auto pure = memory::pure(pointer);
     auto key = reinterpret_cast<KeyType>(memory::raw(pure));
@@ -2233,11 +2312,11 @@ KeyType refer_key(Archive& archive, T& pointer)
     return key;
 }
 
-template <class Archive, typename T,
-          typename KeyType = typename Archive::TrackingKeyType,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          typename KeyType = typename ArchiveType::TrackingKeyType,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_serializable_pointer<T>>::value)>
-KeyType refer_key(Archive& archive, T& pointer)
+KeyType refer_key(ArchiveType& archive, T& pointer)
 {
 #ifdef SF_DEBUG
     if (pointer != nullptr)
@@ -2262,8 +2341,8 @@ struct strict_functor_t : public apply_functor_t
 
     strict_functor_t(T& data) noexcept : data(data) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { strict(archive, data); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { strict(archive, data); }
 };
 
 } // namespace apply
@@ -2279,26 +2358,26 @@ namespace sf
 namespace tracking
 {
 
-template <typename TrackType, class Archive, typename KeyType,
-          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
-bool is_track(Archive& archive, KeyType key)
+template <typename TrackType, class ArchiveType, typename KeyType,
+          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
+bool is_track(ArchiveType& archive, KeyType key)
 {
     auto& item = archive.template tracking<TrackType>();
     return item.find(key) != item.end();
 }
 
-template <typename TrackType, class Archive, typename KeyType,
-          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
-bool is_mixed(Archive& archive, KeyType key)
+template <typename TrackType, class ArchiveType, typename KeyType,
+          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
+bool is_mixed(ArchiveType& archive, KeyType key)
 {
     using reverse_track_type = typename reverse_traits<TrackType>::type;
     return is_track<reverse_track_type>(archive, key);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::is_pointer<T>>::value)>
-void track(Archive& archive, T& pointer)
+void track(ArchiveType& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
 
@@ -2323,12 +2402,12 @@ void track(Archive& archive, T& pointer)
     }
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::negation<meta::is_pointer<T>>>::value)>
-void track(Archive& archive, T& data)
+void track(ArchiveType& archive, T& data)
 {
-    using key_type = typename Archive::TrackingKeyType;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
     auto address = memory::pure(std::addressof(data));
     auto key = reinterpret_cast<key_type>(address);
@@ -2344,10 +2423,10 @@ void track(Archive& archive, T& data)
     archive & data;
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_pointer<T>>::value)>
-void track(Archive& archive, T& pointer)
+void track(ArchiveType& archive, T& pointer)
 {
     using track_type = typename tracking::track_traits<T>::type;
 
@@ -2372,12 +2451,12 @@ void track(Archive& archive, T& pointer)
     }
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::negation<meta::is_pointer<T>>>::value)>
-void track(Archive& archive, T& data)
+void track(ArchiveType& archive, T& data)
 {
-    using key_type = typename Archive::TrackingKeyType;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
     key_type key{};
     archive & key;
@@ -2392,10 +2471,10 @@ void track(Archive& archive, T& data)
     archive & data;
 }
 
-template <class Archive, typename T,
+template <class ArchiveType, typename T,
           SF_REQUIRE(meta::all<meta::is_ioarchive<T>,
                                meta::is_serializable_raw_pointer<T>>::value)>
-void raw(Archive& archive, T& pointer)
+void raw(ArchiveType& archive, T& pointer)
 {
     if (detail::refer_key(archive, pointer)) // serialize refer info
         strict(archive, pointer);
@@ -2413,8 +2492,8 @@ struct track_functor_t : apply_functor_t
 
     track_functor_t(T& data) noexcept : data(data) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { tracking::track(archive, data); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { tracking::track(archive, data); }
 };
 
 template <typename T>
@@ -2424,8 +2503,8 @@ struct raw_functor_t : apply_functor_t
 
     raw_functor_t(T& data) noexcept : data(data) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { tracking::raw(archive, data); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { tracking::raw(archive, data); }
 };
 
 } // namespace apply
@@ -2490,10 +2569,10 @@ namespace compress
 {
 
 // always require compressible type for fast compression
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::is_compressible<T>>::value)>
-void fast(Archive& archive, T& object)
+void fast(ArchiveType& archive, T& object)
 {
     using item_type = typename meta::value<T>::type;
 
@@ -2504,26 +2583,26 @@ void fast(Archive& archive, T& object)
     );
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::is_ioarchive<Archive>::value)>
-void slow(Archive& archive, T& object)
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
+void slow(ArchiveType& archive, T& object)
 {
     for (auto&& item : object)
         archive & item;
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::is_compressible<T>>::value)>
-void zip(Archive& archive, T& object)
+void zip(ArchiveType& archive, T& object)
 {
     fast(archive, object);
 }
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::negation<meta::is_compressible<T>>>::value)>
-void zip(Archive& archive, T& object)
+void zip(ArchiveType& archive, T& object)
 {
     slow(archive, object);
 }
@@ -2532,40 +2611,20 @@ void zip(Archive& archive, T& object)
 
 } // namespace sf
 
-namespace sf
+CONDITIONAL_SERIALIZATION(saveload, number, std::is_arithmetic<T>::value)
 {
-
-// inline namespace common also used in namespace library
-inline namespace common
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, object, meta::is_has_any_save_mode<T>::value)
-{
-    ::xxsf::save(archive, object);
-    return archive;
+    ::sf::binary(archive, number);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, object, meta::is_has_any_load_mode<T>::value)
-{
-    ::xxsf::load(archive, object);
-    return archive;
-}
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, number, std::is_arithmetic<T>::value)
-{
-    binary(archive, number);
-    return archive;
-}
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, enumerator, std::is_enum<T>::value)
+CONDITIONAL_SERIALIZATION(save, enumerator, std::is_enum<T>::value)
 {
     using underlying_type = typename std::underlying_type<T>::type;
     auto value = static_cast<underlying_type>(enumerator);
 
-    return archive & value;
+    archive & value;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, enumerator, std::is_enum<T>::value)
+CONDITIONAL_SERIALIZATION(load, enumerator, std::is_enum<T>::value)
 {
     using underlying_type = typename std::underlying_type<T>::type;
 
@@ -2573,222 +2632,27 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, enumerator, std::is_enum<T>::value)
     archive & buff;
 
     enumerator = static_cast<T>(buff);
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, array, std::is_array<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, array, std::is_array<T>::value)
 {
-    compress::zip(archive, array);
-    return archive;
+    ::sf::compress::zip(archive, array);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, pointer, meta::is_serializable_raw_pointer<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, pointer, ::sf::meta::is_serializable_raw_pointer<T>::value)
 {
 #ifdef SF_PTRTRACK_DISABLE
-    tracking::raw(archive, pointer);
+    ::sf::tracking::raw(archive, pointer);
 #else
-    tracking::track(archive, pointer);
+    ::sf::tracking::track(archive, pointer);
 #endif // SF_PTRTRACK_DISABLE
-
-    return archive;
 }
-
-} // inline namespace common
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::all<::sf::meta::is_has_any_save_mode<T>, ::sf::meta::is_has_any_load_mode<T>>::value)
-
-CONDITIONAL_TYPE_REGISTRY(std::is_arithmetic<T>::value)
-CONDITIONAL_TYPE_REGISTRY(std::is_enum<T>::value)
-CONDITIONAL_TYPE_REGISTRY(std::is_array<T>::value)
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_serializable_raw_pointer<T>::value)
 
 #if __cplusplus >= 201703L
 
-#define SF_CONCAT_IMPL(a, b) a##b
-
-// concatenation of two macro arguments
-#define SF_CONCAT(a, b) SF_CONCAT_IMPL(a, b)
-
-// return first argument from two
-#define SF_FIRST_ARGUMENT(first, ...) first
-
-#define SF_VA_ARGS_SIZE_IMPL_(                                                                          \
-     _1,  _2,  _3,  _4,  _5,  _6,  _7,  _8,  _9, _10, _11, _12, _13, _14, _15, _16,                     \
-    _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32,                     \
-    _33, _34, _35, _36, _37, _38, _39, _40, _41, _42, _43, _44, _45, _46, _47, _48,                     \
-    _49, _50, _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, N, ...) N
-
-#define SF_REVERSE_INTEGER_SEQUENCE                                                                     \
-    63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48,                                     \
-    47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,                                     \
-    31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16,                                     \
-    15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0
-
-#define SF_VA_ARGS_SIZE_IMPL(...) SF_VA_ARGS_SIZE_IMPL_(__VA_ARGS__)
-
-// return __VA_ARGS__ arguments count, for empty __VA_ARGS__ return 1
-#define SF_VA_ARGS_SIZE(...) SF_VA_ARGS_SIZE_IMPL(__VA_ARGS__, SF_REVERSE_INTEGER_SEQUENCE)
-
-// generate repeat sequence macro(1) macro(2) ... macro(count)
-#define SF_REPEAT(macro, count) SF_CONCAT(SF_REPEAT_, count)(macro)
-
-#define SF_REPEAT_0(macro)
-
-#define SF_REPEAT_1(macro) SF_REPEAT_0(macro) macro(1)
-#define SF_REPEAT_2(macro) SF_REPEAT_1(macro) macro(2)
-#define SF_REPEAT_3(macro) SF_REPEAT_2(macro) macro(3)
-#define SF_REPEAT_4(macro) SF_REPEAT_3(macro) macro(4)
-#define SF_REPEAT_5(macro) SF_REPEAT_4(macro) macro(5)
-#define SF_REPEAT_6(macro) SF_REPEAT_5(macro) macro(6)
-#define SF_REPEAT_7(macro) SF_REPEAT_6(macro) macro(7)
-#define SF_REPEAT_8(macro) SF_REPEAT_7(macro) macro(8)
-
-#define SF_REPEAT_9(macro) SF_REPEAT_8(macro) macro(9)
-#define SF_REPEAT_10(macro) SF_REPEAT_9(macro) macro(10)
-#define SF_REPEAT_11(macro) SF_REPEAT_10(macro) macro(11)
-#define SF_REPEAT_12(macro) SF_REPEAT_11(macro) macro(12)
-#define SF_REPEAT_13(macro) SF_REPEAT_12(macro) macro(13)
-#define SF_REPEAT_14(macro) SF_REPEAT_13(macro) macro(14)
-#define SF_REPEAT_15(macro) SF_REPEAT_14(macro) macro(15)
-#define SF_REPEAT_16(macro) SF_REPEAT_15(macro) macro(16)
-
-#define SF_REPEAT_17(macro) SF_REPEAT_16(macro) macro(17)
-#define SF_REPEAT_18(macro) SF_REPEAT_17(macro) macro(18)
-#define SF_REPEAT_19(macro) SF_REPEAT_18(macro) macro(19)
-#define SF_REPEAT_20(macro) SF_REPEAT_19(macro) macro(20)
-#define SF_REPEAT_21(macro) SF_REPEAT_20(macro) macro(21)
-#define SF_REPEAT_22(macro) SF_REPEAT_21(macro) macro(22)
-#define SF_REPEAT_23(macro) SF_REPEAT_22(macro) macro(23)
-#define SF_REPEAT_24(macro) SF_REPEAT_23(macro) macro(24)
-
-#define SF_REPEAT_25(macro) SF_REPEAT_24(macro) macro(25)
-#define SF_REPEAT_26(macro) SF_REPEAT_25(macro) macro(26)
-#define SF_REPEAT_27(macro) SF_REPEAT_26(macro) macro(27)
-#define SF_REPEAT_28(macro) SF_REPEAT_27(macro) macro(28)
-#define SF_REPEAT_29(macro) SF_REPEAT_28(macro) macro(29)
-#define SF_REPEAT_30(macro) SF_REPEAT_29(macro) macro(30)
-#define SF_REPEAT_31(macro) SF_REPEAT_30(macro) macro(31)
-#define SF_REPEAT_32(macro) SF_REPEAT_31(macro) macro(32)
-
-#define SF_REPEAT_33(macro) SF_REPEAT_32(macro) macro(33)
-#define SF_REPEAT_34(macro) SF_REPEAT_33(macro) macro(34)
-#define SF_REPEAT_35(macro) SF_REPEAT_34(macro) macro(35)
-#define SF_REPEAT_36(macro) SF_REPEAT_35(macro) macro(36)
-#define SF_REPEAT_37(macro) SF_REPEAT_36(macro) macro(37)
-#define SF_REPEAT_38(macro) SF_REPEAT_37(macro) macro(38)
-#define SF_REPEAT_39(macro) SF_REPEAT_38(macro) macro(39)
-#define SF_REPEAT_40(macro) SF_REPEAT_39(macro) macro(40)
-
-#define SF_REPEAT_41(macro) SF_REPEAT_40(macro) macro(41)
-#define SF_REPEAT_42(macro) SF_REPEAT_41(macro) macro(42)
-#define SF_REPEAT_43(macro) SF_REPEAT_42(macro) macro(43)
-#define SF_REPEAT_44(macro) SF_REPEAT_43(macro) macro(44)
-#define SF_REPEAT_45(macro) SF_REPEAT_44(macro) macro(45)
-#define SF_REPEAT_46(macro) SF_REPEAT_45(macro) macro(46)
-#define SF_REPEAT_47(macro) SF_REPEAT_46(macro) macro(47)
-#define SF_REPEAT_48(macro) SF_REPEAT_47(macro) macro(48)
-
-#define SF_REPEAT_49(macro) SF_REPEAT_48(macro) macro(49)
-#define SF_REPEAT_50(macro) SF_REPEAT_49(macro) macro(50)
-#define SF_REPEAT_51(macro) SF_REPEAT_50(macro) macro(51)
-#define SF_REPEAT_52(macro) SF_REPEAT_51(macro) macro(52)
-#define SF_REPEAT_53(macro) SF_REPEAT_52(macro) macro(53)
-#define SF_REPEAT_54(macro) SF_REPEAT_53(macro) macro(54)
-#define SF_REPEAT_55(macro) SF_REPEAT_54(macro) macro(55)
-#define SF_REPEAT_56(macro) SF_REPEAT_55(macro) macro(56)
-
-#define SF_REPEAT_57(macro) SF_REPEAT_56(macro) macro(57)
-#define SF_REPEAT_58(macro) SF_REPEAT_57(macro) macro(58)
-#define SF_REPEAT_59(macro) SF_REPEAT_58(macro) macro(59)
-#define SF_REPEAT_60(macro) SF_REPEAT_59(macro) macro(60)
-#define SF_REPEAT_61(macro) SF_REPEAT_60(macro) macro(61)
-#define SF_REPEAT_62(macro) SF_REPEAT_61(macro) macro(62)
-#define SF_REPEAT_63(macro) SF_REPEAT_62(macro) macro(63)
-#define SF_REPEAT_64(macro) SF_REPEAT_63(macro) macro(64)
-// and etc.
-
-// generate placeholder sequence _0, _1, _2, ..., _count
-#define SF_PLACEHOLDERS(count) SF_CONCAT(SF_PLACEHOLDER_, count)()
-
-#define SF_PLACEHOLDER_1() _0
-#define SF_PLACEHOLDER_2() SF_PLACEHOLDER_1(), _1
-#define SF_PLACEHOLDER_3() SF_PLACEHOLDER_2(), _2
-#define SF_PLACEHOLDER_4() SF_PLACEHOLDER_3(), _3
-#define SF_PLACEHOLDER_5() SF_PLACEHOLDER_4(), _4
-#define SF_PLACEHOLDER_6() SF_PLACEHOLDER_5(), _5
-#define SF_PLACEHOLDER_7() SF_PLACEHOLDER_6(), _6
-#define SF_PLACEHOLDER_8() SF_PLACEHOLDER_7(), _7
-
-#define SF_PLACEHOLDER_9() SF_PLACEHOLDER_8(), _8
-#define SF_PLACEHOLDER_10() SF_PLACEHOLDER_9(), _9
-#define SF_PLACEHOLDER_11() SF_PLACEHOLDER_10(), _10
-#define SF_PLACEHOLDER_12() SF_PLACEHOLDER_11(), _11
-#define SF_PLACEHOLDER_13() SF_PLACEHOLDER_12(), _12
-#define SF_PLACEHOLDER_14() SF_PLACEHOLDER_13(), _13
-#define SF_PLACEHOLDER_15() SF_PLACEHOLDER_14(), _14
-#define SF_PLACEHOLDER_16() SF_PLACEHOLDER_15(), _15
-
-#define SF_PLACEHOLDER_17() SF_PLACEHOLDER_16(), _16
-#define SF_PLACEHOLDER_18() SF_PLACEHOLDER_17(), _17
-#define SF_PLACEHOLDER_19() SF_PLACEHOLDER_18(), _18
-#define SF_PLACEHOLDER_20() SF_PLACEHOLDER_19(), _19
-#define SF_PLACEHOLDER_21() SF_PLACEHOLDER_20(), _20
-#define SF_PLACEHOLDER_22() SF_PLACEHOLDER_21(), _21
-#define SF_PLACEHOLDER_23() SF_PLACEHOLDER_22(), _22
-#define SF_PLACEHOLDER_24() SF_PLACEHOLDER_23(), _23
-
-#define SF_PLACEHOLDER_25() SF_PLACEHOLDER_24(), _24
-#define SF_PLACEHOLDER_26() SF_PLACEHOLDER_25(), _25
-#define SF_PLACEHOLDER_27() SF_PLACEHOLDER_26(), _26
-#define SF_PLACEHOLDER_28() SF_PLACEHOLDER_27(), _27
-#define SF_PLACEHOLDER_29() SF_PLACEHOLDER_28(), _28
-#define SF_PLACEHOLDER_30() SF_PLACEHOLDER_29(), _29
-#define SF_PLACEHOLDER_31() SF_PLACEHOLDER_30(), _30
-#define SF_PLACEHOLDER_32() SF_PLACEHOLDER_31(), _31
-
-#define SF_PLACEHOLDER_33() SF_PLACEHOLDER_32(), _32
-#define SF_PLACEHOLDER_34() SF_PLACEHOLDER_33(), _33
-#define SF_PLACEHOLDER_35() SF_PLACEHOLDER_34(), _34
-#define SF_PLACEHOLDER_36() SF_PLACEHOLDER_35(), _35
-#define SF_PLACEHOLDER_37() SF_PLACEHOLDER_36(), _36
-#define SF_PLACEHOLDER_38() SF_PLACEHOLDER_37(), _37
-#define SF_PLACEHOLDER_39() SF_PLACEHOLDER_38(), _38
-#define SF_PLACEHOLDER_40() SF_PLACEHOLDER_39(), _39
-
-#define SF_PLACEHOLDER_41() SF_PLACEHOLDER_40(), _40
-#define SF_PLACEHOLDER_42() SF_PLACEHOLDER_41(), _41
-#define SF_PLACEHOLDER_43() SF_PLACEHOLDER_42(), _42
-#define SF_PLACEHOLDER_44() SF_PLACEHOLDER_43(), _43
-#define SF_PLACEHOLDER_45() SF_PLACEHOLDER_44(), _44
-#define SF_PLACEHOLDER_46() SF_PLACEHOLDER_45(), _45
-#define SF_PLACEHOLDER_47() SF_PLACEHOLDER_46(), _46
-#define SF_PLACEHOLDER_48() SF_PLACEHOLDER_47(), _47
-
-#define SF_PLACEHOLDER_49() SF_PLACEHOLDER_48(), _48
-#define SF_PLACEHOLDER_50() SF_PLACEHOLDER_49(), _49
-#define SF_PLACEHOLDER_51() SF_PLACEHOLDER_50(), _50
-#define SF_PLACEHOLDER_52() SF_PLACEHOLDER_51(), _51
-#define SF_PLACEHOLDER_53() SF_PLACEHOLDER_52(), _52
-#define SF_PLACEHOLDER_54() SF_PLACEHOLDER_53(), _53
-#define SF_PLACEHOLDER_55() SF_PLACEHOLDER_54(), _54
-#define SF_PLACEHOLDER_56() SF_PLACEHOLDER_55(), _55
-
-#define SF_PLACEHOLDER_57() SF_PLACEHOLDER_56(), _56
-#define SF_PLACEHOLDER_58() SF_PLACEHOLDER_57(), _57
-#define SF_PLACEHOLDER_59() SF_PLACEHOLDER_58(), _58
-#define SF_PLACEHOLDER_60() SF_PLACEHOLDER_59(), _59
-#define SF_PLACEHOLDER_61() SF_PLACEHOLDER_60(), _60
-#define SF_PLACEHOLDER_62() SF_PLACEHOLDER_61(), _61
-#define SF_PLACEHOLDER_63() SF_PLACEHOLDER_62(), _62
-#define SF_PLACEHOLDER_64() SF_PLACEHOLDER_63(), _63
-// and etc.
-
 #define SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                      \
-    template <class Archive, typename T>                                                                \
-    void aggregate_impl(Archive& archive, T& object, std::integral_constant<std::size_t, count>) {      \
+    template <class ArchiveType, typename T>                                                            \
+    void aggregate_impl(ArchiveType& archive, T& object, std::integral_constant<std::size_t, count>) {  \
         auto& [SF_PLACEHOLDERS(count)] = object;                                                        \
         archive(SF_PLACEHOLDERS(count));                                                                \
     }
@@ -2800,42 +2664,28 @@ namespace meta
 {
 
 template <typename T> struct is_serializable_aggregate
-    : all<is_aggregate<T>,
-          negation<std::is_union<T>>,
-          negation<meta::is_has_any_save_mode<T>>,
-          negation<meta::is_has_any_save_mode<T>>> {};
+    : all<is_aggregate<T>, negation<std::is_union<T>>> {};
 
 } // namespace meta
 
 namespace detail
 {
 
-template <class Archive, typename T>
-void aggregate_impl(Archive& archive, T& object, std::integral_constant<std::size_t, 0>) noexcept { /*pass*/ }
+template <class ArchiveType, typename T>
+void aggregate_impl(ArchiveType& archive, T& object, std::integral_constant<std::size_t, 0>) noexcept { /*pass*/ }
 
 SF_REPEAT(SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
 } // namespace detail
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::is_aggregate<T>>::value)>
-void aggregate(Archive& archive, T& object)
+void aggregate(ArchiveType& archive, T& object)
 {
     constexpr auto size = meta::aggregate_size<T>::value;
     detail::aggregate_impl(archive, object, std::integral_constant<std::size_t, size>{});
 }
-
-inline namespace common
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, object, meta::is_serializable_aggregate<T>::value)
-{
-    aggregate(archive, object);
-    return archive;
-}
-
-} // inline namespace common
 
 namespace apply
 {
@@ -2847,8 +2697,8 @@ struct aggregate_functor_t : apply_functor_t
 
     aggregate_functor_t(T& object) noexcept : object(object) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { aggregate(archive, object); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { aggregate(archive, object); }
 };
 
 } // namespace apply
@@ -2857,57 +2707,42 @@ template <typename T> apply::aggregate_functor_t<T> aggregate(T& object) noexcep
 
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_serializable_aggregate<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, object, ::sf::meta::is_serializable_aggregate<T>::value)
+{
+    ::sf::aggregate(archive, object);
+}
 
 // clean up
 #undef SF_AGGREGATE_IMPLEMENTATION_GENERIC
 
 #endif // if
 
-namespace sf
+CONDITIONAL_SERIALIZATION(saveload, data, std::is_union<T>::value)
 {
-
-namespace meta
-{
-
-template <typename T> struct is_serializable_union
-    : all<std::is_union<T>,
-          negation<meta::is_has_any_save_mode<T>>,
-          negation<meta::is_has_any_save_mode<T>>> {};
-
-} // namespace meta
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, data, meta::is_serializable_union<T>::value)
-{
-    binary(archive, data);
-    return archive;
+    ::sf::binary(archive, data);
 }
 
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_serializable_union<T>::value)
-
 namespace sf
 {
 
-template <class Base, class Archive, class Derived,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class Base, class ArchiveType, class Derived,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                std::is_base_of<Base, Derived>>::value)>
-void base(Archive& archive, Derived& object)
+void base(ArchiveType& archive, Derived& object)
 {
     ::xxsf::serialize_base<Base>(archive, object);
 }
 
-template <class Base, class Archive, class Derived,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class Base, class ArchiveType, class Derived,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                std::is_base_of<Base, Derived>>::value)>
-void virtual_base(Archive& archive, Derived& object)
+void virtual_base(ArchiveType& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
     if (::xxsf::traits(object) == ::xxsf::template traits<Derived>())
         base<Base>(archive, object);
 #else
-    using key_type = typename Archive::TrackingKeyType;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
     auto address = memory::pure(std::addressof(object));
 
@@ -2928,16 +2763,16 @@ void virtual_base(Archive& archive, Derived& object)
 namespace detail
 {
 
-template <class Base, class Archive, class Derived,
+template <class Base, class ArchiveType, class Derived,
           SF_REQUIRE(not meta::is_virtual_base_of<Base, Derived>::value)>
-void native_base(Archive& archive, Derived& object_with_base)
+void native_base(ArchiveType& archive, Derived& object_with_base)
 {
     base<Base>(archive, object_with_base);
 }
 
-template <class Base, class Archive, class Derived,
+template <class Base, class ArchiveType, class Derived,
           SF_REQUIRE(meta::is_virtual_base_of<Base, Derived>::value)>
-void native_base(Archive& archive, Derived& object_with_virtual_base)
+void native_base(ArchiveType& archive, Derived& object_with_virtual_base)
 {
     virtual_base<Base>(archive, object_with_virtual_base);
 }
@@ -2954,8 +2789,8 @@ struct base_functor_t : apply_functor_t
 
     base_functor_t(Derived& object) noexcept : object(object) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { base<Base>(archive, object); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { base<Base>(archive, object); }
 };
 
 template <class Derived, class Base>
@@ -2965,8 +2800,8 @@ struct virtual_base_functor_t : apply_functor_t
 
     virtual_base_functor_t(Derived& object) noexcept : object(object) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { virtual_base<Base>(archive, object); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { virtual_base<Base>(archive, object); }
 };
 
 } // namespace apply
@@ -2980,14 +2815,14 @@ template <class Base, class Derived,
 apply::virtual_base_functor_t<Derived, Base> virtual_base(Derived& object) noexcept { return { object }; }
 
 // default empty impl
-template <class Archive, class Derived>
-void hierarchy(Archive& archive, Derived& object) noexcept { /*pass*/ }
+template <class ArchiveType, class Derived>
+void hierarchy(ArchiveType& archive, Derived& object) noexcept { /*pass*/ }
 
 // Variadic native_base function
-template <class Base, class... Base_n, class Archive, class Derived,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class Base, class... Base_n, class ArchiveType, class Derived,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::is_derived_of<Derived, Base, Base_n...>>::value)>
-void hierarchy(Archive& archive, Derived& object)
+void hierarchy(ArchiveType& archive, Derived& object)
 {
     detail::native_base<Base>(archive, object);
     hierarchy<Base_n...>(archive, object);
@@ -3003,8 +2838,8 @@ struct hierarchy_functor_t : apply_functor_t
 
     hierarchy_functor_t(Derived& object) noexcept : object(object) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { hierarchy<Base, Base_n...>(archive, object); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { hierarchy<Base, Base_n...>(archive, object); }
 };
 
 } // namespace apply
@@ -3040,7 +2875,6 @@ namespace sf
 template <typename T> void serializable()
 {
     static_assert(not meta::is_unsupported<T>::value, "The 'T' is an unsupported type for serialization.");
-    static_assert(meta::is_registered_extern<T>::value, "The 'T' is an unregistered type for serialization.");
 
     dynamic::instantiable_fixture_t<T>::call();
 
@@ -3074,20 +2908,20 @@ EXPORT_SERIALIZATION_ARCHIVE(1, o, oarchive_t<wrapper::ofile_stream_t<std::ofstr
 namespace sf
 {
 
-template <typename T>
+template <typename ElementType>
 class alias_t
 {
 private:
-    T* data_;
+    ElementType* data_;
 
 public:
-    using type = T;
+    using element_type = ElementType;
 
     // DONT use dereferencing of null data before rebinding
     alias_t() noexcept : data_(nullptr) {}
 
     template <typename dT,
-              SF_REQUIRE(meta::is_static_castable<dT*, T*>::value)>
+              SF_REQUIRE(meta::is_static_castable<dT*, element_type*>::value)>
     alias_t(dT& data) noexcept
         : data_(std::addressof(data)) {}
 
@@ -3104,49 +2938,35 @@ public:
     template <typename dT>
     bool is_refer(dT& data)  const noexcept { return data_ == std::addressof(data); }
 
-    operator T&() const noexcept { return get(); }
+    operator element_type&() const noexcept { return get(); }
 
-    T& get() const noexcept { return *data_; }
-    void set(T& data) noexcept { data_ = std::addressof(data); }
+    element_type& get() const noexcept { return *data_; }
+    void set(element_type& data) noexcept { data_ = std::addressof(data); }
 };
 
-namespace meta
+} // namespace sf
+
+TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
 {
-
-template <typename> struct is_alias : std::false_type {};
-template <typename T>
-struct is_alias<alias_t<T>> : std::true_type {};
-
-} // namespace meta
-
-// inline namespace common also used in namespace library
-inline namespace common
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, alias, meta::is_alias<T>::value)
-{
-    using key_type = typename Archive::TrackingKeyType;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
     if (not alias.is_refer())
         throw "The write alias_t must be initialized.";
 
     auto pointer = std::addressof(alias.get());
-    const auto key = detail::refer_key(archive, pointer);
+    const auto key = ::sf::detail::refer_key(archive, pointer);
 
-    auto& is_tracking = archive.template tracking<tracking::raw_t>()[key];
+    auto& is_tracking = archive.template tracking<::sf::tracking::raw_t>()[key];
 
     if (not is_tracking)
         throw "The write alias_t must be tracked before.";
 
-    detail::native_save(archive, pointer, key);
-
-    return archive;
+    ::sf::detail::native_save(archive, pointer, key);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, alias, meta::is_alias<T>::value)
+TEMPLATE_SERIALIZATION(load, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
 {
-    using key_type   = typename Archive::TrackingKeyType;
-    using value_type = typename T::type;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (alias.is_refer())
@@ -3156,25 +2976,17 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, alias, meta::is_alias<T>::value)
     key_type key{};
     archive & key;
 
-    auto& item = archive.template tracking<tracking::raw_t>()[key];
+    auto& item = archive.template tracking<::sf::tracking::raw_t>()[key];
 
     if (item.address == nullptr)
         throw "The read alias_t must be tracked before.";
 
-    value_type* pointer = nullptr;
+    ElementType* pointer = nullptr;
 
-    detail::native_load(archive, pointer, item.address);
+    ::sf::detail::native_load(archive, pointer, item.address);
 
     alias.set(*pointer); // pointer will never nullptr
-
-    return archive;
 }
-
-} // inline namespace common
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_alias<T>::value)
 
 namespace sf
 {
@@ -3335,10 +3147,10 @@ span_t<Type, N> make_span(Pointer& data, D d, Dn... dn)
 namespace detail
 {
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_archive<ArchiveType>,
                               meta::negation<meta::is_span<T>>>::value)>
-void span_impl(Archive& archive, T& data)
+void span_impl(ArchiveType& archive, T& data)
 {
     archive & data;
 }
@@ -3378,11 +3190,11 @@ void span_impl(iarchive_t& archive, T& array)
 inline namespace common
 {
 
-template <class Archive, typename T,
+template <class ArchiveType, typename T,
           typename D, typename... Dn,
-          SF_REQUIRE(meta::all<meta::is_archive<Archive>,
+          SF_REQUIRE(meta::all<meta::is_archive<ArchiveType>,
                                meta::is_span_set<T, D, Dn...>>::value)>
-void span(Archive& archive, T& pointer, D& dimension, Dn&... dimension_n)
+void span(ArchiveType& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (not detail::refer_key(archive, pointer)) return; // serialize refer info
     archive(dimension, dimension_n...);
@@ -3405,15 +3217,15 @@ struct span_functor_t : apply_functor_t
 
     span_functor_t(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const
     {
         invoke(archive, meta::make_index_sequence<std::tuple_size<Pack>::value>{});
     }
 
 private:
-    template <class Archive, std::size_t... I>
-    void invoke(Archive& archive, meta::index_sequence<I...>) const
+    template <class ArchiveType, std::size_t... I>
+    void invoke(ArchiveType& archive, meta::index_sequence<I...>) const
     {
         span(archive, std::get<I>(pack)...);
     }
@@ -3533,17 +3345,17 @@ namespace sf
 namespace detail
 {
 
-template <class Archive, typename T, typename enable = void>
+template <class ArchiveType, typename T, typename enable = void>
 struct bitpack_t;
 
-template <class Archive, typename T>
-struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_oarchive<Archive>::value>::type>
+template <class ArchiveType, typename T>
+struct bitpack_t<ArchiveType, T, typename std::enable_if<sf::meta::is_oarchive<ArchiveType>::value>::type>
 {
-    Archive& archive;
+    ArchiveType& archive;
     T data{};
     std::size_t offset{};
 
-    bitpack_t(Archive& archive) : archive(archive) {}
+    bitpack_t(ArchiveType& archive) : archive(archive) {}
     ~bitpack_t() { archive & data; }
 
     T operator()(T field, std::size_t bits) noexcept
@@ -3556,13 +3368,13 @@ struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_oarchive<Archi
     }
 };
 
-template <class Archive, typename T>
-struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_iarchive<Archive>::value>::type>
+template <class ArchiveType, typename T>
+struct bitpack_t<ArchiveType, T, typename std::enable_if<sf::meta::is_iarchive<ArchiveType>::value>::type>
 {
-    Archive& archive;
+    ArchiveType& archive;
     T data{};
 
-    bitpack_t(Archive& archive) : archive(archive) { archive & data; }
+    bitpack_t(ArchiveType& archive) : archive(archive) { archive & data; }
 
     T operator()(T field, std::size_t bits) noexcept
     {
@@ -3576,64 +3388,34 @@ struct bitpack_t<Archive, T, typename std::enable_if<sf::meta::is_iarchive<Archi
 
 } // namespace detail
 
-template <typename PackType = let::u32, class Archive>
-detail::bitpack_t<Archive, PackType> bitpack(Archive& archive) noexcept { return { archive }; }
+template <typename PackType = let::u32, class ArchiveType>
+detail::bitpack_t<ArchiveType, PackType> bitpack(ArchiveType& archive) noexcept { return { archive }; }
 
 } // namespace sf
 
-namespace sf
+TEMPLATE_SERIALIZATION(save, vector,
+    (template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_vector : std::false_type {};
-template <typename T, typename Alloc>
-struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, vector, meta::is_std_vector<T>::value)
-{
-    let::u64 size = vector.size();
+    ::sf::let::u64 size = vector.size();
     archive & size;
 
-    compress::zip(archive, vector);
-
-    return archive;
+    ::sf::compress::zip(archive, vector);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, vector, meta::is_std_vector<T>::value)
+TEMPLATE_SERIALIZATION(load, vector,
+    (template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     vector.resize(size);
-    compress::zip(archive, vector);
-
-    return archive;
+    ::sf::compress::zip(archive, vector);
 }
 
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_vector<T>::value)
-TYPE_REGISTRY(std::vector<bool>)
-
-namespace sf
-{
-
-inline namespace library
-{
-
 // slow impl
-EXTERN_SERIALIZATION(save, vector, std::vector<bool>)
+SERIALIZATION(save, vector, std::vector<bool>)
 {
-    let::u64 size = vector.size();
+    ::sf::let::u64 size = vector.size();
     archive & size;
 
     for(auto item:vector)
@@ -3641,13 +3423,11 @@ EXTERN_SERIALIZATION(save, vector, std::vector<bool>)
         bool boolean = item;
         archive & boolean;
     }
-
-    return archive;
 }
 
-EXTERN_SERIALIZATION(load, vector, std::vector<bool>)
+SERIALIZATION(load, vector, std::vector<bool>)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     vector.resize(size);
@@ -3658,245 +3438,109 @@ EXTERN_SERIALIZATION(load, vector, std::vector<bool>)
         archive & boolean;
         item = boolean;
     }
-
-    return archive;
 }
 
-} // inline namespace library
-
-} // namespace sf
-
-namespace sf
+TEMPLATE_SERIALIZATION(saveload, array, (template <typename ValueType, std::size_t BitsetSize>), std::array<ValueType, BitsetSize>)
 {
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, array, meta::is_std_array<T>::value)
-{
-    compress::zip(archive, array);
-    return archive;
+    ::sf::compress::zip(archive, array);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_array<T>::value)
 
 #include <string> // basic_string
 
-namespace sf
+TEMPLATE_SERIALIZATION(save, string,
+    (template <typename CharType, typename Traits, typename AllocatorType>),
+    std::basic_string<CharType, Traits, AllocatorType>)
 {
-
-namespace meta
-{
-
-template <typename>
-struct is_std_basic_string : std::false_type {};
-
-template <typename Char, typename Traitss, typename Alloc>
-struct is_std_basic_string<std::basic_string<Char, Traitss, Alloc>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, string, meta::is_std_basic_string<T>::value)
-{
-    using char_type = typename T::value_type;
-
-    let::u64 size = string.size();
+    ::sf::let::u64 size = string.size();
     archive & size;
 
-    compress::zip(archive, string);
-
-    return archive;
+    ::sf::compress::zip(archive, string);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, string, meta::is_std_basic_string<T>::value)
+TEMPLATE_SERIALIZATION(load, string,
+    (template <typename CharType, typename Traits, typename AllocatorType>),
+    std::basic_string<CharType, Traits, AllocatorType>)
 {
-    using char_type = typename T::value_type;
-
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     string.resize(size);
-    compress::zip(archive, string);
-
-    return archive;
+    ::sf::compress::zip(archive, string);
 }
 
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_basic_string<T>::value)
-
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename> struct is_std_pair : std::false_type {};
-template <typename T1, typename T2>
-struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, pair, meta::is_std_pair<T>::value)
+TEMPLATE_SERIALIZATION(saveload, pair, (template <typename FirstType, typename SecondType>), std::pair<FirstType, SecondType>)
 {
     archive & pair.first & pair.second;
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_pair<T>::value)
 
 namespace sf
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_tuple : std::false_type {};
-template <typename... Tn>
-struct is_std_tuple<std::tuple<Tn...>> : std::true_type {};
-
-} // namespace meta
 
 namespace detail
 {
 
-template <class Archive, class T, std::size_t... I,
-          SF_REQUIRE(meta::is_std_tuple<T>::value)>
-void expand(Archive& archive, T& tuple, meta::index_sequence<I...>)
+template <class ArchiveType, typename... ArgumentTypes, std::size_t... I>
+void expand(ArchiveType& archive, std::tuple<ArgumentTypes...>& tuple, meta::index_sequence<I...>)
 {
     archive(std::get<I>(tuple)...);
 }
 
 } // namespace detail
 
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, tuple, meta::is_std_tuple<T>::value)
-{
-    constexpr auto size = std::tuple_size<T>::value;
-    detail::expand(archive, tuple, meta::make_index_sequence<size>{});
-
-    return archive;
-}
-
-} // inline namespace library
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_tuple<T>::value)
+TEMPLATE_SERIALIZATION(saveload, tuple, (template <typename... ArgumentTypes>), std::tuple<ArgumentTypes...>)
+{
+    ::sf::detail::expand(archive, tuple, ::sf::meta::make_index_sequence<sizeof...(ArgumentTypes)>{});
+}
 
 #include <list> // list
 
-namespace sf
+TEMPLATE_SERIALIZATION(save, list, (template <typename ValueType, typename AllocatorType>), std::list<ValueType, AllocatorType>)
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_list : std::false_type {};
-template <typename T, typename Alloc>
-struct is_std_list<std::list<T, Alloc>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, list, meta::is_std_list<T>::value)
-{
-    let::u64 size = list.size();
+    ::sf::let::u64 size = list.size();
     archive & size;
 
-    compress::slow(archive, list);
-
-    return archive;
+    ::sf::compress::slow(archive, list);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, list, meta::is_std_list<T>::value)
+TEMPLATE_SERIALIZATION(load, list, (template <typename ValueType, typename AllocatorType>), std::list<ValueType, AllocatorType>)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     list.resize(size);
-    compress::slow(archive, list);
-
-    return archive;
+    ::sf::compress::slow(archive, list);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_list<T>::value)
 
 #include <forward_list> // forward_list
 
-namespace sf
+TEMPLATE_SERIALIZATION(save, forward_list,
+    (template <typename ValueType, typename AllocatorType>), std::forward_list<ValueType, AllocatorType>)
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_forward_list : std::false_type {};
-template <typename T, typename Alloc>
-struct is_std_forward_list<std::forward_list<T, Alloc>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, forward_list, meta::is_std_forward_list<T>::value)
-{
-    let::u64 size = std::distance(forward_list.begin(), forward_list.end());
+    ::sf::let::u64 size = std::distance(forward_list.begin(), forward_list.end());
     archive & size;
 
-    compress::slow(archive, forward_list);
-
-    return archive;
+    ::sf::compress::slow(archive, forward_list);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, forward_list, meta::is_std_forward_list<T>::value)
+TEMPLATE_SERIALIZATION(load, forward_list,
+    (template <typename ValueType, typename AllocatorType>), std::forward_list<ValueType, AllocatorType>)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     forward_list.resize(size);
-    compress::slow(archive, forward_list);
-
-    return archive;
+    ::sf::compress::slow(archive, forward_list);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_forward_list<T>::value)
 
 #include <set> // set, multiset
 #include <unordered_set> // unordered_set, unordered_multiset
 
 #define SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                       \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
-    template <typename Key, typename Compare, typename Alloc>                                           \
-    struct is_std_##set_type<std::set_type<Key, Compare, Alloc>> : std::true_type {};
+    template <typename KeyType, typename Comparator, typename AllocatorType>                            \
+    struct is_std_##set_type<std::set_type<KeyType, Comparator, AllocatorType>> : std::true_type {};
 
 namespace sf
 {
@@ -3936,150 +3580,75 @@ void reserve_unordered(T& unordered, std::size_t size)
 
 } // namespace detail
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, set, meta::is_std_any_set<T>::value)
+CONDITIONAL_SERIALIZATION(save, set, ::sf::meta::is_std_any_set<T>::value)
 {
-    let::u64 size = set.size();
+    ::sf::let::u64 size = set.size();
     archive & size;
 
-    compress::slow(archive, set);
-
-    return archive;
+    ::sf::compress::slow(archive, set);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, set, meta::is_std_any_set<T>::value)
+CONDITIONAL_SERIALIZATION(load, set, ::sf::meta::is_std_any_set<T>::value)
 {
     using value_type = typename T::value_type;
 
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     set.clear();
-    detail::reserve_unordered(set, size);
+    ::sf::detail::reserve_unordered(set, size);
 
     auto hint = set.begin();
-    for (let::u64 i = 0; i < size; ++i)
+    for (::sf::let::u64 i = 0; i < size; ++i)
     {
         value_type item{}; // temp
         archive & item;
 
         hint = set.emplace_hint(hint, std::move(item));
     }
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any_set<T>::value)
 
 // clean up
 #undef SF_IS_STD_SET_TYPE_META_GENERIC
 
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename> struct is_std_unique_ptr : std::false_type {};
-template <typename T, typename Deleter>
-struct is_std_unique_ptr<std::unique_ptr<T, Deleter>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, unique_ptr, meta::is_std_unique_ptr<T>::value)
+TEMPLATE_SERIALIZATION(save, unique_ptr,
+    (template <typename ElementType, typename Deleter>), std::unique_ptr<ElementType, Deleter>)
 {
     auto data = unique_ptr.get();
     archive & data;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, unique_ptr, meta::is_std_unique_ptr<T>::value)
+TEMPLATE_SERIALIZATION(load, unique_ptr,
+    (template <typename ElementType, typename Deleter>), std::unique_ptr<ElementType, Deleter>)
 {
-    using item_type = typename memory::ptr_traits<T>::item;
-
-    item_type* data = nullptr;
+    ElementType* data = nullptr;
     archive & data;
 
     unique_ptr.reset(data);
-
-    return archive;
 }
 
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_unique_ptr<T>::value)
-
-namespace sf
+TEMPLATE_SERIALIZATION(saveload, shared_ptr, template <typename ElementType>, std::shared_ptr<ElementType>)
 {
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, shared_ptr, meta::is_std_shared_ptr<T>::value)
-{
-    tracking::track(archive, shared_ptr);
-    return archive;
+    ::sf::tracking::track(archive, shared_ptr);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_shared_ptr<T>::value)
 
 // serialization of shared_ptr
 
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename> struct is_std_weak_ptr : std::false_type {};
-template <typename T> struct is_std_weak_ptr<std::weak_ptr<T>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, weak_ptr, meta::is_std_weak_ptr<T>::value)
+TEMPLATE_SERIALIZATION(save, weak_ptr, template <typename ElementType>, std::weak_ptr<ElementType>)
 {
     auto sptr = weak_ptr.lock();
     archive & sptr;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, weak_ptr, meta::is_std_weak_ptr<T>::value)
+TEMPLATE_SERIALIZATION(load, weak_ptr, template <typename ElementType>, std::weak_ptr<ElementType>)
 {
-    using item_type = typename memory::ptr_traits<T>::item;
-
-    std::shared_ptr<item_type> sptr;
+    std::shared_ptr<ElementType> sptr;
     archive & sptr;
 
     weak_ptr = sptr;
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_weak_ptr<T>::value)
 
 #include <map> // map, multimap
 
@@ -4087,8 +3656,8 @@ CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_weak_ptr<T>::value)
 
 #define SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                       \
     template <typename> struct is_std_##map_type : std::false_type {};                                  \
-    template <typename Key, typename Type, typename Compare, typename Alloc>                            \
-    struct is_std_##map_type<std::map_type<Key, Type, Compare, Alloc>> : std::true_type {};
+    template <typename KeyType, typename ValueType, typename Comparator, typename AllocatorType>        \
+    struct is_std_##map_type<std::map_type<KeyType, ValueType, Comparator, AllocatorType>> : std::true_type {};
 
 namespace sf
 {
@@ -4128,32 +3697,29 @@ void reserve_unordered(T& unordered, std::size_t size)
 
 } // namespace detail
 
-inline namespace library
-{
+} // namespace sf
 
-EXTERN_CONDITIONAL_SERIALIZATION(save, map, meta::is_std_any_map<T>::value)
+CONDITIONAL_SERIALIZATION(save, map, ::sf::meta::is_std_any_map<T>::value)
 {
-    let::u64 size = map.size();
+    ::sf::let::u64 size = map.size();
     archive & size;
 
-    compress::slow(archive, map);
-
-    return archive;
+    ::sf::compress::slow(archive, map);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, map, meta::is_std_any_map<T>::value)
+CONDITIONAL_SERIALIZATION(load, map, ::sf::meta::is_std_any_map<T>::value)
 {
     using key_type   = typename T::key_type;
     using value_type = typename T::mapped_type;
 
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     map.clear();
-    detail::reserve_unordered(map, size);
+    ::sf::detail::reserve_unordered(map, size);
 
     auto hint = map.begin();
-    for (let::u64 i = 0; i < size; ++i)
+    for (::sf::let::u64 i = 0; i < size; ++i)
     {
         key_type key{};
         value_type value{};
@@ -4162,62 +3728,29 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, map, meta::is_std_any_map<T>::value)
 
         hint = map.emplace_hint(hint, std::move(key), std::move(value));
     }
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any_map<T>::value)
 
 //clear
 #undef SF_IS_STD_MAP_TYPE_META_GENERIC
 
 #include <deque> // deque
 
-namespace sf
+TEMPLATE_SERIALIZATION(save, deque, (template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_deque : std::false_type {};
-template <typename T, typename Alloc>
-struct is_std_deque<std::deque<T, Alloc>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, deque, meta::is_std_deque<T>::value)
-{
-    let::u64 size = deque.size();
+    ::sf::let::u64 size = deque.size();
     archive & size;
 
-    compress::slow(archive, deque);
-
-    return archive;
+    ::sf::compress::slow(archive, deque);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, deque, meta::is_std_deque<T>::value)
+TEMPLATE_SERIALIZATION(load, deque, (template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     deque.resize(size);
-    compress::slow(archive, deque);
-
-    return archive;
+    ::sf::compress::slow(archive, deque);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_deque<T>::value)
 
 #include <stack> // stack
 
@@ -4251,279 +3784,108 @@ Container& underlying(Adapter<Type, Container, Args...>& adapter) noexcept
 
 // default container for stack
 
-namespace sf
+TEMPLATE_SERIALIZATION(saveload, stack,
+    (template <typename ValueType, class ContainerType>), std::stack<ValueType, ContainerType>)
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_stack : std::false_type {};
-template <typename T, class Container>
-struct is_std_stack<std::stack<T, Container>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, stack, meta::is_std_stack<T>::value)
-{
-    archive & meta::underlying(stack);
-    return archive;
+    archive & ::sf::meta::underlying(stack);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_stack<T>::value)
 
 #include <queue> // queue
 
 // default container for queue
 
-// default container for priority_queue
-
-namespace sf
+TEMPLATE_SERIALIZATION(saveload, queue,
+    (template <typename ValueType, class ContainerType>), std::queue<ValueType, ContainerType>)
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_queue : std::false_type {};
-template <typename T, class Container>
-struct is_std_queue<std::queue<T, Container>> : std::true_type {};
-
-template <typename> struct is_std_priority_queue : std::false_type {};
-template <typename T, class Container, class Compare>
-struct is_std_priority_queue<std::priority_queue<T, Container, Compare>> : std::true_type {};
-
-template <class T> struct is_std_any_queue
-    : one<is_std_queue<T>,
-          is_std_priority_queue<T>> {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(saveload, queue, meta::is_std_any_queue<T>::value)
-{
-    archive & meta::underlying(queue);
-    return archive;
+    archive & ::sf::meta::underlying(queue);
 }
 
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any_queue<T>::value)
-
-namespace sf
+TEMPLATE_SERIALIZATION(save, valarray, template <typename ValueType>, std::valarray<ValueType>)
 {
-
-namespace meta
-{
-
-template <typename> struct is_std_valarray : std::false_type {};
-template <typename T> struct is_std_valarray<std::valarray<T>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, valarray, meta::is_std_valarray<T>::value)
-{
-    let::u64 size = valarray.size();
+    ::sf::let::u64 size = valarray.size();
     archive & size;
 
-    compress::zip(archive, valarray);
-
-    return archive;
+    ::sf::compress::zip(archive, valarray);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, valarray, meta::is_std_valarray<T>::value)
+TEMPLATE_SERIALIZATION(load, valarray, template <typename ValueType>, std::valarray<ValueType>)
 {
-    let::u64 size{};
+    ::sf::let::u64 size{};
     archive & size;
 
     valarray.resize(size);
-    compress::zip(archive, valarray);
-
-    return archive;
+    ::sf::compress::zip(archive, valarray);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_valarray<T>::value)
 
 #include <bitset> // bitset
 
 // default array for bitset convertion
 
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename> struct is_std_bitset : std::false_type {};
-template <std::size_t N> struct is_std_bitset<std::bitset<N>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
 // slow impl
-EXTERN_CONDITIONAL_SERIALIZATION(save, bitset, meta::is_std_bitset<T>::value)
+TEMPLATE_SERIALIZATION(save, bitset, template <std::size_t BitsetSize>, std::bitset<BitsetSize>)
 {
     auto data = bitset.to_string();
     archive & data;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, bitset, meta::is_std_bitset<T>::value)
+TEMPLATE_SERIALIZATION(load, bitset, template <std::size_t BitsetSize>, std::bitset<BitsetSize>)
 {
     std::string data;
     archive & data;
 
-    bitset = T(data);
-
-    return archive;
+    bitset = std::bitset<BitsetSize>(data);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_bitset<T>::value)
 
 #include <atomic> // atomic
 
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename> struct is_std_atomic : std::false_type {};
-template <typename T> struct is_std_atomic<std::atomic<T>> : std::true_type {};
-
-template <typename T> struct atomic_traits;
-template <typename T> struct atomic_traits<std::atomic<T>> { using value_type = T; };
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, atomic, meta::is_std_atomic<T>::value)
+TEMPLATE_SERIALIZATION(save, atomic, template <typename ValueType>, std::atomic<ValueType>)
 {
     auto object = atomic.load();
     archive & object;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, atomic, meta::is_std_atomic<T>::value)
+TEMPLATE_SERIALIZATION(load, atomic, template <typename ValueType>, std::atomic<ValueType>)
 {
-    using object_type = typename meta::atomic_traits<T>::value_type;
+    ValueType value{};
+    archive & value;
 
-    object_type object{};
-    archive & object;
-
-    atomic.store(object);
-
-    return archive;
+    atomic.store(value);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_atomic<T>::value)
 
 #include <complex> // complex
 
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename> struct is_std_complex : std::false_type {};
-template <typename T> struct is_std_complex<std::complex<T>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, complex, meta::is_std_complex<T>::value)
+TEMPLATE_SERIALIZATION(save, complex, template <typename ValueType>, std::complex<ValueType>)
 {
     auto re = complex.real();
     auto im = complex.imag();
 
     archive & re & im;
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, complex, meta::is_std_complex<T>::value)
+TEMPLATE_SERIALIZATION(load, complex, template <typename ValueType>, std::complex<ValueType>)
 {
-    using integral_type = typename T::value_type;
-
-    integral_type re{};
-    integral_type im{};
+    ValueType re{};
+    ValueType im{};
 
     archive & re & im;
 
     complex.real(re);
     complex.imag(im);
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_complex<T>::value)
 
 #if __cplusplus >= 201703L
 
 #include <optional> // optional
 
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename> struct is_std_optional : std::false_type {};
-template <typename T> struct is_std_optional<std::optional<T>> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, optional, meta::is_std_optional<T>::value)
+TEMPLATE_SERIALIZATION(save, optional, (template <typename ValueType>), std::optional<ValueType>)
 {
     auto is_init = optional.has_value();
     archive & is_init;
 
     if (is_init) archive & optional.value();
-
-    return archive;
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, optional, meta::is_std_optional<T>::value)
+TEMPLATE_SERIALIZATION(load, optional, (template <typename ValueType>), std::optional<ValueType>)
 {
     auto is_init = false;
     archive & is_init;
@@ -4533,15 +3895,7 @@ EXTERN_CONDITIONAL_SERIALIZATION(load, optional, meta::is_std_optional<T>::value
         optional.emplace();
         archive & optional.value();
     }
-
-    return archive;
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_optional<T>::value)
 
 #endif // if
 
@@ -4554,50 +3908,42 @@ CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_optional<T>::value)
 namespace sf
 {
 
-namespace meta
-{
-
-template <typename> struct is_std_variant : std::false_type {};
-template <typename... Tn> struct is_std_variant<std::variant<Tn...>> : std::true_type {};
-
-} // namespace meta
-
 namespace detail
 {
 
-template <let::u64 I, class Archive, class Variant,
+template <let::u64 I, class ArchiveType, class Variant,
           SF_REQUIRE(I == std::variant_size<Variant>::value)>
-void variant_save(Archive& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
+void variant_save(ArchiveType& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
 
-template <let::u64 I = 0, class Archive, class Variant,
+template <let::u64 I = 0, class ArchiveType, class Variant,
           SF_REQUIRE(I < std::variant_size<Variant>::value)>
-void variant_save(Archive& archive, Variant& variant, let::u64 index)
+void variant_save(ArchiveType& archive, Variant& variant, let::u64 index)
 {
     if (I < index) return variant_save<I + 1>(archive, variant, index);
     archive & std::get<I>(variant);
 }
 
-template <typename Type, class Archive, class Variant,
+template <typename Type, class ArchiveType, class Variant,
           SF_REQUIRE(not std::is_constructible<Type>::value)>
-void variant_load_impl(Archive& archive, Variant& variant)
+void variant_load_impl(ArchiveType& archive, Variant& variant)
 {
     throw "Require default constructor for specify type.";
 }
 
-template <typename Type, class Archive, class Variant,
+template <typename Type, class ArchiveType, class Variant,
           SF_REQUIRE(std::is_constructible<Type>::value)>
-void variant_load_impl(Archive& archive, Variant& variant)
+void variant_load_impl(ArchiveType& archive, Variant& variant)
 {
     archive & variant.template emplace<Type>();
 }
 
-template <let::u64 I, class Archive, class Variant,
+template <let::u64 I, class ArchiveType, class Variant,
           SF_REQUIRE(I == std::variant_size<Variant>::value)>
-void variant_load(Archive& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
+void variant_load(ArchiveType& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
 
-template <let::u64 I = 0, class Archive, class Variant,
+template <let::u64 I = 0, class ArchiveType, class Variant,
           SF_REQUIRE(I < std::variant_size<Variant>::value)>
-void variant_load(Archive& archive, Variant& variant, let::u64 index)
+void variant_load(ArchiveType& archive, Variant& variant, let::u64 index)
 {
     if (I < index) return variant_load<I + 1>(archive, variant, index);
 
@@ -4607,81 +3953,46 @@ void variant_load(Archive& archive, Variant& variant, let::u64 index)
 
 } // namespace detail
 
-inline namespace library
-{
-
-EXTERN_CONDITIONAL_SERIALIZATION(save, variant, meta::is_std_variant<T>::value)
-{
-    let::u64 index = variant.index();
-    archive & index;
-
-    if (index != std::variant_npos)
-        detail::variant_save(archive, variant, index);
-
-    return archive;
-}
-
-EXTERN_CONDITIONAL_SERIALIZATION(load, variant, meta::is_std_variant<T>::value)
-{
-    let::u64 index{};
-    archive & index;
-
-    if (index != std::variant_npos)
-        detail::variant_load(archive, variant, index);
-
-    return archive;
-}
-
-} // inline namespace library
-
 } // namespace sf
 
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_variant<T>::value)
+TEMPLATE_SERIALIZATION(save, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
+{
+    ::sf::let::u64 index = variant.index();
+    archive & index;
+
+    if (index != std::variant_npos)
+        ::sf::detail::variant_save(archive, variant, index);
+}
+
+TEMPLATE_SERIALIZATION(load, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
+{
+    ::sf::let::u64 index{};
+    archive & index;
+
+    if (index != std::variant_npos)
+        ::sf::detail::variant_load(archive, variant, index);
+}
 
 #endif // if
 
 #if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
 
-namespace sf
-{
-
-namespace meta
-{
-
-template <typename> struct is_std_any : std::false_type {};
-template <> struct is_std_any<std::any> : std::true_type {};
-
-} // namespace meta
-
-inline namespace library
-{
-
 // please, use 'sf::serializable' for type any registry before std::any serialization
-EXTERN_CONDITIONAL_SERIALIZATION(save, any, meta::is_std_any<T>::value)
+SERIALIZATION(save, any, std::any)
 {
-    let::u64 hash = SF_TYPE_HASH(any.type());
+    ::sf::let::u64 hash = SF_TYPE_HASH(any.type());
     archive & hash;
 
-    dynamic::any_registry_t::instance().save(archive, any, hash);
-
-    return archive;
+    ::sf::dynamic::any_registry_t::instance().save(archive, any, hash);
 }
 
-EXTERN_CONDITIONAL_SERIALIZATION(load, any, meta::is_std_any<T>::value)
+SERIALIZATION(load, any, std::any)
 {
-    let::u64 hash{};
+    ::sf::let::u64 hash{};
     archive & hash;
 
-    dynamic::any_registry_t::instance().load(archive, any, hash);
-
-    return archive;
+    ::sf::dynamic::any_registry_t::instance().load(archive, any, hash);
 }
-
-} // inline namespace library
-
-} // namespace sf
-
-CONDITIONAL_TYPE_REGISTRY(::sf::meta::is_std_any<T>::value)
 
 #endif // if
 

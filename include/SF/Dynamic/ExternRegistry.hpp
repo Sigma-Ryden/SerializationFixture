@@ -23,9 +23,9 @@ public:
     using key_type = ::xxsf_instantiable_traits<void>::key_type;
 
 public:
-    template <class Archive, typename T,
+    template <class ArchiveType, typename T,
               SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static key_type save_key(Archive& archive, T& pointer)
+    static key_type save_key(ArchiveType& archive, T& pointer)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -36,9 +36,9 @@ public:
         return key;
     }
 
-    template <class Archive, typename T,
+    template <class ArchiveType, typename T,
               SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static key_type load_key(Archive& archive, T& pointer)
+    static key_type load_key(ArchiveType& archive, T& pointer)
     {
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)

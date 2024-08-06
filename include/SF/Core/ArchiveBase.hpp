@@ -21,7 +21,7 @@ struct archive_traits
     static constexpr auto max_key = key_type(SF_ARCHIVE_TRAIT_MAX_KEY_SIZE);
 };
 
-template <class Archive> struct archive_traits_key_t
+template <class ArchiveType> struct archive_traits_key_t
 {
     static constexpr auto key = archive_traits::base_key;
 };

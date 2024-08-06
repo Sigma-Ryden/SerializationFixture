@@ -21,7 +21,7 @@ namespace core
 class polymorphic_archive_t
 {
 public:
-    using Archive  = ioarchive_t;
+    using ArchiveType  = ioarchive_t;
     using key_type = ioarchive_t::key_type;
 
     static constexpr key_type max_key = archive_traits::max_key;
@@ -38,8 +38,8 @@ public:
     }
 
 private:
-    template <class Archive> struct is_valid_archive
-        : std::integral_constant<bool, archive_traits_key_t<Archive>::key != archive_traits::base_key> {};
+    template <class ArchiveType> struct is_valid_archive
+        : std::integral_constant<bool, archive_traits_key_t<ArchiveType>::key != archive_traits::base_key> {};
 
 private:
     template <template <key_type> class archive_traits,

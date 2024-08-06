@@ -728,8 +728,8 @@ struct NoMacroDerived : NoMacroBase
 } // TEST_SPACE
 
 // extern serialization - useful for open classes
-template <class Archive>
-Archive& operator& (Archive& archive, NoMacroObject& self)
+template <class ArchiveType>
+ArchiveType& operator& (ArchiveType& archive, NoMacroObject& self)
 {
     archive & self.data;
     return archive;
@@ -739,8 +739,8 @@ Archive& operator& (Archive& archive, NoMacroObject& self)
 template <>
 struct xxsf_save<NoMacroDerived>
 {
-    template <class Archive>
-    xxsf_save(Archive& archive, NoMacroDerived& self)
+    template <class ArchiveType>
+    xxsf_save(ArchiveType& archive, NoMacroDerived& self)
     {
         archive & sf::hierarchy<NoMacroBase>(self) & self.d;
     }
@@ -749,8 +749,8 @@ struct xxsf_save<NoMacroDerived>
 template <> // TODO: temp
 struct xxsf_load<NoMacroDerived>
 {
-    template <class Archive>
-    xxsf_load(Archive& archive, NoMacroDerived& self)
+    template <class ArchiveType>
+    xxsf_load(ArchiveType& archive, NoMacroDerived& self)
     {
         xxsf_save<NoMacroDerived>(archive, self);
     }
@@ -770,8 +770,8 @@ struct xxsf_save<NoMacroBase>
 template <>
 struct xxsf_load<NoMacroBase>
 {
-    template <class Archive>
-    xxsf_load(Archive& archive, NoMacroBase& self)
+    template <class ArchiveType>
+    xxsf_load(ArchiveType& archive, NoMacroBase& self)
     {
         archive & self.b; // or archive >> self.b
     }

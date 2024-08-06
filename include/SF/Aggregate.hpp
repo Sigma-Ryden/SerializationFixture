@@ -10,8 +10,8 @@
 #include <SF/Detail/Preprocessor.hpp>
 
 #define SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                      \
-    template <class Archive, typename T>                                                                \
-    void aggregate_impl(Archive& archive, T& object, std::integral_constant<std::size_t, count>) {      \
+    template <class ArchiveType, typename T>                                                            \
+    void aggregate_impl(ArchiveType& archive, T& object, std::integral_constant<std::size_t, count>) {  \
         auto& [SF_PLACEHOLDERS(count)] = object;                                                        \
         archive(SF_PLACEHOLDERS(count));                                                                \
     }
@@ -23,27 +23,24 @@ namespace meta
 {
 
 template <typename T> struct is_serializable_aggregate
-    : all<is_aggregate<T>,
-          negation<std::is_union<T>>/*,
-          negation<meta::is_has_any_save_mode<T>>,
-          negation<meta::is_has_any_save_mode<T>>*/> {};
+    : all<is_aggregate<T>, negation<std::is_union<T>>> {};
 
 } // namespace meta
 
 namespace detail
 {
 
-template <class Archive, typename T>
-void aggregate_impl(Archive& archive, T& object, std::integral_constant<std::size_t, 0>) noexcept { /*pass*/ }
+template <class ArchiveType, typename T>
+void aggregate_impl(ArchiveType& archive, T& object, std::integral_constant<std::size_t, 0>) noexcept { /*pass*/ }
 
 SF_REPEAT(SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
 } // namespace detail
 
-template <class Archive, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<Archive>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::is_aggregate<T>>::value)>
-void aggregate(Archive& archive, T& object)
+void aggregate(ArchiveType& archive, T& object)
 {
     constexpr auto size = meta::aggregate_size<T>::value;
     detail::aggregate_impl(archive, object, std::integral_constant<std::size_t, size>{});
@@ -59,8 +56,8 @@ struct aggregate_functor_t : apply_functor_t
 
     aggregate_functor_t(T& object) noexcept : object(object) {}
 
-    template <class Archive>
-    void operator() (Archive& archive) const { aggregate(archive, object); }
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { aggregate(archive, object); }
 };
 
 } // namespace apply

@@ -53,7 +53,7 @@ public:
 
 TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
 {
-    using key_type = typename Archive::TrackingKeyType;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
     if (not alias.is_refer())
         throw "The write alias_t must be initialized.";
@@ -71,7 +71,7 @@ TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias
 
 TEMPLATE_SERIALIZATION(load, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
 {
-    using key_type = typename Archive::TrackingKeyType;
+    using key_type = typename ArchiveType::TrackingKeyType;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (alias.is_refer())
