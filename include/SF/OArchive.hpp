@@ -61,10 +61,13 @@ public:
     auto registry() noexcept -> Registry& { return registry_; }
 
     template <typename T>
-    auto operator<< (T&& data) -> oarchive_t&;
+    auto operator<< (T const& data) -> oarchive_t&;
+
+    template <typename T>
+    auto operator& (T const& data) -> oarchive_t&;
 
     template <typename T, typename... Tn>
-    auto operator() (T& data, Tn&... data_n) -> oarchive_t&;
+    auto operator() (T const& data, Tn const&... data_n) -> oarchive_t&;
 
     auto operator() () noexcept -> oarchive_t& { return *this; }
 };
@@ -102,16 +105,23 @@ oarchive_t<StreamWrapper, Registry>::oarchive_t(OutStream& stream)
 
 template <class StreamWrapper, class Registry>
 template <typename T>
-auto oarchive_t<StreamWrapper, Registry>::operator<< (T&& data) -> oarchive_t&
+auto oarchive_t<StreamWrapper, Registry>::operator<< (T const& data) -> oarchive_t&
 {
-    return (*this) & std::forward<T>(data);
+    return operator()(data);
+}
+
+template <class StreamWrapper, class Registry>
+template <typename T>
+auto oarchive_t<StreamWrapper, Registry>::operator& (T const& data) -> oarchive_t&
+{
+    return operator()(data);
 }
 
 template <class StreamWrapper, class Registry>
 template <typename T, typename... Tn>
-auto oarchive_t<StreamWrapper, Registry>::operator() (T& data, Tn&... data_n) -> oarchive_t&
+auto oarchive_t<StreamWrapper, Registry>::operator() (T const& data, Tn const&... data_n) -> oarchive_t&
 {
-    (*this) & data;
+    ::xxsf_save<T>(*this, const_cast<T&>(data));
     return operator()(data_n...);
 }
 

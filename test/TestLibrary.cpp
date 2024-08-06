@@ -816,7 +816,7 @@ TEST(TestLibrary, TestNoMacro)
     }
 }
 
-TEST(TestLibrary, Testpolymorphic_archive_t)
+TEST(TestLibrary, TestPolymorphicArchive)
 {
     static std::string s_data = "Hello, SF!";
 
