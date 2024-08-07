@@ -3,6 +3,7 @@
 
 #include <cstddef> // size_t
 #include <vector> // vector
+#include <fstream> // ifstream, ofstream
 
 #include <SF/Core/Memory.hpp>
 
@@ -16,9 +17,7 @@ namespace sf
 namespace wrapper
 {
 
-using byte_container_t = std::vector<unsigned char>;
-
-template <typename OutStream = byte_container_t>
+template <typename OutStream = std::vector<unsigned char>>
 class obyte_stream_t
 {
 protected:
@@ -48,7 +47,7 @@ public:
     }
 };
 
-template <typename InStream = byte_container_t>
+template <typename InStream = std::vector<unsigned char>>
 struct ibyte_stream_t
 {
 protected:
@@ -75,7 +74,7 @@ public:
     }
 };
 
-template <typename OutStream>
+template <typename OutStream = std::ofstream>
 class ofile_stream_t
 {
 public:
@@ -91,7 +90,7 @@ public:
     }
 };
 
-template <typename InStream>
+template <typename InStream = std::ifstream>
 class ifile_stream_t
 {
 public:

@@ -174,18 +174,18 @@ namespace detail
 {
 
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_archive<ArchiveType>,
-                              meta::negation<meta::is_span<T>>>::value)>
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
+                               meta::negation<meta::is_span<T>>>::value)>
 void span_impl(ArchiveType& archive, T& data)
 {
     archive & data;
 }
 
 // serialization of scoped data with previous dimension initialization
-template <class oarchive_t, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<oarchive_t>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
                                meta::is_span<T>>::value)>
-void span_impl(oarchive_t& archive, T& array)
+void span_impl(ArchiveType& archive, T& array)
 {
     using size_type = typename T::size_type;
 
@@ -193,15 +193,13 @@ void span_impl(oarchive_t& archive, T& array)
         span_impl(archive, array[i]);
 }
 
-template <class iarchive_t, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<iarchive_t>,
+template <class ArchiveType, typename T,
+          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
                                meta::is_span<T>>::value)>
-void span_impl(iarchive_t& archive, T& array)
+void span_impl(ArchiveType& archive, T& array)
 {
-    using size_type        = typename T::size_type;
+    using size_type = typename T::size_type;
     using dereference_type = typename T::dereference_type;
-
-    using pointer          = typename T::pointer;
 
     auto ptr = new dereference_type [array.size()] {};
     array.init(ptr);
@@ -218,7 +216,7 @@ inline namespace common
 
 template <class ArchiveType, typename T,
           typename D, typename... Dn,
-          SF_REQUIRE(meta::all<meta::is_archive<ArchiveType>,
+          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::is_span_set<T, D, Dn...>>::value)>
 void span(ArchiveType& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
@@ -237,16 +235,16 @@ namespace apply
 template <typename T, typename D, typename... Dn>
 struct span_functor_t : apply_functor_t
 {
-    using Pack = std::tuple<T&, D&, Dn&...>;
+    using PackType = std::tuple<T&, D&, Dn&...>;
 
-    Pack pack;
+    PackType pack;
 
     span_functor_t(T& pointer, D& d, Dn&... dn) noexcept : pack(pointer, d, dn...) {}
 
     template <class ArchiveType>
     void operator() (ArchiveType& archive) const
     {
-        invoke(archive, meta::make_index_sequence<std::tuple_size<Pack>::value>{});
+        invoke(archive, meta::make_index_sequence<std::tuple_size<PackType>::value>{});
     }
 
 private:

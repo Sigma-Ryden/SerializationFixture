@@ -20,12 +20,9 @@ namespace dynamic
 class extern_registry_t
 {
 public:
-    using key_type = ::xxsf_instantiable_traits<void>::key_type;
-
-public:
     template <class ArchiveType, typename T,
               SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static key_type save_key(ArchiveType& archive, T& pointer)
+    static ::xxsf_instantiable_traits_key_type save_key(ArchiveType& archive, T& pointer)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -38,14 +35,14 @@ public:
 
     template <class ArchiveType, typename T,
               SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static key_type load_key(ArchiveType& archive, T& pointer)
+    static ::xxsf_instantiable_traits_key_type load_key(ArchiveType& archive, T& pointer)
     {
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
     #endif // SF_GARBAGE_CHECK_DISABLE
 
-        key_type key{};
+        ::xxsf_instantiable_traits_key_type key{};
         archive & key;
 
         return key;
@@ -58,7 +55,7 @@ private:
 
 public:
     template <typename T, SF_REQUIRE(is_pointer_to_instantiable<T>::value)>
-    static void save(core::ioarchive_t& archive, T& pointer, key_type key)
+    static void save(core::ioarchive_t& archive, T& pointer, ::xxsf_instantiable_traits_key_type key)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -68,7 +65,7 @@ public:
     }
 
     template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void load(core::ioarchive_t& archive, T& pointer, key_type key, memory::void_ptr<T>& cache)
+    static void load(core::ioarchive_t& archive, T& pointer, ::xxsf_instantiable_traits_key_type key, memory::void_ptr<T>& cache)
     {
         using TraitsType = typename memory::ptr_traits<T>::traits;
         using dT = typename meta::dereference<T>::type;
@@ -90,7 +87,7 @@ public:
     }
 
     template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void assign(T& pointer, const memory::void_ptr<T>& address, key_type key)
+    static void assign(T& pointer, const memory::void_ptr<T>& address, ::xxsf_instantiable_traits_key_type key)
     {
         using dT = typename meta::dereference<T>::type;
 

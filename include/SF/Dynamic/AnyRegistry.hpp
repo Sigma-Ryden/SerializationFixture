@@ -20,15 +20,12 @@ namespace dynamic
 
 class any_registry_t
 {
-public:
-    using archive_type = core::ioarchive_t;
-
 private:
     struct any_proxy_t
     {
         // we use raw function ptr instead std::function to reach perfomance
-        void(*save)(archive_type&, std::any&) = nullptr;
-        void(*load)(archive_type&, std::any&) = nullptr;
+        void(*save)(core::ioarchive_t&, std::any&) = nullptr;
+        void(*load)(core::ioarchive_t&, std::any&) = nullptr;
     };
 
 private:
@@ -56,12 +53,12 @@ public:
 
         any_proxy_t proxy;
 
-        proxy.save = [](archive_type& archive, std::any& any)
+        proxy.save = [](core::ioarchive_t& archive, std::any& any)
         {
             archive << std::any_cast<T&>(any);
         };
 
-        proxy.load = [](archive_type& archive, std::any& any)
+        proxy.load = [](core::ioarchive_t& archive, std::any& any)
         {
             any.emplace<T>();
             archive >> std::any_cast<T&>(any);
@@ -71,12 +68,12 @@ public:
     }
 
 public:
-    void save(archive_type& archive, std::any& any, let::u64 hash)
+    void save(core::ioarchive_t& archive, std::any& any, let::u64 hash)
     {
         registry(hash).save(archive, any);
     }
 
-    void load(archive_type& archive, std::any& any, let::u64 hash)
+    void load(core::ioarchive_t& archive, std::any& any, let::u64 hash)
     {
         registry(hash).load(archive, any);
     }
@@ -105,7 +102,7 @@ template <typename T>
 class any_fixture_t
 {
 private:
-    static bool lock;
+    static bool lock_;
 
 public:
     any_fixture_t() { call(); }
@@ -113,8 +110,8 @@ public:
 public:
     static void call()
     {
-        if (lock) return;
-        lock = true; // lock before creating clone instance to prevent recursive call
+        if (lock_) return;
+        lock_ = true; // lock before creating clone instance to prevent recursive call
 
         auto& registry = any_registry_t::instance();
 
@@ -129,7 +126,7 @@ public:
 };
 
 template <typename T>
-bool any_fixture_t<T>::lock = false;
+bool any_fixture_t<T>::lock_ = false;
 
 } // namespace dynamic
 

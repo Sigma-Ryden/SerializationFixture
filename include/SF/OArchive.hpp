@@ -98,7 +98,7 @@ oarchive_t<StreamWrapper, Registry> oarchive(OutStream& stream)
 template <class StreamWrapper, class Registry>
 template <typename OutStream>
 oarchive_t<StreamWrapper, Registry>::oarchive_t(OutStream& stream)
-    : core::ioarchive_t(core::archive_traits_key_t<oarchive_t>::key, false)
+    : core::ioarchive_t(::xxsf_archive_traits<oarchive_t>::key, false)
     , archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }

@@ -37,7 +37,7 @@ namespace tracking
 
 struct hierarchy_t {};
 
-template <typename KeyType, typename TraitsType = ::xxsf_instantiable_traits<void>::key_type>
+template <typename KeyType, typename TraitsType = ::xxsf_instantiable_traits_key_type>
 using hierarchy_track_t = std::unordered_map<std::pair<KeyType, TraitsType>, bool, detail::pair_hash_t<TraitsType>>;
 
 } // namespace tracking

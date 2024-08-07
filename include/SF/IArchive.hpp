@@ -109,7 +109,7 @@ iarchive_t<StreamWrapper, Registry> iarchive(InStream& stream)
 template <class StreamWrapper, class Registry>
 template <typename InStream>
 iarchive_t<StreamWrapper, Registry>::iarchive_t(InStream& stream)
-    : core::ioarchive_t(core::archive_traits_key_t<iarchive_t>::key, true)
+    : core::ioarchive_t(::xxsf_archive_traits<iarchive_t>::key, true)
     , archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
 {
 }

@@ -1,6 +1,10 @@
 #ifndef SF_CORE_POLYMORPHIC_ARCHIVE_HPP
 #define SF_CORE_POLYMORPHIC_ARCHIVE_HPP
 
+#ifdef SF_DEBUG
+#include <typeinfo> // typeid
+#endif // SD_DEBUG
+
 #include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/ArchiveBase.hpp>
 #include <SF/Core/ArchiveTraits.hpp>
@@ -21,66 +25,54 @@ namespace core
 class polymorphic_archive_t
 {
 public:
-    using ArchiveType  = ioarchive_t;
-    using key_type = ioarchive_t::key_type;
-
-    static constexpr key_type max_key = archive_traits::max_key;
-
-public:
-    template <class T> static void save(core::ioarchive_t& archive, T& data)
+    template <class T> static void save(ioarchive_t& archive, T& data)
     {
-        call<oarchive_traits>(archive, data);
+        call<::xxsf_oarchive_registry>(archive, data);
     }
 
-    template <class T> static void load(core::ioarchive_t& archive, T& data)
+    template <class T> static void load(ioarchive_t& archive, T& data)
     {
-        call<iarchive_traits>(archive, data);
+        call<::xxsf_iarchive_registry>(archive, data);
     }
 
 private:
-    template <class ArchiveType> struct is_valid_archive
-        : std::integral_constant<bool, archive_traits_key_t<ArchiveType>::key != archive_traits::base_key> {};
-
-private:
-    template <template <key_type> class archive_traits,
-              key_type Key, class T, SF_REQUIRE(Key == max_key)>
-    static void call(core::ioarchive_t& archive, T& data)
+    template <template <::xxsf_archive_traits_key_type> class ArchiveRegistryTemplate,
+              ::xxsf_archive_traits_key_type ArchiveKey,
+              class T, SF_REQUIRE(ArchiveKey == ::xxsf_archive_traits_base_key)>
+    static void call(ioarchive_t& archive, T& data)
     {
         throw "The read/write archive has invalid type key.";
     }
 
-    template <template <key_type> class archive_traits,
-              key_type Key = 0, class T, SF_REQUIRE(Key < max_key)>
+    template <template <::xxsf_archive_traits_key_type> class ArchiveRegistryTemplate,
+              ::xxsf_archive_traits_key_type ArchiveKey = 0, class T,
+              SF_REQUIRE(ArchiveKey < ::xxsf_archive_traits_base_key)>
     static void call(core::ioarchive_t& archive, T& data)
     {
-        using DerivedArchive = typename archive_traits<Key>::type;
+        using DerivedArchive = typename ArchiveRegistryTemplate<ArchiveKey>::type;
 
-        if (archive_traits_key_t<DerivedArchive>::key == archive.trait)
+        if (::xxsf_archive_traits<DerivedArchive>::key == archive.trait)
             return try_call<DerivedArchive>(archive, data);
 
-        call<archive_traits, Key + 1>(archive, data);
+        call<ArchiveRegistryTemplate, ArchiveKey + 1>(archive, data);
     }
 
     template <class DerivedArchive, class T,
-              SF_REQUIRE(not is_valid_archive<DerivedArchive>::value)>
+              SF_REQUIRE(::xxsf_archive_traits<DerivedArchive>::key == ::xxsf_archive_traits_base_key)>
     static void try_call(core::ioarchive_t& archive, T& data)
     {
         throw "The read/write archive was not registered.";
     }
 
     template <class DerivedArchive, class T,
-              SF_REQUIRE(is_valid_archive<DerivedArchive>::value)>
+              SF_REQUIRE(::xxsf_archive_traits<DerivedArchive>::key != ::xxsf_archive_traits_base_key)>
     static void try_call(core::ioarchive_t& archive, T& data)
     {
     #ifdef SF_DEBUG
-        auto derived_archive = dynamic_cast<DerivedArchive*>(&archive);
-
-        if (derived_archive == nullptr)
+        if (typeid(archive) != typeid(DerivedArchive))
             throw "The read/write archive was registered incorrect.";
-    #else
-        auto derived_archive = static_cast<DerivedArchive*>(&archive);
     #endif // SF_DEBUG
-        try_call_impl<DerivedArchive>(*derived_archive, data);
+        try_call_impl<DerivedArchive>(static_cast<DerivedArchive&>(archive), data);
     }
 
     template <class DerivedArchive, class T>
