@@ -138,16 +138,14 @@ public:
         return registry(key).cast_raw(address);
     }
 
-    template <typename Pointer/*,
-              SF_REQUIRE(meta::is_has_any_save_mode<typename meta::dereference<Pointer>::type>::value)*/>
+    template <typename Pointer>
     void save(core::ioarchive_t& archive, Pointer& pointer)
     {
         const auto key = ::xxsf::traits(*pointer);
         registry(key).save(archive, pointer);
     }
 
-    template <typename Pointer/*,
-              SF_REQUIRE(meta::is_has_any_load_mode<typename meta::dereference<Pointer>::type>::value)*/>
+    template <typename Pointer>
     void load(core::ioarchive_t& archive, Pointer& pointer)
     {
         const auto key = ::xxsf::traits(*pointer);
