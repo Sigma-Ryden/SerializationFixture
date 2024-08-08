@@ -19,7 +19,7 @@ template <class Base, class ArchiveType, class Derived,
                                std::is_base_of<Base, Derived>>::value)>
 void base(ArchiveType& archive, Derived& object)
 {
-    archive & static_cast<Base&>(object);
+    archive & ::xxsf_cast_to_non_public_base::call<Base>(object);
 }
 
 template <class Base, class ArchiveType, class Derived,

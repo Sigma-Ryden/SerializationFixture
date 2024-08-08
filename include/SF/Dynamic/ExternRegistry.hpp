@@ -2,10 +2,10 @@
 #define SF_DYNAMIC_REGISTRY_HPP
 
 #include <SF/Core/Serialization.hpp>
-#include <SF/Core/InstantiableTraits.hpp>
 #include <SF/Core/Memory.hpp>
 
 #include <SF/Dynamic/InstantiableRegistry.hpp>
+#include <SF/Dynamic/InstantiableTraits.hpp>
 #include <SF/Dynamic/AnyRegistry.hpp>
 
 #include <SF/Detail/Meta.hpp>
@@ -27,7 +27,7 @@ public:
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto key = SF_TYPE_HASH(*pointer);
+        auto key = instantiable_registry_t::instance().rtti.at(SF_TYPE_HASH(*pointer));
         archive & key;
 
         return key;

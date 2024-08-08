@@ -24,7 +24,7 @@ class instantiable_registry_t
 public:
     using instantiable_type = INSTANTIABLE_TYPE;
 
-private:
+public:
     struct instantiable_proxy_t
     {
         std::shared_ptr<instantiable_type>(*shared)() = nullptr;
@@ -40,9 +40,10 @@ private:
 public:
     std::unordered_map<::xxsf_instantiable_traits_key_type, instantiable_proxy_t*> all;
     std::unordered_map<std::size_t, instantiable_proxy_t*> rtti_all;
+    std::unordered_map<std::size_t, ::xxsf_instantiable_traits_key_type> rtti;
 
 private:
-    instantiable_registry_t() : registry_() {}
+    instantiable_registry_t() = default;
     instantiable_registry_t(const instantiable_registry_t&) = delete;
     instantiable_registry_t& operator=(const instantiable_registry_t&) = delete;
 
@@ -55,7 +56,7 @@ public:
 
     ~instantiable_registry_t()
     {
-        for (auto proxy : all) delete proxy;
+        for (auto key_and_proxy : all) delete key_and_proxy.second;
     }
 
 public:
@@ -72,7 +73,7 @@ public:
     template <class T, SF_REQUIRE(is_instantiable<T>::value)>
     void update(::xxsf_instantiable_traits_key_type key)
     {
-        if (is_registered(key)) return;
+        if (all.find(key) != all.end()) return;
 
         auto proxy = new instantiable_proxy_t;
 
@@ -101,67 +102,90 @@ public:
         };
 
         all.emplace(key, proxy);
-        rtti_all.emplace(typeid(T), proxy);
+
+        const auto hash = typeid(T).hash_code();
+        rtti_all.emplace(hash, proxy);
+        rtti.emplace(hash, key);
     }
 
     template <typename TraitsType,
               SF_REQUIRE(meta::is_memory_shared<TraitsType>::value)>
-    std::shared_ptr<instantiable_type> clone(::xxsf_instantiable_traits_key_type key)
+    std::shared_ptr<instantiable_type> clone(::xxsf_instantiable_traits_key_type key) const
     {
-        return registry(key).shared();
+        return all.at(key)->shared();
     }
 
     template <typename TraitsType,
               SF_REQUIRE(meta::is_memory_raw<TraitsType>::value)>
-    instantiable_type* clone(::xxsf_instantiable_traits_key_type key)
+    instantiable_type* clone(::xxsf_instantiable_traits_key_type key) const
     {
-        return registry(key).raw();
+        return all.at(key)->raw();
     }
 
-    std::shared_ptr<instantiable_type> cast(std::shared_ptr<void> address, ::xxsf_instantiable_traits_key_type key)
+    std::shared_ptr<instantiable_type> cast(std::shared_ptr<void> address, ::xxsf_instantiable_traits_key_type key) const
     {
-        return registry(key).cast_shared(address);
+        return all.at(key)->cast_shared(address);
     }
 
-    instantiable_type* cast(void* address, ::xxsf_instantiable_traits_key_type key)
+    instantiable_type* cast(void* address, ::xxsf_instantiable_traits_key_type key) const
     {
-        return registry(key).cast_raw(address);
-    }
-
-    template <typename Pointer>
-    void save(core::ioarchive_t& archive, Pointer& pointer)
-    {
-        const auto key = SF_TYPE_HASH(*pointer);
-        registry(key).save(archive, pointer);
+        return all.at(key)->cast_raw(address);
     }
 
     template <typename Pointer>
-    void load(core::ioarchive_t& archive, Pointer& pointer)
+    void save(core::ioarchive_t& archive, Pointer& pointer) const
     {
         const auto key = SF_TYPE_HASH(*pointer);
-        registry(key).load(archive, pointer);
+        rtti_all.at(key)->save(archive, pointer);
     }
 
-public:
-    bool is_registered(::xxsf_instantiable_traits_key_type key)
+    template <typename Pointer>
+    void load(core::ioarchive_t& archive, Pointer& pointer) const
     {
-        return registry_.find(key) != registry_.end();
-    }
-
-#ifndef SF_REGISTRY_ACCESS
-private:
-#endif // SF_REGISTRY_ACCESS
-    instantiable_proxy_t* registry(::xxsf_instantiable_traits_key_type key)
-    {
-        // It happens if the class with the given key has not beed public inherited
-        // from the instantiable class or not registered with fixture object.
-        auto it = registry_.find(key);
-        if (it == registry_.end())
-            throw "The 'sf::dynamic::instantiable_registry_t' does not has instance with input key.";
-
-        return it->second;
+        const auto key = SF_TYPE_HASH(*pointer);
+        rtti_all.at(key)->load(archive, pointer);
     }
 };
+
+template <class T>
+class instantiable_fixture_t
+{
+private:
+    static bool lock_;
+
+public:
+    instantiable_fixture_t() { call<T>(); }
+
+public:
+    template <typename dT = T,
+              SF_REQUIRE(instantiable_registry_t::is_instantiable<dT>::value)>
+    static bool call()
+    {
+        if (lock_) return true;
+        lock_ = true; // lock before creating clone instance to prevent recursive call
+
+        auto& registry = instantiable_registry_t::instance();
+
+        const auto key = ::xxsf_instantiable_traits<T>::key;
+    #ifdef SF_DEBUG
+        if (key == ::xxsf_instantiable_traits_base_key)
+            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
+
+        if (registry.all.find(key) != registry.all.end())
+            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
+    #endif // SF_DEBUG
+
+        registry.update<T>(key);
+        return true;
+    }
+
+    template <typename dT = T,
+              SF_REQUIRE(not instantiable_registry_t::is_instantiable<dT>::value)>
+    static bool call() noexcept { return false; }
+};
+
+template <class T>
+bool instantiable_fixture_t<T>::lock_ = false;
 
 } // namespace dynamic
 

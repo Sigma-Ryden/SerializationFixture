@@ -2,6 +2,8 @@
 
 #include <SF/BuiltIn/string.hpp>
 
+EXPORT_INSTANTIABLE(BaseObject)
+
 SERIALIZATION_DEFINITION(save, self, BaseObject)
 {
     archive << self.id << self.name;

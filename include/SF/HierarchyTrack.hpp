@@ -4,8 +4,9 @@
 #include <utility> // pair
 #include <unordered_map> // unordered_map
 
-#include <SF/Core/InstantiableTraits.hpp>
 #include <SF/Core/Hash.hpp>
+
+#include <SF/Dynamic/InstantiableTraits.hpp>
 
 #include <SF/Detail/MetaMacro.hpp>
 

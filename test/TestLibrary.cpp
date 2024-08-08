@@ -80,26 +80,16 @@ TEST(TestLibrary, TestValidation)
 TEST_SPACE()
 {
 
-class Triangle : public instantiable_t
-{
-    SERIALIZABLE(Triangle)
-};
+class Triangle : public instantiable_t {};
+class Cyrcle : public instantiable_t {};
 
-class Cyrcle : public instantiable_t
-{
-    SERIALIZABLE(Triangle) // oops - polymorphic key is already use
-};
-
-// is the same as below
-//EXPORT_INSTANTIABLE_KEY("Triangle", Triangle) // good
-//EXPORT_INSTANTIABLE_KEY("Triangle", Cyrcle) // bad - same keys
-
-class Square // non instantiable
-{
-    SERIALIZABLE(Square)
-};
+// non instantiable
+class Square {};
 
 } // TEST_SPACE
+
+EXPORT_INSTANTIABLE(Triangle)
+EXPORT_INSTANTIABLE(Square)
 
 SERIALIZATION(saveload, self, Triangle) {}
 SERIALIZATION(saveload, self, Cyrcle) {}
@@ -122,7 +112,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
     using sf::dynamic::extern_registry_t;
 
     auto& registry = instantiable_registry_t::instance();
-    auto key = xxsf::traits<Square>();
+    auto key = ::xxsf_archive_traits<Square>::key;
 
     {
         auto success = false;
@@ -167,65 +157,55 @@ TEST(TestLibrary, TestInstantiableRegistry)
 TEST_SPACE()
 {
 
-struct MyStruct : instantiable_t
-{
-    SERIALIZABLE(MyStruct)
-};
+struct MyStruct : instantiable_t {};
 
-class MyClass : sf::instantiable_t // is same as instantiable_t
-{
-    SERIALIZABLE(MyClass)
-};
+// is same as instantiable_t
+class MyClass : sf::instantiable_t {};
 
-class MyDerivedClass : public MyClass
-{
-    SERIALIZABLE(MyDerivedClass)
-};
+class MyDerivedClass : public MyClass {};
 
-struct MyCustomType : instantiable_t
-{
-    SERIALIZABLE(MyCustomType)
-};
+struct MyCustomType : instantiable_t {};
 
 } // TEST_SPACE
 
-EXPORT_INSTANTIABLE_KEY("MyClass", MyStruct)
-EXPORT_INSTANTIABLE_KEY("MyStruct", MyClass)
+EXPORT_INSTANTIABLE_KEY(SF_STATIC_HASH("MyClass"), MyStruct)
+EXPORT_INSTANTIABLE_KEY(SF_STATIC_HASH("MyStruct"), MyClass)
 
-EXPORT_INSTANTIABLE_KEY("MyDerived", MyDerivedClass)
+EXPORT_INSTANTIABLE_KEY(SF_STATIC_HASH("MyDerived"), MyDerivedClass)
 
 EXPORT_INSTANTIABLE(MyCustomType)
+
+SERIALIZATION(saveload, self, MyStruct) {}
+SERIALIZATION(saveload, self, MyClass) {}
+SERIALIZATION(saveload, self, MyDerivedClass) {}
+SERIALIZATION(saveload, self, MyCustomType) {}
 
 TEST(TestLibrary, TestExportInstantiable)
 {
     static auto sv_s = SF_STATIC_HASH("MyClass");
     static auto sv_c = SF_STATIC_HASH("MyStruct");
 
+    auto& registry = sf::dynamic::instantiable_registry_t::instance();
+
     {
         EXPECT("export instantiable key.traits",
-            xxsf::traits<MyStruct>() == sv_s &&
-            xxsf::traits<MyClass>() == sv_c);
-
-        EXPECT("export instantiable key.static_traits",
-            xxsf::static_traits<MyStruct>() == sv_c &&
-            xxsf::static_traits<MyClass>() == sv_s);
+            ::xxsf_instantiable_traits<MyStruct>::key == sv_s &&
+            ::xxsf_instantiable_traits<MyClass>::key == sv_c);
     }
 
     using sf::dynamic::extern_registry_t;
 
-    static auto sv_ct = SF_STATIC_HASH("MyCustomType");
+    static auto sv_ct = SF_TYPE_HASH(MyCustomType);
 
     {
-        EXPECT("export instantiable.equivalent",
-            xxsf::traits<MyCustomType>() == sv_ct &&
-            xxsf::static_traits<MyCustomType>() == sv_ct);
+        EXPECT("export instantiable.equivalent", ::xxsf_instantiable_traits<MyCustomType>::key == sv_ct);
     }
 
     static auto sv_dc = SF_STATIC_HASH("MyDerived");
 
     {
         std::shared_ptr<MyClass> b = std::make_shared<MyDerivedClass>();
-        EXPECT("instantiable runtime key.traits", xxsf::traits(*b) == sv_dc);
+        EXPECT("instantiable runtime key.traits", registry.rtti.at(SF_TYPE_HASH(*b)) == sv_dc); // TODO: check
     }
 }
 
@@ -288,37 +268,31 @@ TEST_SPACE()
 
 struct WorldObject : instantiable_t
 {
-    SERIALIZABLE(WorldObject)
     int wo = 0;
 };
 
 struct EnvironmentObject : virtual WorldObject
 {
-    SERIALIZABLE(EnvironmentObject)
     int eo = 0;
 };
 
 struct MoveableObject : virtual EnvironmentObject
 {
-    SERIALIZABLE(MoveableObject)
     int mo = 0;
 };
 
 struct DestructibleObject : virtual EnvironmentObject
 {
-    SERIALIZABLE(DestructibleObject)
     int dso = 0;
 };
 
 struct DecorativeObject : DestructibleObject, MoveableObject
 {
-    SERIALIZABLE(DecorativeObject)
     int dco = 0;
 };
 
 struct FoliageObject : virtual WorldObject
 {
-    SERIALIZABLE(FoliageObject)
     int fo = 0;
 };
 
@@ -326,11 +300,18 @@ struct FoliageObjectInstance : FoliageObject {};
 
 struct DecorativeFoliageObject : DecorativeObject, FoliageObjectInstance
 {
-    SERIALIZABLE(DecorativeFoliageObject)
     int dcfo = 0;
 };
 
 } // TEST_SPACE
+
+EXPORT_INSTANTIABLE(WorldObject)
+EXPORT_INSTANTIABLE(EnvironmentObject)
+EXPORT_INSTANTIABLE(MoveableObject)
+EXPORT_INSTANTIABLE(DestructibleObject)
+EXPORT_INSTANTIABLE(DecorativeObject)
+EXPORT_INSTANTIABLE(FoliageObject)
+EXPORT_INSTANTIABLE(DecorativeFoliageObject)
 
 SERIALIZATION(saveload, self, WorldObject)
 {
@@ -408,7 +389,7 @@ TEST_SPACE()
 
 class SomeObjectImpl
 {
-    SERIALIZABLE(SomeObjectImpl)
+    SERIALIZATION_ACCESS()
 
 public:
     SomeObjectImpl() = default;
@@ -418,9 +399,9 @@ protected:
     int data_;
 };
 
-class SomeObject : protected SomeObjectImpl // try protected inheritance
+class SomeObject : protected SomeObjectImpl
 {
-    SERIALIZABLE(SomeObject)
+    SERIALIZATION_ACCESS()
 
 public:
     SomeObject(int data = 0) : SomeObjectImpl(data), inner_data_(data/2) {}
@@ -435,22 +416,17 @@ private:
     int inner_data_;
 };
 
-struct PolymorphicBaseImpl : public sf::instantiable_t
-{
-    SERIALIZABLE(PolymorphicBaseImpl)
-};
-
-struct PolymorphicBase : protected PolymorphicBaseImpl // not allowed!
-{
-    SERIALIZABLE(PolymorphicBase)
-};
-
-struct PolymorphicDerived : public PolymorphicBase
-{
-    SERIALIZABLE(PolymorphicDerived)
-};
+struct PolymorphicBaseImpl : public sf::instantiable_t {};
+struct PolymorphicBase : protected PolymorphicBaseImpl {}; // not allowed!
+struct PolymorphicDerived : public PolymorphicBase {};
 
 } // TEST_SPACE
+
+EXPORT_INSTANTIABLE(SomeObjectImpl)
+EXPORT_INSTANTIABLE(SomeObject)
+EXPORT_INSTANTIABLE(PolymorphicDerived)
+EXPORT_INSTANTIABLE(PolymorphicBase)
+EXPORT_INSTANTIABLE(PolymorphicBaseImpl)
 
 SERIALIZATION(saveload, self, SomeObjectImpl)
 {
@@ -466,7 +442,8 @@ SERIALIZATION(saveload, self, PolymorphicBaseImpl) {}
 
 SERIALIZATION(saveload, self, PolymorphicBase)
 {
-    archive & hierarchy<PolymorphicBaseImpl>(self);
+    // not compile for: non-public inheritance
+    // archive & hierarchy<PolymorphicBaseImpl>(self);
 }
 
 SERIALIZATION(saveload, self, PolymorphicDerived)
@@ -509,9 +486,6 @@ TEST(TestLibrary, TestAccess)
     }
 }
 
-// since we dont use SERIALIZABLE remember that:
-// SERIALIZABLE contains SERIALIZATION_ACCESS() and INSTANTIABLE_BODY() macros
-
 TEST_SPACE()
 {
 
@@ -536,13 +510,6 @@ SERIALIZATION(saveload, self, NoTraitsDerived)
 {
     archive & hierarchy<NoTraitsBase>(self) & self.d;
 }
-
-// if user does not use SERIALIZABLE macro (which include SERIALIZATION_TRAITS),
-// then library will use typeid for type hashing,
-// mixed usage SERIALIZATION_TRAITS and typeid does not allowed (in single hierarchy only)!
-// You also can specify hashing behavior with macro SF_TYPE_HASH - see Core/Hash.hpp
-// Note that: EXPORT_INSTANTIABLE_KEY("some_text", some_type) - is not allowed with typeid using
-// SERIALIZABLE macro consists of SERIALIZATION_ACCESS, SERIALIZATION_FIXTURE and SERIALIZATION_TRAITS
 
 TEST(TestLibrary, TestNoTraits)
 {
@@ -663,19 +630,18 @@ TEST_SPACE()
 
 struct Interface : sf::instantiable_t
 {
-    SERIALIZABLE(Interface)
-
     virtual void logic() = 0;
 };
 
 struct Implementation : Interface
 {
-    SERIALIZABLE(Implementation)
-
     virtual void logic() override { /*some logic...*/ }
 };
 
 } // TEST_SPACE
+
+EXPORT_INSTANTIABLE(Interface)
+EXPORT_INSTANTIABLE(Implementation)
 
 SERIALIZATION(saveload, self, Interface) {}
 SERIALIZATION(saveload, self, Implementation) {}
@@ -685,6 +651,8 @@ SERIALIZATION(saveload, self, Implementation) {}
 
 TEST(TestLibrary, TestAbstract)
 {
+    auto& registry = sf::dynamic::instantiable_registry_t::instance();
+
     std::vector<unsigned char> storage;
     {
         std::unique_ptr<Interface> i(new Implementation);
@@ -699,7 +667,9 @@ TEST(TestLibrary, TestAbstract)
         ar & i;
 
         ASSERT("inited", i != nullptr);
-        EXPECT("traits", xxsf::traits(*i) == xxsf::traits<Implementation>());
+        EXPECT("traits",
+            registry.rtti_all.at(SF_TYPE_HASH(*i)) ==
+            registry.all.at(::xxsf_instantiable_traits<Implementation>::key));
     }
 }
 

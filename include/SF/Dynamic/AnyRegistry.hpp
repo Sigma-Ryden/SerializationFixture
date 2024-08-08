@@ -20,7 +20,7 @@ namespace dynamic
 
 class any_registry_t
 {
-private:
+public:
     struct any_proxy_t
     {
         // we use raw function ptr instead std::function to reach perfomance
@@ -28,15 +28,11 @@ private:
         void(*load)(core::ioarchive_t&, std::any&) = nullptr;
     };
 
-private:
-    using InnerTable = std::unordered_map<let::u64, any_proxy_t>;
+public:
+    std::unordered_map<let::u64, any_proxy_t> all;
 
 private:
-    InnerTable registry_;
-
-private:
-    any_registry_t() : registry_() {}
-
+    any_registry_t() = default;
     any_registry_t(const any_registry_t&) = delete;
     any_registry_t& operator=(const any_registry_t&) = delete;
 
@@ -49,7 +45,7 @@ public:
 
     template <typename T> void update(let::u64 hash)
     {
-        if (is_registered(hash)) return;
+        if (all.find(hash) != all.end()) return;
 
         any_proxy_t proxy;
 
@@ -64,37 +60,18 @@ public:
             archive >> std::any_cast<T&>(any);
         };
 
-        registry_.emplace(hash, proxy);
+        all.emplace(hash, proxy);
     }
 
 public:
     void save(core::ioarchive_t& archive, std::any& any, let::u64 hash)
     {
-        registry(hash).save(archive, any);
+        all.at(hash).save(archive, any);
     }
 
     void load(core::ioarchive_t& archive, std::any& any, let::u64 hash)
     {
-        registry(hash).load(archive, any);
-    }
-
-public:
-    bool is_registered(let::u64 hash)
-    {
-        return registry_.find(hash) != registry_.end();
-    }
-
-#ifndef SF_REGISTRY_ACCESS
-private:
-#endif // SF_REGISTRY_ACCESS
-    const any_proxy_t& registry(let::u64 hash)
-    {
-        // It happens if the type not registered with fixture object.
-        auto it = registry_.find(hash);
-        if (it == registry_.end())
-            throw "The 'sf::any_registry_t' must registry type with specify hash code.";
-
-        return it->second;
+        all.at(hash).load(archive, any);
     }
 };
 
@@ -117,7 +94,7 @@ public:
 
         auto hash = SF_TYPE_HASH(typeid(T));
     #ifdef SF_DEBUG
-        if (registry.is_registered(hash))
+        if (registry.all.find(hash) != registry.all.end())
             throw "The 'sf::dynamic::any_registry_t' must contains unique hashes.";
     #endif // SF_DEBUG
 

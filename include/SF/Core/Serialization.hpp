@@ -104,4 +104,13 @@ template <class T, typename enable = void> struct xxsf_save;
 template <class T, typename enable = void> struct xxsf_load;
 template <class T, typename enable = void> struct xxsf_saveload;
 
+struct xxsf_cast_to_non_public_base
+{
+    template <class BaseType, class DerivedType>
+    static BaseType& call(DerivedType& object)
+    {
+        return static_cast<BaseType&>(object);
+    }
+};
+
 #endif // SF_CORE_SERIALIZATION_HPP
