@@ -6,24 +6,12 @@
 #include <SF/Core/Serialization.hpp>
 #include <SF/Core/Memory.hpp>
 
-#include <SF/Core/InstantiableTraits.hpp>
 #include <SF/Core/Hash.hpp>
 
 #include <SF/Core/PolymorphicArchive.hpp>
 
 #include <SF/Dynamic/Instantiable.hpp>
-
-// Auto instantiable type registration
-#define SERIALIZATION_FIXTURE(...)                                                                      \
-    ::sf::dynamic::instantiable_fixture_t<__VA_ARGS__> xxfixture;
-
-#define SERIALIZATION_TRAITS(...)                                                                       \
-    static constexpr ::xxsf_instantiable_traits_key_type xxstatic_traits() noexcept {                   \
-        return SF_STATIC_HASH(#__VA_ARGS__);                                                            \
-    }                                                                                                   \
-    virtual ::xxsf_instantiable_traits_key_type xxtrait() const noexcept {                              \
-        return ::xxsf::traits<__VA_ARGS__>();                                                           \
-    }
+#include <SF/Dynamic/InstantiableTraits.hpp>
 
 namespace sf
 {
@@ -35,10 +23,6 @@ class instantiable_registry_t
 {
 public:
     using instantiable_type = INSTANTIABLE_TYPE;
-
-private:
-    template <typename ItemType>
-    using InnerTable = std::unordered_map<::xxsf_instantiable_traits_key_type, ItemType>;
 
 private:
     struct instantiable_proxy_t
@@ -53,11 +37,11 @@ private:
         void(*load)(core::ioarchive_t&, instantiable_type*) = nullptr;
     };
 
-private:
-    InnerTable<instantiable_proxy_t> registry_;
+public:
+    std::unordered_map<::xxsf_instantiable_traits_key_type, instantiable_proxy_t*> all;
+    std::unordered_map<std::size_t, instantiable_proxy_t*> rtti_all;
 
 private:
-
     instantiable_registry_t() : registry_() {}
     instantiable_registry_t(const instantiable_registry_t&) = delete;
     instantiable_registry_t& operator=(const instantiable_registry_t&) = delete;
@@ -67,6 +51,11 @@ public:
     {
         static instantiable_registry_t self;
         return self;
+    }
+
+    ~instantiable_registry_t()
+    {
+        for (auto proxy : all) delete proxy;
     }
 
 public:
@@ -85,33 +74,34 @@ public:
     {
         if (is_registered(key)) return;
 
-        instantiable_proxy_t proxy;
+        auto proxy = new instantiable_proxy_t;
 
-        proxy.shared = [] { return memory::allocate_shared<instantiable_type, T>(); };
+        proxy->shared = [] { return memory::allocate_shared<instantiable_type, T>(); };
 
-        proxy.cast_shared = [](std::shared_ptr<void> address)
+        proxy->cast_shared = [](std::shared_ptr<void> address)
         {
             return memory::static_pointer_cast<instantiable_type, T>(address);
         };
 
-        proxy.raw = [] { return memory::allocate_raw<instantiable_type, T>(); };
+        proxy->raw = [] { return memory::allocate_raw<instantiable_type, T>(); };
 
-        proxy.cast_raw = [](void* address)
+        proxy->cast_raw = [](void* address)
         {
             return memory::static_pointer_cast<instantiable_type, T>(address);
         };
 
-        proxy.save = [](core::ioarchive_t& archive, instantiable_type* instance)
+        proxy->save = [](core::ioarchive_t& archive, instantiable_type* instance)
         {
             archive << *memory::dynamic_pointer_cast<T>(instance);
         };
 
-        proxy.load = [](core::ioarchive_t& archive, instantiable_type* instance)
+        proxy->load = [](core::ioarchive_t& archive, instantiable_type* instance)
         {
             archive >> *memory::dynamic_pointer_cast<T>(instance);
         };
 
-        registry_.emplace(key, proxy);
+        all.emplace(key, proxy);
+        rtti_all.emplace(typeid(T), proxy);
     }
 
     template <typename TraitsType,
@@ -141,14 +131,14 @@ public:
     template <typename Pointer>
     void save(core::ioarchive_t& archive, Pointer& pointer)
     {
-        const auto key = ::xxsf::traits(*pointer);
+        const auto key = SF_TYPE_HASH(*pointer);
         registry(key).save(archive, pointer);
     }
 
     template <typename Pointer>
     void load(core::ioarchive_t& archive, Pointer& pointer)
     {
-        const auto key = ::xxsf::traits(*pointer);
+        const auto key = SF_TYPE_HASH(*pointer);
         registry(key).load(archive, pointer);
     }
 
@@ -161,7 +151,7 @@ public:
 #ifndef SF_REGISTRY_ACCESS
 private:
 #endif // SF_REGISTRY_ACCESS
-    instantiable_proxy_t& registry(::xxsf_instantiable_traits_key_type key)
+    instantiable_proxy_t* registry(::xxsf_instantiable_traits_key_type key)
     {
         // It happens if the class with the given key has not beed public inherited
         // from the instantiable class or not registered with fixture object.
@@ -172,42 +162,6 @@ private:
         return it->second;
     }
 };
-
-template <class T>
-class instantiable_fixture_t
-{
-private:
-    static bool lock_;
-
-public:
-    instantiable_fixture_t() { call<T>(); }
-
-public:
-    template <typename dT = T,
-              SF_REQUIRE(instantiable_registry_t::is_instantiable<dT>::value)>
-    static void call()
-    {
-        if (lock_) return;
-        lock_ = true; // lock before creating clone instance to prevent recursive call
-
-        auto& registry = instantiable_registry_t::instance();
-
-        const auto key = ::xxsf::template traits<T>();
-    #ifdef SF_DEBUG
-        if (registry.is_registered(key))
-            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
-    #endif // SF_DEBUG
-
-        registry.update<T>(key);
-    }
-
-    template <typename dT = T,
-              SF_REQUIRE(not instantiable_registry_t::is_instantiable<dT>::value)>
-    static void call() noexcept { /*pass*/ }
-};
-
-template <class T>
-bool instantiable_fixture_t<T>::lock_ = false;
 
 } // namespace dynamic
 

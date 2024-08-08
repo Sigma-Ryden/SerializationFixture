@@ -8,18 +8,9 @@
 
 // TODO: remove xxsf
 #define SERIALIZATION_ACCESS(...)                                                                       \
-    friend struct ::xxsf;                                                                               \
     template <typename, typename> friend struct ::xxsf_save;                                            \
     template <typename, typename> friend struct ::xxsf_load;                                            \
     template <typename, typename> friend struct ::xxsf_saveload;
-
-// Alternative instantiable registration with library traits no-rtti
-#ifndef SERIALIZABLE
-    #define SERIALIZABLE(...)                                                                           \
-        SERIALIZATION_ACCESS(__VA_ARGS__)                                                               \
-        SERIALIZATION_FIXTURE(__VA_ARGS__)                                                              \
-        SERIALIZATION_TRAITS(__VA_ARGS__)
-#endif // SERIALIZABLE
 
 namespace sf
 {

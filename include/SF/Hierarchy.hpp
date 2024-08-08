@@ -2,7 +2,6 @@
 #define SF_HIERARCHY_HPP
 
 #include <SF/Core/SerializatonBase.hpp>
-#include <SF/Core/Serialization.hpp>
 #include <SF/Core/Memory.hpp>
 
 #include <SF/ApplyFunctor.hpp>
@@ -20,7 +19,7 @@ template <class Base, class ArchiveType, class Derived,
                                std::is_base_of<Base, Derived>>::value)>
 void base(ArchiveType& archive, Derived& object)
 {
-    ::xxsf::serialize_base<Base>(archive, object);
+    archive & static_cast<Base&>(object);
 }
 
 template <class Base, class ArchiveType, class Derived,
@@ -29,7 +28,7 @@ template <class Base, class ArchiveType, class Derived,
 void virtual_base(ArchiveType& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
-    if (::xxsf::traits(object) == ::xxsf::template traits<Derived>())
+    if (SF_TYPE_HASHobject) == ::xxsf::template traits<Derived>())
         base<Base>(archive, object);
 #else
     using key_type = typename ArchiveType::TrackingKeyType;
@@ -37,7 +36,7 @@ void virtual_base(ArchiveType& archive, Derived& object)
     auto address = memory::pure(std::addressof(object));
 
     const auto key = reinterpret_cast<key_type>(address);
-    const auto traits = ::xxsf::traits<Base>();
+    const auto traits = SF_TYPE_HASH(Base);
 
     auto& hierarchy_tracking = archive.template tracking<tracking::hierarchy_t>();
 

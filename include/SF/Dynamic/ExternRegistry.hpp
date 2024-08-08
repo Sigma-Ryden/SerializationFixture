@@ -27,7 +27,7 @@ public:
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto key = ::xxsf::traits(*pointer);
+        auto key = SF_TYPE_HASH(*pointer);
         archive & key;
 
         return key;

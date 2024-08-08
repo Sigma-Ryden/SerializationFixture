@@ -16,7 +16,7 @@
 #endif // SF_STATIC_HASH
 
 #ifndef SF_TYPE_HASH
-    #define SF_TYPE_HASH(type_info) ::sf::type_hash(type_info)
+    #define SF_TYPE_HASH(type_or_expression) (typeid(type_or_expression).hash_code())
 #endif // SF_TYPE_HASH
 
 namespace sf
@@ -124,12 +124,6 @@ constexpr key_type static_hash(const char* text) noexcept
     using detail::word_traits;
 
     return hash_t<detail::word_traits<key_type>::value>::static_run(text);
-}
-
-inline std::size_t type_hash(const std::type_info& type) noexcept
-{
-    // not portable impl - will be changed
-    return type.hash_code();
 }
 
 namespace detail

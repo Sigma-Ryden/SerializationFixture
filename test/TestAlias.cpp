@@ -7,17 +7,18 @@ TEST_SPACE()
 
 struct Base : instantiable_t
 {
-    SERIALIZABLE(Base)
     int x;
 };
 
 struct Derived : Base
 {
-    SERIALIZABLE(Derived)
     int y;
 };
 
 } // TEST_SPACE
+
+EXPORT_INSTANTIABLE(Base)
+EXPORT_INSTANTIABLE(Derived)
 
 SERIALIZATION(saveload, self, Base)
 {

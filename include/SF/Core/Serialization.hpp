@@ -1,14 +1,8 @@
 #ifndef SF_CORE_SERIALIZATION_HPP
 #define SF_CORE_SERIALIZATION_HPP
 
-#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/ArchiveBase.hpp>
-#include <SF/Core/InstantiableTraits.hpp>
 
-#include <SF/Core/Hash.hpp>
-
-#include <SF/Detail/Meta.hpp>
-#include <SF/Detail/MetaMacro.hpp>
 #include <SF/Detail/Preprocessor.hpp>
 
 #define SERIALIZATION(mode, object, ...) \
@@ -109,86 +103,5 @@
 template <class T, typename enable = void> struct xxsf_save;
 template <class T, typename enable = void> struct xxsf_load;
 template <class T, typename enable = void> struct xxsf_saveload;
-
-class xxsf
-{
-public:
-    template <class T, typename = void> struct is_has_static_traits : std::false_type {};
-    template <class T>
-    struct is_has_static_traits<T, ::sf::meta::void_t<decltype(&T::xxstatic_traits)>> : std::true_type {};
-
-    template <class T, typename = void> struct is_has_traits : std::false_type {};
-    template <class T>
-    struct is_has_traits<T, ::sf::meta::void_t<decltype(&T::xxtrait)>> : std::true_type {};
-
-public:
-    template <class T> struct is_has_inner_traits
-    {
-        static constexpr bool value = is_has_static_traits<T>::value and is_has_traits<T>::value; // delay access
-    };
-
-public:
-    template <class Base, class ArchiveType, class Derived>
-    static void serialize_base(ArchiveType& archive, Derived& object)
-    {
-        archive & static_cast<Base&>(object);
-    }
-
-public:
-    template <class T, SF_REQUIRE(not is_has_inner_traits<T>::value)>
-    static ::xxsf_instantiable_traits_key_type traits(T& object)
-    {
-    #ifdef SF_EXTERN_RUNTIME_TRAIT
-        return SF_EXTERN_RUNTIME_TRAIT(object);
-    #else
-        return SF_TYPE_HASH(typeid(object));
-    #endif // SF_EXTERN_RUNTIME_TRAIT
-    }
-
-    template <class T, SF_REQUIRE(is_has_inner_traits<T>::value)>
-    static ::xxsf_instantiable_traits_key_type traits(T& object) noexcept
-    {
-        return object.xxtrait();
-    }
-
-    template <class T, SF_REQUIRE(not is_has_inner_traits<T>::value)>
-    static ::xxsf_instantiable_traits_key_type static_traits() noexcept
-    {
-    #ifdef SF_EXTERN_TRAIT
-        return SF_EXTERN_TRAIT(T);
-    #else
-        return SF_TYPE_HASH(typeid(T));
-    #endif // SF_EXTERN_TRAIT
-    }
-
-    template <class T, SF_REQUIRE(is_has_inner_traits<T>::value)>
-    static constexpr ::xxsf_instantiable_traits_key_type static_traits() noexcept
-    {
-        return T::xxstatic_traits();
-    }
-
-    template <class T, SF_REQUIRE(not is_has_inner_traits<T>::value)>
-    static ::xxsf_instantiable_traits_key_type traits() noexcept
-    {
-        static_assert(::xxsf_instantiable_traits<T>::key == ::xxsf_instantiable_traits_base_key,
-            "Export instantiable traits is not allowed using typeid.");
-
-        return static_traits<T>();
-    }
-
-    template <class T, SF_REQUIRE(is_has_inner_traits<T>::value)>
-#ifdef SF_EXPORT_INSTANTIABLE_DISABLE
-    static constexpr ::xxsf_instantiable_traits_key_type traits() noexcept
-#else
-    static ::xxsf_instantiable_traits_key_type traits() noexcept
-#endif // SF_EXPORT_INSTANTIABLE_DISABLE
-    {
-        constexpr auto traits_key = ::xxsf_instantiable_traits<T>::key;
-
-        return traits_key == ::xxsf_instantiable_traits_base_key
-             ? static_traits<T>()
-             : traits_key;
-    }
-};
 
 #endif // SF_CORE_SERIALIZATION_HPP

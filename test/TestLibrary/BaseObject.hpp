@@ -7,9 +7,6 @@
 
 struct BaseObject : sf::instantiable_t
 {
-    // not required for SERIALIZATION_INTERFACE
-    SERIALIZABLE(BaseObject)
-
     int id;
     std::string name;
 };

@@ -13,26 +13,24 @@ TEST_SPACE()
 
 struct Entity : instantiable_t
 {
-    SERIALIZABLE(Entity)
-
     int e;
 };
 
 struct Boy : Entity
 {
-    SERIALIZABLE(Boy)
-
     int b;
 };
 
 struct Girl : Entity
 {
-    SERIALIZABLE(Girl)
-
     int g;
 };
 
 } // TEST_SPACE
+
+EXPORT_INSTANTIABLE(Entity)
+EXPORT_INSTANTIABLE(Boy)
+EXPORT_INSTANTIABLE(Girl)
 
 SERIALIZATION(saveload, self, Boy)
 {

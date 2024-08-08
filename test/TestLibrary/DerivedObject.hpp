@@ -6,8 +6,6 @@
 
 struct DerivedObject : BaseObject
 {
-    SERIALIZABLE(DerivedObject)
-
     float data;
 };
 

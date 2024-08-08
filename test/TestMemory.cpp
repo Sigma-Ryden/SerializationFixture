@@ -7,16 +7,12 @@ TEST_SPACE()
 
 struct Parent : instantiable_t
 {
-    SERIALIZABLE(Parent)
-
     virtual ~Parent() = default;
     int p = 0;
 };
 
 struct Child : Parent
 {
-    SERIALIZABLE(Child)
-
     int c = 0;
 };
 
@@ -26,6 +22,9 @@ bool operator== (const Child& lhs, const Child& rhs)
 }
 
 } // TEST_SPACE
+
+EXPORT_INSTANTIABLE(Parent)
+EXPORT_INSTANTIABLE(Child)
 
 SERIALIZATION(saveload, self, Parent)
 {
@@ -79,29 +78,21 @@ TEST_SPACE()
 
 struct A : instantiable_t
 {
-    SERIALIZABLE(A)
-
     int a = 0;
 };
 
 struct B : virtual A
 {
-    SERIALIZABLE(B)
-
     int b = 0;
 };
 
 struct C : virtual A
 {
-    SERIALIZABLE(C)
-
     int c = 0;
 };
 
 struct D : B, C
 {
-    SERIALIZABLE(D)
-
     int d = 0;
 };
 
@@ -114,6 +105,11 @@ bool operator== (const D& lhs, const D& rhs)
 }
 
 } // TEST_SPACE
+
+EXPORT_INSTANTIABLE(D)
+EXPORT_INSTANTIABLE(A)
+EXPORT_INSTANTIABLE(B)
+EXPORT_INSTANTIABLE(C)
 
 SERIALIZATION(saveload, self, A)
 {

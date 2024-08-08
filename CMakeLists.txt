@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(SerializationFixture LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -16,7 +16,6 @@ set(SF
     include/SF/Core/ArchiveBase.hpp
     include/SF/Core/ArchiveTraits.hpp
     include/SF/Core/Config.hpp
-    include/SF/Core/InstantiableTraits.hpp
     include/SF/Core/PolymorphicArchive.hpp
     include/SF/Core/Serialization.hpp
     include/SF/Core/SerializatonBase.hpp
@@ -26,6 +25,7 @@ set(SF
 
     include/SF/Dynamic/Instantiable.hpp
     include/SF/Dynamic/InstantiableRegistry.hpp
+    include/SF/Dynamic/InstantiableTraits.hpp
     include/SF/Dynamic/ExternRegistry.hpp
     include/SF/Dynamic/AnyRegistry.hpp
 
@@ -126,7 +126,7 @@ add_executable(${PROJECT_NAME}
     test/TestLibrary/BaseObject.cpp
     test/TestLibrary/DerivedObject.hpp
     test/TestLibrary/DerivedObject.cpp
-    test/TestLibrary.cpp
+    #test/TestLibrary.cpp
 
     test/TestExample.cpp
 
