@@ -27,7 +27,7 @@ public:
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto key = instantiable_registry_t::instance().rtti.at(SF_TYPE_HASH(*pointer));
+        auto key = instantiable_registry_t::instance().rtti.at(SF_EXPR_HASH(*pointer));
         archive & key;
 
         return key;

@@ -80,14 +80,14 @@ TEST(TestCommon, TestPolymorphic)
         ar & p & c;
 
         ASSERT("polymorphic.inited", p != nullptr);
-        ASSERT("polymorphic.traits", SF_TYPE_HASH(Parent) == SF_TYPE_HASH(*p));
+        ASSERT("polymorphic.traits", SF_TYPE_HASH(Parent) == SF_EXPR_HASH(*p));
 
         EXPECT("polymorphic.value", p->data == sv_p_d);
 
         auto d = dynamic_cast<Child*>(c);
 
         ASSERT("polymorphic.derived inited", d != nullptr);
-        ASSERT("polymorphic.derived traits", SF_TYPE_HASH(Child) == SF_TYPE_HASH(*c));
+        ASSERT("polymorphic.derived traits", SF_TYPE_HASH(Child) == SF_EXPR_HASH(*c));
 
         EXPECT("polymorphic.derived value", d->data == sv_c_d && d->value == sv_c_v);
     }

@@ -2,22 +2,27 @@
 #define SF_CORE_HASH_HPP
 
 #include <typeinfo> // type_info
+#include <functional> // hash
 
 #include <SF/Core/TypeCore.hpp>
 
 #include <SF/Detail/Meta.hpp>
 
-#ifndef SF_STATIC_HASH_KEY_TYPE
-    #define SF_STATIC_HASH_KEY_TYPE ::sf::let::u64
-#endif // SF_STATIC_HASH_KEY_TYPE
+#ifndef SF_STATIC_HASH_T
+    #define SF_STATIC_HASH_KEY_T ::sf::let::u64
+#endif // SF_STATIC_HASH_KEY_T
 
 #ifndef SF_STATIC_HASH
-    #define SF_STATIC_HASH(string) ::sf::static_hash<SF_STATIC_HASH_KEY_TYPE>((string))
+    #define SF_STATIC_HASH(string) ::sf::static_hash<SF_STATIC_HASH_KEY_T>((string))
 #endif // SF_STATIC_HASH
 
 #ifndef SF_TYPE_HASH
-    #define SF_TYPE_HASH(type_or_expression) (typeid(type_or_expression).hash_code())
+    #define SF_TYPE_HASH(type) (typeid(type).hash_code())
 #endif // SF_TYPE_HASH
+
+#ifndef SF_EXPR_HASH
+    #define SF_EXPR_HASH(expression) (typeid(expression).hash_code())
+#endif // SF_EXPR_HASH
 
 namespace sf
 {
@@ -108,22 +113,22 @@ public:
 
 } // namespace detail
 
-template <typename key_type = let::u64>
-inline key_type hash(const char* text)
+template <typename KeyType = let::u64>
+inline KeyType hash(const char* text)
 {
     using detail::hash_t;
     using detail::word_traits;
 
-    return hash_t<detail::word_traits<key_type>::value>::run(text);
+    return hash_t<detail::word_traits<KeyType>::value>::run(text);
 }
 
-template <typename key_type = let::u64>
-constexpr key_type static_hash(const char* text) noexcept
+template <typename KeyType = let::u64>
+constexpr KeyType static_hash(const char* text) noexcept
 {
     using detail::hash_t;
     using detail::word_traits;
 
-    return hash_t<detail::word_traits<key_type>::value>::static_run(text);
+    return hash_t<detail::word_traits<KeyType>::value>::static_run(text);
 }
 
 namespace detail

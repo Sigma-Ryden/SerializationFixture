@@ -28,7 +28,7 @@ template <class Base, class ArchiveType, class Derived,
 void virtual_base(ArchiveType& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
-    if (SF_TYPE_HASHobject) == ::xxsf::template traits<Derived>())
+    if (SF_EXPR_HASH(object) == SF_TYPE_HASH(Derived))
         base<Base>(archive, object);
 #else
     using key_type = typename ArchiveType::TrackingKeyType;

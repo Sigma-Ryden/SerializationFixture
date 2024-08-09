@@ -14,7 +14,7 @@
 // please, use 'sf::serializable' for type any registry before std::any serialization
 SERIALIZATION(save, any, std::any)
 {
-    ::sf::let::u64 hash = SF_TYPE_HASH(any.type());
+    ::sf::let::u64 hash = SF_EXPR_HASH(any.type());
     archive & hash;
 
     ::sf::dynamic::any_registry_t::instance().save(archive, any, hash);

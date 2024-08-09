@@ -97,29 +97,27 @@ SERIALIZATION(saveload, self, Square) {}
 
 TEST(TestLibrary, TestInstantiableRegistry)
 {
-    using sf::dynamic::instantiable_fixture_t;
+    auto& registry = sf::dynamic::instantiable_registry_t::instance();
 
     {
-        instantiable_fixture_t<Triangle> triangle;
+        registry.fixture<Triangle>();
 
         auto success = false;
-        try { instantiable_fixture_t<Cyrcle> cyrcle; } catch(...) { success = true; }
+        try { registry.fixture<Cyrcle>(); } catch(...) { success = true; }
 
         EXPECT("same polymorphic key", success);
     }
 
-    using sf::dynamic::instantiable_registry_t;
     using sf::dynamic::extern_registry_t;
-
-    auto& registry = instantiable_registry_t::instance();
-    auto key = ::xxsf_archive_traits<Square>::key;
 
     {
         auto success = false;
-        try { registry.update<Square>(key); } catch(...) { success = true; }
+        try { registry.fixture<Square>(); } catch(...) { success = true; }
 
         EXPECT("non-instantiable type", success);
     }
+
+    const auto key = ::xxsf_instantiable_traits<Square>::key();
 
     {
         auto success = false;
@@ -160,7 +158,7 @@ TEST_SPACE()
 struct MyStruct : instantiable_t {};
 
 // is same as instantiable_t
-class MyClass : sf::instantiable_t {};
+class MyClass : public sf::instantiable_t {};
 
 class MyDerivedClass : public MyClass {};
 
@@ -189,8 +187,8 @@ TEST(TestLibrary, TestExportInstantiable)
 
     {
         EXPECT("export instantiable key.traits",
-            ::xxsf_instantiable_traits<MyStruct>::key == sv_s &&
-            ::xxsf_instantiable_traits<MyClass>::key == sv_c);
+            ::xxsf_instantiable_traits<MyStruct>::key() == sv_s &&
+            ::xxsf_instantiable_traits<MyClass>::key() == sv_c);
     }
 
     using sf::dynamic::extern_registry_t;
@@ -198,14 +196,15 @@ TEST(TestLibrary, TestExportInstantiable)
     static auto sv_ct = SF_TYPE_HASH(MyCustomType);
 
     {
-        EXPECT("export instantiable.equivalent", ::xxsf_instantiable_traits<MyCustomType>::key == sv_ct);
+        EXPECT("export instantiable.equivalent", ::xxsf_instantiable_traits<MyCustomType>::key() == sv_ct);
     }
 
     static auto sv_dc = SF_STATIC_HASH("MyDerived");
 
     {
         std::shared_ptr<MyClass> b = std::make_shared<MyDerivedClass>();
-        EXPECT("instantiable runtime key.traits", registry.rtti.at(SF_TYPE_HASH(*b)) == sv_dc); // TODO: check
+
+        EXPECT("instantiable runtime key.traits", registry.rtti.at(SF_EXPR_HASH(*b)) == sv_dc); // TODO: check
     }
 }
 
@@ -668,8 +667,8 @@ TEST(TestLibrary, TestAbstract)
 
         ASSERT("inited", i != nullptr);
         EXPECT("traits",
-            registry.rtti_all.at(SF_TYPE_HASH(*i)) ==
-            registry.all.at(::xxsf_instantiable_traits<Implementation>::key));
+            registry.rtti_all.at(SF_EXPR_HASH(*i)) ==
+            registry.all.at(::xxsf_instantiable_traits<Implementation>::key()));
     }
 }
 
@@ -744,6 +743,15 @@ struct xxsf_load<NoMacroBase>
     xxsf_load(ArchiveType& archive, NoMacroBase& self)
     {
         archive & self.b; // or archive >> self.b
+    }
+};
+
+template <>
+struct xxsf_instantiable_traits<NoMacroDerived>
+{
+    static ::xxsf_instantiable_traits_key_type key()
+    {
+        return SF_STATIC_HASH("NoMacroDerived");
     }
 };
 

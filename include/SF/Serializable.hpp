@@ -21,7 +21,7 @@ template <typename T> void serializable()
 {
     static_assert(not meta::is_unsupported<T>::value, "The 'T' is an unsupported type for serialization.");
 
-    dynamic::instantiable_fixture_t<T>::call();
+    dynamic::instantiable_registry_t::instance().add<T>();
 
 #if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
     dynamic::any_fixture_t<T>::call();

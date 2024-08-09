@@ -60,22 +60,24 @@ public:
     }
 
 public:
-    // we should use external check
-    template <typename dT> struct is_instantiable : meta::is_cast_allowed<dT*, instantiable_type*> {};
+    template <typename T> struct is_instantiable : meta::is_cast_allowed<T*, instantiable_type*> {};
 
 public:
-    template <class T, SF_REQUIRE(not is_instantiable<T>::value)>
-    void update(::xxsf_instantiable_traits_key_type key)
+    template <class T>
+    instantiable_proxy_t* add()
     {
-        throw "The polymorphic 'T' type is not convertible to 'instantiable_t'.";
-    }
+        const auto key = ::xxsf_instantiable_traits<T>::key();
+    #ifdef SF_DEBUG
+        if (not is_instantiable<T>::value)
+            throw "The polymorphic 'T' type is not convertible to 'instantiable_t'.";
 
-    template <class T, SF_REQUIRE(is_instantiable<T>::value)>
-    void update(::xxsf_instantiable_traits_key_type key)
-    {
-        if (all.find(key) != all.end()) return;
+        if (key == ::xxsf_instantiable_traits_base_key)
+            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
+    #endif // SF_DEBUG
+        auto& proxy = all[key];
+        if (proxy != nullptr) return proxy;
 
-        auto proxy = new instantiable_proxy_t;
+        proxy = new instantiable_proxy_t;
 
         proxy->shared = [] { return memory::allocate_shared<instantiable_type, T>(); };
 
@@ -101,11 +103,26 @@ public:
             archive >> *memory::dynamic_pointer_cast<T>(instance);
         };
 
-        all.emplace(key, proxy);
-
-        const auto hash = typeid(T).hash_code();
+        const auto hash = SF_TYPE_HASH(T);
         rtti_all.emplace(hash, proxy);
         rtti.emplace(hash, key);
+
+        return proxy;
+    }
+
+    template <class T>
+    bool fixture()
+    {
+        const auto key = ::xxsf_instantiable_traits<T>::key();
+
+        if (all.find(key) != all.end())
+    #ifdef SF_DEBUG
+            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
+    #else
+            return false;
+    #endif // SF_DEBUG
+        add<T>();
+        return true;
     }
 
     template <typename TraitsType,
@@ -135,57 +152,17 @@ public:
     template <typename Pointer>
     void save(core::ioarchive_t& archive, Pointer& pointer) const
     {
-        const auto key = SF_TYPE_HASH(*pointer);
+        const auto key = SF_EXPR_HASH(*pointer);
         rtti_all.at(key)->save(archive, pointer);
     }
 
     template <typename Pointer>
     void load(core::ioarchive_t& archive, Pointer& pointer) const
     {
-        const auto key = SF_TYPE_HASH(*pointer);
+        const auto key = SF_EXPR_HASH(*pointer);
         rtti_all.at(key)->load(archive, pointer);
     }
 };
-
-template <class T>
-class instantiable_fixture_t
-{
-private:
-    static bool lock_;
-
-public:
-    instantiable_fixture_t() { call<T>(); }
-
-public:
-    template <typename dT = T,
-              SF_REQUIRE(instantiable_registry_t::is_instantiable<dT>::value)>
-    static bool call()
-    {
-        if (lock_) return true;
-        lock_ = true; // lock before creating clone instance to prevent recursive call
-
-        auto& registry = instantiable_registry_t::instance();
-
-        const auto key = ::xxsf_instantiable_traits<T>::key;
-    #ifdef SF_DEBUG
-        if (key == ::xxsf_instantiable_traits_base_key)
-            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
-
-        if (registry.all.find(key) != registry.all.end())
-            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
-    #endif // SF_DEBUG
-
-        registry.update<T>(key);
-        return true;
-    }
-
-    template <typename dT = T,
-              SF_REQUIRE(not instantiable_registry_t::is_instantiable<dT>::value)>
-    static bool call() noexcept { return false; }
-};
-
-template <class T>
-bool instantiable_fixture_t<T>::lock_ = false;
 
 } // namespace dynamic
 

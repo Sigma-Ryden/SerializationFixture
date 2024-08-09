@@ -5,7 +5,6 @@
 
 #include <unordered_map> // unordered_map
 #include <any> // any
-#include <typeinfo> // typeid, type_info
 
 #include <SF/Core/PolymorphicArchive.hpp>
 #include <SF/Core/TypeCore.hpp>
@@ -92,7 +91,7 @@ public:
 
         auto& registry = any_registry_t::instance();
 
-        auto hash = SF_TYPE_HASH(typeid(T));
+        auto hash = SF_TYPE_HASH(T);
     #ifdef SF_DEBUG
         if (registry.all.find(hash) != registry.all.end())
             throw "The 'sf::dynamic::any_registry_t' must contains unique hashes.";
