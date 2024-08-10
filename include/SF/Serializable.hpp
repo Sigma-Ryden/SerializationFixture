@@ -24,7 +24,7 @@ template <typename T> void serializable()
     dynamic::instantiable_registry_t::instance().add<T>();
 
 #if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
-    dynamic::any_fixture_t<T>::call();
+    dynamic::any_registry_t::instance().add<T>();
 #endif // if
 }
 

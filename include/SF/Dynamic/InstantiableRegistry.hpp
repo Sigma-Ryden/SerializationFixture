@@ -77,10 +77,7 @@ public:
         if (key == ::xxsf_instantiable_traits_base_key)
             throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
     #endif // SF_DEBUG
-        auto& proxy = all[key];
-        if (proxy != nullptr) return proxy;
-
-        proxy = new instantiable_proxy_t;
+        auto proxy = new instantiable_proxy_t;
 
         proxy->shared = [] { return memory::allocate_shared<instantiable_type, T>(); };
 
@@ -105,6 +102,8 @@ public:
         {
             archive >> *memory::dynamic_pointer_cast<T>(instance);
         };
+
+        all.emplace(key, proxy);
 
         const auto hash = SF_TYPE_HASH(T);
         rtti_all.emplace(hash, proxy);
