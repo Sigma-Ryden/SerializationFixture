@@ -14,35 +14,35 @@ namespace sf
 namespace utility
 {
 
-template <class Container>
-inline const typename Container::value_type* data(const Container& c) noexcept
+template <class ContainerType>
+typename ContainerType::value_type const* data(ContainerType const& c) noexcept
 {
     // if begin return iterator - we should deref it and take address again
     return std::addressof(*std::begin(c));
 }
 
-template <typename T>
-inline const T* data(const std::valarray<T>& c) noexcept
+template <typename ValueType>
+ValueType const* data(std::valarray<ValueType> const& c) noexcept
 {
     return std::begin(c);
 }
 
-template <class T, std::size_t N>
-inline const T* data(const T (&array)[N]) noexcept
+template <typename ValueType, std::size_t SizeValue>
+ValueType const* data(ValueType const (&array)[SizeValue]) noexcept
 {
     return array;
 }
 
-template <class Container>
-inline auto size(const Container& c) noexcept -> decltype(c.size())
+template <class ContainerType>
+auto size(ContainerType const& c) noexcept -> decltype(c.size())
 {
     return c.size();
 }
 
-template <class T, std::size_t N>
-constexpr std::size_t size(const T (&array)[N]) noexcept
+template <typename ValueType, std::size_t SizeValue>
+constexpr std::size_t size(ValueType const (&)[SizeValue]) noexcept
 {
-    return N;
+    return SizeValue;
 }
 
 } // namespace utility

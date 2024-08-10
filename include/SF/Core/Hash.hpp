@@ -8,28 +8,24 @@
 
 #include <SF/Detail/Meta.hpp>
 
-#ifndef SF_STATIC_HASH_T
-    #define SF_STATIC_HASH_KEY_T ::sf::let::u64
-#endif // SF_STATIC_HASH_KEY_T
-
-#ifndef SF_STATIC_HASH
-    #define SF_STATIC_HASH(string) ::sf::static_hash<SF_STATIC_HASH_KEY_T>((string))
-#endif // SF_STATIC_HASH
+#ifndef SF_STRING_HASH
+    #define SF_STRING_HASH(string) ::sf::static_hash<::sf::let::u64>((string))
+#endif // SF_STRING_HASH
 
 #ifndef SF_TYPE_HASH
     #define SF_TYPE_HASH(type) (typeid(type).hash_code())
 #endif // SF_TYPE_HASH
 
-#ifndef SF_EXPR_HASH
-    #define SF_EXPR_HASH(expression) (typeid(expression).hash_code())
-#endif // SF_EXPR_HASH
+#ifndef SF_EXPRESSION_HASH
+    #define SF_EXPRESSION_HASH(expression) (typeid(expression).hash_code())
+#endif // SF_EXPRESSION_HASH
 
 namespace sf
 {
 
 namespace detail
 {
-
+// TODO: simplify
 enum class Word { x32, x64 }; // word size: x* - number of bits
 
 template <Word word> struct word_type_impl;

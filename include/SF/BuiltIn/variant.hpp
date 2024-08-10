@@ -18,11 +18,11 @@ namespace detail
 {
 
 template <let::u64 I, class ArchiveType, class Variant,
-          SF_REQUIRE(I == std::variant_size<Variant>::value)>
+          SF_REQUIRES(I == std::variant_size<Variant>::value)>
 void variant_save(ArchiveType& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
 
 template <let::u64 I = 0, class ArchiveType, class Variant,
-          SF_REQUIRE(I < std::variant_size<Variant>::value)>
+          SF_REQUIRES(I < std::variant_size<Variant>::value)>
 void variant_save(ArchiveType& archive, Variant& variant, let::u64 index)
 {
     if (I < index) return variant_save<I + 1>(archive, variant, index);
@@ -30,25 +30,25 @@ void variant_save(ArchiveType& archive, Variant& variant, let::u64 index)
 }
 
 template <typename Type, class ArchiveType, class Variant,
-          SF_REQUIRE(not std::is_constructible<Type>::value)>
+          SF_REQUIRES(not std::is_constructible<Type>::value)>
 void variant_load_impl(ArchiveType& archive, Variant& variant)
 {
     throw "Require default constructor for specify type.";
 }
 
 template <typename Type, class ArchiveType, class Variant,
-          SF_REQUIRE(std::is_constructible<Type>::value)>
+          SF_REQUIRES(std::is_constructible<Type>::value)>
 void variant_load_impl(ArchiveType& archive, Variant& variant)
 {
     archive & variant.template emplace<Type>();
 }
 
 template <let::u64 I, class ArchiveType, class Variant,
-          SF_REQUIRE(I == std::variant_size<Variant>::value)>
+          SF_REQUIRES(I == std::variant_size<Variant>::value)>
 void variant_load(ArchiveType& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
 
 template <let::u64 I = 0, class ArchiveType, class Variant,
-          SF_REQUIRE(I < std::variant_size<Variant>::value)>
+          SF_REQUIRES(I < std::variant_size<Variant>::value)>
 void variant_load(ArchiveType& archive, Variant& variant, let::u64 index)
 {
     if (I < index) return variant_load<I + 1>(archive, variant, index);

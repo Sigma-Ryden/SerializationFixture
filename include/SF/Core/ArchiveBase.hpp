@@ -18,8 +18,8 @@ struct ioarchive_t
     virtual ~ioarchive_t() = default;
 #endif // SF_DEBUG
 
-    const ::xxsf_archive_traits_key_type trait;
-    const bool readonly;
+    ::xxsf_archive_traits_key_type const trait;
+    bool const readonly;
 };
 
 } // namespace core

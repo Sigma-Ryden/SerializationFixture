@@ -10,35 +10,35 @@
 #include <SF/DataTrack.hpp>
 #include <SF/Compress.hpp>
 
-CONDITIONAL_SERIALIZATION(saveload, number, std::is_arithmetic<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, number, std::is_arithmetic<S>::value)
 {
     ::sf::binary(archive, number);
 }
 
-CONDITIONAL_SERIALIZATION(save, enumerator, std::is_enum<T>::value)
+CONDITIONAL_SERIALIZATION(save, enumerator, std::is_enum<S>::value)
 {
-    using underlying_type = typename std::underlying_type<T>::type;
+    using underlying_type = typename std::underlying_type<S>::type;
     auto value = static_cast<underlying_type>(enumerator);
 
     archive & value;
 }
 
-CONDITIONAL_SERIALIZATION(load, enumerator, std::is_enum<T>::value)
+CONDITIONAL_SERIALIZATION(load, enumerator, std::is_enum<S>::value)
 {
-    using underlying_type = typename std::underlying_type<T>::type;
+    using underlying_type = typename std::underlying_type<S>::type;
 
     underlying_type buff{};
     archive & buff;
 
-    enumerator = static_cast<T>(buff);
+    enumerator = static_cast<S>(buff);
 }
 
-CONDITIONAL_SERIALIZATION(saveload, array, std::is_array<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, array, std::is_array<S>::value)
 {
     ::sf::compress::zip(archive, array);
 }
 
-CONDITIONAL_SERIALIZATION(saveload, pointer, ::sf::meta::is_serializable_raw_pointer<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, pointer, ::sf::meta::is_serializable_raw_pointer<S>::value)
 {
 #ifdef SF_PTRTRACK_DISABLE
     ::sf::tracking::raw(archive, pointer);

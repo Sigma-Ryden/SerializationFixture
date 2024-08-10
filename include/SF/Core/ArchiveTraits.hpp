@@ -28,7 +28,7 @@ struct ioarchive_t;
 } // namespace sf
 
 using xxsf_archive_traits_key_type = ::sf::let::u8;
-static constexpr auto xxsf_archive_traits_base_key = xxsf_archive_traits_key_type(-1);
+static constexpr auto xxsf_archive_traits_base_key = ::xxsf_archive_traits_key_type(-1);
 
 template <class ArchiveType>
 struct xxsf_archive_traits
@@ -36,10 +36,10 @@ struct xxsf_archive_traits
     static constexpr auto key = xxsf_archive_traits_base_key;
 };
 
-template <xxsf_archive_traits_key_type ArchiveKey>
+template <::xxsf_archive_traits_key_type ArchiveKey>
 struct xxsf_iarchive_registry { using type = ::sf::core::ioarchive_t; };
 
-template <xxsf_archive_traits_key_type ArchiveKey>
+template <::xxsf_archive_traits_key_type ArchiveKey>
 struct xxsf_oarchive_registry { using type = ::sf::core::ioarchive_t; };
 
 #endif // SF_CORE_ARCHIVE_TRAITS_HPP

@@ -47,15 +47,15 @@ public:
     auto stream() noexcept -> StreamWrapper& { return archive_; }
 
     template <typename TrackType,
-              SF_REQUIRE(meta::is_track_shared<TrackType>::value)>
+              SF_REQUIRES(meta::is_track_shared<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable& { return track_shared_; }
 
     template <typename TrackType,
-              SF_REQUIRE(meta::is_track_raw<TrackType>::value)>
+              SF_REQUIRES(meta::is_track_raw<TrackType>::value)>
     auto tracking() noexcept -> TrackingTable& { return track_raw_; }
 
     template <typename TrackType,
-              SF_REQUIRE(meta::is_track_hierarchy<TrackType>::value)>
+              SF_REQUIRES(meta::is_track_hierarchy<TrackType>::value)>
     auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
 
     auto registry() noexcept -> Registry& { return registry_; }

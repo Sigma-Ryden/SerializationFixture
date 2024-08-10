@@ -108,7 +108,7 @@ struct raw_common_t {};
 struct dummy_t
 {
 #if __cplusplus >= 201703L
-    template <typename T, SF_REQUIRE(not std::is_same<T, std::any>::value)> operator T();
+    template <typename T, SF_REQUIRES(not std::is_same<T, std::any>::value)> operator T();
 #else
     template <typename T> operator T();
 #endif // if

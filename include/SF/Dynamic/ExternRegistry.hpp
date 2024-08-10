@@ -20,22 +20,24 @@ namespace dynamic
 class extern_registry_t
 {
 public:
-    template <class ArchiveType, typename T,
-              SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static ::xxsf_instantiable_traits_key_type save_key(ArchiveType& archive, T& pointer)
+    template <class ArchiveType, typename PointerType,
+              SF_REQUIRES(meta::is_pointer_to_polymorphic<PointerType>::value)>
+    static ::xxsf_instantiable_traits_key_type save_key(ArchiveType& archive, PointerType& pointer)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
 
-        auto key = instantiable_registry_t::instance().rtti.at(SF_EXPR_HASH(*pointer));
+        auto const hash = SF_EXPRESSION_HASH(*pointer);
+
+        auto key = instantiable_registry_t::instance().rtti_all.at(hash).key;
         archive & key;
 
         return key;
     }
 
-    template <class ArchiveType, typename T,
-              SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static ::xxsf_instantiable_traits_key_type load_key(ArchiveType& archive, T& pointer)
+    template <class ArchiveType, typename PointerType,
+              SF_REQUIRES(meta::is_pointer_to_polymorphic<PointerType>::value)>
+    static ::xxsf_instantiable_traits_key_type load_key(ArchiveType& archive, PointerType& pointer)
     {
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
@@ -49,13 +51,14 @@ public:
     }
 
 private:
-    template <typename T> struct is_pointer_to_instantiable
-        : meta::all<instantiable_registry_t::is_instantiable<typename meta::dereference<T>::type>,
-                    meta::is_pointer_to_polymorphic<T>> {};
+    template <typename PointerType> struct is_pointer_to_instantiable
+        : meta::all<instantiable_registry_t::is_instantiable<typename memory::ptr_traits<PointerType>::item>,
+                    meta::is_pointer_to_polymorphic<PointerType>> {};
 
 public:
-    template <typename T, SF_REQUIRE(is_pointer_to_instantiable<T>::value)>
-    static void save(core::ioarchive_t& archive, T& pointer, ::xxsf_instantiable_traits_key_type key)
+    template <typename PointerType,
+              SF_REQUIRES(is_pointer_to_instantiable<PointerType>::value)>
+    static void save(core::ioarchive_t& archive, PointerType& pointer, ::xxsf_instantiable_traits_key_type key)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -64,11 +67,11 @@ public:
         instantiable_registry_t::instance().save(archive, raw_pointer);
     }
 
-    template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void load(core::ioarchive_t& archive, T& pointer, ::xxsf_instantiable_traits_key_type key, memory::void_ptr<T>& cache)
+    template <typename PointerType,
+              SF_REQUIRES(meta::is_pointer_to_polymorphic<PointerType>::value)>
+    static void load(core::ioarchive_t& archive, PointerType& pointer, ::xxsf_instantiable_traits_key_type key, memory::void_ptr<PointerType>& cache)
     {
-        using TraitsType = typename memory::ptr_traits<T>::traits;
-        using dT = typename meta::dereference<T>::type;
+        using PointerTraitsType = memory::ptr_traits<PointerType>;
 
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
@@ -77,27 +80,26 @@ public:
 
         auto& registry = instantiable_registry_t::instance();
 
-        auto cloned = registry.clone<TraitsType>(key);
+        auto cloned = registry.clone<typename PointerTraitsType::traits>(key);
 
-        pointer = memory::dynamic_pointer_cast<dT>(cloned);
+        pointer = memory::dynamic_pointer_cast<typename PointerTraitsType::item>(cloned);
         cache = memory::pure(pointer);
 
         auto raw_pointer = memory::raw(pointer);
         registry.load(archive, raw_pointer);
     }
 
-    template <typename T, SF_REQUIRE(meta::is_pointer_to_polymorphic<T>::value)>
-    static void assign(T& pointer, const memory::void_ptr<T>& address, ::xxsf_instantiable_traits_key_type key)
+    template <typename PointerType,
+              SF_REQUIRES(meta::is_pointer_to_polymorphic<PointerType>::value)>
+    static void assign(PointerType& pointer, memory::void_ptr<PointerType> const& address, ::xxsf_instantiable_traits_key_type key)
     {
-        using dT = typename meta::dereference<T>::type;
-
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
     #endif // SF_GARBAGE_CHECK_DISABLE
 
         auto casted = instantiable_registry_t::instance().cast(address, key);
-        pointer = memory::dynamic_pointer_cast<dT>(casted);
+        pointer = memory::dynamic_pointer_cast<memory::ptr_traits<PointerType>::item>(casted);
     }
 };
 

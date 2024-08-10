@@ -163,10 +163,10 @@ struct MyCustomType : instantiable_t {};
 
 } // TEST_SPACE
 
-EXPORT_INSTANTIABLE_KEY(SF_STATIC_HASH("MyClass"), MyStruct)
-EXPORT_INSTANTIABLE_KEY(SF_STATIC_HASH("MyStruct"), MyClass)
+EXPORT_INSTANTIABLE_KEY(SF_STRING_HASH("MyClass"), MyStruct)
+EXPORT_INSTANTIABLE_KEY(SF_STRING_HASH("MyStruct"), MyClass)
 
-EXPORT_INSTANTIABLE_KEY(SF_STATIC_HASH("MyDerived"), MyDerivedClass)
+EXPORT_INSTANTIABLE_KEY(SF_STRING_HASH("MyDerived"), MyDerivedClass)
 
 EXPORT_INSTANTIABLE(MyCustomType)
 
@@ -177,8 +177,8 @@ SERIALIZATION(saveload, self, MyCustomType) {}
 
 TEST(TestLibrary, TestExportInstantiable)
 {
-    static auto sv_s = SF_STATIC_HASH("MyClass");
-    static auto sv_c = SF_STATIC_HASH("MyStruct");
+    static auto sv_s = SF_STRING_HASH("MyClass");
+    static auto sv_c = SF_STRING_HASH("MyStruct");
 
     auto& registry = sf::dynamic::instantiable_registry_t::instance();
 
@@ -196,12 +196,12 @@ TEST(TestLibrary, TestExportInstantiable)
         EXPECT("export instantiable.equivalent", ::xxsf_instantiable_traits<MyCustomType>::key() == sv_ct);
     }
 
-    static auto sv_dc = SF_STATIC_HASH("MyDerived");
+    static auto sv_dc = SF_STRING_HASH("MyDerived");
 
     {
         std::shared_ptr<MyClass> b = std::make_shared<MyDerivedClass>();
 
-        EXPECT("instantiable runtime key.traits", registry.rtti.at(SF_EXPR_HASH(*b)) == sv_dc); // TODO: check
+        EXPECT("instantiable runtime key.traits", registry.rtti_all.at(SF_EXPRESSION_HASH(*b)).key == sv_dc);
     }
 }
 
@@ -664,9 +664,11 @@ TEST(TestLibrary, TestAbstract)
         ar & i;
 
         ASSERT("inited", i != nullptr);
-        EXPECT("traits",
-            registry.rtti_all.at(SF_EXPR_HASH(*i)) ==
-            registry.all.at(::xxsf_instantiable_traits<Implementation>::key()));
+
+        const auto hash = SF_EXPRESSION_HASH(*i);
+        const auto key = ::xxsf_instantiable_traits<Implementation>::key();
+
+        EXPECT("traits", registry.rtti_all.at(hash).key == registry.all.at(key).key);
     }
 }
 
@@ -713,15 +715,16 @@ struct xxsf_save<NoMacroDerived>
     }
 };
 
-template <> // TODO: temp
+template <>
 struct xxsf_load<NoMacroDerived>
 {
     template <class ArchiveType>
     xxsf_load(ArchiveType& archive, NoMacroDerived& self)
     {
-        xxsf_save<NoMacroDerived>(archive, self);
+        archive & sf::hierarchy<NoMacroBase>(self) & self.d;
     }
 };
+
 // inner serialization with split
 // polymorphic archive - useful for hide impl to translation unit
 template <>
@@ -749,7 +752,7 @@ struct xxsf_instantiable_traits<NoMacroDerived>
 {
     static ::xxsf_instantiable_traits_key_type key()
     {
-        return SF_STATIC_HASH("NoMacroDerived");
+        return SF_STRING_HASH("NoMacroDerived");
     }
 };
 

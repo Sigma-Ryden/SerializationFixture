@@ -44,11 +44,11 @@ namespace detail
 {
 
 template <class T,
-          SF_REQUIRE(not meta::is_std_any_unordered_set<T>::value)>
+          SF_REQUIRES(not meta::is_std_any_unordered_set<T>::value)>
 void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
 
 template <class T,
-          SF_REQUIRE(meta::is_std_any_unordered_set<T>::value)>
+          SF_REQUIRES(meta::is_std_any_unordered_set<T>::value)>
 void reserve_unordered(T& unordered, std::size_t size)
 {
     unordered.reserve(size);

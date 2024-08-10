@@ -22,118 +22,85 @@
 namespace sf
 {
 
-template <class StreamWrapper,
-          class Registry = dynamic::extern_registry_t>
+template <class StreamWrapperType,
+          class RegistryType = dynamic::extern_registry_t>
 class iarchive_t : public core::ioarchive_t, public core::iarchive_common_t
 {
 private:
-    template <typename VoidPointer>
-    struct track_data_t { VoidPointer address = nullptr; };
-
-public:
-    using shared_t = track_data_t<memory::shared_ptr<void>>;
-    using raw_t = track_data_t<memory::raw_ptr<void>>;
+    template <typename PointerType>
+    struct track_data_t { PointerType address = nullptr; };
 
 public:
     using TrackingKeyType = std::uintptr_t;
 
-    template <typename TrackData>
-    using TrackingTable = std::unordered_map<TrackingKeyType, TrackData>;
-
-    using HierarchyTrackingTable = tracking::hierarchy_track_t<TrackingKeyType>;
-
 private:
-    StreamWrapper archive_;
+    StreamWrapperType archive_;
 
-    TrackingTable<shared_t> track_shared_;
-    TrackingTable<raw_t> track_raw_;
+    std::unordered_map<TrackingKeyType, track_data_t<memory::shared_ptr<void>>> track_shared_;
+    std::unordered_map<TrackingKeyType,  track_data_t<memory::raw_ptr<void>>> track_raw_;
 
-    HierarchyTrackingTable track_hierarchy_;
+    tracking::hierarchy_track_t<TrackingKeyType> track_hierarchy_;
 
-    Registry registry_;
+    RegistryType registry_;
 
 public:
-    template <typename InStream> iarchive_t(InStream& stream);
+    template <typename InputStreamType>
+    iarchive_t(InputStreamType& stream) : core::ioarchive_t(::xxsf_archive_traits<iarchive_t>::key, true)
+        ,archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_() {}
 
-    auto stream() noexcept -> StreamWrapper& { return archive_; }
-
-    template <typename TrackType,
-              SF_REQUIRE(meta::is_track_shared<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable<shared_t>& { return track_shared_; }
+    StreamWrapperType& stream() noexcept { return archive_; }
 
     template <typename TrackType,
-              SF_REQUIRE(meta::is_track_raw<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable<raw_t>& { return track_raw_; }
+              SF_REQUIRES(meta::is_track_shared<TrackType>::value)>
+    auto tracking() noexcept -> decltype(track_shared_) { return track_shared_; }
 
     template <typename TrackType,
-              SF_REQUIRE(meta::is_track_hierarchy<TrackType>::value)>
-    auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
+              SF_REQUIRES(meta::is_track_raw<TrackType>::value)>
+    auto tracking() noexcept -> decltype(track_raw_) { return track_raw_; }
 
-    auto registry() noexcept -> Registry& { return registry_; }
+    template <typename TrackType,
+              SF_REQUIRES(meta::is_track_hierarchy<TrackType>::value)>
+    auto tracking() noexcept -> decltype(track_hierarchy_) { return track_hierarchy_; }
 
-    template <typename T>
-    auto operator>> (T const& data) -> iarchive_t&;
+    RegistryType& registry() noexcept { return registry_; }
 
-    template <typename T>
-    auto operator& (T const& data) -> iarchive_t&;
+    template <typename SerializableType>
+    iarchive_t& operator>> (SerializableType const& data) { return operator()(data); }
 
-    template <typename T, typename... Tn>
-    auto operator() (T const& data, Tn const&... data_n) -> iarchive_t&;
+    template <typename SerializableType>
+    iarchive_t& operator& (SerializableType const& data) { return operator()(data); }
 
-    auto operator() () -> iarchive_t& { return *this; }
+    template <typename SerializableType, typename... SerializableTypes>
+    iarchive_t& operator() (SerializableType const& data, SerializableTypes const&... datas)
+    {
+        ::xxsf_load<SerializableType>(*this, const_cast<SerializableType&>(data));
+        return operator()(datas...);
+    }
+
+    iarchive_t& operator() () { return *this; }
 };
 
 // create default iarchive_t with wrapper::ibyte_stream_t<>
-template <typename InStream>
-iarchive_t<wrapper::ibyte_stream_t<InStream>> iarchive(InStream& stream)
+template <typename InputStreamType>
+iarchive_t<wrapper::ibyte_stream_t<InputStreamType>> iarchive(InputStreamType& stream)
 {
     return { stream };
 }
 
-template <template <class, typename...> class StreamWrapper,
-          class Registry = dynamic::extern_registry_t,
-          typename InStream>
-iarchive_t<StreamWrapper<InStream>, Registry> iarchive(InStream& stream)
+template <template <class, typename...> class StreamWrapperTemplate,
+          class RegistryType = dynamic::extern_registry_t,
+          typename InputStreamType>
+iarchive_t<StreamWrapperTemplate<InputStreamType>, RegistryType> iarchive(InputStreamType& stream)
 {
     return { stream };
 }
 
-template <class StreamWrapper,
-          class Registry = dynamic::extern_registry_t,
-          typename InStream>
-iarchive_t<StreamWrapper, Registry> iarchive(InStream& stream)
+template <class StreamWrapperType,
+          class RegistryType = dynamic::extern_registry_t,
+          typename InputStreamType>
+iarchive_t<StreamWrapperType, RegistryType> iarchive(InputStreamType& stream)
 {
     return { stream };
-}
-
-template <class StreamWrapper, class Registry>
-template <typename InStream>
-iarchive_t<StreamWrapper, Registry>::iarchive_t(InStream& stream)
-    : core::ioarchive_t(::xxsf_archive_traits<iarchive_t>::key, true)
-    , archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
-{
-}
-
-template <class StreamWrapper, class Registry>
-template <typename T>
-auto iarchive_t<StreamWrapper, Registry>::operator>> (T const& data) -> iarchive_t&
-{
-    return operator()(data);
-}
-
-template <class StreamWrapper, class Registry>
-template <typename T>
-auto iarchive_t<StreamWrapper, Registry>::operator& (T const& data) -> iarchive_t&
-{
-    return operator()(data);
-}
-
-template <class StreamWrapper, class Registry>
-template <typename T, typename... Tn>
-auto iarchive_t<StreamWrapper, Registry>::operator() (T const& data, Tn const&... data_n) -> iarchive_t&
-{
-    ::xxsf_load<T>(*this, const_cast<T&>(data));
-    return operator()(data_n...);
 }
 
 } // namespace sf

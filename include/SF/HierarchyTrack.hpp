@@ -46,7 +46,7 @@ using hierarchy_track_t = std::unordered_map<std::pair<KeyType, TraitsType>, boo
 namespace meta
 {
 
-template <typename T> struct is_track_hierarchy : std::is_same<T, tracking::hierarchy_t> {};
+template <typename TrackType> struct is_track_hierarchy : std::is_same<TrackType, tracking::hierarchy_t> {};
 
 } // namespace meta
 

@@ -63,10 +63,10 @@
 
 
 #define SF_CONDITIONAL_SERIALIZATION_DECLARATION(mode, object_type_condition, archive_template_header, archive_type) \
-    template <typename T> \
-    struct xxsf_##mode<T, typename std::enable_if<SF_DEPAREN(object_type_condition)>::type> { \
+    template <typename S> \
+    struct xxsf_##mode<S, typename std::enable_if<SF_DEPAREN(object_type_condition)>::type> { \
         SF_DEPAREN(archive_template_header) \
-        xxsf_##mode(SF_DEPAREN(archive_type)&, T&); \
+        xxsf_##mode(SF_DEPAREN(archive_type)&, S&); \
     };
 
 #define SF_CONDITIONAL_SERIALIZATION_DECLARATION_save(object_type_condition, archive_template_header, archive_type) \
@@ -81,9 +81,9 @@
     SF_CONDITIONAL_SERIALIZATION_DECLARATION(saveload, object_type_condition, archive_template_header, archive_type)
 
 #define SF_CONDITIONAL_SERIALIZATION_DEFINITION(mode, object_type_condition, archive_template_header, archive_type, object) \
-    template <typename T> \
+    template <typename S> \
     SF_DEPAREN(archive_template_header) \
-    xxsf_##mode<T, typename std::enable_if<SF_DEPAREN(object_type_condition)>::type>::xxsf_##mode(SF_DEPAREN(archive_type)& archive, T& object)
+    xxsf_##mode<S, typename std::enable_if<SF_DEPAREN(object_type_condition)>::type>::xxsf_##mode(SF_DEPAREN(archive_type)& archive, S& object)
 
 #define SF_CONDITIONAL_SERIALIZATION_DEFINITION_save(object_type_condition, archive_template_header, archive_type, object) \
     SF_CONDITIONAL_SERIALIZATION_DEFINITION(save, object_type_condition, archive_template_header, archive_type, object)
@@ -93,16 +93,16 @@
 
 #define SF_CONDITIONAL_SERIALIZATION_DEFINITION_saveload(object_type_condition, archive_template_header, archive_type, object) \
     SF_CONDITIONAL_SERIALIZATION_DEFINITION(save, object_type_condition, archive_template_header, archive_type, object) \
-    { ::xxsf_saveload<T>(archive, object); } \
+    { ::xxsf_saveload<S>(archive, object); } \
     SF_CONDITIONAL_SERIALIZATION_DEFINITION(load, object_type_condition, archive_template_header, archive_type, object) \
-    { ::xxsf_saveload<T>(archive, object); }\
+    { ::xxsf_saveload<S>(archive, object); }\
     SF_CONDITIONAL_SERIALIZATION_DEFINITION(saveload, object_type_condition, archive_template_header, archive_type, object)
 // ~Impl
 
 // should be in global namespace
-template <class T, typename enable = void> struct xxsf_save;
-template <class T, typename enable = void> struct xxsf_load;
-template <class T, typename enable = void> struct xxsf_saveload;
+template <class SerializableType, typename enable = void> struct xxsf_save;
+template <class SerializableType, typename enable = void> struct xxsf_load;
+template <class SerializableType, typename enable = void> struct xxsf_saveload;
 
 struct xxsf_cast_to_non_public_base
 {

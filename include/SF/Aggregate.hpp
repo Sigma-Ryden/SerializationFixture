@@ -10,8 +10,9 @@
 #include <SF/Detail/Preprocessor.hpp>
 
 #define SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                      \
-    template <class ArchiveType, typename T>                                                            \
-    void aggregate_impl(ArchiveType& archive, T& object, std::integral_constant<std::size_t, count>) {  \
+    template <class ArchiveType, typename SerializableType>                                             \
+    void aggregate_impl(ArchiveType& archive, SerializableType& object,                                 \
+                        std::integral_constant<std::size_t, count>) {                                   \
         auto& [SF_PLACEHOLDERS(count)] = object;                                                        \
         archive(SF_PLACEHOLDERS(count));                                                                \
     }
@@ -22,39 +23,39 @@ namespace sf
 namespace meta
 {
 
-template <typename T> struct is_serializable_aggregate
-    : all<is_aggregate<T>, negation<std::is_union<T>>> {};
+template <typename SerializableType> struct is_serializable_aggregate
+    : all<is_aggregate<SerializableType>, negation<std::is_union<SerializableType>>> {};
 
 } // namespace meta
 
 namespace detail
 {
 
-template <class ArchiveType, typename T>
-void aggregate_impl(ArchiveType& archive, T& object, std::integral_constant<std::size_t, 0>) noexcept { /*pass*/ }
+template <class ArchiveType, typename SerializableType>
+void aggregate_impl(ArchiveType& archive, SerializableType& object, std::integral_constant<std::size_t, 0>) noexcept { /*pass*/ }
 
 SF_REPEAT(SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
 } // namespace detail
 
-template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
-                               meta::is_aggregate<T>>::value)>
-void aggregate(ArchiveType& archive, T& object)
+template <class ArchiveType, typename SerializableType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                meta::is_aggregate<T>>::value)>
+void aggregate(ArchiveType& archive, SerializableType& object)
 {
-    constexpr auto size = meta::aggregate_size<T>::value;
+    constexpr auto size = meta::aggregate_size<SerializableType>::value;
     detail::aggregate_impl(archive, object, std::integral_constant<std::size_t, size>{});
 }
 
 namespace apply
 {
 
-template <typename T>
+template <typename SerializableType>
 struct aggregate_functor_t : apply_functor_t
 {
-    T& object;
+    SerializableType& object;
 
-    aggregate_functor_t(T& object) noexcept : object(object) {}
+    aggregate_functor_t(SerializableType& object) noexcept : object(object) {}
 
     template <class ArchiveType>
     void operator() (ArchiveType& archive) const { aggregate(archive, object); }
@@ -62,11 +63,12 @@ struct aggregate_functor_t : apply_functor_t
 
 } // namespace apply
 
-template <typename T> apply::aggregate_functor_t<T> aggregate(T& object) noexcept { return { object }; }
+template <typename SerializableType>
+apply::aggregate_functor_t<SerializableType> aggregate(SerializableType& object) noexcept { return { object }; }
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(saveload, object, ::sf::meta::is_serializable_aggregate<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, object, ::sf::meta::is_serializable_aggregate<S>::value)
 {
     ::sf::aggregate(archive, object);
 }

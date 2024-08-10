@@ -15,12 +15,12 @@ namespace compress
 {
 
 // always require compressible type for fast compression
-template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
-                               meta::is_compressible<T>>::value)>
-void fast(ArchiveType& archive, T& object)
+template <class ArchiveType, typename SerializableType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                meta::is_compressible<SerializableType>>::value)>
+void fast(ArchiveType& archive, SerializableType& object)
 {
-    using item_type = typename meta::value<T>::type;
+    using item_type = typename meta::value<SerializableType>::type;
 
     archive.stream().call
     (
@@ -29,26 +29,26 @@ void fast(ArchiveType& archive, T& object)
     );
 }
 
-template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::is_ioarchive<ArchiveType>::value)>
-void slow(ArchiveType& archive, T& object)
+template <class ArchiveType, typename SerializableType,
+          SF_REQUIRES(meta::is_ioarchive<ArchiveType>::value)>
+void slow(ArchiveType& archive, SerializableType& object)
 {
     for (auto&& item : object)
         archive & item;
 }
 
-template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
-                               meta::is_compressible<T>>::value)>
-void zip(ArchiveType& archive, T& object)
+template <class ArchiveType, typename SerializableType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                meta::is_compressible<SerializableType>>::value)>
+void zip(ArchiveType& archive, SerializableType& object)
 {
     fast(archive, object);
 }
 
-template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
-                               meta::negation<meta::is_compressible<T>>>::value)>
-void zip(ArchiveType& archive, T& object)
+template <class ArchiveType, typename SerializableType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                meta::negation<meta::is_compressible<SerializableType>>>::value)>
+void zip(ArchiveType& archive, SerializableType& object)
 {
     slow(archive, object);
 }

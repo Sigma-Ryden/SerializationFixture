@@ -14,29 +14,29 @@
 namespace sf
 {
 
-template <class Base, class ArchiveType, class Derived,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
-                               std::is_base_of<Base, Derived>>::value)>
-void base(ArchiveType& archive, Derived& object)
+template <class BaseType, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                std::is_base_of<BaseType, DerivedType>>::value)>
+void base(ArchiveType& archive, DerivedType& object)
 {
-    archive & ::xxsf_cast_to_non_public_base::call<Base>(object);
+    archive & ::xxsf_cast_to_non_public_base::call<BaseType>(object);
 }
 
-template <class Base, class ArchiveType, class Derived,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
-                               std::is_base_of<Base, Derived>>::value)>
+template <class Base, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                std::is_base_of<Base, Derived>>::value)>
 void virtual_base(ArchiveType& archive, Derived& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
-    if (SF_EXPR_HASH(object) == SF_TYPE_HASH(Derived))
+    if (SF_EXPRESSION_HASH(object) == SF_TYPE_HASH(DerivedType))
         base<Base>(archive, object);
 #else
     using key_type = typename ArchiveType::TrackingKeyType;
 
     auto address = memory::pure(std::addressof(object));
 
-    const auto key = reinterpret_cast<key_type>(address);
-    const auto traits = SF_TYPE_HASH(Base);
+    auto const key = reinterpret_cast<key_type>(address);
+    auto const traits = SF_TYPE_HASH(Base);
 
     auto& hierarchy_tracking = archive.template tracking<tracking::hierarchy_t>();
 
@@ -52,18 +52,18 @@ void virtual_base(ArchiveType& archive, Derived& object)
 namespace detail
 {
 
-template <class Base, class ArchiveType, class Derived,
-          SF_REQUIRE(not meta::is_virtual_base_of<Base, Derived>::value)>
-void native_base(ArchiveType& archive, Derived& object_with_base)
+template <class BaseType, class ArchiveType, class DerivedType,
+          SF_REQUIRES(not meta::is_virtual_base_of<BaseType, DerivedType>::value)>
+void native_base(ArchiveType& archive, DerivedType& object_with_base)
 {
-    base<Base>(archive, object_with_base);
+    base<BaseType>(archive, object_with_base);
 }
 
-template <class Base, class ArchiveType, class Derived,
-          SF_REQUIRE(meta::is_virtual_base_of<Base, Derived>::value)>
-void native_base(ArchiveType& archive, Derived& object_with_virtual_base)
+template <class BaseType, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::is_virtual_base_of<BaseType, DerivedType>::value)>
+void native_base(ArchiveType& archive, DerivedType& object_with_virtual_base)
 {
-    virtual_base<Base>(archive, object_with_virtual_base);
+    virtual_base<BaseType>(archive, object_with_virtual_base);
 }
 
 } // namespace detail
@@ -71,71 +71,71 @@ void native_base(ArchiveType& archive, Derived& object_with_virtual_base)
 namespace apply
 {
 
-template <class Derived, class Base>
+template <class DerivedType, class BaseType>
 struct base_functor_t : apply_functor_t
 {
-    Derived& object;
+    DerivedType& object;
 
-    base_functor_t(Derived& object) noexcept : object(object) {}
+    base_functor_t(DerivedType& object) noexcept : object(object) {}
 
     template <class ArchiveType>
-    void operator() (ArchiveType& archive) const { base<Base>(archive, object); }
+    void operator() (ArchiveType& archive) const { base<BaseType>(archive, object); }
 };
 
-template <class Derived, class Base>
+template <class DerivedType, class BaseType>
 struct virtual_base_functor_t : apply_functor_t
 {
-    Derived& object;
+    DerivedType& object;
 
-    virtual_base_functor_t(Derived& object) noexcept : object(object) {}
+    virtual_base_functor_t(DerivedType& object) noexcept : object(object) {}
 
     template <class ArchiveType>
-    void operator() (ArchiveType& archive) const { virtual_base<Base>(archive, object); }
+    void operator() (ArchiveType& archive) const { virtual_base<BaseType>(archive, object); }
 };
 
 } // namespace apply
 
-template <class Base, class Derived,
-          SF_REQUIRE(std::is_base_of<Base, Derived>::value)>
-apply::base_functor_t<Derived, Base> base(Derived& object) noexcept { return { object }; }
+template <class BaseType, class DerivedType,
+          SF_REQUIRES(std::is_base_of<BaseType, DerivedType>::value)>
+apply::base_functor_t<DerivedType, BaseType> base(DerivedType& object) noexcept { return { object }; }
 
-template <class Base, class Derived,
-          SF_REQUIRE(std::is_base_of<Base, Derived>::value)>
-apply::virtual_base_functor_t<Derived, Base> virtual_base(Derived& object) noexcept { return { object }; }
+template <class BaseType, class DerivedType,
+          SF_REQUIRES(std::is_base_of<BaseType, DerivedType>::value)>
+apply::virtual_base_functor_t<DerivedType, BaseType> virtual_base(DerivedType& object) noexcept { return { object }; }
 
 // default empty impl
-template <class ArchiveType, class Derived>
-void hierarchy(ArchiveType& archive, Derived& object) noexcept { /*pass*/ }
+template <class ArchiveType, class DerivedType>
+void hierarchy(ArchiveType&, DerivedType&) noexcept { /*pass*/ }
 
 // Variadic native_base function
-template <class Base, class... Base_n, class ArchiveType, class Derived,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
-                               meta::is_derived_of<Derived, Base, Base_n...>>::value)>
-void hierarchy(ArchiveType& archive, Derived& object)
+template <class BaseType, class... BaseTypes, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                meta::is_derived_of<DerivedType, BaseType, BaseTypes...>>::value)>
+void hierarchy(ArchiveType& archive, DerivedType& object)
 {
-    detail::native_base<Base>(archive, object);
-    hierarchy<Base_n...>(archive, object);
+    detail::native_base<BaseType>(archive, object);
+    hierarchy<BaseTypes...>(archive, object);
 }
 
 namespace apply
 {
 
-template <class Derived, class Base, class... Base_n>
+template <class DerivedType, class BaseType, class... BaseTypes>
 struct hierarchy_functor_t : apply_functor_t
 {
-    Derived& object;
+    DerivedType& object;
 
-    hierarchy_functor_t(Derived& object) noexcept : object(object) {}
+    hierarchy_functor_t(DerivedType& object) noexcept : object(object) {}
 
     template <class ArchiveType>
-    void operator() (ArchiveType& archive) const { hierarchy<Base, Base_n...>(archive, object); }
+    void operator() (ArchiveType& archive) const { hierarchy<BaseType, BaseTypes...>(archive, object); }
 };
 
 } // namespace apply
 
-template <class Base, class... Base_n, class Derived,
-          SF_REQUIRE(meta::is_derived_of<Derived, Base, Base_n...>::value)>
-apply::hierarchy_functor_t<Derived, Base, Base_n...> hierarchy(Derived& object) noexcept
+template <class BaseType, class... BaseTypes, class DerivedType,
+          SF_REQUIRES(meta::is_derived_of<DerivedType, BaseType, BaseTypes...>::value)>
+apply::hierarchy_functor_t<DerivedType, BaseType, BaseTypes...> hierarchy(DerivedType& object) noexcept
 {
     return { object };
 }

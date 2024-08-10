@@ -27,8 +27,10 @@ public:
 public:
     struct instantiable_proxy_t
     {
+        ::xxsf_instantiable_traits_key_type key = ::xxsf_archive_traits_base_key;
+
         std::shared_ptr<instantiable_type>(*shared)() = nullptr;
-        std::shared_ptr<instantiable_type>(*cast_shared)(std::shared_ptr<void>) = nullptr;
+        std::shared_ptr<instantiable_type>(*cast_shared)(std::shared_ptr<void> const&) = nullptr;
 
         instantiable_type*(*raw)() = nullptr;
         instantiable_type*(*cast_raw)(void*) = nullptr;
@@ -38,14 +40,13 @@ public:
     };
 
 public:
-    std::unordered_map<::xxsf_instantiable_traits_key_type, instantiable_proxy_t*> all;
-    std::unordered_map<std::size_t, instantiable_proxy_t*> rtti_all;
-    std::unordered_map<std::size_t, ::xxsf_instantiable_traits_key_type> rtti;
+    std::unordered_map<::xxsf_instantiable_traits_key_type, instantiable_proxy_t> all;
+    std::unordered_map<let::u64, instantiable_proxy_t> rtti_all;
 
 private:
     instantiable_registry_t() = default;
-    instantiable_registry_t(const instantiable_registry_t&) = delete;
-    instantiable_registry_t& operator=(const instantiable_registry_t&) = delete;
+    instantiable_registry_t(instantiable_registry_t const&) = delete;
+    instantiable_registry_t& operator=(instantiable_registry_t const&) = delete;
 
 public:
     static instantiable_registry_t& instance() noexcept
@@ -54,117 +55,114 @@ public:
         return self;
     }
 
-    ~instantiable_registry_t()
-    {
-        for (auto key_and_proxy : all) delete key_and_proxy.second;
-    }
+public:
+    template <typename InstantiableType> struct is_instantiable
+        : meta::is_cast_allowed<InstantiableType*, instantiable_type*> {};
 
 public:
-    template <typename T> struct is_instantiable : meta::is_cast_allowed<T*, instantiable_type*> {};
-
-public:
-    template <class T, SF_REQUIRE(not is_instantiable<T>::value)>
+    template <class InstantiableType, SF_REQUIRES(meta::negation<is_instantiable<InstantiableType>>::value)>
     void add() { /*pass*/ }
 
-    template <class T, SF_REQUIRE(is_instantiable<T>::value)>
+    template <class InstantiableType, SF_REQUIRES(is_instantiable<InstantiableType>::value)>
     void add()
     {
         static bool lock = false; if (lock) return;
         lock = true;
 
-        const auto key = ::xxsf_instantiable_traits<T>::key();
+        auto const key = ::xxsf_instantiable_traits<InstantiableType>::key();
     #ifdef SF_DEBUG
         if (key == ::xxsf_instantiable_traits_base_key)
             throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
     #endif // SF_DEBUG
-        auto proxy = new instantiable_proxy_t;
+        instantiable_proxy_t proxy;
 
-        proxy->shared = [] { return memory::allocate_shared<instantiable_type, T>(); };
+        proxy.key = key;
 
-        proxy->cast_shared = [](std::shared_ptr<void> address)
+        proxy.shared = [] { return memory::allocate_shared<instantiable_type, InstantiableType>(); };
+
+        proxy.cast_shared = [](std::shared_ptr<void> const& address)
         {
-            return memory::static_pointer_cast<instantiable_type, T>(address);
+            return memory::static_pointer_cast<instantiable_type, InstantiableType>(address);
         };
 
-        proxy->raw = [] { return memory::allocate_raw<instantiable_type, T>(); };
+        proxy.raw = [] { return memory::allocate_raw<instantiable_type, InstantiableType>(); };
 
-        proxy->cast_raw = [](void* address)
+        proxy.cast_raw = [](void* address)
         {
-            return memory::static_pointer_cast<instantiable_type, T>(address);
+            return memory::static_pointer_cast<instantiable_type, InstantiableType>(address);
         };
 
-        proxy->save = [](core::ioarchive_t& archive, instantiable_type* instance)
+        proxy.save = [](core::ioarchive_t& archive, instantiable_type* instance)
         {
-            archive << *memory::dynamic_pointer_cast<T>(instance);
+            archive << *memory::dynamic_pointer_cast<InstantiableType>(instance);
         };
 
-        proxy->load = [](core::ioarchive_t& archive, instantiable_type* instance)
+        proxy.load = [](core::ioarchive_t& archive, instantiable_type* instance)
         {
-            archive >> *memory::dynamic_pointer_cast<T>(instance);
+            archive >> *memory::dynamic_pointer_cast<InstantiableType>(instance);
         };
 
         all.emplace(key, proxy);
 
-        const auto hash = SF_TYPE_HASH(T);
+        auto const hash = SF_TYPE_HASH(InstantiableType);
         rtti_all.emplace(hash, proxy);
-        rtti.emplace(hash, key);
     }
-    // TODO: remove here
-    template <class T>
+
+    template <class InstantiableType>
     bool fixture()
     {
     #ifdef SF_DEBUG
         if (not is_instantiable<T>::value)
-            throw "The polymorphic 'T' type is not convertible to 'instantiable_t'.";
+            throw "The polymorphic 'InstantiableType' type is not convertible to 'instantiable_t'.";
     #endif // SF_DEBUG
 
-        if (all.find(::xxsf_instantiable_traits<T>::key()) != all.end())
+        if (all.find(::xxsf_instantiable_traits<InstantiableType>::key()) != all.end())
         #ifdef SF_DEBUG
             throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
         #else
             return false;
         #endif // SF_DEBUG
 
-        add<T>();
+        add<InstantiableType>();
         return true;
     }
 
-    template <typename TraitsType,
-              SF_REQUIRE(meta::is_memory_shared<TraitsType>::value)>
+    template <typename PointerTraitsType,
+              SF_REQUIRES(meta::is_memory_shared<PointerTraitsType>::value)>
     std::shared_ptr<instantiable_type> clone(::xxsf_instantiable_traits_key_type key) const
     {
-        return all.at(key)->shared();
+        return all.at(key).shared();
     }
 
-    template <typename TraitsType,
-              SF_REQUIRE(meta::is_memory_raw<TraitsType>::value)>
+    template <typename PointerTraitsType,
+              SF_REQUIRES(meta::is_memory_raw<PointerTraitsType>::value)>
     instantiable_type* clone(::xxsf_instantiable_traits_key_type key) const
     {
-        return all.at(key)->raw();
+        return all.at(key).raw();
     }
 
-    std::shared_ptr<instantiable_type> cast(std::shared_ptr<void> address, ::xxsf_instantiable_traits_key_type key) const
+    std::shared_ptr<instantiable_type> cast(std::shared_ptr<void> const& address, ::xxsf_instantiable_traits_key_type key) const
     {
-        return all.at(key)->cast_shared(address);
+        return all.at(key).cast_shared(address);
     }
 
     instantiable_type* cast(void* address, ::xxsf_instantiable_traits_key_type key) const
     {
-        return all.at(key)->cast_raw(address);
+        return all.at(key).cast_raw(address);
     }
 
-    template <typename Pointer>
-    void save(core::ioarchive_t& archive, Pointer& pointer) const
+    template <typename PointerType>
+    void save(core::ioarchive_t& archive, PointerType& pointer) const
     {
-        const auto key = SF_EXPR_HASH(*pointer);
-        rtti_all.at(key)->save(archive, pointer);
+        auto const hash = SF_EXPRESSION_HASH(*pointer);
+        rtti_all.at(hash).save(archive, pointer);
     }
 
-    template <typename Pointer>
-    void load(core::ioarchive_t& archive, Pointer& pointer) const
+    template <typename PointerType>
+    void load(core::ioarchive_t& archive, PointerType& pointer) const
     {
-        const auto key = SF_EXPR_HASH(*pointer);
-        rtti_all.at(key)->load(archive, pointer);
+        auto const hash = SF_EXPRESSION_HASH(*pointer);
+        rtti_all.at(hash).load(archive, pointer);
     }
 };
 

@@ -14,7 +14,7 @@
     };                                                                                                  \
     EXPORT_INSTANTIABLE(__VA_ARGS__)
 
-using xxsf_instantiable_traits_key_type = SF_STATIC_HASH_KEY_T;
+using xxsf_instantiable_traits_key_type = ::sf::let::u64;
 static constexpr auto xxsf_instantiable_traits_base_key = xxsf_instantiable_traits_key_type(-1);
 
 template <class InstantiableType>

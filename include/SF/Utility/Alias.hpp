@@ -25,23 +25,23 @@ public:
     // DONT use dereferencing of null data before rebinding
     alias_t() noexcept : data_(nullptr) {}
 
-    template <typename dT,
-              SF_REQUIRE(meta::is_static_castable<dT*, element_type*>::value)>
-    alias_t(dT& data) noexcept
+    template <typename OtherElementType,
+              SF_REQUIRES(meta::is_static_castable<OtherElementType*, element_type*>::value)>
+    alias_t(OtherElementType& data) noexcept
         : data_(std::addressof(data)) {}
 
-    template <typename dT>
-    alias_t(const alias_t<dT>& data) noexcept : alias_t(data.get()) {}
+    template <typename OtherElementType>
+    alias_t(alias_t<OtherElementType> const& data) noexcept : alias_t(data.get()) {}
 
 public:
     // rebinding data
-    alias_t(const alias_t&) = default;
-    alias_t& operator=(const alias_t&) = default;
+    alias_t(alias_t const&) = default;
+    alias_t& operator=(alias_t const&) = default;
 
     bool is_refer() const noexcept { return data_ != nullptr; }
 
-    template <typename dT>
-    bool is_refer(dT& data)  const noexcept { return data_ == std::addressof(data); }
+    template <typename OtherElementType>
+    bool is_refer(OtherElementType& data)  const noexcept { return data_ == std::addressof(data); }
 
     operator element_type&() const noexcept { return get(); }
 
@@ -59,7 +59,7 @@ TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias
         throw "The write alias_t must be initialized.";
 
     auto pointer = std::addressof(alias.get());
-    const auto key = ::sf::detail::refer_key(archive, pointer);
+    auto const key = ::sf::detail::refer_key(archive, pointer);
 
     auto& is_tracking = archive.template tracking<::sf::tracking::raw_t>()[key];
 

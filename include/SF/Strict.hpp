@@ -14,8 +14,8 @@ namespace sf
 {
 
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
-                               meta::is_pointer_to_standard_layout<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
+                                meta::is_pointer_to_standard_layout<T>>::value)>
 void strict(ArchiveType& archive, T& pointer)
 {
     if (pointer == nullptr)
@@ -25,8 +25,8 @@ void strict(ArchiveType& archive, T& pointer)
 }
 
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
-                               meta::is_pointer_to_standard_layout<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
+                                meta::is_pointer_to_standard_layout<T>>::value)>
 void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     using item_type = typename memory::ptr_traits<T>::item;
@@ -43,8 +43,8 @@ void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
 }
 
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
-                               meta::is_pointer_to_polymorphic<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
+                                meta::is_pointer_to_polymorphic<T>>::value)>
 void strict(ArchiveType& archive, T& pointer)
 {
     auto& registry = archive.registry();
@@ -54,8 +54,8 @@ void strict(ArchiveType& archive, T& pointer)
 }
 
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
-                               meta::is_pointer_to_polymorphic<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
+                                meta::is_pointer_to_polymorphic<T>>::value)>
 void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
 {
     auto& registry = archive.registry();
@@ -66,8 +66,8 @@ void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
 
 // verison without cache using
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
-                               meta::is_serializable_pointer<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
+                                meta::is_serializable_pointer<T>>::value)>
 void strict(ArchiveType& archive, T& pointer)
 {
     memory::void_ptr<T> cache = nullptr;
@@ -79,8 +79,8 @@ namespace detail
 
 template <class ArchiveType, typename T,
           typename KeyType = typename ArchiveType::TrackingKeyType,
-          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
-                               meta::is_serializable_pointer<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
+                                meta::is_serializable_pointer<T>>::value)>
 KeyType refer_key(ArchiveType& archive, T& pointer)
 {
     auto pure = memory::pure(pointer);
@@ -92,8 +92,8 @@ KeyType refer_key(ArchiveType& archive, T& pointer)
 
 template <class ArchiveType, typename T,
           typename KeyType = typename ArchiveType::TrackingKeyType,
-          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
-                               meta::is_serializable_pointer<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
+                                meta::is_serializable_pointer<T>>::value)>
 KeyType refer_key(ArchiveType& archive, T& pointer)
 {
 #ifdef SF_DEBUG

@@ -19,10 +19,10 @@ struct oarchive_common_t {};
 namespace meta
 {
 
-template <class T> struct is_iarchive : std::is_base_of<core::iarchive_common_t, T> {};
-template <class T> struct is_oarchive : std::is_base_of<core::oarchive_common_t, T> {};
+template <class ArchiveType> struct is_iarchive : std::is_base_of<core::iarchive_common_t, ArchiveType> {};
+template <class ArchiveType> struct is_oarchive : std::is_base_of<core::oarchive_common_t, ArchiveType> {};
 
-template <class T> struct is_ioarchive : one<is_iarchive<T>, is_oarchive<T>> {};
+template <class ArchiveType> struct is_ioarchive : one<is_iarchive<ArchiveType>, is_oarchive<ArchiveType>> {};
 
 } // namespace meta
 

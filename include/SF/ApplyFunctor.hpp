@@ -20,13 +20,13 @@ struct apply_functor_t {};
 namespace meta
 {
 
-template <typename T> struct is_apply_functor : std::is_base_of<apply::apply_functor_t, T> {};
+template <typename ApplyFunctorType> struct is_apply_functor : std::is_base_of<apply::apply_functor_t, ApplyFunctorType> {};
 
 } // namespace meta
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(saveload, apply_functor, ::sf::meta::is_apply_functor<typename std::decay<T>::type>::value)
+CONDITIONAL_SERIALIZATION(saveload, apply_functor, ::sf::meta::is_apply_functor<typename std::decay<S>::type>::value)
 {
     apply_functor(archive);
 }

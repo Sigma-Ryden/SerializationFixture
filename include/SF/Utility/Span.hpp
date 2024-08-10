@@ -14,6 +14,7 @@
 #include <SF/Detail/Meta.hpp>
 #include <SF/Detail/MetaMacro.hpp>
 
+// TODO:
 namespace sf
 {
 
@@ -89,7 +90,7 @@ public:
     }
 
     template <typename D, typename... Dn,
-              SF_REQUIRE(not std::is_array<D>::value)>
+              SF_REQUIRES(not std::is_array<D>::value)>
     span_t(pointer& data, D d, Dn... dn) noexcept
         : Core(data, d, dn...), child_scope_(data[0], dn...) {}
 
@@ -161,7 +162,7 @@ namespace utility
 template <typename Pointer, typename D, typename... Dn,
           std::size_t N = sizeof...(Dn) + 1,
           typename Type = typename meta::remove_pointer<Pointer, N>::type,
-          SF_REQUIRE(meta::is_span_set<Pointer, D, Dn...>::value)>
+          SF_REQUIRES(meta::is_span_set<Pointer, D, Dn...>::value)>
 span_t<Type, N> make_span(Pointer& data, D d, Dn... dn)
 {
     using size_type = typename span_t<Type, N>::size_type;
@@ -174,7 +175,7 @@ namespace detail
 {
 
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
                                meta::negation<meta::is_span<T>>>::value)>
 void span_impl(ArchiveType& archive, T& data)
 {
@@ -183,8 +184,8 @@ void span_impl(ArchiveType& archive, T& data)
 
 // serialization of scoped data with previous dimension initialization
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_oarchive<ArchiveType>,
-                               meta::is_span<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
+                                meta::is_span<T>>::value)>
 void span_impl(ArchiveType& archive, T& array)
 {
     using size_type = typename T::size_type;
@@ -194,8 +195,8 @@ void span_impl(ArchiveType& archive, T& array)
 }
 
 template <class ArchiveType, typename T,
-          SF_REQUIRE(meta::all<meta::is_iarchive<ArchiveType>,
-                               meta::is_span<T>>::value)>
+          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
+                                meta::is_span<T>>::value)>
 void span_impl(ArchiveType& archive, T& array)
 {
     using size_type = typename T::size_type;
@@ -216,8 +217,8 @@ inline namespace common
 
 template <class ArchiveType, typename T,
           typename D, typename... Dn,
-          SF_REQUIRE(meta::all<meta::is_ioarchive<ArchiveType>,
-                               meta::is_span_set<T, D, Dn...>>::value)>
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                meta::is_span_set<T, D, Dn...>>::value)>
 void span(ArchiveType& archive, T& pointer, D& dimension, Dn&... dimension_n)
 {
     if (not detail::refer_key(archive, pointer)) return; // serialize refer info
@@ -262,7 +263,7 @@ inline namespace common
 {
 
 template <typename T, typename D, typename... Dn,
-          SF_REQUIRE(meta::is_span_set<T, D, Dn...>::value)>
+          SF_REQUIRES(meta::is_span_set<T, D, Dn...>::value)>
 apply::span_functor_t<T, D, Dn...> span(T& pointer, D& dimension, Dn&... dimension_n) noexcept
 {
     return { pointer, dimension, dimension_n... };

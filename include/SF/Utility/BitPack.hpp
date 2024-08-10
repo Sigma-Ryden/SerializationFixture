@@ -28,20 +28,20 @@ namespace sf
 namespace detail
 {
 
-template <class ArchiveType, typename T, typename enable = void>
+template <class ArchiveType, typename FieldType, typename enable = void>
 struct bitpack_t;
 
-template <class ArchiveType, typename T>
-struct bitpack_t<ArchiveType, T, typename std::enable_if<sf::meta::is_oarchive<ArchiveType>::value>::type>
+template <class ArchiveType, typename FieldType>
+struct bitpack_t<ArchiveType, FieldType, typename std::enable_if<sf::meta::is_oarchive<ArchiveType>::value>::type>
 {
     ArchiveType& archive;
-    T data{};
+    FieldType data{};
     std::size_t offset{};
 
     bitpack_t(ArchiveType& archive) : archive(archive) {}
     ~bitpack_t() { archive & data; }
 
-    T operator()(T field, std::size_t bits) noexcept
+    FieldType operator()(FieldType field, std::size_t bits) noexcept
     {
         // same as data = data | (field << offset);
         data |= field << offset;
@@ -51,15 +51,15 @@ struct bitpack_t<ArchiveType, T, typename std::enable_if<sf::meta::is_oarchive<A
     }
 };
 
-template <class ArchiveType, typename T>
-struct bitpack_t<ArchiveType, T, typename std::enable_if<sf::meta::is_iarchive<ArchiveType>::value>::type>
+template <class ArchiveType, typename FieldType>
+struct bitpack_t<ArchiveType, FieldType, typename std::enable_if<sf::meta::is_iarchive<ArchiveType>::value>::type>
 {
     ArchiveType& archive;
-    T data{};
+    FieldType data{};
 
     bitpack_t(ArchiveType& archive) : archive(archive) { archive & data; }
 
-    T operator()(T field, std::size_t bits) noexcept
+    FieldType operator()(FieldType field, std::size_t bits) noexcept
     {
         //same as field = data & ~(0xf...f << bits)
         field = data & ~(~T{} << bits);

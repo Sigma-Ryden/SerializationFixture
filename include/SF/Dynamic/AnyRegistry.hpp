@@ -32,8 +32,8 @@ public:
 
 private:
     any_registry_t() = default;
-    any_registry_t(const any_registry_t&) = delete;
-    any_registry_t& operator=(const any_registry_t&) = delete;
+    any_registry_t(any_registry_t const&) = delete;
+    any_registry_t& operator=(any_registry_t const&) = delete;
 
 public:
     static any_registry_t& instance() noexcept
@@ -42,7 +42,7 @@ public:
         return self;
     }
 
-    template <typename T>
+    template <typename SerializableType>
     void add()
     {
         static bool lock = false; if (lock) return;
@@ -52,16 +52,16 @@ public:
 
         proxy.save = [](core::ioarchive_t& archive, std::any& any)
         {
-            archive << std::any_cast<T&>(any);
+            archive << std::any_cast<SerializableType&>(any);
         };
 
         proxy.load = [](core::ioarchive_t& archive, std::any& any)
         {
-            any.emplace<T>();
-            archive >> std::any_cast<T&>(any);
+            any.emplace<SerializableType>();
+            archive >> std::any_cast<SerializableType&>(any);
         };
 
-        all.emplace(typeid(T).hash_code(), proxy);
+        all.emplace(typeid(SerializableType).hash_code(), proxy);
     }
 
 public:
