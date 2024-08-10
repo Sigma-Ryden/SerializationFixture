@@ -90,7 +90,7 @@ public:
     }
 
     template <typename D, typename... Dn,
-              SF_REQUIRES(not std::is_array<D>::value)>
+              SF_REQUIRES(meta::negation<std::is_array<D>>::value)>
     span_t(pointer& data, D d, Dn... dn) noexcept
         : Core(data, d, dn...), child_scope_(data[0], dn...) {}
 

@@ -27,7 +27,7 @@ void strict(ArchiveType& archive, PointerType& pointer)
 template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
                                 meta::is_pointer_to_standard_layout<PointerType>>::value)>
-void strict(ArchiveType& archive, PointerType& pointer, memory::void_ptr<PointerType>& cache)
+void strict(ArchiveType& archive, PointerType& pointer, typename memory::ptr_traits<PointerType>::void_ptr& cache)
 {
     using item_type = typename memory::ptr_traits<PointerType>::item;
 
@@ -56,7 +56,7 @@ void strict(ArchiveType& archive, PointerType& pointer)
 template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
                                 meta::is_pointer_to_polymorphic<PointerType>>::value)>
-void strict(ArchiveType& archive, PointerType& pointer, memory::void_ptr<PointerType>& cache)
+void strict(ArchiveType& archive, PointerType& pointer, typename memory::ptr_traits<PointerType>::void_ptr& cache)
 {
     auto& registry = archive.registry();
 
@@ -70,7 +70,7 @@ template <class ArchiveType, typename PointerType,
                                 meta::is_serializable_pointer<PointerType>>::value)>
 void strict(ArchiveType& archive, PointerType& pointer)
 {
-    memory::void_ptr<PointerType> cache = nullptr;
+    typename memory::ptr_traits<PointerType>::void_ptr cache = nullptr;
     strict(archive, pointer, cache);
 }
 

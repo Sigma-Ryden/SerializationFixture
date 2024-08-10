@@ -69,7 +69,8 @@ public:
 
     template <typename PointerType,
               SF_REQUIRES(meta::is_pointer_to_polymorphic<PointerType>::value)>
-    static void load(core::ioarchive_t& archive, PointerType& pointer, ::xxsf_instantiable_traits_key_type key, memory::void_ptr<PointerType>& cache)
+    static void load(core::ioarchive_t& archive, PointerType& pointer,
+                     ::xxsf_instantiable_traits_key_type key, typename memory::ptr_traits<PointerType>::void_ptr& cache)
     {
         using PointerTraitsType = memory::ptr_traits<PointerType>;
 
@@ -91,7 +92,8 @@ public:
 
     template <typename PointerType,
               SF_REQUIRES(meta::is_pointer_to_polymorphic<PointerType>::value)>
-    static void assign(PointerType& pointer, memory::void_ptr<PointerType> const& address, ::xxsf_instantiable_traits_key_type key)
+    static void assign(PointerType& pointer, typename memory::ptr_traits<PointerType>::void_ptr const& address,
+                       ::xxsf_instantiable_traits_key_type key)
     {
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)

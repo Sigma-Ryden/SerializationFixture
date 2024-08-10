@@ -87,9 +87,6 @@ struct ptr_traits<std::unique_ptr<Type>>
     using item = Type;
 };
 
-template <typename PointerType>
-using void_ptr = typename ptr_traits<PointerType>::void_ptr;
-
 template <typename Type>
 struct factory_t
 {
@@ -165,7 +162,7 @@ typename ptr_traits<PointerType>::template wrapper<ToType> static_pointer_cast(P
 template <typename PointerType,
           SF_REQUIRES(meta::all<meta::is_pointer<PointerType>,
                                 meta::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
-void_ptr<PointerType> pure(PointerType const& pointer) noexcept
+typename ptr_traits<PointerType>::void_ptr pure(PointerType const& pointer) noexcept
 {
     return memory::static_pointer_cast<void>(pointer);
 }
@@ -173,7 +170,7 @@ void_ptr<PointerType> pure(PointerType const& pointer) noexcept
 template <typename PointerType,
           SF_REQUIRES(meta::all<meta::is_pointer<PointerType>,
                                 meta::is_pointer_to_polymorphic<PointerType>>::value)>
-void_ptr<PointerType> pure(PointerType const& pointer_to_polymorphic)
+typename ptr_traits<PointerType>::void_ptr pure(PointerType const& pointer_to_polymorphic)
 {
     return memory::dynamic_pointer_cast<void>(pointer_to_polymorphic);
 }
@@ -182,7 +179,7 @@ inline raw_ptr<void> pure(std::nullptr_t) noexcept { return nullptr; }
 
 template <typename Type, typename PointerType,
           SF_REQUIRES(meta::is_pointer<PointerType>::value)>
-void assign(PointerType& pointer, void_ptr<PointerType> const& address) noexcept
+void assign(PointerType& pointer, typename ptr_traits<PointerType>::void_ptr const& address) noexcept
 {
     pointer = memory::static_pointer_cast<Type>(address);
 }

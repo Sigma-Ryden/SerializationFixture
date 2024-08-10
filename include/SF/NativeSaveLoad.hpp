@@ -29,7 +29,7 @@ void native_save(ArchiveType& archive, PointerType& pointer, KeyType track_key)
 template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
                                 meta::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
-void native_load(ArchiveType&, PointerType& pointer, memory::void_ptr<PointerType>& address) noexcept
+void native_load(ArchiveType&, PointerType& pointer, typename memory::ptr_traits<PointerType>::void_ptr& address) noexcept
 {
     memory::assign<typename memory::ptr_traits<PointerType>::item>(pointer, address);
 }
@@ -37,7 +37,7 @@ void native_load(ArchiveType&, PointerType& pointer, memory::void_ptr<PointerTyp
 template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
                                 meta::is_pointer_to_polymorphic<PointerType>>::value)>
-void native_load(ArchiveType& archive, PointerType& pointer, memory::void_ptr<PointerType>& address)
+void native_load(ArchiveType& archive, PointerType& pointer, typename memory::ptr_traits<PointerType>::void_ptr& address)
 {
     auto& registry = archive.registry();
 

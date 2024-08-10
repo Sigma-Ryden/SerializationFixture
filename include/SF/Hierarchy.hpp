@@ -53,7 +53,7 @@ namespace detail
 {
 
 template <class BaseType, class ArchiveType, class DerivedType,
-          SF_REQUIRES(not meta::is_virtual_base_of<BaseType, DerivedType>::value)>
+          SF_REQUIRES(meta::negation<meta::is_virtual_base_of<BaseType, DerivedType>>::value)>
 void native_base(ArchiveType& archive, DerivedType& object_with_base)
 {
     base<BaseType>(archive, object_with_base);
