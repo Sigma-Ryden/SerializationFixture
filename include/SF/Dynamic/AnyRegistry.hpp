@@ -42,9 +42,11 @@ public:
         return self;
     }
 
-    template <typename T> void update(let::u64 hash)
+    template <typename T>
+    void add()
     {
-        if (all.find(hash) != all.end()) return;
+        static bool lock = false; if (lock) return;
+        lock = true;
 
         any_proxy_t proxy;
 
@@ -59,7 +61,7 @@ public:
             archive >> std::any_cast<T&>(any);
         };
 
-        all.emplace(hash, proxy);
+        all.emplace(typeid(T).hash_code(), proxy);
     }
 
 public:
@@ -73,36 +75,6 @@ public:
         all.at(hash).load(archive, any);
     }
 };
-
-template <typename T>
-class any_fixture_t
-{
-private:
-    static bool lock_;
-
-public:
-    any_fixture_t() { call(); }
-
-public:
-    static void call()
-    {
-        if (lock_) return;
-        lock_ = true; // lock before creating clone instance to prevent recursive call
-
-        auto& registry = any_registry_t::instance();
-
-        auto hash = SF_TYPE_HASH(T);
-    #ifdef SF_DEBUG
-        if (registry.all.find(hash) != registry.all.end())
-            throw "The 'sf::dynamic::any_registry_t' must contains unique hashes.";
-    #endif // SF_DEBUG
-
-        registry.update<T>(hash);
-    }
-};
-
-template <typename T>
-bool any_fixture_t<T>::lock_ = false;
 
 } // namespace dynamic
 

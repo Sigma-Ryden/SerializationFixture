@@ -63,14 +63,17 @@ public:
     template <typename T> struct is_instantiable : meta::is_cast_allowed<T*, instantiable_type*> {};
 
 public:
-    template <class T>
-    instantiable_proxy_t* add()
+    template <class T, SF_REQUIRE(not is_instantiable<T>::value)>
+    void add() { /*pass*/ }
+
+    template <class T, SF_REQUIRE(is_instantiable<T>::value)>
+    void add()
     {
+        static bool lock = false; if (lock) return;
+        lock = true;
+
         const auto key = ::xxsf_instantiable_traits<T>::key();
     #ifdef SF_DEBUG
-        if (not is_instantiable<T>::value)
-            throw "The polymorphic 'T' type is not convertible to 'instantiable_t'.";
-
         if (key == ::xxsf_instantiable_traits_base_key)
             throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
     #endif // SF_DEBUG
@@ -106,21 +109,23 @@ public:
         const auto hash = SF_TYPE_HASH(T);
         rtti_all.emplace(hash, proxy);
         rtti.emplace(hash, key);
-
-        return proxy;
     }
-
+    // TODO: remove here
     template <class T>
     bool fixture()
     {
-        const auto key = ::xxsf_instantiable_traits<T>::key();
-
-        if (all.find(key) != all.end())
     #ifdef SF_DEBUG
-            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
-    #else
-            return false;
+        if (not is_instantiable<T>::value)
+            throw "The polymorphic 'T' type is not convertible to 'instantiable_t'.";
     #endif // SF_DEBUG
+
+        if (all.find(::xxsf_instantiable_traits<T>::key()) != all.end())
+        #ifdef SF_DEBUG
+            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
+        #else
+            return false;
+        #endif // SF_DEBUG
+
         add<T>();
         return true;
     }

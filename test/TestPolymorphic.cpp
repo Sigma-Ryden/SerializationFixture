@@ -48,7 +48,7 @@ SERIALIZATION(saveload, self, internal::Derived)
 // we can overload polymorphic key for each class (or full template specialization)
 
 // smae as EXPORT_INSTANTIABLE_KEY("Base<double>", Base<double>)
-EXPORT_INSTANTIABLE(Base<double>)
+EXPORT_INSTANTIABLE_KEY(typeid(Base<double>).hash_code(), Base<double>)
 EXPORT_INSTANTIABLE(Base<std::string>)
 
 EXPORT_INSTANTIABLE(internal::Derived)

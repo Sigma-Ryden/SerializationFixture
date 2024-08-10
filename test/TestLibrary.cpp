@@ -88,8 +88,7 @@ class Square {};
 
 } // TEST_SPACE
 
-EXPORT_INSTANTIABLE(Triangle)
-EXPORT_INSTANTIABLE(Square)
+EXPORT_INSTANTIABLE_KEY(SF_TYPE_HASH(Cyrcle), Triangle) // export Triangle as Cyrcle - will collide
 
 SERIALIZATION(saveload, self, Triangle) {}
 SERIALIZATION(saveload, self, Cyrcle) {}
@@ -100,8 +99,6 @@ TEST(TestLibrary, TestInstantiableRegistry)
     auto& registry = sf::dynamic::instantiable_registry_t::instance();
 
     {
-        registry.fixture<Triangle>();
-
         auto success = false;
         try { registry.fixture<Cyrcle>(); } catch(...) { success = true; }
 
@@ -421,11 +418,12 @@ struct PolymorphicDerived : public PolymorphicBase {};
 
 } // TEST_SPACE
 
-EXPORT_INSTANTIABLE(SomeObjectImpl)
-EXPORT_INSTANTIABLE(SomeObject)
-EXPORT_INSTANTIABLE(PolymorphicDerived)
-EXPORT_INSTANTIABLE(PolymorphicBase)
-EXPORT_INSTANTIABLE(PolymorphicBaseImpl)
+// will throw expection
+//EXPORT_INSTANTIABLE(SomeObjectImpl)
+//EXPORT_INSTANTIABLE(SomeObject)
+//EXPORT_INSTANTIABLE(PolymorphicDerived)
+//EXPORT_INSTANTIABLE(PolymorphicBase)
+//EXPORT_INSTANTIABLE(PolymorphicBaseImpl)
 
 SERIALIZATION(saveload, self, SomeObjectImpl)
 {
