@@ -18,8 +18,8 @@
 
 #define SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                       \
     template <typename> struct is_std_##map_type : std::false_type {};                                  \
-    template <typename KeyType, typename ValueType, typename Comparator, typename AllocatorType>        \
-    struct is_std_##map_type<std::map_type<KeyType, ValueType, Comparator, AllocatorType>> : std::true_type {};
+    template <typename KeyType, typename ValueType, typename ComparatorType, typename AllocatorType>    \
+    struct is_std_##map_type<std::map_type<KeyType, ValueType, ComparatorType, AllocatorType>> : std::true_type {};
 
 namespace sf
 {
@@ -32,27 +32,27 @@ SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_map)
 SF_IS_STD_MAP_TYPE_META_GENERIC(multimap)
 SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_multimap)
 
-template <class T> struct is_std_any_unordered_map
-    : one<is_std_unordered_map<T>,
-          is_std_unordered_multimap<T>> {};
+template <class StdMapType> struct is_std_any_unordered_map
+    : one<is_std_unordered_map<StdMapType>,
+          is_std_unordered_multimap<StdMapType>> {};
 
-template <class T> struct is_std_any_map
-    : one<is_std_map<T>,
-          is_std_multimap<T>,
-          is_std_any_unordered_map<T>> {};
+template <class StdMapType> struct is_std_any_map
+    : one<is_std_map<StdMapType>,
+          is_std_multimap<StdMapType>,
+          is_std_any_unordered_map<StdMapType>> {};
 
 } // namespace meta
 
 namespace detail
 {
 
-template <class T,
-          SF_REQUIRES(not meta::is_std_any_unordered_map<T>::value)>
-void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
+template <class StdMapType,
+          SF_REQUIRES(meta::negation<meta::is_std_any_unordered_map<StdMapType>>::value)>
+void reserve_unordered(StdMapType&, std::size_t) noexcept { /*pass*/ }
 
-template <class T,
-          SF_REQUIRES(meta::is_std_any_unordered_map<T>::value)>
-void reserve_unordered(T& unordered, std::size_t size)
+template <class StdMapType,
+          SF_REQUIRES(meta::is_std_any_unordered_map<StdMapType>::value)>
+void reserve_unordered(StdMapType& unordered, std::size_t size)
 {
     unordered.reserve(size);
 }
@@ -61,7 +61,7 @@ void reserve_unordered(T& unordered, std::size_t size)
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(save, map, ::sf::meta::is_std_any_map<T>::value)
+CONDITIONAL_SERIALIZATION(save, map, ::sf::meta::is_std_any_map<S>::value)
 {
     ::sf::let::u64 size = map.size();
     archive & size;
@@ -69,10 +69,10 @@ CONDITIONAL_SERIALIZATION(save, map, ::sf::meta::is_std_any_map<T>::value)
     ::sf::compress::slow(archive, map);
 }
 
-CONDITIONAL_SERIALIZATION(load, map, ::sf::meta::is_std_any_map<T>::value)
+CONDITIONAL_SERIALIZATION(load, map, ::sf::meta::is_std_any_map<S>::value)
 {
-    using key_type   = typename T::key_type;
-    using value_type = typename T::mapped_type;
+    using key_type   = typename S::key_type;
+    using value_type = typename S::mapped_type;
 
     ::sf::let::u64 size{};
     archive & size;

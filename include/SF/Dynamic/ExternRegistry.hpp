@@ -99,7 +99,7 @@ public:
     #endif // SF_GARBAGE_CHECK_DISABLE
 
         auto casted = instantiable_registry_t::instance().cast(address, key);
-        pointer = memory::dynamic_pointer_cast<memory::ptr_traits<PointerType>::item>(casted);
+        pointer = memory::dynamic_pointer_cast<typename memory::ptr_traits<PointerType>::item>(casted);
     }
 };
 

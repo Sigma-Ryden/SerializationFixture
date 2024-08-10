@@ -26,43 +26,39 @@ template <class StreamWrapperType,
           class RegistryType = dynamic::extern_registry_t>
 class iarchive_t : public core::ioarchive_t, public core::iarchive_common_t
 {
-private:
-    template <typename PointerType>
-    struct track_data_t { PointerType address = nullptr; };
-
 public:
     using TrackingKeyType = std::uintptr_t;
 
 private:
-    StreamWrapperType archive_;
+    StreamWrapperType xxarchive;
 
-    std::unordered_map<TrackingKeyType, track_data_t<memory::shared_ptr<void>>> track_shared_;
-    std::unordered_map<TrackingKeyType,  track_data_t<memory::raw_ptr<void>>> track_raw_;
+    std::unordered_map<TrackingKeyType, memory::shared_ptr<void>> xxtrack_shared;
+    std::unordered_map<TrackingKeyType, memory::raw_ptr<void>> xxtrack_raw;
 
-    tracking::hierarchy_track_t<TrackingKeyType> track_hierarchy_;
+    tracking::hierarchy_track_t<TrackingKeyType> xxtrack_hierarchy;
 
-    RegistryType registry_;
+    RegistryType xxregistry;
 
 public:
     template <typename InputStreamType>
     iarchive_t(InputStreamType& stream) : core::ioarchive_t(::xxsf_archive_traits<iarchive_t>::key, true)
-        ,archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_() {}
+        , xxarchive{stream}, xxtrack_shared(), xxtrack_raw(), xxtrack_hierarchy(), xxregistry() {}
 
-    StreamWrapperType& stream() noexcept { return archive_; }
+    StreamWrapperType& stream() noexcept { return xxarchive; }
 
     template <typename TrackType,
               SF_REQUIRES(meta::is_track_shared<TrackType>::value)>
-    auto tracking() noexcept -> decltype(track_shared_) { return track_shared_; }
+    auto tracking() noexcept -> decltype(xxtrack_shared)& { return xxtrack_shared; }
 
     template <typename TrackType,
               SF_REQUIRES(meta::is_track_raw<TrackType>::value)>
-    auto tracking() noexcept -> decltype(track_raw_) { return track_raw_; }
+    auto tracking() noexcept -> decltype(xxtrack_raw)& { return xxtrack_raw; }
 
     template <typename TrackType,
               SF_REQUIRES(meta::is_track_hierarchy<TrackType>::value)>
-    auto tracking() noexcept -> decltype(track_hierarchy_) { return track_hierarchy_; }
+    auto tracking() noexcept -> decltype(xxtrack_hierarchy)& { return xxtrack_hierarchy; }
 
-    RegistryType& registry() noexcept { return registry_; }
+    RegistryType& registry() noexcept { return xxregistry; }
 
     template <typename SerializableType>
     iarchive_t& operator>> (SerializableType const& data) { return operator()(data); }

@@ -17,26 +17,26 @@ namespace sf
 namespace wrapper
 {
 
-template <typename OutStream = std::vector<unsigned char>>
+template <typename OutputStreamType = std::vector<unsigned char>>
 class obyte_stream_t
 {
 protected:
-    using item_type = typename OutStream::value_type;
+    using item_type = typename OutputStreamType::value_type;
 
 protected:
     static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::obyte_stream_t'.");
 
 public:
-    OutStream& storage;
+    OutputStreamType& storage;
 
 public:
-    obyte_stream_t(OutStream& stream) noexcept : storage(stream)
+    obyte_stream_t(OutputStreamType& stream) noexcept : storage(stream)
     {
         storage.reserve(SF_BYTE_STREAM_RESERVE_SIZE); // default reserve memory
     }
 
-    template <typename T>
-    void call(const T* data, std::size_t size)
+    template <typename CharType>
+    void call(CharType const* data, std::size_t size)
     {
         auto it = memory::const_byte_cast<item_type>(data);
         while (size > 0)
@@ -47,23 +47,23 @@ public:
     }
 };
 
-template <typename InStream = std::vector<unsigned char>>
+template <typename InputStreamType = std::vector<unsigned char>>
 struct ibyte_stream_t
 {
 protected:
-    using item_type = typename InStream::value_type;
+    using item_type = typename InputStreamType::value_type;
 
 protected:
     static_assert(sizeof(item_type) == 1, "Require byte size for 'sf::wrapper::ibyte_stream_t'.");
 
 public:
-    InStream& storage;
+    InputStreamType& storage;
     std::size_t offset;
 
-    ibyte_stream_t(InStream& stream) noexcept : storage(stream), offset() {}
+    ibyte_stream_t(InputStreamType& stream) noexcept : storage(stream), offset() {}
 
-    template <typename T>
-    void call(T* data, std::size_t size)
+    template <typename CharType>
+    void call(CharType* data, std::size_t size)
     {
         auto it = memory::byte_cast<item_type>(data);
         while (size > 0)
@@ -74,33 +74,33 @@ public:
     }
 };
 
-template <typename OutStream = std::ofstream>
+template <typename OutputStreamType = std::ofstream>
 class ofile_stream_t
 {
 public:
-    OutStream& file;
+    OutputStreamType& file;
 
 public:
-    ofile_stream_t(OutStream& stream) noexcept : file(stream) {}
+    ofile_stream_t(OutputStreamType& stream) noexcept : file(stream) {}
 
-    template <typename T>
-    void call(const T* data, std::size_t memory_size)
+    template <typename CharType>
+    void call(CharType const* data, std::size_t memory_size)
     {
         file.write(memory::const_byte_cast(data), memory_size);
     }
 };
 
-template <typename InStream = std::ifstream>
+template <typename InputStreamType = std::ifstream>
 class ifile_stream_t
 {
 public:
-    InStream& file;
+    InputStreamType& file;
 
 public:
-    ifile_stream_t(InStream& stream) noexcept : file(stream) {}
+    ifile_stream_t(InputStreamType& stream) noexcept : file(stream) {}
 
-    template <typename T>
-    void call(T* data, std::size_t memory_size)
+    template <typename CharType>
+    void call(CharType* data, std::size_t memory_size)
     {
         file.read(memory::byte_cast(data), memory_size);
     }

@@ -17,43 +17,43 @@ namespace sf
 namespace detail
 {
 
-template <let::u64 I, class ArchiveType, class Variant,
-          SF_REQUIRES(I == std::variant_size<Variant>::value)>
-void variant_save(ArchiveType& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
+template <let::u64 ElementIndexValue, class ArchiveType, class VariantType,
+          SF_REQUIRES(ElementIndexValue == std::variant_size<VariantType>::value)>
+void variant_save(ArchiveType&, VariantType&, let::u64) noexcept { /*pass*/ }
 
-template <let::u64 I = 0, class ArchiveType, class Variant,
-          SF_REQUIRES(I < std::variant_size<Variant>::value)>
-void variant_save(ArchiveType& archive, Variant& variant, let::u64 index)
+template <let::u64 ElementIndexValue = 0, class ArchiveType, class VariantType,
+          SF_REQUIRES(ElementIndexValue < std::variant_size<VariantType>::value)>
+void variant_save(ArchiveType& archive, VariantType& variant, let::u64 index)
 {
-    if (I < index) return variant_save<I + 1>(archive, variant, index);
-    archive & std::get<I>(variant);
+    if (ElementIndexValue < index) return variant_save<ElementIndexValue + 1>(archive, variant, index);
+    archive & std::get<ElementIndexValue>(variant);
 }
 
-template <typename Type, class ArchiveType, class Variant,
-          SF_REQUIRES(not std::is_constructible<Type>::value)>
-void variant_load_impl(ArchiveType& archive, Variant& variant)
+template <typename ElementType, class ArchiveType, class VariantType,
+          SF_REQUIRES(meta::negation<std::is_constructible<ElementType>>::value)>
+void variant_load_impl(ArchiveType&, VariantType&)
 {
     throw "Require default constructor for specify type.";
 }
 
-template <typename Type, class ArchiveType, class Variant,
-          SF_REQUIRES(std::is_constructible<Type>::value)>
-void variant_load_impl(ArchiveType& archive, Variant& variant)
+template <typename ElementType, class ArchiveType, class VariantType,
+          SF_REQUIRES(std::is_constructible<ElementType>::value)>
+void variant_load_impl(ArchiveType& archive, VariantType& variant)
 {
-    archive & variant.template emplace<Type>();
+    archive & variant.template emplace<ElementType>();
 }
 
-template <let::u64 I, class ArchiveType, class Variant,
-          SF_REQUIRES(I == std::variant_size<Variant>::value)>
-void variant_load(ArchiveType& archive, Variant& variant, let::u64 index) noexcept { /*pass*/ }
+template <let::u64 ElementIndexValue, class ArchiveType, class VariantType,
+          SF_REQUIRES(ElementIndexValue == std::variant_size<VariantType>::value)>
+void variant_load(ArchiveType&, VariantType&, let::u64) noexcept { /*pass*/ }
 
-template <let::u64 I = 0, class ArchiveType, class Variant,
-          SF_REQUIRES(I < std::variant_size<Variant>::value)>
-void variant_load(ArchiveType& archive, Variant& variant, let::u64 index)
+template <let::u64 ElementIndexValue = 0, class ArchiveType, class VariantType,
+          SF_REQUIRES(ElementIndexValue < std::variant_size<VariantType>::value)>
+void variant_load(ArchiveType& archive, VariantType& variant, let::u64 index)
 {
-    if (I < index) return variant_load<I + 1>(archive, variant, index);
+    if (ElementIndexValue < index) return variant_load<ElementIndexValue + 1>(archive, variant, index);
 
-    using type = typename std::variant_alternative<I, Variant>::type;
+    using type = typename std::variant_alternative<ElementIndexValue, VariantType>::type;
     variant_load_impl<type>(archive, variant);
 }
 

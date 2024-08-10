@@ -81,14 +81,14 @@ TEMPLATE_SERIALIZATION(load, alias, template <typename ElementType>, ::sf::alias
     key_type key{};
     archive & key;
 
-    auto& item = archive.template tracking<::sf::tracking::raw_t>()[key];
+    auto& address = archive.template tracking<::sf::tracking::raw_t>()[key];
 
-    if (item.address == nullptr)
+    if (address == nullptr)
         throw "The read alias_t must be tracked before.";
 
     ElementType* pointer = nullptr;
 
-    ::sf::detail::native_load(archive, pointer, item.address);
+    ::sf::detail::native_load(archive, pointer, address);
 
     alias.set(*pointer); // pointer will never nullptr
 }

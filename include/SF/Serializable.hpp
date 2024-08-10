@@ -16,21 +16,22 @@ namespace sf
 {
 
 // Type registry for instantiable & any serialization, allowed registered and supported types only
-template <typename T> void serializable()
+template <typename SerializableType> void serializable()
 {
-    static_assert(not meta::is_unsupported<T>::value, "The 'T' is an unsupported type for serialization.");
+    static_assert(meta::negation<meta::is_unsupported<SerializableType>>::value,
+        "The 'SerializableType' is an unsupported type for serialization.");
 
-    dynamic::instantiable_registry_t::instance().add<T>();
+    dynamic::instantiable_registry_t::instance().add<SerializableType>();
 
 #if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
-    dynamic::any_registry_t::instance().add<T>();
+    dynamic::any_registry_t::instance().add<SerializableType>();
 #endif // if
 }
 
-template <typename T> T&& serializable(T&& object)
+template <typename SerializableType> SerializableType&& serializable(SerializableType&& object)
 {
-    serializable<typename std::decay<T>::type>();
-    return std::forward<T>(object);
+    serializable<typename std::decay<SerializableType>::type>();
+    return std::forward<SerializableType>(object);
 }
 
 } // namepsace sf

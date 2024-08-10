@@ -13,10 +13,10 @@
 namespace sf
 {
 
-template <class ArchiveType, typename T,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(ArchiveType& archive, T& pointer)
+                                meta::is_pointer_to_standard_layout<PointerType>>::value)>
+void strict(ArchiveType& archive, PointerType& pointer)
 {
     if (pointer == nullptr)
         throw "The write pointer must be allocated.";
@@ -24,12 +24,12 @@ void strict(ArchiveType& archive, T& pointer)
     archive & (*pointer);
 }
 
-template <class ArchiveType, typename T,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_standard_layout<T>>::value)>
-void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
+                                meta::is_pointer_to_standard_layout<PointerType>>::value)>
+void strict(ArchiveType& archive, PointerType& pointer, memory::void_ptr<PointerType>& cache)
 {
-    using item_type = typename memory::ptr_traits<T>::item;
+    using item_type = typename memory::ptr_traits<PointerType>::item;
 
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
@@ -42,10 +42,10 @@ void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
     archive & (*pointer);
 }
 
-template <class ArchiveType, typename T,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(ArchiveType& archive, T& pointer)
+                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+void strict(ArchiveType& archive, PointerType& pointer)
 {
     auto& registry = archive.registry();
 
@@ -53,10 +53,10 @@ void strict(ArchiveType& archive, T& pointer)
     registry.save(archive, pointer, id);
 }
 
-template <class ArchiveType, typename T,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<T>>::value)>
-void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
+                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+void strict(ArchiveType& archive, PointerType& pointer, memory::void_ptr<PointerType>& cache)
 {
     auto& registry = archive.registry();
 
@@ -65,43 +65,41 @@ void strict(ArchiveType& archive, T& pointer, memory::void_ptr<T>& cache)
 }
 
 // verison without cache using
-template <class ArchiveType, typename T,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_serializable_pointer<T>>::value)>
-void strict(ArchiveType& archive, T& pointer)
+                                meta::is_serializable_pointer<PointerType>>::value)>
+void strict(ArchiveType& archive, PointerType& pointer)
 {
-    memory::void_ptr<T> cache = nullptr;
+    memory::void_ptr<PointerType> cache = nullptr;
     strict(archive, pointer, cache);
 }
 
 namespace detail
 {
 
-template <class ArchiveType, typename T,
-          typename KeyType = typename ArchiveType::TrackingKeyType,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_serializable_pointer<T>>::value)>
-KeyType refer_key(ArchiveType& archive, T& pointer)
+                                meta::is_serializable_pointer<PointerType>>::value)>
+typename ArchiveType::TrackingKeyType refer_key(ArchiveType& archive, PointerType& pointer)
 {
     auto pure = memory::pure(pointer);
-    auto key = reinterpret_cast<KeyType>(memory::raw(pure));
+    auto key = reinterpret_cast<typename ArchiveType::TrackingKeyType>(memory::raw(pure));
 
     archive & key;
     return key;
 }
 
-template <class ArchiveType, typename T,
-          typename KeyType = typename ArchiveType::TrackingKeyType,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_serializable_pointer<T>>::value)>
-KeyType refer_key(ArchiveType& archive, T& pointer)
+                                meta::is_serializable_pointer<PointerType>>::value)>
+typename ArchiveType::TrackingKeyType refer_key(ArchiveType& archive, PointerType& pointer)
 {
 #ifdef SF_DEBUG
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 #endif // SF_DEBUG
 
-    KeyType key{};
+    typename ArchiveType::TrackingKeyType key{};
     archive & key;
 
     return key;
@@ -112,12 +110,12 @@ KeyType refer_key(ArchiveType& archive, T& pointer)
 namespace apply
 {
 
-template <typename T>
+template <typename SerializableType>
 struct strict_functor_t : public apply_functor_t
 {
-    T& data;
+    SerializableType& data;
 
-    strict_functor_t(T& data) noexcept : data(data) {}
+    strict_functor_t(SerializableType& data) noexcept : data(data) {}
 
     template <class ArchiveType>
     void operator() (ArchiveType& archive) const { strict(archive, data); }
@@ -125,8 +123,9 @@ struct strict_functor_t : public apply_functor_t
 
 } // namespace apply
 
-template <typename T>
-apply::strict_functor_t<T> strict(T& parameter) noexcept { return { parameter }; }
+template <typename SerializableType>
+apply::strict_functor_t<SerializableType>
+strict(SerializableType& parameter) noexcept { return { parameter }; }
 
 } // namespace sf
 

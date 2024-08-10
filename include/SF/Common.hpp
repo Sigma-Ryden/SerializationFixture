@@ -17,17 +17,13 @@ CONDITIONAL_SERIALIZATION(saveload, number, std::is_arithmetic<S>::value)
 
 CONDITIONAL_SERIALIZATION(save, enumerator, std::is_enum<S>::value)
 {
-    using underlying_type = typename std::underlying_type<S>::type;
-    auto value = static_cast<underlying_type>(enumerator);
-
+    auto value = static_cast<typename std::underlying_type<S>::type>(enumerator);
     archive & value;
 }
 
 CONDITIONAL_SERIALIZATION(load, enumerator, std::is_enum<S>::value)
 {
-    using underlying_type = typename std::underlying_type<S>::type;
-
-    underlying_type buff{};
+    typename std::underlying_type<S>::type buff{};
     archive & buff;
 
     enumerator = static_cast<S>(buff);

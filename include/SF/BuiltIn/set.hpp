@@ -15,8 +15,8 @@
 
 #define SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                       \
     template <typename> struct is_std_##set_type : std::false_type {};                                  \
-    template <typename KeyType, typename Comparator, typename AllocatorType>                            \
-    struct is_std_##set_type<std::set_type<KeyType, Comparator, AllocatorType>> : std::true_type {};
+    template <typename KeyType, typename ComparatorType, typename AllocatorType>                        \
+    struct is_std_##set_type<std::set_type<KeyType, ComparatorType, AllocatorType>> : std::true_type {};
 
 namespace sf
 {
@@ -29,27 +29,27 @@ SF_IS_STD_SET_TYPE_META_GENERIC(unordered_set)
 SF_IS_STD_SET_TYPE_META_GENERIC(multiset)
 SF_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
 
-template <class T> struct is_std_any_unordered_set
-    : one<is_std_unordered_set<T>,
-          is_std_unordered_multiset<T>> {};
+template <class StdSetType> struct is_std_any_unordered_set
+    : one<is_std_unordered_set<StdSetType>,
+          is_std_unordered_multiset<StdSetType>> {};
 
-template <class T> struct is_std_any_set
-    : one<is_std_set<T>,
-          is_std_multiset<T>,
-          is_std_any_unordered_set<T>> {};
+template <class StdSetType> struct is_std_any_set
+    : one<is_std_set<StdSetType>,
+          is_std_multiset<StdSetType>,
+          is_std_any_unordered_set<StdSetType>> {};
 
 } // namespace meta
 
 namespace detail
 {
 
-template <class T,
-          SF_REQUIRES(not meta::is_std_any_unordered_set<T>::value)>
-void reserve_unordered(T& ordered, std::size_t size) noexcept { /*pass*/ }
+template <class StdSetType,
+          SF_REQUIRES(meta::negation<meta::is_std_any_unordered_set<StdSetType>>::value)>
+void reserve_unordered(StdSetType&, std::size_t) noexcept { /*pass*/ }
 
-template <class T,
-          SF_REQUIRES(meta::is_std_any_unordered_set<T>::value)>
-void reserve_unordered(T& unordered, std::size_t size)
+template <class StdSetType,
+          SF_REQUIRES(meta::is_std_any_unordered_set<StdSetType>::value)>
+void reserve_unordered(StdSetType& unordered, std::size_t size)
 {
     unordered.reserve(size);
 }
@@ -58,7 +58,7 @@ void reserve_unordered(T& unordered, std::size_t size)
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(save, set, ::sf::meta::is_std_any_set<T>::value)
+CONDITIONAL_SERIALIZATION(save, set, ::sf::meta::is_std_any_set<S>::value)
 {
     ::sf::let::u64 size = set.size();
     archive & size;
@@ -66,9 +66,9 @@ CONDITIONAL_SERIALIZATION(save, set, ::sf::meta::is_std_any_set<T>::value)
     ::sf::compress::slow(archive, set);
 }
 
-CONDITIONAL_SERIALIZATION(load, set, ::sf::meta::is_std_any_set<T>::value)
+CONDITIONAL_SERIALIZATION(load, set, ::sf::meta::is_std_any_set<S>::value)
 {
-    using value_type = typename T::value_type;
+    using value_type = typename S::value_type;
 
     ::sf::let::u64 size{};
     archive & size;

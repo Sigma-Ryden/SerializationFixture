@@ -7,7 +7,8 @@
 
 #include <SF/Compress.hpp>
 
-TEMPLATE_SERIALIZATION(saveload, array, (template <typename ValueType, std::size_t BitsetSize>), std::array<ValueType, BitsetSize>)
+TEMPLATE_SERIALIZATION(saveload, array,
+    (template <typename ValueType, std::size_t SizeValue>), std::array<ValueType, SizeValue>)
 {
     ::sf::compress::zip(archive, array);
 }

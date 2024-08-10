@@ -62,7 +62,7 @@ struct bitpack_t<ArchiveType, FieldType, typename std::enable_if<sf::meta::is_ia
     FieldType operator()(FieldType field, std::size_t bits) noexcept
     {
         //same as field = data & ~(0xf...f << bits)
-        field = data & ~(~T{} << bits);
+        field = data & ~(~FieldType{} << bits);
         data >>= bits;
 
         return field;

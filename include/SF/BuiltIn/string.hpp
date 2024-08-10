@@ -9,8 +9,8 @@
 #include <SF/Compress.hpp>
 
 TEMPLATE_SERIALIZATION(save, string,
-    (template <typename CharType, typename Traits, typename AllocatorType>),
-    std::basic_string<CharType, Traits, AllocatorType>)
+    (template <typename CharType, typename TraitsType, typename AllocatorType>),
+    std::basic_string<CharType, TraitsType, AllocatorType>)
 {
     ::sf::let::u64 size = string.size();
     archive & size;
@@ -19,8 +19,8 @@ TEMPLATE_SERIALIZATION(save, string,
 }
 
 TEMPLATE_SERIALIZATION(load, string,
-    (template <typename CharType, typename Traits, typename AllocatorType>),
-    std::basic_string<CharType, Traits, AllocatorType>)
+    (template <typename CharType, typename TraitsType, typename AllocatorType>),
+    std::basic_string<CharType, TraitsType, AllocatorType>)
 {
     ::sf::let::u64 size{};
     archive & size;

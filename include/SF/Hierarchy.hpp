@@ -22,10 +22,10 @@ void base(ArchiveType& archive, DerivedType& object)
     archive & ::xxsf_cast_to_non_public_base::call<BaseType>(object);
 }
 
-template <class Base, class ArchiveType, class DerivedType,
+template <class BaseType, class ArchiveType, class DerivedType,
           SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
-                                std::is_base_of<Base, Derived>>::value)>
-void virtual_base(ArchiveType& archive, Derived& object)
+                                std::is_base_of<BaseType, DerivedType>>::value)>
+void virtual_base(ArchiveType& archive, DerivedType& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
     if (SF_EXPRESSION_HASH(object) == SF_TYPE_HASH(DerivedType))
@@ -36,7 +36,7 @@ void virtual_base(ArchiveType& archive, Derived& object)
     auto address = memory::pure(std::addressof(object));
 
     auto const key = reinterpret_cast<key_type>(address);
-    auto const traits = SF_TYPE_HASH(Base);
+    auto const traits = SF_TYPE_HASH(BaseType);
 
     auto& hierarchy_tracking = archive.template tracking<tracking::hierarchy_t>();
 
@@ -44,7 +44,7 @@ void virtual_base(ArchiveType& archive, Derived& object)
     if (not is_tracking)
     {
         is_tracking = true;
-        base<Base>(archive, object);
+        base<BaseType>(archive, object);
     }
 #endif // SF_PTRTRACK_DISABLE
 }

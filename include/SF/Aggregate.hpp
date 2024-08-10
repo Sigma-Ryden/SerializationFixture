@@ -40,7 +40,7 @@ SF_REPEAT(SF_AGGREGATE_IMPLEMENTATION_GENERIC, 64)
 
 template <class ArchiveType, typename SerializableType,
           SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
-                                meta::is_aggregate<T>>::value)>
+                                meta::is_aggregate<SerializableType>>::value)>
 void aggregate(ArchiveType& archive, SerializableType& object)
 {
     constexpr auto size = meta::aggregate_size<SerializableType>::value;

@@ -7,22 +7,21 @@ namespace sf
 namespace meta
 {
 
-template <template <typename...> class Adapter,
-          typename Type, class Container, typename... Args>
-Container& underlying(Adapter<Type, Container, Args...>& adapter) noexcept
+template <template <typename...> class AdapterTemplate,
+          typename ValueType, class ContainerType, typename... ArgumentTypes>
+ContainerType& underlying(AdapterTemplate<ValueType, ContainerType, ArgumentTypes...>& adapter) noexcept
 {
-    using Core = Adapter<Type, Container, Args...>;
+    using AdapterType = AdapterTemplate<ValueType, ContainerType, ArgumentTypes...>;
 
-    struct base_inner : public Core
+    struct xxinner : public AdapterType
     {
-        static Container& underlying(Core& core)
+        static ContainerType& underlying(AdapterType& base)
         {
-            auto underlying_container = &base_inner::c;
-            return core.*underlying_container;
+            return base.*(&xxinner::c);
         }
     };
 
-    return base_inner::underlying(adapter);
+    return xxinner::underlying(adapter);
 }
 
 } // namespace meta

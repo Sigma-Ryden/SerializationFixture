@@ -4,7 +4,7 @@
 #include <SF/Core/Serialization.hpp>
 #include <SF/Binary.hpp>
 
-CONDITIONAL_SERIALIZATION(saveload, data, std::is_union<T>::value)
+CONDITIONAL_SERIALIZATION(saveload, data, std::is_union<S>::value)
 {
     ::sf::binary(archive, data);
 }

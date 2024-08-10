@@ -22,107 +22,81 @@
 namespace sf
 {
 
-template <class StreamWrapper,
-          class Registry = dynamic::extern_registry_t>
+template <class StreamWrapperType,
+          class RegistryType = dynamic::extern_registry_t>
 class oarchive_t : public core::ioarchive_t, public core::oarchive_common_t
 {
 public:
     using TrackingKeyType = std::uintptr_t;
-    using TrackingTable = std::unordered_map<TrackingKeyType, bool>;
-    using HierarchyTrackingTable = tracking::hierarchy_track_t<TrackingKeyType>;
 
 private:
-    StreamWrapper archive_;
+    StreamWrapperType xxarchive;
 
-    TrackingTable track_shared_;
-    TrackingTable track_raw_;
+    std::unordered_map<TrackingKeyType, bool> xxtrack_shared;
+    std::unordered_map<TrackingKeyType, bool> xxtrack_raw;
 
-    HierarchyTrackingTable track_hierarchy_;
+    tracking::hierarchy_track_t<std::uintptr_t> xxtrack_hierarchy;
 
-    Registry registry_;
+    RegistryType xxregistry;
 
 public:
-    template <typename OutStream> oarchive_t(OutStream& stream);
+    template <typename OutputStreamType>
+    oarchive_t(OutputStreamType& stream) : core::ioarchive_t(::xxsf_archive_traits<oarchive_t>::key, false)
+        , xxarchive{stream}, xxtrack_shared(), xxtrack_raw(), xxtrack_hierarchy(), xxregistry() {}
 
-    auto stream() noexcept -> StreamWrapper& { return archive_; }
+    StreamWrapperType& stream() noexcept { return xxarchive; }
 
     template <typename TrackType,
               SF_REQUIRES(meta::is_track_shared<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable& { return track_shared_; }
+    auto tracking() noexcept -> decltype(xxtrack_shared)& { return xxtrack_shared; }
 
     template <typename TrackType,
               SF_REQUIRES(meta::is_track_raw<TrackType>::value)>
-    auto tracking() noexcept -> TrackingTable& { return track_raw_; }
+    auto tracking() noexcept -> decltype(xxtrack_raw)& { return xxtrack_raw; }
 
     template <typename TrackType,
               SF_REQUIRES(meta::is_track_hierarchy<TrackType>::value)>
-    auto tracking() noexcept -> HierarchyTrackingTable& { return track_hierarchy_; }
+    auto tracking() noexcept -> decltype(xxtrack_hierarchy)& { return xxtrack_hierarchy; }
 
-    auto registry() noexcept -> Registry& { return registry_; }
+    RegistryType& registry() noexcept { return xxregistry; }
 
-    template <typename T>
-    auto operator<< (T const& data) -> oarchive_t&;
+    template <typename SerializableType>
+    oarchive_t& operator<< (SerializableType const& data) { return operator()(data); }
 
-    template <typename T>
-    auto operator& (T const& data) -> oarchive_t&;
+    template <typename SerializableType>
+    oarchive_t& operator& (SerializableType const& data) { return operator()(data); }
 
-    template <typename T, typename... Tn>
-    auto operator() (T const& data, Tn const&... data_n) -> oarchive_t&;
+    template <typename SerializableType, typename... SerializableTypes>
+    oarchive_t& operator() (SerializableType const& data, SerializableTypes const&... datas)
+    {
+        ::xxsf_save<SerializableType>(*this, const_cast<SerializableType&>(data));
+        return operator()(datas...);
+    }
 
-    auto operator() () noexcept -> oarchive_t& { return *this; }
+    oarchive_t& operator() () noexcept { return *this; }
 };
 
 // create default oarchive_t with wrapper::obyte_stream_t<>
-template <typename OutStream>
-oarchive_t<wrapper::obyte_stream_t<OutStream>> oarchive(OutStream& stream)
+template <typename OutputStreamType>
+oarchive_t<wrapper::obyte_stream_t<OutputStreamType>> oarchive(OutputStreamType& stream)
 {
     return { stream };
 }
 
-template <template <class, typename...> class StreamWrapper,
-          class Registry = dynamic::extern_registry_t,
-          typename OutStream>
-oarchive_t<StreamWrapper<OutStream>, Registry> oarchive(OutStream& stream)
+template <template <class, typename...> class StreamWrapperTemplate,
+          class RegistryType = dynamic::extern_registry_t,
+          typename OutputStreamType>
+oarchive_t<StreamWrapperTemplate<OutputStreamType>, RegistryType> oarchive(OutputStreamType& stream)
 {
     return { stream };
 }
 
-template <class StreamWrapper,
-          class Registry = dynamic::extern_registry_t,
-          typename OutStream>
-oarchive_t<StreamWrapper, Registry> oarchive(OutStream& stream)
+template <class StreamWrapperType,
+          class RegistryType = dynamic::extern_registry_t,
+          typename OutputStreamType>
+oarchive_t<StreamWrapperType, RegistryType> oarchive(OutputStreamType& stream)
 {
     return { stream };
-}
-
-template <class StreamWrapper, class Registry>
-template <typename OutStream>
-oarchive_t<StreamWrapper, Registry>::oarchive_t(OutStream& stream)
-    : core::ioarchive_t(::xxsf_archive_traits<oarchive_t>::key, false)
-    , archive_{stream}, track_shared_(), track_raw_(), track_hierarchy_(), registry_()
-{
-}
-
-template <class StreamWrapper, class Registry>
-template <typename T>
-auto oarchive_t<StreamWrapper, Registry>::operator<< (T const& data) -> oarchive_t&
-{
-    return operator()(data);
-}
-
-template <class StreamWrapper, class Registry>
-template <typename T>
-auto oarchive_t<StreamWrapper, Registry>::operator& (T const& data) -> oarchive_t&
-{
-    return operator()(data);
-}
-
-template <class StreamWrapper, class Registry>
-template <typename T, typename... Tn>
-auto oarchive_t<StreamWrapper, Registry>::operator() (T const& data, Tn const&... data_n) -> oarchive_t&
-{
-    ::xxsf_save<T>(*this, const_cast<T&>(data));
-    return operator()(data_n...);
 }
 
 } // namespace sf

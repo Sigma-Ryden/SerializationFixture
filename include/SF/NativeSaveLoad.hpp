@@ -13,31 +13,31 @@ namespace sf
 namespace detail
 {
 
-template <class ArchiveType, typename T, typename KeyType,
+template <class ArchiveType, typename PointerType, typename KeyType,
           SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_save(ArchiveType& archive, T& pointer, KeyType track_key) noexcept { /*pass*/ }
+                                meta::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
+void native_save(ArchiveType&, PointerType&, KeyType) noexcept { /*pass*/ }
 
-template <class ArchiveType, typename T, typename KeyType,
+template <class ArchiveType, typename PointerType, typename KeyType,
           SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<T>>::value)>
-void native_save(ArchiveType& archive, T& pointer, KeyType track_key)
+                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+void native_save(ArchiveType& archive, PointerType& pointer, KeyType track_key)
 {
     archive.registry().save_key(archive, pointer); // write class info
 }
 
-template <class ArchiveType, typename T,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::negation<meta::is_pointer_to_polymorphic<T>>>::value)>
-void native_load(ArchiveType& archive, T& pointer, memory::void_ptr<T>& address) noexcept
+                                meta::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
+void native_load(ArchiveType&, PointerType& pointer, memory::void_ptr<PointerType>& address) noexcept
 {
-    memory::assign<typename meta::dereference<T>::type>(pointer, address);
+    memory::assign<typename memory::ptr_traits<PointerType>::item>(pointer, address);
 }
 
-template <class ArchiveType, typename T,
+template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<T>>::value)>
-void native_load(ArchiveType& archive, T& pointer, memory::void_ptr<T>& address)
+                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+void native_load(ArchiveType& archive, PointerType& pointer, memory::void_ptr<PointerType>& address)
 {
     auto& registry = archive.registry();
 

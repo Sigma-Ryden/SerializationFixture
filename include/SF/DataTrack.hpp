@@ -100,16 +100,16 @@ void track(ArchiveType& archive, PointerType& pointer)
     auto const key = detail::refer_key(archive, pointer); // serialize refer info
     if (not key) return;
 
-    auto& item = archive.template tracking<track_type>()[key];
+    auto& address = archive.template tracking<track_type>()[key];
 
-    if (item.address == nullptr)
+    if (address == nullptr)
     {
         // call the strict serialization of not tracking pointer
-        strict(archive, pointer, item.address);
+        strict(archive, pointer, address);
     }
     else
     {
-        detail::native_load(archive, pointer, item.address);
+        detail::native_load(archive, pointer, address);
     }
 }
 
@@ -123,12 +123,12 @@ void track(ArchiveType& archive, SerializableType& data)
     key_type key{};
     archive & key;
 
-    auto& item = archive.template tracking<tracking::raw_t>()[key];
+    auto& address = archive.template tracking<tracking::raw_t>()[key];
 
-    if (item.address != nullptr)
+    if (address != nullptr)
         throw  "The read tracking data is already tracked.";
 
-    item.address = memory::pure(std::addressof(data));
+    address = memory::pure(std::addressof(data));
 
     archive & data;
 }
@@ -163,7 +163,7 @@ struct raw_functor_t : apply_functor_t
 {
     SerializableType& data;
 
-    raw_functor_t(T& data) noexcept : data(data) {}
+    raw_functor_t(SerializableType& data) noexcept : data(data) {}
 
     template <class ArchiveType>
     void operator() (ArchiveType& archive) const { tracking::raw(archive, data); }
