@@ -4,7 +4,7 @@
 #include <cstddef> // size_t
 
 #include <type_traits>
-// is_enum, is_arithmetic, is_array, is_pointer,
+// is_arithmetic, is_array, is_pointer,
 // enable_if, is_same, true_type, false_type
 
 #if __cplusplus >= 201703L
@@ -22,82 +22,87 @@ namespace sf
 namespace meta
 {
 
-template <typename... Tn> constexpr bool to_false() noexcept { return false; }
+template <typename...> constexpr bool to_false() noexcept { return false; }
 
-template <typename T, std::size_t I = 0>
-auto declval() noexcept -> decltype(std::declval<T>()) { return std::declval<T>(); }
+template <typename Type, std::size_t IndexableValue = 0>
+auto declval() noexcept -> decltype(std::declval<Type>()) { return std::declval<Type>(); }
 
 template <class...> struct all : std::true_type {};
-template <class B1> struct all<B1> : B1 {};
-template <class B1, class... Bn>
-struct all<B1, Bn...> : std::conditional<bool(B1::value), all<Bn...>, B1>::type {};
+template <class ConditionType> struct all<ConditionType> : ConditionType {};
+template <class ConditionType, class... OtherConditionTypes>
+struct all<ConditionType, OtherConditionTypes...>
+    : std::conditional<bool(ConditionType::value), all<OtherConditionTypes...>, ConditionType>::type {};
 
 template <class...> struct one : std::false_type {};
-template <class B1> struct one<B1> : B1 {};
-template <class B1, class... Bn>
-struct one<B1, Bn...> : std::conditional<bool(B1::value), B1, one<Bn...>>::type {};
+template <class ConditionType> struct one<ConditionType> : ConditionType {};
+template <class ConditionType, class... OtherConditionTypes>
+struct one<ConditionType, OtherConditionTypes...>
+    : std::conditional<bool(ConditionType::value), ConditionType, one<OtherConditionTypes...>>::type {};
 
-template <class B> struct negation : std::integral_constant<bool, not bool(B::value)> {};
+template <class ConditionType> struct negation : std::integral_constant<bool, not bool(ConditionType::value)> {};
 
-template <typename T, typename... Tn> struct is_same : all<std::is_same<T, Tn>...> {};
+template <typename Type, typename... OtherTypes> struct is_same : all<std::is_same<Type, OtherTypes>...> {};
 
-template <typename... Args> using void_t = void;
+template <typename...> using void_t = void;
 
-template <typename T, std::size_t N = 1> struct remove_pointer { using type = T; };
-template <typename T> struct remove_pointer<T*, 1> { using type = T; };
+template <typename Type, std::size_t PointeringNumberValue = 1> struct remove_pointer { using type = Type; };
+template <typename Type> struct remove_pointer<Type*, 1> { using type = Type; };
 
-template <typename T, std::size_t N>
-struct remove_pointer<T*, N> { using type = typename remove_pointer<T, N - 1>::type; };
+template <typename Type, std::size_t PointeringNumberValue>
+struct remove_pointer<Type*, PointeringNumberValue>
+{
+    using type = typename remove_pointer<Type, PointeringNumberValue - 1>::type;
+};
 
-template <typename T, typename = void_t<>> struct dereference { using type = T; };
-template <typename T> struct dereference<T*> { using type = T; };
-template <typename T> struct dereference<std::weak_ptr<T>> { using type = T; };
-template <typename T> struct dereference<std::shared_ptr<T>> { using type = T; };
-template <typename T> struct dereference<std::unique_ptr<T>> { using type = T; };
-template <typename T> struct dereference<T, void_t<decltype(*std::declval<T>())>>
-    : std::remove_reference<decltype(*std::declval<T>())> {};
+template <typename Type, typename = void_t<>> struct dereference { using type = Type; };
+template <typename Type> struct dereference<Type*> { using type = Type; };
+template <typename Type> struct dereference<std::weak_ptr<Type>> { using type = Type; };
+template <typename Type> struct dereference<std::shared_ptr<Type>> { using type = Type; };
+template <typename Type> struct dereference<std::unique_ptr<Type>> { using type = Type; };
+template <typename Type> struct dereference<Type, void_t<decltype(*std::declval<Type>())>>
+    : std::remove_reference<decltype(*std::declval<Type>())> {};
 
-template <typename T, std::size_t N = 1>
-struct pointer { using type = typename pointer<T, N - 1>::type*; };
-template <typename T> struct pointer<T, 0> { using type = T; };
+template <typename Type, std::size_t PointeringNumberValue = 1>
+struct pointer { using type = typename pointer<Type, PointeringNumberValue - 1>::type*; };
+template <typename Type> struct pointer<Type, 0> { using type = Type; };
 
  // limited by template depth
-template <std::size_t... I> struct index_sequence
+template <std::size_t... SequenceValues> struct index_sequence
 {
-    static constexpr auto value = sizeof...(I);
+    static constexpr auto value = sizeof...(SequenceValues);
 };
 
 namespace detail
 {
 
-template <std::size_t I, std::size_t... In>
-struct index_sequence_helper : index_sequence_helper<I - 1, I - 1, In...> {};
-template <std::size_t... In>
-struct index_sequence_helper<0, In...> { using type = index_sequence<In...>; };
+template <std::size_t SequenceValue, std::size_t... SequenceValues>
+struct index_sequence_helper : index_sequence_helper<SequenceValue - 1, SequenceValue - 1, SequenceValues...> {};
+template <std::size_t... SequenceValues>
+struct index_sequence_helper<0, SequenceValues...> { using type = index_sequence<SequenceValues...>; };
 
 } // namespace detail
 
-template <std::size_t N>
-using make_index_sequence = typename detail::index_sequence_helper<N>::type;
+template <std::size_t SequenceSizeValue>
+using make_index_sequence = typename detail::index_sequence_helper<SequenceSizeValue>::type;
 
 // meta
-template <typename T, typename enable = void> struct is_complete : std::false_type {};
-template <typename T> struct is_complete<T, void_t<decltype(sizeof(T))>> : std::true_type {};
+template <typename, typename enable = void> struct is_complete : std::false_type {};
+template <typename Type> struct is_complete<Type, void_t<decltype(sizeof(Type))>> : std::true_type {};
 
-template <typename From, typename To, typename enable = void>
+template <typename FromType, typename ToType, typename enable = void>
 struct is_static_castable : std::false_type {};
 
-template <typename From, typename To>
-struct is_static_castable<From, To, void_t<decltype( static_cast<To>(std::declval<From>()) )>> : std::true_type {};
+template <typename FromType, typename ToType>
+struct is_static_castable<FromType, ToType, void_t<decltype( static_cast<ToType>(std::declval<FromType>()) )>> : std::true_type {};
 
-template <typename T, bool = std::is_pointer<T>::value>
+template <typename PointerType, bool = std::is_pointer<PointerType>::value>
 struct pointer_count
 {
-    static constexpr auto value = pointer_count<typename remove_pointer<T>::type>::value + 1;
+    static constexpr auto value = pointer_count<typename remove_pointer<PointerType>::type>::value + 1;
 };
 
-template <typename T>
-struct pointer_count<T, false>
+template <typename PointerType>
+struct pointer_count<PointerType, false>
 {
     static constexpr auto value = std::size_t(0);
 };
@@ -108,113 +113,120 @@ struct raw_common_t {};
 struct dummy_t
 {
 #if __cplusplus >= 201703L
-    template <typename T, SF_REQUIRES(negation<std::is_same<T, std::any>>::value)> operator T();
+    template <typename Type, SF_REQUIRES(negation<std::is_same<Type, std::any>>::value)> operator Type();
 #else
-    template <typename T> operator T();
+    template <typename Type> operator Type();
 #endif // if
 };
 
 #if __cplusplus >= 201703L
-template <class C, typename S = index_sequence<>, typename overload = void>
-struct aggregate_size : S {};
+template <class AggregateType, typename SequenceType = index_sequence<>, typename overload = void>
+struct aggregate_size : SequenceType {};
 
-template <class C, std::size_t... I>
-struct aggregate_size<C, index_sequence<I...>,
-                      void_t<decltype(C{ declval<dummy_t>(), declval<dummy_t, I>()... })>>
-    : aggregate_size<C, index_sequence<I..., sizeof...(I)>> {};
+template <class AggregateType, std::size_t... FieldIndexValues>
+struct aggregate_size<AggregateType, index_sequence<FieldIndexValues...>,
+                      void_t<decltype(AggregateType{ declval<dummy_t>(), declval<dummy_t, FieldIndexValues>()... })>>
+    : aggregate_size<AggregateType, index_sequence<FieldIndexValues..., sizeof...(FieldIndexValues)>> {};
 #endif // if
 
-template <class T, typename enable = void>
+template <class, typename enable = void>
 struct object_value { using type = dummy_t; };
 
-template <class T>
-struct object_value<T, void_t<typename T::value_type>> { using type = typename T::value_type; };
+template <class SerializableObjectType>
+struct object_value<SerializableObjectType, void_t<typename SerializableObjectType::value_type>>
+{
+    using type = typename SerializableObjectType::value_type;
+};
 
-template <typename T> struct array_value { using type = dummy_t; };
-template <typename T> struct array_value<T[]> { using type = T; };
-template <typename T, std::size_t N> struct array_value<T[N]> { using type = T; };
+template <typename> struct array_value { using type = dummy_t; };
+template <typename ValueType> struct array_value<ValueType[]> { using type = ValueType; };
+template <typename ValueType, std::size_t SizeValue> struct array_value<ValueType[SizeValue]> { using type = ValueType; };
 
-template <typename T, typename enable = void>
+template <typename, typename enable = void>
 struct value { using type = dummy_t; };
 
-template <typename T>
-struct value<T, typename std::enable_if<std::is_class<T>::value>::type>
+template <class SerializableObjectType>
+struct value<SerializableObjectType, typename std::enable_if<std::is_class<SerializableObjectType>::value>::type>
 {
-    using type = typename object_value<T>::type;
+    using type = typename object_value<SerializableObjectType>::type;
 };
 
-template <typename T>
-struct value<T, typename std::enable_if<std::is_array<T>::value>::type>
+template <typename SerializableArrayType>
+struct value<SerializableArrayType, typename std::enable_if<std::is_array<SerializableArrayType>::value>::type>
 {
-    using type = typename array_value<T>::type;
+    using type = typename array_value<SerializableArrayType>::type;
 };
 
-template <typename From, typename To> struct is_cast_allowed
-    : one<is_static_castable<From, To>, std::is_convertible<From, To>> {};
+template <typename FromType, typename ToType> struct is_cast_allowed
+    : one<is_static_castable<FromType, ToType>, std::is_convertible<FromType, ToType>> {};
 
-template <class T> struct is_compressible : std::is_arithmetic<typename value<T>::type> {};
+template <typename SerializableType> struct is_compressible : std::is_arithmetic<typename value<SerializableType>::type> {};
 
-template <class Derived, class Base, class... Base_n> struct is_derived_of
-    : all<std::is_base_of<Base, Derived>,
-          std::is_base_of<Base_n, Derived>...> {};
+template <class DerivedType, class BaseType, class... BaseTypes> struct is_derived_of
+    : all<std::is_base_of<BaseType, DerivedType>,
+          std::is_base_of<BaseTypes, DerivedType>...> {};
 
-template <class Base, class Derived> struct is_virtual_base_of
-    : all<std::is_base_of<Base, Derived>,
-          negation<is_static_castable<Base*, Derived*>>> {};
+template <class BaseType, class DerivedType> struct is_virtual_base_of
+    : all<std::is_base_of<BaseType, DerivedType>,
+          negation<is_static_castable<BaseType*, DerivedType*>>> {};
 
 template <typename> struct is_std_shared_ptr : std::false_type {};
-template <typename T>
-struct is_std_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+template <typename ElementType>
+struct is_std_shared_ptr<std::shared_ptr<ElementType>> : std::true_type {};
 
 template <typename> struct is_std_array : std::false_type {};
-template <typename T, std::size_t N>
-struct is_std_array<std::array<T, N>> : std::true_type {};
+template <typename ValueType, std::size_t SizeValue>
+struct is_std_array<std::array<ValueType, SizeValue>> : std::true_type {};
 
-template <typename T> struct is_shared_pointer : is_std_shared_ptr<T> {};
-template <typename T> struct is_raw_pointer : std::is_pointer<T> {};
+template <typename PointerType> struct is_shared_pointer : is_std_shared_ptr<PointerType> {};
+template <typename PointerType> struct is_raw_pointer : std::is_pointer<PointerType> {};
 
-template <typename T> struct is_pointer : one<is_shared_pointer<T>, is_raw_pointer<T>> {};
+template <typename PointerType> struct is_pointer : one<is_shared_pointer<PointerType>, is_raw_pointer<PointerType>> {};
 
-template <typename T> struct is_pointer_to_polymorphic
-    : all<is_pointer<T>, std::is_polymorphic<typename dereference<T>::type>> {};
+template <typename PointerType> struct is_pointer_to_polymorphic
+    : all<is_pointer<PointerType>, std::is_polymorphic<typename dereference<PointerType>::type>> {};
 
-template <typename T> struct is_void_pointer : all<is_pointer<T>, std::is_void<typename dereference<T>::type>> {};
-template <typename T> struct is_null_pointer : std::is_same<T, std::nullptr_t> {};
+template <typename PointerType> struct is_void_pointer
+    : all<is_pointer<PointerType>, std::is_void<typename dereference<PointerType>::type>> {};
+
+template <typename PointerType> struct is_null_pointer : std::is_same<PointerType, std::nullptr_t> {};
 
 template <typename> struct is_function_pointer : std::false_type {};
-template <typename Ret, typename... Args>
-struct is_function_pointer<Ret (*)(Args...)> : std::true_type {};
+template <typename ReturnType, typename... ArgumentTypes>
+struct is_function_pointer<ReturnType (*)(ArgumentTypes...)> : std::true_type {};
 
-template <typename T> struct is_pointer_to_standard_layout :
-    all<is_pointer<T>,
-        negation<is_void_pointer<T>>,
-        negation<is_pointer_to_polymorphic<T>>,
-        negation<is_function_pointer<T>>,
-        negation<is_null_pointer<T>>,
-        negation<std::is_member_pointer<T>>> {};
+template <typename PointerType> struct is_pointer_to_standard_layout :
+    all<is_pointer<PointerType>,
+        negation<is_void_pointer<PointerType>>,
+        negation<is_pointer_to_polymorphic<PointerType>>,
+        negation<is_function_pointer<PointerType>>,
+        negation<is_null_pointer<PointerType>>,
+        negation<std::is_member_pointer<PointerType>>> {};
 
-template <typename T> struct is_serializable_pointer
-    : one<is_pointer_to_standard_layout<T>, is_pointer_to_polymorphic<T>> {};
+template <typename PointerType> struct is_serializable_pointer
+    : one<is_pointer_to_standard_layout<PointerType>, is_pointer_to_polymorphic<PointerType>> {};
 
-template <typename T> struct is_serializable_raw_pointer
-    : all<is_raw_pointer<T>, is_serializable_pointer<T>> {};
+template <typename PointerType> struct is_serializable_raw_pointer
+    : all<is_raw_pointer<PointerType>, is_serializable_pointer<PointerType>> {};
 
-template <typename T> struct is_serializable_shared_pointer
-    : all<is_shared_pointer<T>, is_serializable_pointer<T>> {};
+template <typename PointerType> struct is_serializable_shared_pointer
+    : all<is_shared_pointer<PointerType>, is_serializable_pointer<PointerType>> {};
 
 #if __cplusplus >= 201703L
-template <typename T> struct is_aggregate
-    : all<std::is_aggregate<T>, negation<is_std_array<T>>, negation<std::is_array<T>>> {};
+template <typename AggregateType> struct is_aggregate
+    : all<std::is_aggregate<AggregateType>,
+          negation<is_std_array<AggregateType>>,
+          negation<std::is_array<AggregateType>>> {};
 #endif // if
 
-template <typename T> struct is_unsupported :
-    one<is_void_pointer<T>,
-        is_function_pointer<T>,
-        is_null_pointer<T>,
-        std::is_function<T>,
-        std::is_member_function_pointer<T>,
-        std::is_member_object_pointer<T>,
-        std::is_reference<T>> {};
+template <typename SerializableType> struct is_unsupported :
+    one<is_void_pointer<SerializableType>,
+        is_function_pointer<SerializableType>,
+        is_null_pointer<SerializableType>,
+        std::is_function<SerializableType>,
+        std::is_member_function_pointer<SerializableType>,
+        std::is_member_object_pointer<SerializableType>,
+        std::is_reference<SerializableType>> {};
 
 } // namespace meta
 
