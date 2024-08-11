@@ -45,7 +45,7 @@ public:
     template <typename SerializableType>
     void add()
     {
-        static bool lock = false; if (lock) return;
+        static auto lock = false; if (lock) return;
         lock = true;
 
         any_proxy_t proxy;

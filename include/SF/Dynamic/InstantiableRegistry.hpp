@@ -66,7 +66,7 @@ public:
     template <class InstantiableType, SF_REQUIRES(is_instantiable<InstantiableType>::value)>
     void add()
     {
-        static bool lock = false; if (lock) return;
+        static auto lock = false; if (lock) return;
         lock = true;
 
         auto const key = ::xxsf_instantiable_traits<InstantiableType>::key();
