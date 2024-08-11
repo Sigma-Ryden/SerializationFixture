@@ -17,18 +17,17 @@ template <typename ElementType>
 class alias_t
 {
 private:
-    ElementType* data_;
+    ElementType* xxdata;
 
 public:
     using element_type = ElementType;
 
     // DONT use dereferencing of null data before rebinding
-    alias_t() noexcept : data_(nullptr) {}
+    alias_t() noexcept : xxdata(nullptr) {}
 
     template <typename OtherElementType,
               SF_REQUIRES(meta::is_static_castable<OtherElementType*, element_type*>::value)>
-    alias_t(OtherElementType& data) noexcept
-        : data_(std::addressof(data)) {}
+    alias_t(OtherElementType& data) noexcept : xxdata(std::addressof(data)) {}
 
     template <typename OtherElementType>
     alias_t(alias_t<OtherElementType> const& data) noexcept : alias_t(data.get()) {}
@@ -38,15 +37,15 @@ public:
     alias_t(alias_t const&) = default;
     alias_t& operator=(alias_t const&) = default;
 
-    bool is_refer() const noexcept { return data_ != nullptr; }
+    bool is_refer() const noexcept { return xxdata != nullptr; }
 
     template <typename OtherElementType>
-    bool is_refer(OtherElementType& data)  const noexcept { return data_ == std::addressof(data); }
+    bool is_refer(OtherElementType& data)  const noexcept { return xxdata == std::addressof(data); }
 
     operator element_type&() const noexcept { return get(); }
 
-    element_type& get() const noexcept { return *data_; }
-    void set(element_type& data) noexcept { data_ = std::addressof(data); }
+    element_type& get() const noexcept { return *xxdata; }
+    void set(element_type& data) noexcept { xxdata = std::addressof(data); }
 };
 
 } // namespace sf

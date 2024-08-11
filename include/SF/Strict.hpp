@@ -49,8 +49,8 @@ void strict(ArchiveType& archive, PointerType& pointer)
 {
     auto& registry = archive.registry();
 
-    const auto id = registry.save_key(archive, pointer);
-    registry.save(archive, pointer, id);
+    auto const key = registry.save_key(archive, pointer);
+    registry.save(archive, pointer, key);
 }
 
 template <class ArchiveType, typename PointerType,
@@ -60,8 +60,8 @@ void strict(ArchiveType& archive, PointerType& pointer, typename memory::ptr_tra
 {
     auto& registry = archive.registry();
 
-    const auto id = registry.load_key(archive, pointer);
-    registry.load(archive, pointer, id, cache);
+    auto const key = registry.load_key(archive, pointer);
+    registry.load(archive, pointer, key, cache);
 }
 
 // verison without cache using

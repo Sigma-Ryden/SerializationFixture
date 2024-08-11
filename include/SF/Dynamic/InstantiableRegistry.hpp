@@ -112,7 +112,7 @@ public:
     bool fixture()
     {
     #ifdef SF_DEBUG
-        if (negatio<is_instantiable<InstantiableType>>::value)
+        if (meta::negation<is_instantiable<InstantiableType>>::value)
             throw "The polymorphic 'InstantiableType' type is not convertible to 'instantiable_t'.";
     #endif // SF_DEBUG
 
