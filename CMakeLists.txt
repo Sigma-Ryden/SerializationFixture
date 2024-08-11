@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(SerializationFixture LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
@@ -18,7 +18,6 @@ set(SF
     include/SF/Core/Config.hpp
     include/SF/Core/PolymorphicArchive.hpp
     include/SF/Core/Serialization.hpp
-    include/SF/Core/SerializatonBase.hpp
     include/SF/Core/Memory.hpp
     include/SF/Core/TypeCore.hpp
     include/SF/Core/Hash.hpp

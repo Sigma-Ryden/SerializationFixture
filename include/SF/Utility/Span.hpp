@@ -4,7 +4,7 @@
 #include <cstddef> // size_t
 #include <tuple> // tuple
 
-#include <SF/Core/SerializatonBase.hpp>
+#include <SF/Core/ArchiveBase.hpp>
 
 #include <SF/Utility/Alias.hpp>
 

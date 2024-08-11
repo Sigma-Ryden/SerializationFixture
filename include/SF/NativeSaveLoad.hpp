@@ -1,7 +1,7 @@
 #ifndef SF_NATIVE_SAVE_LOAD_HPP
 #define SF_NATIVE_SAVE_LOAD_HPP
 
-#include <SF/Core/SerializatonBase.hpp>
+#include <SF/Core/ArchiveBase.hpp>
 #include <SF/Core/Memory.hpp>
 
 #include <SF/Detail/Meta.hpp>

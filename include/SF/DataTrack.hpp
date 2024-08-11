@@ -3,7 +3,7 @@
 
 #include <memory> // addressof
 
-#include <SF/Core/SerializatonBase.hpp>
+#include <SF/Core/ArchiveBase.hpp>
 
 #include <SF/DataTrackBase.hpp>
 

@@ -4,8 +4,6 @@
 
 #include <memory> // shared_ptr
 
-#include <SF/Core/Serialization.hpp>
-
 #include <SF/Detail/Meta.hpp>
 #include <SF/Detail/MetaMacro.hpp>
 

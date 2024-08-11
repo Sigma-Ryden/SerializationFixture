@@ -5,13 +5,10 @@
 #include <typeinfo> // typeid
 #endif // SD_DEBUG
 
-#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/ArchiveBase.hpp>
 #include <SF/Core/ArchiveTraits.hpp>
 
 #include <SF/Core/Serialization.hpp>
-
-#include <SF/Core/Memory.hpp>
 
 #include <SF/Detail/Meta.hpp>
 #include <SF/Detail/MetaMacro.hpp>

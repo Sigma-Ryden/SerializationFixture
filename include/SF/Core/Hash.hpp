@@ -1,12 +1,13 @@
 #ifndef SF_CORE_HASH_HPP
 #define SF_CORE_HASH_HPP
 
+#if !defined(SF_TYPE_HASH) || !defined(SF_EXPRESSION_HASH)
 #include <typeinfo> // type_info
+#endif // if
+
 #include <functional> // hash
 
 #include <SF/Core/TypeCore.hpp>
-
-#include <SF/Detail/Meta.hpp>
 
 #ifndef SF_STRING_HASH
     #define SF_STRING_HASH(string) ::sf::static_hash<::sf::let::u64>((string))

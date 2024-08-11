@@ -5,7 +5,6 @@
 #include <unordered_map> // unordered_map
 #include <utility> // forward
 
-#include <SF/Core/SerializatonBase.hpp>
 #include <SF/Core/ArchiveBase.hpp>
 
 #include <SF/Dynamic/ExternRegistry.hpp>
