@@ -1,0 +1,3 @@
+[submodule "include/Automation"]
+	path = include/Automation
+	url = https://github.com/Sigma-Ryden/Automation.git
