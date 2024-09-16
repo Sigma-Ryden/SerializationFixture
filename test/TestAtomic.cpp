@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SF/BuiltIn/atomic.hpp>
+#include <SerializationFixture/BuiltIn/atomic.hpp>
 
 TEST(TestConcurrency, TestAtomic)
 {

@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SF/Utility/Alias.hpp>
+#include <SerializationFixture/Utility/Alias.hpp>
 
 TEST_SPACE()
 {

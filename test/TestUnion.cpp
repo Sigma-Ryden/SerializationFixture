@@ -1,7 +1,7 @@
 #include <SFTestingBase.hpp>
 
-#include <SF/BuiltIn/array.hpp>
-#include <SF/Union.hpp>
+#include <SerializationFixture/BuiltIn/array.hpp>
+#include <SerializationFixture/Union.hpp>
 
 TEST_SPACE()
 {

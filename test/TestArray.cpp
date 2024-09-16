@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SF/BuiltIn/array.hpp>
+#include <SerializationFixture/BuiltIn/array.hpp>
 
 TEST(TestSTL, TestArray)
 {

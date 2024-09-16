@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SF/BuiltIn/queue.hpp>
+#include <SerializationFixture/BuiltIn/queue.hpp>
 
 TEST(TestSTLAdapter, TestQueue)
 {

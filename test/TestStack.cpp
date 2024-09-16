@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SF/BuiltIn/stack.hpp>
+#include <SerializationFixture/BuiltIn/stack.hpp>
 
 TEST(TestSTLAdapter, TestStack)
 {

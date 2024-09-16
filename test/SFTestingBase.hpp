@@ -3,7 +3,7 @@
 
 #define SF_DEBUG // we should define this macro to enable additional checks for testing
 
-#include <SF/Core.hpp>
+#include <SerializationFixture/Core.hpp>
 #include <Automation/Core.hpp>
 
 using sf::oarchive;

@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SF/BuiltIn/valarray.hpp>
+#include <SerializationFixture/BuiltIn/valarray.hpp>
 
 template <typename T>
 bool is_equal(const std::valarray<T>& lhs, const std::valarray<T>& rhs)

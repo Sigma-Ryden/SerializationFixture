@@ -2,8 +2,8 @@
 
 #include <SFTestingBase.hpp>
 
-#include <SF/BuiltIn/variant.hpp>
-#include <SF/BuiltIn/string.hpp>
+#include <SerializationFixture/BuiltIn/variant.hpp>
+#include <SerializationFixture/BuiltIn/string.hpp>
 
 TEST_SPACE()
 {
