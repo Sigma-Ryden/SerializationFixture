@@ -21,10 +21,10 @@ template <typename SerializableType> void serializable()
     static_assert(meta::negation<meta::is_unsupported<SerializableType>>::value,
         "The 'SerializableType' is an unsupported type for serialization.");
 
-    dynamic::instantiable_registry_t::instance().add<SerializableType>();
+    dynamic::instantiable_registry.add<SerializableType>();
 
 #if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
-    dynamic::any_registry_t::instance().add<SerializableType>();
+    dynamic::any_registry.add<SerializableType>();
 #endif // if
 }
 

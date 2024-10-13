@@ -17,7 +17,7 @@ namespace sf
 namespace dynamic
 {
 
-class any_registry_t
+struct any_registry_t
 {
 public:
     struct any_proxy_t
@@ -30,18 +30,7 @@ public:
 public:
     std::unordered_map<let::u64, any_proxy_t> all;
 
-private:
-    any_registry_t() = default;
-    any_registry_t(any_registry_t const&) = delete;
-    any_registry_t& operator=(any_registry_t const&) = delete;
-
 public:
-    static any_registry_t& instance() noexcept
-    {
-        static any_registry_t self;
-        return self;
-    }
-
     template <typename SerializableType>
     void add()
     {
@@ -64,17 +53,11 @@ public:
         all.emplace(typeid(SerializableType).hash_code(), proxy);
     }
 
-public:
-    void save(core::ioarchive_t& archive, std::any& any, let::u64 hash)
-    {
-        all.at(hash).save(archive, any);
-    }
-
-    void load(core::ioarchive_t& archive, std::any& any, let::u64 hash)
-    {
-        all.at(hash).load(archive, any);
-    }
+    void save(core::ioarchive_t& archive, std::any& any, let::u64 hash);
+    void load(core::ioarchive_t& archive, std::any& any, let::u64 hash);
 };
+
+extern any_registry_t any_registry;
 
 } // namespace dynamic
 

@@ -29,7 +29,7 @@ public:
 
         auto const hash = SF_EXPRESSION_HASH(*pointer);
 
-        auto key = instantiable_registry_t::instance().rtti_all.at(hash).key;
+        auto key = instantiable_registry.rtti_all.at(hash).key;
         archive & key;
 
         return key;
@@ -64,7 +64,7 @@ public:
             throw "The write pointer was not allocated.";
 
         auto raw_pointer = memory::raw(pointer);
-        instantiable_registry_t::instance().save(archive, raw_pointer);
+        instantiable_registry.save(archive, raw_pointer);
     }
 
     template <typename PointerType,
@@ -79,15 +79,13 @@ public:
             throw "The read pointer must be initialized to nullptr.";
     #endif // SF_GARBAGE_CHECK_DISABLE
 
-        auto& registry = instantiable_registry_t::instance();
-
-        auto cloned = registry.clone<typename PointerTraitsType::traits>(key);
+        auto cloned = instantiable_registry.clone<typename PointerTraitsType::traits>(key);
 
         pointer = memory::dynamic_pointer_cast<typename PointerTraitsType::item>(cloned);
         cache = memory::pure(pointer);
 
         auto raw_pointer = memory::raw(pointer);
-        registry.load(archive, raw_pointer);
+        instantiable_registry.load(archive, raw_pointer);
     }
 
     template <typename PointerType,
@@ -100,7 +98,7 @@ public:
             throw "The read pointer must be initialized to nullptr.";
     #endif // SF_GARBAGE_CHECK_DISABLE
 
-        auto casted = instantiable_registry_t::instance().cast(address, key);
+        auto casted = instantiable_registry.cast(address, key);
         pointer = memory::dynamic_pointer_cast<typename memory::ptr_traits<PointerType>::item>(casted);
     }
 };

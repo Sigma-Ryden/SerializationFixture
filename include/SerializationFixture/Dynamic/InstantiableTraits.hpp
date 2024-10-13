@@ -6,7 +6,7 @@
 #define EXPORT_INSTANTIABLE(...)                                                                        \
     template <> struct xxsf_instantiable_fixture<__VA_ARGS__> { static bool fixture; };                 \
     bool xxsf_instantiable_fixture<__VA_ARGS__>::fixture =                                              \
-        ::sf::dynamic::instantiable_registry_t::instance().fixture<__VA_ARGS__>();
+        ::sf::dynamic::instantiable_registry.fixture<__VA_ARGS__>();
 
 #define EXPORT_INSTANTIABLE_KEY(instantiable_key, ...)                                                  \
     template <> struct xxsf_instantiable_traits<__VA_ARGS__> {                                          \

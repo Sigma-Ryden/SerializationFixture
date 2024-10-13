@@ -21,10 +21,13 @@ include_directories(test)
 file(GLOB_RECURSE ${PROJECT_NAME}_TEST_SOURCES test/*.cpp)
 file(GLOB_RECURSE ${PROJECT_NAME}_TEST_HEADERS test/*.hpp) # optionaly
 
+# we should define this macro to enable additional checks for testing
+add_compile_definitions(SF_DEBUG)
+
 add_executable(${PROJECT_NAME}
     ${${PROJECT_NAME}_TEST_SOURCES}
     ${${PROJECT_NAME}_TEST_HEADERS} # optionaly
     ${SerializationFixture_HEADER_FILES} # optionaly
 )
-target_link_libraries(${PROJECT_NAME} Automation)
+target_link_libraries(${PROJECT_NAME} Automation SerializationFixture)
 # ~test

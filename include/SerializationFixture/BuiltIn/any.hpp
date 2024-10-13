@@ -17,7 +17,7 @@ SERIALIZATION(save, any, std::any)
     ::sf::let::u64 hash = any.type().hash_code();
     archive & hash;
 
-    ::sf::dynamic::any_registry_t::instance().save(archive, any, hash);
+    ::sf::dynamic::any_registry.save(archive, any, hash);
 }
 
 SERIALIZATION(load, any, std::any)
@@ -25,7 +25,7 @@ SERIALIZATION(load, any, std::any)
     ::sf::let::u64 hash{};
     archive & hash;
 
-    ::sf::dynamic::any_registry_t::instance().load(archive, any, hash);
+    ::sf::dynamic::any_registry.load(archive, any, hash);
 }
 
 #endif // if

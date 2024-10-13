@@ -96,11 +96,11 @@ SERIALIZATION(saveload, self, Square) {}
 
 TEST(TestLibrary, TestInstantiableRegistry)
 {
-    auto& registry = sf::dynamic::instantiable_registry_t::instance();
+    using sf::dynamic::instantiable_registry;
 
     {
         auto success = false;
-        try { registry.fixture<Cyrcle>(); } catch(...) { success = true; }
+        try { instantiable_registry.fixture<Cyrcle>(); } catch(...) { success = true; }
 
         EXPECT("same polymorphic key", success);
     }
@@ -109,7 +109,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
 
     {
         auto success = false;
-        try { registry.fixture<Square>(); } catch(...) { success = true; }
+        try { instantiable_registry.fixture<Square>(); } catch(...) { success = true; }
 
         EXPECT("non-instantiable type", success);
     }
@@ -118,13 +118,13 @@ TEST(TestLibrary, TestInstantiableRegistry)
 
     {
         auto success = false;
-        try { registry.clone<sf::memory::raw_t>(key); } catch(...) { success = true; }
+        try { instantiable_registry.clone<sf::memory::raw_t>(key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable raw", success);
     }
     {
         auto success = false;
-        try { registry.clone<sf::memory::shared_t>(key); } catch(...) { success = true; }
+        try { instantiable_registry.clone<sf::memory::shared_t>(key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable shared", success);
     }
@@ -133,7 +133,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         auto r = new Square;
 
         auto success = false;
-        try { (void)registry.cast(r, key); } catch(...) { success = true; }
+        try { (void)instantiable_registry.cast(r, key); } catch(...) { success = true; }
 
         EXPECT("cast non-instantiable raw", success);
 
@@ -143,7 +143,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         auto s = std::make_shared<Square>();
 
         auto success = false;
-        try { (void)registry.cast(s, key); } catch(...) { success = true; }
+        try { (void)instantiable_registry.cast(s, key); } catch(...) { success = true; }
 
         EXPECT("cast non-instantiable shared", success);
     }
@@ -177,10 +177,10 @@ SERIALIZATION(saveload, self, MyCustomType) {}
 
 TEST(TestLibrary, TestExportInstantiable)
 {
+    using sf::dynamic::instantiable_registry;
+
     static auto sv_s = SF_STRING_HASH("MyClass");
     static auto sv_c = SF_STRING_HASH("MyStruct");
-
-    auto& registry = sf::dynamic::instantiable_registry_t::instance();
 
     {
         EXPECT("export instantiable key.traits",
@@ -200,8 +200,9 @@ TEST(TestLibrary, TestExportInstantiable)
 
     {
         std::shared_ptr<MyClass> b = std::make_shared<MyDerivedClass>();
+        auto& rb = *b;
 
-        EXPECT("instantiable runtime key.traits", registry.rtti_all.at(SF_EXPRESSION_HASH(*b)).key == sv_dc);
+        EXPECT("instantiable runtime key.traits", instantiable_registry.rtti_all.at(SF_EXPRESSION_HASH(rb)).key == sv_dc);
     }
 }
 
@@ -648,7 +649,7 @@ SERIALIZATION(saveload, self, Implementation) {}
 
 TEST(TestLibrary, TestAbstract)
 {
-    auto& registry = sf::dynamic::instantiable_registry_t::instance();
+    using sf::dynamic::instantiable_registry;
 
     std::vector<unsigned char> storage;
     {
@@ -665,10 +666,12 @@ TEST(TestLibrary, TestAbstract)
 
         ASSERT("inited", i != nullptr);
 
-        const auto hash = SF_EXPRESSION_HASH(*i);
+        auto& ri = *i;
+
+        const auto hash = SF_EXPRESSION_HASH(ri);
         const auto key = ::xxsf_instantiable_traits<Implementation>::key();
 
-        EXPECT("traits", registry.rtti_all.at(hash).key == registry.all.at(key).key);
+        EXPECT("traits", instantiable_registry.rtti_all.at(hash).key == instantiable_registry.all.at(key).key);
     }
 }
 

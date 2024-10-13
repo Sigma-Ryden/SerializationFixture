@@ -19,7 +19,7 @@ namespace sf
 namespace dynamic
 {
 
-class instantiable_registry_t
+struct instantiable_registry_t
 {
 public:
     using instantiable_type = INSTANTIABLE_TYPE;
@@ -42,18 +42,6 @@ public:
 public:
     std::unordered_map<::xxsf_instantiable_traits_key_type, instantiable_proxy_t> all;
     std::unordered_map<let::u64, instantiable_proxy_t> rtti_all;
-
-private:
-    instantiable_registry_t() = default;
-    instantiable_registry_t(instantiable_registry_t const&) = delete;
-    instantiable_registry_t& operator=(instantiable_registry_t const&) = delete;
-
-public:
-    static instantiable_registry_t& instance() noexcept
-    {
-        static instantiable_registry_t self;
-        return self;
-    }
 
 public:
     template <typename InstantiableType> struct is_instantiable
@@ -165,6 +153,8 @@ public:
         rtti_all.at(hash).load(archive, pointer);
     }
 };
+
+extern instantiable_registry_t instantiable_registry;
 
 } // namespace dynamic
 
