@@ -3,11 +3,12 @@
 
 #if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
 
+#include <cstdint> // uint64_t
+
 #include <unordered_map> // unordered_map
 #include <any> // any
 
 #include <SerializationFixture/Core/PolymorphicArchive.hpp>
-#include <SerializationFixture/Core/TypeCore.hpp>
 
 #include <SerializationFixture/Detail/Meta.hpp>
 
@@ -28,7 +29,7 @@ public:
     };
 
 public:
-    std::unordered_map<let::u64, any_proxy_t> all;
+    std::unordered_map<std::uint64_t, any_proxy_t> all;
 
 public:
     template <typename SerializableType>
@@ -53,8 +54,8 @@ public:
         all.emplace(typeid(SerializableType).hash_code(), proxy);
     }
 
-    void save(core::ioarchive_t& archive, std::any& any, let::u64 hash);
-    void load(core::ioarchive_t& archive, std::any& any, let::u64 hash);
+    void save(core::ioarchive_t& archive, std::any& any, std::uint64_t hash);
+    void load(core::ioarchive_t& archive, std::any& any, std::uint64_t hash);
 };
 
 extern any_registry_t any_registry;

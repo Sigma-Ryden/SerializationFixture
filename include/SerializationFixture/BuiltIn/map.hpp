@@ -1,6 +1,8 @@
 #ifndef SF_BUILT_IN_MAP_HPP
 #define SF_BUILT_IN_MAP_HPP
 
+#include <cstdint> // uint64_t
+
 #include <type_traits> // true_type, false_type
 
 #include <map> // map, multimap
@@ -8,7 +10,6 @@
 
 #include <utility> // move
 
-#include <SerializationFixture/Core/TypeCore.hpp>
 #include <SerializationFixture/Core/Serialization.hpp>
 
 #include <SerializationFixture/Compress.hpp>
@@ -63,7 +64,7 @@ void reserve_unordered(StdMapType& unordered, std::size_t size)
 
 CONDITIONAL_SERIALIZATION(save, map, ::sf::meta::is_std_any_map<S>::value)
 {
-    ::sf::let::u64 size = map.size();
+    std::uint64_t size = map.size();
     archive & size;
 
     ::sf::compress::slow(archive, map);
@@ -74,14 +75,14 @@ CONDITIONAL_SERIALIZATION(load, map, ::sf::meta::is_std_any_map<S>::value)
     using key_type   = typename S::key_type;
     using value_type = typename S::mapped_type;
 
-    ::sf::let::u64 size{};
+    std::uint64_t size{};
     archive & size;
 
     map.clear();
     ::sf::detail::reserve_unordered(map, size);
 
     auto hint = map.begin();
-    for (::sf::let::u64 i = 0; i < size; ++i)
+    for (std::uint64_t i = 0; i < size; ++i)
     {
         key_type key{};
         value_type value{};

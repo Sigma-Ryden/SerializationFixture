@@ -16,7 +16,7 @@ namespace sf
 namespace detail
 {
 
-template <typename HashType = let::u64>
+template <typename HashType = std::uint64_t>
 struct pair_hash_t
 {
     template <typename T1, typename T2>

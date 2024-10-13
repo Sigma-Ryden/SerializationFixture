@@ -1,16 +1,16 @@
 #ifndef SF_CORE_HASH_HPP
 #define SF_CORE_HASH_HPP
 
+#include <cstdint> // uint32_t, uint64_t
+
 #if !defined(SF_TYPE_HASH) || !defined(SF_EXPRESSION_HASH)
 #include <typeinfo> // type_info
 #endif // if
 
 #include <functional> // hash
 
-#include <SerializationFixture/Core/TypeCore.hpp>
-
 #ifndef SF_STRING_HASH
-    #define SF_STRING_HASH(string) ::sf::static_hash<::sf::let::u64>((string))
+    #define SF_STRING_HASH(string) ::sf::static_hash<std::uint64_t>((string))
 #endif // SF_STRING_HASH
 
 #ifndef SF_TYPE_HASH
@@ -54,52 +54,52 @@ template <typename HashType>
 struct hash_t;
 
 template <>
-struct hash_t<let::u32>
+struct hash_t<std::uint32_t>
 {
 private:
-    static constexpr let::u32 fnv_prime = 16777619ull;
-    static constexpr let::u32 fnv_offset_basis = 2166136261ull;
+    static constexpr std::uint32_t fnv_prime = 16777619ull;
+    static constexpr std::uint32_t fnv_offset_basis = 2166136261ull;
 
 public:
-    static let::u32 run(char const* text)
+    static std::uint32_t run(char const* text)
     {
-        return detail::fnv_1a<let::u32, fnv_prime, fnv_offset_basis>(text);
+        return detail::fnv_1a<std::uint32_t, fnv_prime, fnv_offset_basis>(text);
     }
 
-    static constexpr let::u32 static_run(char const* text) noexcept
+    static constexpr std::uint32_t static_run(char const* text) noexcept
     {
-        return detail::static_fnv_1a<let::u32, fnv_prime, fnv_offset_basis>(text);
+        return detail::static_fnv_1a<std::uint32_t, fnv_prime, fnv_offset_basis>(text);
     }
 };
 
 template <>
-struct hash_t<let::u64>
+struct hash_t<std::uint64_t>
 {
 private:
-    static constexpr let::u64 fnv_prime = 1099511628211ull;
-    static constexpr let::u64 fnv_offset_basis = 14695981039346656037ull;
+    static constexpr std::uint64_t fnv_prime = 1099511628211ull;
+    static constexpr std::uint64_t fnv_offset_basis = 14695981039346656037ull;
 
 public:
-    static let::u64 run(const char* text)
+    static std::uint64_t run(const char* text)
     {
-        return detail::fnv_1a<let::u64, fnv_prime, fnv_offset_basis>(text);
+        return detail::fnv_1a<std::uint64_t, fnv_prime, fnv_offset_basis>(text);
     }
 
-    static constexpr let::u64 static_run(const char* text) noexcept
+    static constexpr std::uint64_t static_run(const char* text) noexcept
     {
-        return detail::static_fnv_1a<let::u64, fnv_prime, fnv_offset_basis>(text);
+        return detail::static_fnv_1a<std::uint64_t, fnv_prime, fnv_offset_basis>(text);
     }
 };
 
 } // namespace detail
 
-template <typename HashType = let::u64>
+template <typename HashType = std::uint64_t>
 HashType hash(const char* text)
 {
     return detail::hash_t<HashType>::run(text);
 }
 
-template <typename HashType = let::u64>
+template <typename HashType = std::uint64_t>
 constexpr HashType static_hash(char const* text) noexcept
 {
     return detail::hash_t<HashType>::static_run(text);

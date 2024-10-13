@@ -41,7 +41,7 @@ public:
 
 public:
     std::unordered_map<::xxsf_instantiable_traits_key_type, instantiable_proxy_t> all;
-    std::unordered_map<let::u64, instantiable_proxy_t> rtti_all;
+    std::unordered_map<std::uint64_t, instantiable_proxy_t> rtti_all;
 
 public:
     template <typename InstantiableType> struct is_instantiable

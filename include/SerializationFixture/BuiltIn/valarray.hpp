@@ -1,16 +1,17 @@
 #ifndef SF_BUILT_IN_VALARRAY_HPP
 #define SF_BUILT_IN_VALARRAY_HPP
 
+#include <cstdint> // uint64_t
+
 #include <valarray> // valarray
 
-#include <SerializationFixture/Core/TypeCore.hpp>
 #include <SerializationFixture/Core/Serialization.hpp>
 
 #include <SerializationFixture/Compress.hpp>
 
 TEMPLATE_SERIALIZATION(save, valarray, template <typename ValueType>, std::valarray<ValueType>)
 {
-    ::sf::let::u64 size = valarray.size();
+    std::uint64_t size = valarray.size();
     archive & size;
 
     ::sf::compress::zip(archive, valarray);
@@ -18,7 +19,7 @@ TEMPLATE_SERIALIZATION(save, valarray, template <typename ValueType>, std::valar
 
 TEMPLATE_SERIALIZATION(load, valarray, template <typename ValueType>, std::valarray<ValueType>)
 {
-    ::sf::let::u64 size{};
+    std::uint64_t size{};
     archive & size;
 
     valarray.resize(size);

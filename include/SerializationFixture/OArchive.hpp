@@ -3,7 +3,6 @@
 
 #include <cstdint> // uintptr_t
 #include <unordered_map> // unordered_map
-#include <utility> // forward
 
 #include <SerializationFixture/Core/ArchiveBase.hpp>
 

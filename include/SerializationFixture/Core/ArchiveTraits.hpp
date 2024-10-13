@@ -1,7 +1,7 @@
 #ifndef SF_CORE_ARCHIVE_TRAITS_HPP
 #define SF_CORE_ARCHIVE_TRAITS_HPP
 
-#include <SerializationFixture/Core/TypeCore.hpp>
+#include <cstdint> // uint8_t
 
 #ifndef SF_ARCHIVE_TRAIT_MAX_KEY_SIZE
     #define SF_ARCHIVE_TRAIT_MAX_KEY_SIZE 3
@@ -27,7 +27,7 @@ struct ioarchive_t;
 
 } // namespace sf
 
-using xxsf_archive_traits_key_type = ::sf::let::u8;
+using xxsf_archive_traits_key_type = std::uint8_t;
 static constexpr auto xxsf_archive_traits_base_key = ::xxsf_archive_traits_key_type(-1);
 
 template <class ArchiveType>

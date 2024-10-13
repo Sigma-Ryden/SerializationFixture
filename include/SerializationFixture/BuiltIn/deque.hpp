@@ -1,16 +1,17 @@
 #ifndef SF_BUILT_IN_DEQUE_HPP
 #define SF_BUILT_IN_DEQUE_HPP
 
+#include <cstdint> // uint64_t
+
 #include <deque> // deque
 
-#include <SerializationFixture/Core/TypeCore.hpp>
 #include <SerializationFixture/Core/Serialization.hpp>
 
 #include <SerializationFixture/Compress.hpp>
 
 TEMPLATE_SERIALIZATION(save, deque, (template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
 {
-    ::sf::let::u64 size = deque.size();
+    std::uint64_t size = deque.size();
     archive & size;
 
     ::sf::compress::slow(archive, deque);
@@ -18,7 +19,7 @@ TEMPLATE_SERIALIZATION(save, deque, (template <typename ValueType, typename Allo
 
 TEMPLATE_SERIALIZATION(load, deque, (template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
 {
-    ::sf::let::u64 size{};
+    std::uint64_t size{};
     archive & size;
 
     deque.resize(size);

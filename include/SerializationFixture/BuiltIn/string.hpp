@@ -1,9 +1,10 @@
 #ifndef SF_BUILT_IN_STRING_HPP
 #define SF_BUILT_IN_STRING_HPP
 
+#include <cstdint> // uint64_t
+
 #include <string> // basic_string
 
-#include <SerializationFixture/Core/TypeCore.hpp>
 #include <SerializationFixture/Core/Serialization.hpp>
 
 #include <SerializationFixture/Compress.hpp>
@@ -12,7 +13,7 @@ TEMPLATE_SERIALIZATION(save, string,
     (template <typename CharType, typename TraitsType, typename AllocatorType>),
     std::basic_string<CharType, TraitsType, AllocatorType>)
 {
-    ::sf::let::u64 size = string.size();
+    std::uint64_t size = string.size();
     archive & size;
 
     ::sf::compress::zip(archive, string);
@@ -22,7 +23,7 @@ TEMPLATE_SERIALIZATION(load, string,
     (template <typename CharType, typename TraitsType, typename AllocatorType>),
     std::basic_string<CharType, TraitsType, AllocatorType>)
 {
-    ::sf::let::u64 size{};
+    std::uint64_t size{};
     archive & size;
 
     string.resize(size);

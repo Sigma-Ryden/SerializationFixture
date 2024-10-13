@@ -8,7 +8,7 @@
 
 #include <utility> // move
 
-#include <SerializationFixture/Core/TypeCore.hpp>
+#include <cstdint>
 #include <SerializationFixture/Core/Serialization.hpp>
 
 #include <SerializationFixture/Compress.hpp>
@@ -60,7 +60,7 @@ void reserve_unordered(StdSetType& unordered, std::size_t size)
 
 CONDITIONAL_SERIALIZATION(save, set, ::sf::meta::is_std_any_set<S>::value)
 {
-    ::sf::let::u64 size = set.size();
+    std::uint64_t size = set.size();
     archive & size;
 
     ::sf::compress::slow(archive, set);
@@ -70,14 +70,14 @@ CONDITIONAL_SERIALIZATION(load, set, ::sf::meta::is_std_any_set<S>::value)
 {
     using value_type = typename S::value_type;
 
-    ::sf::let::u64 size{};
+    std::uint64_t size{};
     archive & size;
 
     set.clear();
     ::sf::detail::reserve_unordered(set, size);
 
     auto hint = set.begin();
-    for (::sf::let::u64 i = 0; i < size; ++i)
+    for (std::uint64_t i = 0; i < size; ++i)
     {
         value_type item{}; // temp
         archive & item;

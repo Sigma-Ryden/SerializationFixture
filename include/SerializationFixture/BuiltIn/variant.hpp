@@ -3,9 +3,10 @@
 
 #if __cplusplus >= 201703L
 
+#include <cstdint> // uint64_t
+
 #include <variant> // variant
 
-#include <SerializationFixture/Core/TypeCore.hpp>
 #include <SerializationFixture/Core/Serialization.hpp>
 
 // serialization of std::monostate
@@ -17,13 +18,13 @@ namespace sf
 namespace detail
 {
 
-template <let::u64 ElementIndexValue, class ArchiveType, class VariantType,
+template <std::uint64_t ElementIndexValue, class ArchiveType, class VariantType,
           SF_REQUIRES(ElementIndexValue == std::variant_size<VariantType>::value)>
-void variant_save(ArchiveType&, VariantType&, let::u64) noexcept { /*pass*/ }
+void variant_save(ArchiveType&, VariantType&, std::uint64_t) noexcept { /*pass*/ }
 
-template <let::u64 ElementIndexValue = 0, class ArchiveType, class VariantType,
+template <std::uint64_t ElementIndexValue = 0, class ArchiveType, class VariantType,
           SF_REQUIRES(ElementIndexValue < std::variant_size<VariantType>::value)>
-void variant_save(ArchiveType& archive, VariantType& variant, let::u64 index)
+void variant_save(ArchiveType& archive, VariantType& variant, std::uint64_t index)
 {
     if (ElementIndexValue < index) return variant_save<ElementIndexValue + 1>(archive, variant, index);
     archive & std::get<ElementIndexValue>(variant);
@@ -43,13 +44,13 @@ void variant_load_impl(ArchiveType& archive, VariantType& variant)
     archive & variant.template emplace<ElementType>();
 }
 
-template <let::u64 ElementIndexValue, class ArchiveType, class VariantType,
+template <std::uint64_t ElementIndexValue, class ArchiveType, class VariantType,
           SF_REQUIRES(ElementIndexValue == std::variant_size<VariantType>::value)>
-void variant_load(ArchiveType&, VariantType&, let::u64) noexcept { /*pass*/ }
+void variant_load(ArchiveType&, VariantType&, std::uint64_t) noexcept { /*pass*/ }
 
-template <let::u64 ElementIndexValue = 0, class ArchiveType, class VariantType,
+template <std::uint64_t ElementIndexValue = 0, class ArchiveType, class VariantType,
           SF_REQUIRES(ElementIndexValue < std::variant_size<VariantType>::value)>
-void variant_load(ArchiveType& archive, VariantType& variant, let::u64 index)
+void variant_load(ArchiveType& archive, VariantType& variant, std::uint64_t index)
 {
     if (ElementIndexValue < index) return variant_load<ElementIndexValue + 1>(archive, variant, index);
 
@@ -63,7 +64,7 @@ void variant_load(ArchiveType& archive, VariantType& variant, let::u64 index)
 
 TEMPLATE_SERIALIZATION(save, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
 {
-    ::sf::let::u64 index = variant.index();
+    std::uint64_t index = variant.index();
     archive & index;
 
     if (index != std::variant_npos)
@@ -72,7 +73,7 @@ TEMPLATE_SERIALIZATION(save, variant, (template <typename... ArgumentTypes>), st
 
 TEMPLATE_SERIALIZATION(load, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
 {
-    ::sf::let::u64 index{};
+    std::uint64_t index{};
     archive & index;
 
     if (index != std::variant_npos)

@@ -1,7 +1,7 @@
 #ifndef SF_UTILITY_BIT_PACK_HPP
 #define SF_UTILITY_BIT_PACK_HPP
 
-#include <SerializationFixture/Core/TypeCore.hpp>
+#include <cstdint> // uint32_t
 
 #include <SerializationFixture/OArchive.hpp>
 #include <SerializationFixture/IArchive.hpp>
@@ -71,7 +71,7 @@ struct bitpack_t<ArchiveType, FieldType, typename std::enable_if<sf::meta::is_ia
 
 } // namespace detail
 
-template <typename PackType = let::u32, class ArchiveType>
+template <typename PackType = std::uint32_t, class ArchiveType>
 detail::bitpack_t<ArchiveType, PackType> bitpack(ArchiveType& archive) noexcept { return { archive }; }
 
 } // namespace sf

@@ -1,9 +1,10 @@
 #ifndef SF_BUILT_IN_VECTOR_HPP
 #define SF_BUILT_IN_VECTOR_HPP
 
+#include <cstdint> // uint64_t
+
 #include <vector> // vector
 
-#include <SerializationFixture/Core/TypeCore.hpp>
 #include <SerializationFixture/Core/Serialization.hpp>
 
 #include <SerializationFixture/Compress.hpp>
@@ -11,7 +12,7 @@
 TEMPLATE_SERIALIZATION(save, vector,
     (template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
 {
-    ::sf::let::u64 size = vector.size();
+    std::uint64_t size = vector.size();
     archive & size;
 
     ::sf::compress::zip(archive, vector);
@@ -20,7 +21,7 @@ TEMPLATE_SERIALIZATION(save, vector,
 TEMPLATE_SERIALIZATION(load, vector,
     (template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
 {
-    ::sf::let::u64 size{};
+    std::uint64_t size{};
     archive & size;
 
     vector.resize(size);
@@ -30,7 +31,7 @@ TEMPLATE_SERIALIZATION(load, vector,
 // slow impl
 SERIALIZATION(save, vector, std::vector<bool>)
 {
-    ::sf::let::u64 size = vector.size();
+    std::uint64_t size = vector.size();
     archive & size;
 
     for(auto item:vector)
@@ -42,7 +43,7 @@ SERIALIZATION(save, vector, std::vector<bool>)
 
 SERIALIZATION(load, vector, std::vector<bool>)
 {
-    ::sf::let::u64 size{};
+    std::uint64_t size{};
     archive & size;
 
     vector.resize(size);
