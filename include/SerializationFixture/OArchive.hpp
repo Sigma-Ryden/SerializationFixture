@@ -22,7 +22,7 @@ namespace sf
 
 template <class StreamWrapperType,
           class RegistryType = dynamic::extern_registry_t>
-class oarchive_t : public core::ioarchive_t, public core::oarchive_common_t
+class oarchive_t : public ioarchive_t
 {
 public:
     using TrackingKeyType = std::uintptr_t;
@@ -39,7 +39,7 @@ private:
 
 public:
     template <typename OutputStreamType>
-    oarchive_t(OutputStreamType& stream) : core::ioarchive_t(::xxsf_archive_traits<oarchive_t>::key, false)
+    oarchive_t(OutputStreamType& stream) : ioarchive_t(::xxsf_archive_traits<oarchive_t>::key, false)
         , xxarchive{stream}, xxtrack_shared(), xxtrack_raw(), xxtrack_hierarchy(), xxregistry() {}
 
     StreamWrapperType& stream() noexcept { return xxarchive; }
@@ -96,6 +96,14 @@ oarchive_t<StreamWrapperType, RegistryType> oarchive(OutputStreamType& stream)
 {
     return { stream };
 }
+
+namespace meta
+{
+
+template <class StreamWrapperType, class RegistryType>
+struct is_oarchive<oarchive_t<StreamWrapperType, RegistryType>> : std::true_type {};
+
+} // namespace meta
 
 } // namespace sf
 

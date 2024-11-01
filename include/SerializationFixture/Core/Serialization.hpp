@@ -19,10 +19,10 @@
 
 // allow to hide implementation to translation unit, and declare interface in header
 #define SERIALIZATION_DECLARATION(mode, object, ...) \
-     SF_CONCAT(SF_SERIALIZATION_DECLARATION_, mode)((template <>), (__VA_ARGS__), (), (::sf::core::ioarchive_t))
+     SF_CONCAT(SF_SERIALIZATION_DECLARATION_, mode)((template <>), (__VA_ARGS__), (), (::sf::ioarchive_t))
 
 #define SERIALIZATION_DEFINITION(mode, object, ...) \
-     SF_CONCAT(SF_SERIALIZATION_DEFINITION_, mode)((), (__VA_ARGS__), (), (::sf::core::ioarchive_t), object)
+     SF_CONCAT(SF_SERIALIZATION_DEFINITION_, mode)((), (__VA_ARGS__), (), (::sf::ioarchive_t), object)
 
 // Impl
 #define SF_SERIALIZATION_DECLARATION(mode, object_template_header, object_type, archive_template_header, archive_type) \

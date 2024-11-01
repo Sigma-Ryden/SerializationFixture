@@ -18,12 +18,7 @@
 namespace sf
 {
 
-namespace core
-{
-
 struct ioarchive_t;
-
-} // namespace core
 
 } // namespace sf
 
@@ -37,9 +32,9 @@ struct xxsf_archive_traits
 };
 
 template <::xxsf_archive_traits_key_type ArchiveKey>
-struct xxsf_iarchive_registry { using type = ::sf::core::ioarchive_t; };
+struct xxsf_iarchive_registry { using type = ::sf::ioarchive_t; };
 
 template <::xxsf_archive_traits_key_type ArchiveKey>
-struct xxsf_oarchive_registry { using type = ::sf::core::ioarchive_t; };
+struct xxsf_oarchive_registry { using type = ::sf::ioarchive_t; };
 
 #endif // SF_CORE_ARCHIVE_TRAITS_HPP

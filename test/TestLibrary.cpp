@@ -733,7 +733,7 @@ struct xxsf_load<NoMacroDerived>
 template <>
 struct xxsf_save<NoMacroBase>
 {
-    xxsf_save(sf::core::ioarchive_t& archive, NoMacroBase& self)
+    xxsf_save(sf::ioarchive_t& archive, NoMacroBase& self)
     {
         archive << self.b;
     }
@@ -807,13 +807,13 @@ TEST(TestLibrary, TestPolymorphicArchive)
         std::string data = s_data;
 
         auto oar = oarchive(storage);
-        sf::core::ioarchive_t& ar = oar;
+        sf::ioarchive_t& ar = oar;
         ar << data;
     }
     {
         std::string data;
 
-        sf::core::ioarchive_t&& ar = iarchive(storage);
+        sf::ioarchive_t&& ar = iarchive(storage);
         ar >> data;
 
         EXPECT("value", data == s_data);
@@ -823,7 +823,7 @@ TEST(TestLibrary, TestPolymorphicArchive)
     {
         int some_data = 0;
 
-        sf::core::ioarchive_t&& ar = oarchive(storage);
+        sf::ioarchive_t&& ar = oarchive(storage);
 
         auto success = false;
         try { ar >> some_data; } catch(...) { success = true; }
@@ -835,7 +835,7 @@ TEST(TestLibrary, TestPolymorphicArchive)
     {
         int some_data = 0;
 
-        sf::core::ioarchive_t&& ar = iarchive(storage);
+        sf::ioarchive_t&& ar = iarchive(storage);
 
         auto success = false;
         try { ar << some_data; } catch(...) { success = true; }

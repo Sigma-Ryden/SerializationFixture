@@ -24,8 +24,8 @@ public:
     struct any_proxy_t
     {
         // we use raw function ptr instead std::function to reach perfomance
-        void(*save)(core::ioarchive_t&, std::any&) = nullptr;
-        void(*load)(core::ioarchive_t&, std::any&) = nullptr;
+        void(*save)(ioarchive_t&, std::any&) = nullptr;
+        void(*load)(ioarchive_t&, std::any&) = nullptr;
     };
 
 public:
@@ -40,12 +40,12 @@ public:
 
         any_proxy_t proxy;
 
-        proxy.save = [](core::ioarchive_t& archive, std::any& any)
+        proxy.save = [](ioarchive_t& archive, std::any& any)
         {
             archive << std::any_cast<SerializableType&>(any);
         };
 
-        proxy.load = [](core::ioarchive_t& archive, std::any& any)
+        proxy.load = [](ioarchive_t& archive, std::any& any)
         {
             any.emplace<SerializableType>();
             archive >> std::any_cast<SerializableType&>(any);
@@ -54,8 +54,8 @@ public:
         all.emplace(typeid(SerializableType).hash_code(), proxy);
     }
 
-    void save(core::ioarchive_t& archive, std::any& any, std::uint64_t hash);
-    void load(core::ioarchive_t& archive, std::any& any, std::uint64_t hash);
+    void save(ioarchive_t& archive, std::any& any, std::uint64_t hash);
+    void load(ioarchive_t& archive, std::any& any, std::uint64_t hash);
 };
 
 extern any_registry_t any_registry;

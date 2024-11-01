@@ -35,8 +35,8 @@ public:
         instantiable_type*(*raw)() = nullptr;
         instantiable_type*(*cast_raw)(void*) = nullptr;
 
-        void(*save)(core::ioarchive_t&, instantiable_type*) = nullptr;
-        void(*load)(core::ioarchive_t&, instantiable_type*) = nullptr;
+        void(*save)(ioarchive_t&, instantiable_type*) = nullptr;
+        void(*load)(ioarchive_t&, instantiable_type*) = nullptr;
     };
 
 public:
@@ -80,12 +80,12 @@ public:
             return memory::static_pointer_cast<instantiable_type, InstantiableType>(address);
         };
 
-        proxy.save = [](core::ioarchive_t& archive, instantiable_type* instance)
+        proxy.save = [](ioarchive_t& archive, instantiable_type* instance)
         {
             archive << *memory::dynamic_pointer_cast<InstantiableType>(instance);
         };
 
-        proxy.load = [](core::ioarchive_t& archive, instantiable_type* instance)
+        proxy.load = [](ioarchive_t& archive, instantiable_type* instance)
         {
             archive >> *memory::dynamic_pointer_cast<InstantiableType>(instance);
         };
@@ -140,14 +140,14 @@ public:
     }
 
     template <typename PointerType>
-    void save(core::ioarchive_t& archive, PointerType& pointer) const
+    void save(ioarchive_t& archive, PointerType& pointer) const
     {
         auto const hash = SF_EXPRESSION_HASH(*pointer);
         rtti_all.at(hash).save(archive, pointer);
     }
 
     template <typename PointerType>
-    void load(core::ioarchive_t& archive, PointerType& pointer) const
+    void load(ioarchive_t& archive, PointerType& pointer) const
     {
         auto const hash = SF_EXPRESSION_HASH(*pointer);
         rtti_all.at(hash).load(archive, pointer);

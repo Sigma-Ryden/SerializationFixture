@@ -58,7 +58,7 @@ private:
 public:
     template <typename PointerType,
               SF_REQUIRES(is_pointer_to_instantiable<PointerType>::value)>
-    static void save(core::ioarchive_t& archive, PointerType& pointer, ::xxsf_instantiable_traits_key_type key)
+    static void save(ioarchive_t& archive, PointerType& pointer, ::xxsf_instantiable_traits_key_type key)
     {
         if (pointer == nullptr)
             throw "The write pointer was not allocated.";
@@ -69,7 +69,7 @@ public:
 
     template <typename PointerType,
               SF_REQUIRES(meta::is_pointer_to_polymorphic<PointerType>::value)>
-    static void load(core::ioarchive_t& archive, PointerType& pointer,
+    static void load(ioarchive_t& archive, PointerType& pointer,
                      ::xxsf_instantiable_traits_key_type key, typename memory::ptr_traits<PointerType>::void_ptr& cache)
     {
         using PointerTraitsType = memory::ptr_traits<PointerType>;

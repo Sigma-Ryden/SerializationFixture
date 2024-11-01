@@ -16,9 +16,6 @@
 namespace sf
 {
 
-namespace core
-{
-
 class polymorphic_archive_t
 {
 public:
@@ -48,7 +45,7 @@ private:
               ::xxsf_archive_traits_key_type ArchiveKeyValue = 0,
               typename SerializableType,
               SF_REQUIRES(ArchiveKeyValue < ::xxsf_archive_traits_base_key)>
-    static void call(core::ioarchive_t& archive, SerializableType& data)
+    static void call(ioarchive_t& archive, SerializableType& data)
     {
         using DerivedArchiveType = typename ArchiveRegistryTemplate<ArchiveKeyValue>::type;
 
@@ -60,14 +57,14 @@ private:
 
     template <class DerivedArchiveType, typename SerializableType,
               SF_REQUIRES(::xxsf_archive_traits<DerivedArchiveType>::key == ::xxsf_archive_traits_base_key)>
-    static void try_call(core::ioarchive_t&, SerializableType&)
+    static void try_call(ioarchive_t&, SerializableType&)
     {
         throw "The read/write archive was not registered.";
     }
 
     template <class DerivedArchiveType, typename SerializableType,
               SF_REQUIRES(::xxsf_archive_traits<DerivedArchiveType>::key != ::xxsf_archive_traits_base_key)>
-    static void try_call(core::ioarchive_t& archive, SerializableType& data)
+    static void try_call(ioarchive_t& archive, SerializableType& data)
     {
     #ifdef SF_DEBUG
         if (typeid(archive) != typeid(DerivedArchiveType))
@@ -76,14 +73,16 @@ private:
         try_call_impl<DerivedArchiveType>(static_cast<DerivedArchiveType&>(archive), data);
     }
 
-    template <class DerivedArchiveType, typename SerializableType>
-    static void try_call_impl(iarchive_common_t& archive, SerializableType& data)
+    template <class DerivedArchiveType, typename SerializableType,
+              SF_REQUIRES(meta::is_iarchive<DerivedArchiveType>::value)>
+    static void try_call_impl(ioarchive_t& archive, SerializableType& data)
     {
         ::xxsf_load<SerializableType>(static_cast<DerivedArchiveType&>(archive), data);
     }
 
-    template <class DerivedArchiveType, typename SerializableType>
-    static void try_call_impl(oarchive_common_t& archive, SerializableType& data)
+    template <class DerivedArchiveType, typename SerializableType,
+              SF_REQUIRES(meta::is_oarchive<DerivedArchiveType>::value)>
+    static void try_call_impl(ioarchive_t& archive, SerializableType& data)
     {
         ::xxsf_save<SerializableType>(static_cast<DerivedArchiveType&>(archive), data);
     }
@@ -121,8 +120,6 @@ ioarchive_t& operator& (ioarchive_t& archive, SerializableType const& data)
 {
     return archive.readonly ? archive >> data : archive << data;
 }
-
-} // namespace core
 
 } // namespace sf
 

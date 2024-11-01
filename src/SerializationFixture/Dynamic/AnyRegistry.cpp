@@ -8,12 +8,12 @@ namespace sf
 namespace dynamic
 {
 
-void any_registry_t::save(core::ioarchive_t& archive, std::any& any, std::uint64_t hash)
+void any_registry_t::save(ioarchive_t& archive, std::any& any, std::uint64_t hash)
 {
     all.at(hash).save(archive, any);
 }
 
-void any_registry_t::load(core::ioarchive_t& archive, std::any& any, std::uint64_t hash)
+void any_registry_t::load(ioarchive_t& archive, std::any& any, std::uint64_t hash)
 {
     all.at(hash).load(archive, any);
 }
