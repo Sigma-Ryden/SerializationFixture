@@ -17,7 +17,7 @@
 #include <SerializationFixture/Union.hpp>
 
 #include <SerializationFixture/ApplyFunctor.hpp>
-#include <SerializationFixture/Hierarchy.hpp>
+#include <SerializationFixture/HierarchyTrack.hpp>
 #include <SerializationFixture/DataTrack.hpp>
 
 #include <SerializationFixture/Serializable.hpp>

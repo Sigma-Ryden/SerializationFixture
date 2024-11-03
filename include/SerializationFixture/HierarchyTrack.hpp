@@ -1,54 +1,145 @@
 #ifndef SF_HIERARCHY_TRACK_HPP
 #define SF_HIERARCHY_TRACK_HPP
 
-#include <utility> // pair
-#include <unordered_map> // unordered_map
-
+#include <SerializationFixture/Core/ArchiveBase.hpp>
+#include <SerializationFixture/Core/Memory.hpp>
 #include <SerializationFixture/Core/Hash.hpp>
 
-#include <SerializationFixture/Dynamic/InstantiableTraits.hpp>
+#include <SerializationFixture/ApplyFunctor.hpp>
+#include <SerializationFixture/DataTrackBase.hpp>
+#include <SerializationFixture/HierarchyTrackBase.hpp>
 
+#include <SerializationFixture/Detail/Meta.hpp>
 #include <SerializationFixture/Detail/MetaMacro.hpp>
 
 namespace sf
 {
 
+template <class BaseType, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                std::is_base_of<BaseType, DerivedType>>::value)>
+void base(ArchiveType& archive, DerivedType& object)
+{
+    archive & ::xxsf_cast_to_non_public_base::call<BaseType>(object);
+}
+
+template <class BaseType, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                std::is_base_of<BaseType, DerivedType>>::value)>
+void virtual_base(ArchiveType& archive, DerivedType& object)
+{
+#ifdef SF_PTRTRACK_DISABLE
+    if (SF_EXPRESSION_HASH(object) == SF_TYPE_HASH(DerivedType))
+        base<Base>(archive, object);
+#else
+    using key_type = typename ArchiveType::TrackingKeyType;
+
+    auto address = memory::pure(std::addressof(object));
+
+    auto const key = reinterpret_cast<key_type>(address);
+    auto const traits = SF_TYPE_HASH(BaseType);
+
+    auto& hierarchy_tracking = archive.template tracking<tracking::hierarchy_t>();
+
+    auto& is_tracking = hierarchy_tracking[key][traits];
+    if (not is_tracking)
+    {
+        is_tracking = true;
+        base<BaseType>(archive, object);
+    }
+#endif // SF_PTRTRACK_DISABLE
+}
+
 namespace detail
 {
 
-template <typename HashType = std::uint64_t>
-struct pair_hash_t
+template <class BaseType, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::negation<meta::is_virtual_base_of<BaseType, DerivedType>>::value)>
+void native_base(ArchiveType& archive, DerivedType& object_with_base)
 {
-    template <typename T1, typename T2>
-    HashType operator() (const std::pair<T1, T2>& pair) const noexcept
-    {
-        HashType seed{};
+    base<BaseType>(archive, object_with_base);
+}
 
-        detail::hash_combine(seed, pair.first);
-        detail::hash_combine(seed, pair.second);
-
-        return seed;
-    }
-};
+template <class BaseType, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::is_virtual_base_of<BaseType, DerivedType>::value)>
+void native_base(ArchiveType& archive, DerivedType& object_with_virtual_base)
+{
+    virtual_base<BaseType>(archive, object_with_virtual_base);
+}
 
 } // namespace detail
 
-namespace tracking
+namespace apply
 {
 
-struct hierarchy_t {};
+template <class DerivedType, class BaseType>
+struct base_functor_t : apply_functor_t
+{
+    DerivedType& object;
 
-template <typename KeyType, typename TraitsType = ::xxsf_instantiable_traits_key_type>
-using hierarchy_track_t = std::unordered_map<std::pair<KeyType, TraitsType>, bool, detail::pair_hash_t<TraitsType>>;
+    base_functor_t(DerivedType& object) noexcept : object(object) {}
 
-} // namespace tracking
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { base<BaseType>(archive, object); }
+};
 
-namespace meta
+template <class DerivedType, class BaseType>
+struct virtual_base_functor_t : apply_functor_t
+{
+    DerivedType& object;
+
+    virtual_base_functor_t(DerivedType& object) noexcept : object(object) {}
+
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { virtual_base<BaseType>(archive, object); }
+};
+
+} // namespace apply
+
+template <class BaseType, class DerivedType,
+          SF_REQUIRES(std::is_base_of<BaseType, DerivedType>::value)>
+apply::base_functor_t<DerivedType, BaseType> base(DerivedType& object) noexcept { return { object }; }
+
+template <class BaseType, class DerivedType,
+          SF_REQUIRES(std::is_base_of<BaseType, DerivedType>::value)>
+apply::virtual_base_functor_t<DerivedType, BaseType> virtual_base(DerivedType& object) noexcept { return { object }; }
+
+// default empty impl
+template <class ArchiveType, class DerivedType>
+void hierarchy(ArchiveType&, DerivedType&) noexcept { /*pass*/ }
+
+// Variadic native_base function
+template <class BaseType, class... BaseTypes, class ArchiveType, class DerivedType,
+          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
+                                meta::is_derived_of<DerivedType, BaseType, BaseTypes...>>::value)>
+void hierarchy(ArchiveType& archive, DerivedType& object)
+{
+    detail::native_base<BaseType>(archive, object);
+    hierarchy<BaseTypes...>(archive, object);
+}
+
+namespace apply
 {
 
-template <typename TrackType> struct is_track_hierarchy : std::is_same<TrackType, tracking::hierarchy_t> {};
+template <class DerivedType, class BaseType, class... BaseTypes>
+struct hierarchy_functor_t : apply_functor_t
+{
+    DerivedType& object;
 
-} // namespace meta
+    hierarchy_functor_t(DerivedType& object) noexcept : object(object) {}
+
+    template <class ArchiveType>
+    void operator() (ArchiveType& archive) const { hierarchy<BaseType, BaseTypes...>(archive, object); }
+};
+
+} // namespace apply
+
+template <class BaseType, class... BaseTypes, class DerivedType,
+          SF_REQUIRES(meta::is_derived_of<DerivedType, BaseType, BaseTypes...>::value)>
+apply::hierarchy_functor_t<DerivedType, BaseType, BaseTypes...> hierarchy(DerivedType& object) noexcept
+{
+    return { object };
+}
 
 } // namespace sf
 

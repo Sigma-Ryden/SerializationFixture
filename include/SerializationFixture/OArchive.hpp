@@ -11,7 +11,7 @@
 #include <SerializationFixture/Core/Memory.hpp>
 
 #include <SerializationFixture/DataTrackBase.hpp>
-#include <SerializationFixture/HierarchyTrack.hpp>
+#include <SerializationFixture/HierarchyTrackBase.hpp>
 #include <SerializationFixture/StreamWrapper.hpp>
 
 #include <SerializationFixture/Detail/Meta.hpp>
@@ -33,7 +33,7 @@ private:
     std::unordered_map<TrackingKeyType, bool> xxtrack_shared;
     std::unordered_map<TrackingKeyType, bool> xxtrack_raw;
 
-    tracking::hierarchy_track_t<std::uintptr_t> xxtrack_hierarchy;
+    std::unordered_map<TrackingKeyType, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxtrack_hierarchy;
 
     RegistryType xxregistry;
 

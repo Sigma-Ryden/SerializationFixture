@@ -105,18 +105,6 @@ constexpr HashType static_hash(char const* text) noexcept
     return detail::hash_t<HashType>::static_run(text);
 }
 
-namespace detail
-{
-
-template <typename HashType, typename ObjectType>
-void hash_combine(HashType& seed, ObjectType const& object) noexcept
-{
-    auto hash = std::hash<ObjectType>{}(object) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= static_cast<HashType>(hash);
-}
-
-} // namespace detail
-
 } // namepace sf
 
 #endif // SF_CORE_HASH_HPP
