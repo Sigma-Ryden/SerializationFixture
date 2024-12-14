@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-using sf::tracking::track;
+using sf::track;
 
 TEST(TestLibrary, TestTracking)
 {

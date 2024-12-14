@@ -33,7 +33,7 @@ SERIALIZATION(saveload, self, Derived)
 TEST(TestCommon, TestAlias)
 {
     using sf::alias_t;
-    using sf::tracking::track;
+    using sf::track;
 
     static int s_i = 64822;
 

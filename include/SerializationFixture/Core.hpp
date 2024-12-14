@@ -7,7 +7,6 @@
 #include <SerializationFixture/Core/Hash.hpp>
 
 #include <SerializationFixture/Dynamic/InstantiableRegistry.hpp>
-#include <SerializationFixture/Dynamic/ExternRegistry.hpp>
 
 #include <SerializationFixture/OArchive.hpp>
 #include <SerializationFixture/IArchive.hpp>

@@ -13,230 +13,8 @@ namespace sf
 namespace memory
 {
 
-struct shared_t;
-struct raw_t;
-
-} // namespace memory
-
-namespace meta
-{
-
-template <typename TraitsType> struct is_memory_shared : std::is_same<TraitsType, memory::shared_t> {};
-template <typename TraitsType> struct is_memory_raw : std::is_same<TraitsType, memory::raw_t> {};
-
-template <typename TraitsType> struct is_memory : one<is_memory_shared<TraitsType>, is_memory_raw<TraitsType>> {};
-
-} // namespace meta
-
-namespace memory
-{
-
-template <typename Type>
-using shared_ptr = std::shared_ptr<Type>;
-
-template <typename Type>
-using raw_ptr = Type*;
-
-template <typename PointerType>
-struct ptr_traits
-{
-    using item = std::nullptr_t;
-};
-
-template <typename Type>
-struct ptr_traits<std::shared_ptr<Type>>
-{
-    using traits = shared_t;
-
-    template <typename OtherType>
-    using wrapper = shared_ptr<OtherType>;
-
-    using type = std::shared_ptr<Type>;
-    using item = Type;
-
-    using void_ptr = std::shared_ptr<void>;
-};
-
-template <typename Type>
-struct ptr_traits<Type*>
-{
-    using traits = raw_t;
-
-    template <typename OtherType>
-    using wrapper = raw_ptr<OtherType>;
-
-    using type = Type*;
-    using item = Type;
-
-    using void_ptr = void*;
-};
-
-template <typename Type>
-struct ptr_traits<std::weak_ptr<Type>>
-{
-    using type = std::weak_ptr<Type>;
-    using item = Type;
-};
-
-template <typename Type>
-struct ptr_traits<std::unique_ptr<Type>>
-{
-    using type = std::unique_ptr<Type>;
-    using item = Type;
-};
-
-template <typename Type>
-struct factory_t
-{
-    static std::shared_ptr<Type> shared()
-    {
-        return std::make_shared<Type>();
-    }
-
-    static Type* raw()
-    {
-        return new Type{};
-    }
-};
-
-template <typename ToType, typename PointerType,
-          SF_REQUIRES(meta::is_raw_pointer<PointerType>::value)>
-raw_ptr<ToType> dynamic_pointer_cast(PointerType const& pointer)
-{
-    return dynamic_cast<raw_ptr<ToType>>(pointer);
-}
-
-template <typename ToType, typename PointerType,
-          SF_REQUIRES(meta::is_shared_pointer<PointerType>::value)>
-shared_ptr<ToType> dynamic_pointer_cast(PointerType const& pointer)
-{
-    auto address = memory::dynamic_pointer_cast<ToType>(pointer.get());
-    return address == nullptr ? shared_ptr<ToType>() : shared_ptr<ToType>(pointer, address);
-}
-
-template <typename ToType, typename PointerType,
-          SF_REQUIRES(meta::one<meta::is_null_pointer<PointerType>,
-                                meta::all<meta::is_pointer<PointerType>,
-                                          meta::negation<meta::is_static_castable<typename ptr_traits<PointerType>::item*, ToType*>>>>::value)>
-typename ptr_traits<PointerType>::template wrapper<ToType> static_pointer_cast(PointerType const&) noexcept
-{
-    return nullptr;
-}
-
-template <typename ToType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_raw_pointer<PointerType>,
-                                meta::is_static_castable<typename ptr_traits<PointerType>::item*, ToType*>>::value)>
-raw_ptr<ToType> static_pointer_cast(PointerType const& pointer) noexcept
-{
-    return static_cast<raw_ptr<ToType>>(pointer);
-}
-
-template <typename ToType, typename FromType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_pointer<PointerType>,
-                                meta::negation<meta::is_static_castable<FromType*, ToType*>>>::value)>
-typename ptr_traits<PointerType>::template wrapper<ToType> static_pointer_cast(PointerType const&) noexcept
-{
-    return nullptr;
-}
-
-template <typename ToType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_shared_pointer<PointerType>,
-                                meta::is_static_castable<typename ptr_traits<PointerType>::item*, ToType*>>::value)>
-shared_ptr<ToType> static_pointer_cast(PointerType const& pointer) noexcept
-{
-    auto address = memory::static_pointer_cast<ToType>(pointer.get());
-    return shared_ptr<ToType>(pointer, address);
-}
-
-template <typename ToType, typename FromType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_pointer<PointerType>,
-                                meta::is_static_castable<typename ptr_traits<PointerType>::item*, FromType*>,
-                                meta::is_static_castable<FromType*, ToType*>>::value)>
-typename ptr_traits<PointerType>::template wrapper<ToType> static_pointer_cast(PointerType const& pointer) noexcept
-{
-    return memory::static_pointer_cast<ToType>(memory::static_pointer_cast<FromType>(pointer));
-}
-
-template <typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_pointer<PointerType>,
-                                meta::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
-typename ptr_traits<PointerType>::void_ptr pure(PointerType const& pointer) noexcept
-{
-    return memory::static_pointer_cast<void>(pointer);
-}
-
-template <typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_pointer<PointerType>,
-                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
-typename ptr_traits<PointerType>::void_ptr pure(PointerType const& pointer_to_polymorphic)
-{
-    return memory::dynamic_pointer_cast<void>(pointer_to_polymorphic);
-}
-
-inline raw_ptr<void> pure(std::nullptr_t) noexcept { return nullptr; }
-
-template <typename Type, typename PointerType,
-          SF_REQUIRES(meta::is_pointer<PointerType>::value)>
-void assign(PointerType& pointer, typename ptr_traits<PointerType>::void_ptr const& address) noexcept
-{
-    pointer = memory::static_pointer_cast<Type>(address);
-}
-
-template <typename ToType, typename FromType = ToType, typename TraitsType,
-          SF_REQUIRES(meta::all<meta::is_memory<TraitsType>,
-                                meta::one<meta::negation<meta::is_static_castable<FromType*, ToType*>>,
-                                          std::is_abstract<FromType>>>::value)>
-std::nullptr_t allocate() noexcept
-{
-    return nullptr;
-}
-
-template <typename ToType, typename FromType = ToType, typename TraitsType,
-          SF_REQUIRES(meta::all<meta::negation<std::is_abstract<FromType>>,
-                                meta::is_memory_shared<TraitsType>,
-                                meta::is_static_castable<FromType*, ToType*>>::value)>
-shared_ptr<ToType> allocate()
-{
-    auto instance = factory_t<FromType>::shared();
-    return memory::static_pointer_cast<ToType>(instance);
-}
-
-template <typename ToType, typename FromType = ToType, typename TraitsType,
-          SF_REQUIRES(meta::all<meta::negation<std::is_abstract<FromType>>,
-                                meta::is_memory_raw<TraitsType>,
-                                meta::is_static_castable<FromType*, ToType*>>::value)>
-raw_ptr<ToType> allocate()
-{
-    auto instance = factory_t<FromType>::raw();
-    return memory::static_pointer_cast<ToType>(instance);
-}
-
-template <typename ToType, typename FromType = ToType>
-shared_ptr<ToType> allocate_shared()
-{
-    return memory::allocate<ToType, FromType, shared_t>();
-}
-
-template <typename ToType, typename FromType = ToType>
-raw_ptr<ToType> allocate_raw()
-{
-    return memory::allocate<ToType, FromType, raw_t>();
-}
-
-template <typename ToType, typename FromType = ToType, typename PointerType,
-          SF_REQUIRES(meta::is_pointer<PointerType>::value)>
-void allocate(PointerType& pointer)
-{
-    pointer = memory::allocate<ToType, FromType, typename ptr_traits<PointerType>::traits>();
-}
-
-template <typename PointerType,
-          SF_REQUIRES(meta::is_raw_pointer<PointerType>::value)>
-raw_ptr<typename ptr_traits<PointerType>::item> raw(PointerType const& pointer) { return pointer; }
-
-template <typename PointerType,
-          SF_REQUIRES(meta::is_shared_pointer<PointerType>::value)>
-raw_ptr<typename ptr_traits<PointerType>::item> raw(PointerType const& pointer) { return pointer.get(); }
+template <typename>
+struct pointer_traits;
 
 template <typename ByteType = char, typename DataType>
 ByteType const* const_byte_cast(DataType* data) noexcept
@@ -248,6 +26,140 @@ template <typename ByteType = char, typename DataType>
 ByteType* byte_cast(DataType* data) noexcept
 {
     return reinterpret_cast<ByteType*>(data);
+}
+
+} // namespace memory
+
+
+// raw ptr
+namespace memory
+{
+
+template <typename SerializableType>
+struct pointer_traits<SerializableType*>
+{
+    using element_type = SerializableType;
+};
+
+template <typename ToType, typename SerializableType>
+ToType* dynamic_pointer_cast(SerializableType* pointer)
+{
+    return dynamic_cast<ToType*>(pointer);
+}
+
+template <typename ToType, typename FromType,
+          SF_REQUIRES(meta::negation<meta::is_static_castable<FromType*, ToType*>>::value)>
+ToType* static_pointer_cast(FromType*) noexcept
+{
+    return nullptr;
+}
+
+template <typename ToType, typename FromType,
+          SF_REQUIRES(meta::is_static_castable<FromType*, ToType*>::value)>
+ToType* static_pointer_cast(FromType* pointer) noexcept
+{
+    return static_cast<ToType*>(pointer);
+}
+
+template <typename SerializableType,
+          SF_REQUIRES(meta::negation<std::is_polymorphic<SerializableType>>::value)>
+void* pure(SerializableType* pointer) noexcept
+{
+    return memory::static_pointer_cast<void>(pointer);
+}
+
+template <typename SerializableType,
+          SF_REQUIRES(std::is_polymorphic<SerializableType>::value)>
+void* pure(SerializableType* pointer_to_polymorphic)
+{
+    return memory::dynamic_pointer_cast<void>(pointer_to_polymorphic);
+}
+
+template <typename SerializableType>
+SerializableType* raw(SerializableType* pointer)
+{
+    return pointer;
+}
+
+template <typename SerializableType,
+          SF_REQUIRES(meta::negation<std::is_abstract<SerializableType>>::value)>
+void allocate(SerializableType*& pointer)
+{
+    pointer = new SerializableType;
+}
+
+template <typename SerializableType,
+          SF_REQUIRES(std::is_abstract<SerializableType>::value)>
+void allocate(SerializableType*& pointer)
+{
+    pointer = nullptr;
+}
+
+} // namespace memory
+
+
+// std shared ptr
+namespace memory
+{
+
+template <typename SerializableType>
+struct pointer_traits<std::shared_ptr<SerializableType>>
+{
+    using element_type = SerializableType;
+};
+
+template <typename ToType, typename FromType>
+std::shared_ptr<ToType> dynamic_pointer_cast(std::shared_ptr<FromType> const& pointer)
+{
+    return std::dynamic_pointer_cast<ToType>(pointer);
+}
+
+template <typename ToType, typename FromType,
+          SF_REQUIRES(meta::negation<meta::is_static_castable<FromType*, ToType*>>::value)>
+std::shared_ptr<ToType> static_pointer_cast(std::shared_ptr<FromType> const&) noexcept
+{
+    return nullptr;
+}
+
+template <typename ToType, typename FromType,
+          SF_REQUIRES(meta::is_static_castable<FromType*, ToType*>::value)>
+std::shared_ptr<ToType> static_pointer_cast(std::shared_ptr<FromType> const& pointer) noexcept
+{
+    return std::static_pointer_cast<ToType>(pointer);
+}
+
+template <typename SerializableType,
+          SF_REQUIRES(meta::negation<std::is_polymorphic<SerializableType>>::value)>
+std::shared_ptr<void> pure(std::shared_ptr<SerializableType> const& pointer) noexcept
+{
+    return memory::static_pointer_cast<void>(pointer);
+}
+
+template <typename SerializableType,
+          SF_REQUIRES(std::is_polymorphic<SerializableType>::value)>
+std::shared_ptr<void> pure(std::shared_ptr<SerializableType> const& pointer_to_polymorphic)
+{
+    return memory::dynamic_pointer_cast<void>(pointer_to_polymorphic);
+}
+
+template <typename SerializableType>
+SerializableType* raw(std::shared_ptr<SerializableType> const& pointer)
+{
+    return pointer.get();
+}
+
+template <typename SerializableType,
+          SF_REQUIRES(meta::negation<std::is_abstract<SerializableType>>::value)>
+void allocate(std::shared_ptr<SerializableType>& pointer)
+{
+    pointer = std::make_shared<SerializableType>();
+}
+
+template <typename SerializableType,
+          SF_REQUIRES(std::is_abstract<SerializableType>::value)>
+void allocate(std::shared_ptr<SerializableType>& pointer)
+{
+    pointer = nullptr;
 }
 
 } // namespace memory

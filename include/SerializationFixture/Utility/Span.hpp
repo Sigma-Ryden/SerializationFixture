@@ -9,7 +9,6 @@
 #include <SerializationFixture/Utility/Alias.hpp>
 
 #include <SerializationFixture/ApplyFunctor.hpp>
-#include <SerializationFixture/Strict.hpp>
 
 #include <SerializationFixture/Detail/Meta.hpp>
 #include <SerializationFixture/Detail/MetaMacro.hpp>
@@ -196,7 +195,7 @@ template <class ArchiveType, typename PointerType,
                                 meta::is_span_set<PointerType, SizeType, SizeTypes...>>::value)>
 void span(ArchiveType& archive, PointerType& pointer, SizeType& dimension, SizeTypes&... dimensions)
 {
-    if (not detail::refer_key(archive, pointer)) return; // serialize refer info
+    if (not detail::tracking_key(archive, pointer)) return; // serialize refer info
     archive(dimension, dimensions...);
 
     auto span_data = utility::make_span(pointer, dimension, dimensions...);

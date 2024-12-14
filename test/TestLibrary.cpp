@@ -4,7 +4,7 @@
 
 TEST(TestLibrary, TestValidation)
 {
-    using sf::tracking::track;
+    using sf::track;
 
     static int s_i = 745; // some garbage value
 
@@ -105,8 +105,6 @@ TEST(TestLibrary, TestInstantiableRegistry)
         EXPECT("same polymorphic key", success);
     }
 
-    using sf::dynamic::extern_registry_t;
-
     {
         auto success = false;
         try { instantiable_registry.fixture<Square>(); } catch(...) { success = true; }
@@ -118,13 +116,13 @@ TEST(TestLibrary, TestInstantiableRegistry)
 
     {
         auto success = false;
-        try { instantiable_registry.clone<sf::memory::raw_t>(key); } catch(...) { success = true; }
+        try { Square* ptr = nullptr; instantiable_registry.clone(ptr, key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable raw", success);
     }
     {
         auto success = false;
-        try { instantiable_registry.clone<sf::memory::shared_t>(key); } catch(...) { success = true; }
+        try { std::shared_ptr<Square> ptr = nullptr; instantiable_registry.clone(ptr, key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable shared", success);
     }
@@ -133,7 +131,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         auto r = new Square;
 
         auto success = false;
-        try { (void)instantiable_registry.cast(r, key); } catch(...) { success = true; }
+        try { Square* ptr = nullptr; (void)instantiable_registry.cast(ptr, r, key); } catch(...) { success = true; }
 
         EXPECT("cast non-instantiable raw", success);
 
@@ -143,7 +141,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         auto s = std::make_shared<Square>();
 
         auto success = false;
-        try { (void)instantiable_registry.cast(s, key); } catch(...) { success = true; }
+        try { std::shared_ptr<Square> ptr = nullptr; (void)instantiable_registry.cast(ptr, s, key); } catch(...) { success = true; }
 
         EXPECT("cast non-instantiable shared", success);
     }
@@ -187,8 +185,6 @@ TEST(TestLibrary, TestExportInstantiable)
             ::xxsf_instantiable_traits<MyStruct>::key() == sv_s &&
             ::xxsf_instantiable_traits<MyClass>::key() == sv_c);
     }
-
-    using sf::dynamic::extern_registry_t;
 
     static auto sv_ct = SF_TYPE_HASH(MyCustomType);
 

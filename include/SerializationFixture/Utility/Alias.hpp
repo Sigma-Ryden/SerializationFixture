@@ -54,7 +54,7 @@ TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias
         throw "The write alias_t must be initialized.";
 
     auto pointer = std::addressof(alias.get());
-    auto const key = ::sf::detail::refer_key(archive, pointer);
+    auto const key = ::sf::detail::tracking_key(archive, pointer);
 
     auto& is_tracking = archive.tracking().template pointer<ElementType*>()[key];
 

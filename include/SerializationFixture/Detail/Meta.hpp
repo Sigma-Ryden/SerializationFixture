@@ -154,9 +154,6 @@ struct value<SerializableArrayType, typename std::enable_if<std::is_array<Serial
     using type = typename array_value<SerializableArrayType>::type;
 };
 
-template <typename FromType, typename ToType> struct is_cast_allowed
-    : one<is_static_castable<FromType, ToType>, std::is_convertible<FromType, ToType>> {};
-
 template <typename SerializableType> struct is_compressible : std::is_arithmetic<typename value<SerializableType>::type> {};
 
 template <class DerivedType, class BaseType, class... BaseTypes> struct is_derived_of
@@ -205,9 +202,6 @@ template <typename PointerType> struct is_serializable_pointer
 
 template <typename PointerType> struct is_serializable_raw_pointer
     : all<is_raw_pointer<PointerType>, is_serializable_pointer<PointerType>> {};
-
-template <typename PointerType> struct is_serializable_shared_pointer
-    : all<is_shared_pointer<PointerType>, is_serializable_pointer<PointerType>> {};
 
 #if __cplusplus >= 201703L
 template <typename AggregateType> struct is_aggregate

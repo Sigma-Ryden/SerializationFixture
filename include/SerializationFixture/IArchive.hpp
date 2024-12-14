@@ -6,8 +6,9 @@
 
 #include <SerializationFixture/Core/ArchiveBase.hpp>
 #include <SerializationFixture/Core/Memory.hpp>
+#include <SerializationFixture/Core/Serialization.hpp>
 
-#include <SerializationFixture/Dynamic/ExternRegistry.hpp>
+#include <SerializationFixture/Dynamic/InstantiableTraits.hpp>
 
 #include <SerializationFixture/StreamWrapper.hpp>
 
@@ -17,10 +18,11 @@
 namespace sf
 {
 
-struct iarchive_track_t
+class iarchive_track_t
 {
-    std::unordered_map<std::uintptr_t, memory::shared_ptr<void>> xxshared;
-    std::unordered_map<std::uintptr_t, memory::raw_ptr<void>> xxraw;
+private:
+    std::unordered_map<std::uintptr_t, std::shared_ptr<void>> xxshared;
+    std::unordered_map<std::uintptr_t, void*> xxraw;
 
     std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
 
@@ -41,16 +43,14 @@ class iarchive_t : public ioarchive_t
 private:
     StreamWrapperType xxstream;
     TrackingType xxtracking;
-    dynamic::extern_registry_t xxregistry;
 
 public:
     template <typename InputStreamType>
     iarchive_t(InputStreamType& stream) : ioarchive_t(::xxsf_archive_traits<iarchive_t>::key, true)
-        , xxstream{stream}, xxtracking(), xxregistry() {}
+        , xxstream{stream}, xxtracking() {}
 
     StreamWrapperType& stream() noexcept { return xxstream; }
     TrackingType& tracking() noexcept { return xxtracking; }
-    dynamic::extern_registry_t& registry() noexcept { return xxregistry; }
 
     template <typename SerializableType>
     iarchive_t& operator>> (SerializableType const& data) { return operator()(data); }

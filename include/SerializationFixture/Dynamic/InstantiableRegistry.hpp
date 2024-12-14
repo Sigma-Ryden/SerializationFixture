@@ -45,7 +45,9 @@ public:
 
 public:
     template <typename InstantiableType> struct is_instantiable
-        : meta::is_cast_allowed<InstantiableType*, instantiable_type*> {};
+        : meta::one<meta::is_static_castable<InstantiableType*, instantiable_type*>,
+                    std::is_convertible<InstantiableType*, instantiable_type*>> {};
+
 
 public:
     template <class InstantiableType, SF_REQUIRES(meta::negation<is_instantiable<InstantiableType>>::value)>
@@ -66,18 +68,28 @@ public:
 
         proxy.key = key;
 
-        proxy.shared = [] { return memory::allocate_shared<instantiable_type, InstantiableType>(); };
+        proxy.shared = []
+        {
+            std::shared_ptr<InstantiableType> pointer = nullptr;
+            memory::allocate(pointer);
+            return memory::static_pointer_cast<instantiable_type>(pointer);
+        };
 
         proxy.cast_shared = [](std::shared_ptr<void> const& address)
         {
-            return memory::static_pointer_cast<instantiable_type, InstantiableType>(address);
+            return memory::static_pointer_cast<instantiable_type>(memory::static_pointer_cast<InstantiableType>(address));
         };
 
-        proxy.raw = [] { return memory::allocate_raw<instantiable_type, InstantiableType>(); };
+        proxy.raw = []
+        {
+            InstantiableType* pointer = nullptr;
+            memory::allocate(pointer);
+            return memory::static_pointer_cast<instantiable_type>(pointer);
+        };
 
         proxy.cast_raw = [](void* address)
         {
-            return memory::static_pointer_cast<instantiable_type, InstantiableType>(address);
+            return memory::static_pointer_cast<instantiable_type>(memory::static_pointer_cast<InstantiableType>(address));
         };
 
         proxy.save = [](ioarchive_t& archive, instantiable_type* instance)
@@ -115,42 +127,71 @@ public:
         return true;
     }
 
-    template <typename PointerTraitsType,
-              SF_REQUIRES(meta::is_memory_shared<PointerTraitsType>::value)>
-    std::shared_ptr<instantiable_type> clone(::xxsf_instantiable_traits_key_type key) const
-    {
-        return all.at(key).shared();
-    }
-
-    template <typename PointerTraitsType,
-              SF_REQUIRES(meta::is_memory_raw<PointerTraitsType>::value)>
-    instantiable_type* clone(::xxsf_instantiable_traits_key_type key) const
-    {
-        return all.at(key).raw();
-    }
-
-    std::shared_ptr<instantiable_type> cast(std::shared_ptr<void> const& address, ::xxsf_instantiable_traits_key_type key) const
-    {
-        return all.at(key).cast_shared(address);
-    }
-
-    instantiable_type* cast(void* address, ::xxsf_instantiable_traits_key_type key) const
-    {
-        return all.at(key).cast_raw(address);
-    }
-
     template <typename PointerType>
     void save(ioarchive_t& archive, PointerType& pointer) const
     {
-        auto const hash = SF_EXPRESSION_HASH(*pointer);
-        rtti_all.at(hash).save(archive, pointer);
+        if (pointer == nullptr)
+            throw "The write pointer was not allocated.";
+
+        auto raw_pointer = memory::raw(pointer);
+        auto const hash = SF_EXPRESSION_HASH(*raw_pointer);
+
+        rtti_all.at(hash).save(archive, raw_pointer);
     }
 
-    template <typename PointerType>
-    void load(ioarchive_t& archive, PointerType& pointer) const
+    template <typename PointerType, typename VoidPointerType>
+    void load(ioarchive_t& archive, PointerType& pointer, ::xxsf_instantiable_traits_key_type key, VoidPointerType& cache) const
     {
-        auto const hash = SF_EXPRESSION_HASH(*pointer);
-        rtti_all.at(hash).load(archive, pointer);
+    #ifndef SF_GARBAGE_CHECK_DISABLE
+        if (pointer != nullptr)
+            throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
+
+        clone(pointer, key);
+        cache = memory::pure(pointer);
+
+        auto raw_pointer = memory::raw(pointer);
+        auto const hash = SF_EXPRESSION_HASH(*raw_pointer);
+
+        rtti_all.at(hash).load(archive, raw_pointer);
+    }
+
+    // raw ptr
+    public:
+    template <typename InstantiableType>
+    void clone(InstantiableType*& pointer, ::xxsf_instantiable_traits_key_type key) const
+    {
+        pointer = memory::dynamic_pointer_cast<InstantiableType>(all.at(key).raw());
+    }
+
+    template <typename InstantiableType>
+    void cast(InstantiableType*& pointer, void* address, ::xxsf_instantiable_traits_key_type key) const
+    {
+    #ifndef SF_GARBAGE_CHECK_DISABLE
+        if (pointer != nullptr)
+            throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
+
+        pointer = memory::dynamic_pointer_cast<InstantiableType>(all.at(key).cast_raw(address));
+    }
+
+    // std shared ptr
+    public:
+    template <typename InstantiableType>
+    void clone(std::shared_ptr<InstantiableType>& pointer, ::xxsf_instantiable_traits_key_type key) const
+    {
+        pointer = memory::dynamic_pointer_cast<InstantiableType>(all.at(key).shared());
+    }
+
+    template <typename InstantiableType>
+    void cast(std::shared_ptr<InstantiableType>& pointer, std::shared_ptr<void> const& address, ::xxsf_instantiable_traits_key_type key) const
+    {
+    #ifndef SF_GARBAGE_CHECK_DISABLE
+        if (pointer != nullptr)
+            throw "The read pointer must be initialized to nullptr.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
+
+        pointer = memory::dynamic_pointer_cast<InstantiableType>(all.at(key).cast_shared(address));
     }
 };
 

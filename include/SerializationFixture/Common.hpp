@@ -37,9 +37,9 @@ CONDITIONAL_SERIALIZATION(saveload, array, std::is_array<S>::value)
 CONDITIONAL_SERIALIZATION(saveload, pointer, ::sf::meta::is_serializable_raw_pointer<S>::value)
 {
 #ifdef SF_PTRTRACK_DISABLE
-    ::sf::tracking::raw(archive, pointer);
+    ::sf::raw(archive, pointer);
 #else
-    ::sf::tracking::track(archive, pointer);
+    ::sf::track(archive, pointer);
 #endif // SF_PTRTRACK_DISABLE
 }
 

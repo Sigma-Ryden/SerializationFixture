@@ -6,8 +6,9 @@
 
 #include <SerializationFixture/Core/ArchiveBase.hpp>
 #include <SerializationFixture/Core/Memory.hpp>
+#include <SerializationFixture/Core/Serialization.hpp>
 
-#include <SerializationFixture/Dynamic/ExternRegistry.hpp>
+#include <SerializationFixture/Dynamic/InstantiableTraits.hpp>
 
 #include <SerializationFixture/StreamWrapper.hpp>
 
@@ -36,10 +37,10 @@ public:
 
 #ifdef SF_DEBUG
     template <typename PointerType, SF_REQUIRES(meta::is_std_shared_ptr<PointerType>::value)>
-    bool is_mixed(std::uintptr_t key) const noexcept { return xxraw.count(key)>0; }
+    bool is_mixed(std::uintptr_t refer_key) const noexcept { return xxraw.count(refer_key)>0; }
 
     template <typename PointerType, SF_REQUIRES(meta::is_raw_pointer<PointerType>::value)>
-    bool is_mixed(std::uintptr_t key) const noexcept { return xxshared.count(key)>0; }
+    bool is_mixed(std::uintptr_t refer_key) const noexcept { return xxshared.count(refer_key)>0; }
 #endif // SF_DEBUG
 };
 
@@ -50,16 +51,14 @@ class oarchive_t : public ioarchive_t
 private:
     StreamWrapperType xxstream;
     TrackingType xxtracking;
-    dynamic::extern_registry_t xxregistry;
 
 public:
     template <typename OutputStreamType>
     oarchive_t(OutputStreamType& stream) : ioarchive_t(::xxsf_archive_traits<oarchive_t>::key, false)
-        , xxstream{stream}, xxtracking(), xxregistry() {}
+        , xxstream{stream}, xxtracking() {}
 
     StreamWrapperType& stream() noexcept { return xxstream; }
     TrackingType& tracking() noexcept { return xxtracking; }
-    dynamic::extern_registry_t& registry() noexcept { return xxregistry; }
 
     template <typename SerializableType>
     oarchive_t& operator<< (SerializableType const& data) { return operator()(data); }
