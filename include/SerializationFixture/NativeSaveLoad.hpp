@@ -41,7 +41,7 @@ void native_load(ArchiveType& archive, PointerType& pointer, typename memory::pt
 {
     auto& registry = archive.registry();
 
-    auto id = registry.load_key(archive, pointer);
+    auto const id = registry.load_key(archive, pointer);
     registry.assign(pointer, address, id);
 }
 

@@ -13,8 +13,8 @@ namespace sf
 namespace memory
 {
 
-using shared_t = meta::shared_common_t;
-using raw_t = meta::raw_common_t;
+struct shared_t;
+struct raw_t;
 
 } // namespace memory
 

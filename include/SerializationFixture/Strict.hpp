@@ -80,10 +80,10 @@ namespace detail
 template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
                                 meta::is_serializable_pointer<PointerType>>::value)>
-typename ArchiveType::TrackingKeyType refer_key(ArchiveType& archive, PointerType& pointer)
+std::uintptr_t refer_key(ArchiveType& archive, PointerType& pointer)
 {
-    auto pure = memory::pure(pointer);
-    auto key = reinterpret_cast<typename ArchiveType::TrackingKeyType>(memory::raw(pure));
+    auto const pure = memory::pure(pointer);
+    auto key = reinterpret_cast<std::uintptr_t>(memory::raw(pure));
 
     archive & key;
     return key;
@@ -92,14 +92,14 @@ typename ArchiveType::TrackingKeyType refer_key(ArchiveType& archive, PointerTyp
 template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
                                 meta::is_serializable_pointer<PointerType>>::value)>
-typename ArchiveType::TrackingKeyType refer_key(ArchiveType& archive, PointerType& pointer)
+std::uintptr_t refer_key(ArchiveType& archive, PointerType& pointer)
 {
 #ifdef SF_DEBUG
     if (pointer != nullptr)
         throw "The read pointer must be initialized to nullptr.";
 #endif // SF_DEBUG
 
-    typename ArchiveType::TrackingKeyType key{};
+    std::uintptr_t key{};
     archive & key;
 
     return key;
@@ -124,8 +124,7 @@ struct strict_functor_t : public apply_functor_t
 } // namespace apply
 
 template <typename SerializableType>
-apply::strict_functor_t<SerializableType>
-strict(SerializableType& parameter) noexcept { return { parameter }; }
+apply::strict_functor_t<SerializableType> strict(SerializableType& parameter) noexcept { return { parameter }; }
 
 } // namespace sf
 

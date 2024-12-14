@@ -50,15 +50,13 @@ public:
 
 TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
 {
-    using key_type = typename ArchiveType::TrackingKeyType;
-
     if (not alias.is_refer())
         throw "The write alias_t must be initialized.";
 
     auto pointer = std::addressof(alias.get());
     auto const key = ::sf::detail::refer_key(archive, pointer);
 
-    auto& is_tracking = archive.template tracking<::sf::tracking::raw_t>()[key];
+    auto& is_tracking = archive.tracking().template pointer<ElementType*>()[key];
 
     if (not is_tracking)
         throw "The write alias_t must be tracked before.";
@@ -68,17 +66,15 @@ TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias
 
 TEMPLATE_SERIALIZATION(load, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
 {
-    using key_type = typename ArchiveType::TrackingKeyType;
-
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (alias.is_refer())
         throw "The read alias_t must be null.";
 #endif // SF_GARBAGE_CHECK_DISABLE
 
-    key_type key{};
+    std::uintptr_t key{};
     archive & key;
 
-    auto& address = archive.template tracking<::sf::tracking::raw_t>()[key];
+    auto& address = archive.tracking().template pointer<ElementType*>()[key];
 
     if (address == nullptr)
         throw "The read alias_t must be tracked before.";

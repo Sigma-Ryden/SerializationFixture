@@ -107,9 +107,6 @@ struct pointer_count<PointerType, false>
     static constexpr auto value = std::size_t(0);
 };
 
-struct shared_common_t {};
-struct raw_common_t {};
-
 struct dummy_t
 {
 #if __cplusplus >= 201703L

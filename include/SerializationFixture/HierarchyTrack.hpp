@@ -6,8 +6,6 @@
 #include <SerializationFixture/Core/Hash.hpp>
 
 #include <SerializationFixture/ApplyFunctor.hpp>
-#include <SerializationFixture/DataTrackBase.hpp>
-#include <SerializationFixture/HierarchyTrackBase.hpp>
 
 #include <SerializationFixture/Detail/Meta.hpp>
 #include <SerializationFixture/Detail/MetaMacro.hpp>
@@ -32,16 +30,12 @@ void virtual_base(ArchiveType& archive, DerivedType& object)
     if (SF_EXPRESSION_HASH(object) == SF_TYPE_HASH(DerivedType))
         base<Base>(archive, object);
 #else
-    using key_type = typename ArchiveType::TrackingKeyType;
-
     auto address = memory::pure(std::addressof(object));
 
-    auto const key = reinterpret_cast<key_type>(address);
+    auto const key = reinterpret_cast<std::uintptr_t>(address);
     auto const traits = SF_TYPE_HASH(BaseType);
 
-    auto& hierarchy_tracking = archive.template tracking<tracking::hierarchy_t>();
-
-    auto& is_tracking = hierarchy_tracking[key][traits];
+    auto& is_tracking = archive.tracking().hierarchy()[key][traits];
     if (not is_tracking)
     {
         is_tracking = true;

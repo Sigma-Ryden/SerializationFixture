@@ -5,8 +5,6 @@
 
 #include <SerializationFixture/Core/ArchiveBase.hpp>
 
-#include <SerializationFixture/DataTrackBase.hpp>
-
 #include <SerializationFixture/NativeSaveLoad.hpp>
 #include <SerializationFixture/ApplyFunctor.hpp>
 #include <SerializationFixture/Strict.hpp>
@@ -20,38 +18,20 @@ namespace sf
 namespace tracking
 {
 
-template <typename TrackType, class ArchiveType, typename KeyType,
-          SF_REQUIRES(meta::is_ioarchive<ArchiveType>::value)>
-bool is_track(ArchiveType& archive, KeyType key)
-{
-    auto& item = archive.template tracking<TrackType>();
-    return item.find(key) != item.end();
-}
-
-template <typename TrackType, class ArchiveType, typename KeyType,
-          SF_REQUIRES(meta::is_ioarchive<ArchiveType>::value)>
-bool is_mixed(ArchiveType& archive, KeyType key)
-{
-    using reverse_track_type = typename reverse_traits<TrackType>::type;
-    return is_track<reverse_track_type>(archive, key);
-}
-
 template <class ArchiveType, typename PointerType,
           SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
                                 meta::is_pointer<PointerType>>::value)>
 void track(ArchiveType& archive, PointerType& pointer)
 {
-    using track_type = typename tracking::track_traits<PointerType>::type;
-
     auto const key = detail::refer_key(archive, pointer); // serialize refer info
     if (not key) return;
 
 #ifdef SF_DEBUG
-    if (is_mixed<track_type>(archive, key))
+    if (archive.tracking().template is_mixed<PointerType>(key))
         throw "Mixed pointer tracking is not allowed.";
 #endif // SF_DEBUG
 
-    auto& is_tracking = archive.template tracking<track_type>()[key];
+    auto& is_tracking = archive.tracking().template pointer<PointerType>()[key];
 
     if (not is_tracking)
     {
@@ -69,12 +49,10 @@ template <class ArchiveType, typename SerializableType,
                                 meta::negation<meta::is_pointer<SerializableType>>>::value)>
 void track(ArchiveType& archive, SerializableType& data)
 {
-    using key_type = typename ArchiveType::TrackingKeyType;
+    auto const address = memory::pure(std::addressof(data));
+    auto key = reinterpret_cast<std::uintptr_t>(address);
 
-    auto address = memory::pure(std::addressof(data));
-    auto key = reinterpret_cast<key_type>(address);
-
-    auto& is_tracking = archive.template tracking<tracking::raw_t>()[key];
+    auto& is_tracking = archive.tracking().template pointer<SerializableType*>()[key];
 
     if (is_tracking)
         throw "The write tracking data is already tracked.";
@@ -90,8 +68,6 @@ template <class ArchiveType, typename PointerType,
                                 meta::is_pointer<PointerType>>::value)>
 void track(ArchiveType& archive, PointerType& pointer)
 {
-    using track_type = typename tracking::track_traits<PointerType>::type;
-
 #ifndef SF_GARBAGE_CHECK_DISABLE
     if (pointer != nullptr)
         throw "The read track pointer must be initialized to nullptr.";
@@ -100,7 +76,7 @@ void track(ArchiveType& archive, PointerType& pointer)
     auto const key = detail::refer_key(archive, pointer); // serialize refer info
     if (not key) return;
 
-    auto& address = archive.template tracking<track_type>()[key];
+    auto& address = archive.tracking().template pointer<PointerType>()[key];
 
     if (address == nullptr)
     {
@@ -118,12 +94,10 @@ template <class ArchiveType, typename SerializableType,
                                 meta::negation<meta::is_pointer<SerializableType>>>::value)>
 void track(ArchiveType& archive, SerializableType& data)
 {
-    using key_type = typename ArchiveType::TrackingKeyType;
-
-    key_type key{};
+    std::uintptr_t key{};
     archive & key;
 
-    auto& address = archive.template tracking<tracking::raw_t>()[key];
+    auto& address = archive.tracking().template pointer<SerializableType*>()[key];
 
     if (address != nullptr)
         throw  "The read tracking data is already tracked.";
