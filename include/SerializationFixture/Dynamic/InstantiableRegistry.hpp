@@ -13,27 +13,38 @@
 #include <SerializationFixture/Dynamic/Instantiable.hpp>
 #include <SerializationFixture/Dynamic/InstantiableTraits.hpp>
 
+// By default library will use 'void*' and 'std::shared_ptr<void>' types for general instancing,
+// if you want to specify behaviour, just define own INSTANTIABLE_VOID_POINTER_TYPES
+// Note that: any used ptr type should be provided in '::sf::memory' namespace
+#ifndef INSTANTIABLE_VOID_POINTER_TYPES
+    #define INSTANTIABLE_VOID_POINTER_TYPES void*, std::shared_ptr<void>
+#endif // INSTANTIABLE_VOID_POINTER_TYPES
+
 namespace sf
 {
 
 namespace dynamic
 {
 
+template <typename... VoidPointerTypes>
 struct instantiable_registry_t
 {
 public:
     using instantiable_type = INSTANTIABLE_TYPE;
 
 public:
-    struct instantiable_proxy_t
+    template <typename VoidPointerType>
+    struct instantiable_proxy_overload_t
+    {
+        using instantiable_pointer_type = typename memory::pointer_traits<VoidPointerType>::template pointer_template<instantiable_type>;
+
+        instantiable_pointer_type(*xxclone)() = nullptr;
+        instantiable_pointer_type(*xxcast)(VoidPointerType const&) = nullptr;
+    };
+
+    struct instantiable_proxy_t : instantiable_proxy_overload_t<VoidPointerTypes>...
     {
         ::xxsf_instantiable_traits_key_type key = ::xxsf_instantiable_traits_base_key;
-
-        std::shared_ptr<instantiable_type>(*shared)() = nullptr;
-        std::shared_ptr<instantiable_type>(*cast_shared)(std::shared_ptr<void> const&) = nullptr;
-
-        instantiable_type*(*raw)() = nullptr;
-        instantiable_type*(*cast_raw)(void*) = nullptr;
 
         void(*save)(ioarchive_t&, instantiable_type*) = nullptr;
         void(*load)(ioarchive_t&, instantiable_type*) = nullptr;
@@ -48,6 +59,27 @@ public:
         : meta::one<meta::is_static_castable<InstantiableType*, instantiable_type*>,
                     std::is_convertible<InstantiableType*, instantiable_type*>> {};
 
+private:
+    template <class InstantiableType>
+    void add_impl(instantiable_proxy_t&) { /*pass*/ }
+
+    template <class InstantiableType, typename OtherVoidPointerType, typename... OtherVoidPointerTypes>
+    void add_impl(instantiable_proxy_t& proxy)
+    {
+        proxy.instantiable_proxy_overload_t<OtherVoidPointerType>::xxclone = []
+        {
+            typename memory::pointer_traits<OtherVoidPointerType>::template pointer_template<InstantiableType> pointer = nullptr;
+            memory::allocate(pointer);
+            return memory::static_pointer_cast<instantiable_type>(pointer);
+        };
+
+        proxy.instantiable_proxy_overload_t<OtherVoidPointerType>::xxcast = [](OtherVoidPointerType const& address)
+        {
+            return memory::static_pointer_cast<instantiable_type>(memory::static_pointer_cast<InstantiableType>(address));
+        };
+
+        add_impl<InstantiableType, OtherVoidPointerTypes...>(proxy);
+    }
 
 public:
     template <class InstantiableType, SF_REQUIRES(meta::negation<is_instantiable<InstantiableType>>::value)>
@@ -66,31 +98,9 @@ public:
     #endif // SF_DEBUG
         instantiable_proxy_t proxy;
 
+        add_impl<InstantiableType, VoidPointerTypes...>(proxy);
+
         proxy.key = key;
-
-        proxy.shared = []
-        {
-            std::shared_ptr<InstantiableType> pointer = nullptr;
-            memory::allocate(pointer);
-            return memory::static_pointer_cast<instantiable_type>(pointer);
-        };
-
-        proxy.cast_shared = [](std::shared_ptr<void> const& address)
-        {
-            return memory::static_pointer_cast<instantiable_type>(memory::static_pointer_cast<InstantiableType>(address));
-        };
-
-        proxy.raw = []
-        {
-            InstantiableType* pointer = nullptr;
-            memory::allocate(pointer);
-            return memory::static_pointer_cast<instantiable_type>(pointer);
-        };
-
-        proxy.cast_raw = [](void* address)
-        {
-            return memory::static_pointer_cast<instantiable_type>(memory::static_pointer_cast<InstantiableType>(address));
-        };
 
         proxy.save = [](ioarchive_t& archive, instantiable_type* instance)
         {
@@ -156,46 +166,39 @@ public:
         rtti_all.at(hash).load(archive, raw_pointer);
     }
 
-    // raw ptr
     public:
-    template <typename InstantiableType>
-    void clone(InstantiableType*& pointer, ::xxsf_instantiable_traits_key_type key) const
+    template <typename PointerType>
+    void clone(PointerType& pointer, ::xxsf_instantiable_traits_key_type key) const
     {
-        pointer = memory::dynamic_pointer_cast<InstantiableType>(all.at(key).raw());
+        using pointer_traits = memory::pointer_traits<PointerType>;
+        using serializable_type = typename pointer_traits::element_type;
+        using void_pointer_type = typename pointer_traits::template pointer_template<void>;
+
+        pointer = memory::dynamic_pointer_cast<serializable_type>
+        (
+            all.at(key).instantiable_proxy_overload_t<void_pointer_type>::xxclone()
+        );
     }
 
-    template <typename InstantiableType>
-    void cast(InstantiableType*& pointer, void* address, ::xxsf_instantiable_traits_key_type key) const
+    template <typename PointerType, typename VoidPointerType>
+    void cast(PointerType& pointer, VoidPointerType const& address, ::xxsf_instantiable_traits_key_type key) const
     {
+        using pointer_traits = memory::pointer_traits<PointerType>;
+        using serializable_type = typename pointer_traits::element_type;
+
     #ifndef SF_GARBAGE_CHECK_DISABLE
         if (pointer != nullptr)
             throw "The read pointer must be initialized to nullptr.";
     #endif // SF_GARBAGE_CHECK_DISABLE
 
-        pointer = memory::dynamic_pointer_cast<InstantiableType>(all.at(key).cast_raw(address));
-    }
-
-    // std shared ptr
-    public:
-    template <typename InstantiableType>
-    void clone(std::shared_ptr<InstantiableType>& pointer, ::xxsf_instantiable_traits_key_type key) const
-    {
-        pointer = memory::dynamic_pointer_cast<InstantiableType>(all.at(key).shared());
-    }
-
-    template <typename InstantiableType>
-    void cast(std::shared_ptr<InstantiableType>& pointer, std::shared_ptr<void> const& address, ::xxsf_instantiable_traits_key_type key) const
-    {
-    #ifndef SF_GARBAGE_CHECK_DISABLE
-        if (pointer != nullptr)
-            throw "The read pointer must be initialized to nullptr.";
-    #endif // SF_GARBAGE_CHECK_DISABLE
-
-        pointer = memory::dynamic_pointer_cast<InstantiableType>(all.at(key).cast_shared(address));
+        pointer = memory::dynamic_pointer_cast<serializable_type>
+        (
+            all.at(key).instantiable_proxy_overload_t<VoidPointerType>::xxcast(address)
+        );
     }
 };
 
-extern instantiable_registry_t instantiable_registry;
+extern instantiable_registry_t<INSTANTIABLE_VOID_POINTER_TYPES> instantiable_registry;
 
 } // namespace dynamic
 

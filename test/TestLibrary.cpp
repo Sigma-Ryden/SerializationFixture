@@ -116,13 +116,13 @@ TEST(TestLibrary, TestInstantiableRegistry)
 
     {
         auto success = false;
-        try { Square* ptr = nullptr; instantiable_registry.clone(ptr, key); } catch(...) { success = true; }
+        try { Square* r = nullptr; instantiable_registry.clone(r, key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable raw", success);
     }
     {
         auto success = false;
-        try { std::shared_ptr<Square> ptr = nullptr; instantiable_registry.clone(ptr, key); } catch(...) { success = true; }
+        try { std::shared_ptr<Square> s = nullptr; instantiable_registry.clone(s, key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable shared", success);
     }
@@ -131,7 +131,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         auto r = new Square;
 
         auto success = false;
-        try { Square* ptr = nullptr; (void)instantiable_registry.cast(ptr, r, key); } catch(...) { success = true; }
+        try { void* address = nullptr; (void)instantiable_registry.cast(r, address, key); } catch(...) { success = true; }
 
         EXPECT("cast non-instantiable raw", success);
 
@@ -141,7 +141,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         auto s = std::make_shared<Square>();
 
         auto success = false;
-        try { std::shared_ptr<Square> ptr = nullptr; (void)instantiable_registry.cast(ptr, s, key); } catch(...) { success = true; }
+        try { std::shared_ptr<void> address = nullptr; (void)instantiable_registry.cast(s, address, key); } catch(...) { success = true; }
 
         EXPECT("cast non-instantiable shared", success);
     }
@@ -465,18 +465,18 @@ TEST(TestLibrary, TestAccess)
         EXPECT("non-public inheritance.value", so == s_so);
     }
 
-    using sf::dynamic::instantiable_registry_t;
+    using instantiable_registry_type = sf::dynamic::instantiable_registry_t<INSTANTIABLE_VOID_POINTER_TYPES>;
 
     {
         // since PolymorphicBase protected inherited from PolymorphicBaseImpl, where
         // PolymorphicBaseImpl is instantiable type - we cannot use dynamic_cast for serialization
         // since we get nullptr after apply casting
 
-        EXPECT("public instantiable", instantiable_registry_t::is_instantiable<PolymorphicBaseImpl>::value);
+        EXPECT("public instantiable", instantiable_registry_type::is_instantiable<PolymorphicBaseImpl>::value);
 
         EXPECT("non-public instantiable",
-            !instantiable_registry_t::is_instantiable<PolymorphicBase>::value &&
-            !instantiable_registry_t::is_instantiable<PolymorphicDerived>::value);
+            !instantiable_registry_type::is_instantiable<PolymorphicBase>::value &&
+            !instantiable_registry_type::is_instantiable<PolymorphicDerived>::value);
     }
 }
 

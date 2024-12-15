@@ -3,6 +3,8 @@
 
 #if __cplusplus >= 201703L
 
+#include <array> // array
+
 #include <SerializationFixture/Core/Serialization.hpp>
 
 #include <SerializationFixture/ApplyFunctor.hpp>
@@ -22,6 +24,15 @@ namespace sf
 
 namespace meta
 {
+
+template <typename> struct is_std_array : std::false_type {};
+template <typename ValueType, std::size_t SizeValue>
+struct is_std_array<std::array<ValueType, SizeValue>> : std::true_type {};
+
+template <typename AggregateType> struct is_aggregate
+    : all<std::is_aggregate<AggregateType>,
+          negation<is_std_array<AggregateType>>,
+          negation<std::is_array<AggregateType>>> {};
 
 template <typename SerializableType> struct is_serializable_aggregate
     : all<is_aggregate<SerializableType>, negation<std::is_union<SerializableType>>> {};

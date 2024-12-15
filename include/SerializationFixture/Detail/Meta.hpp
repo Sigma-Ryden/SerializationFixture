@@ -11,9 +11,6 @@
 #include <any> // any
 #endif // if
 
-#include <memory> // shared_ptr
-#include <array> // array
-
 #include <SerializationFixture/Detail/MetaMacro.hpp>
 
 namespace sf
@@ -53,14 +50,6 @@ struct remove_pointer<Type*, PointeringNumberValue>
 {
     using type = typename remove_pointer<Type, PointeringNumberValue - 1>::type;
 };
-
-template <typename Type, typename = void_t<>> struct dereference { using type = Type; };
-template <typename Type> struct dereference<Type*> { using type = Type; };
-template <typename Type> struct dereference<std::weak_ptr<Type>> { using type = Type; };
-template <typename Type> struct dereference<std::shared_ptr<Type>> { using type = Type; };
-template <typename Type> struct dereference<std::unique_ptr<Type>> { using type = Type; };
-template <typename Type> struct dereference<Type, void_t<decltype(*std::declval<Type>())>>
-    : std::remove_reference<decltype(*std::declval<Type>())> {};
 
 template <typename Type, std::size_t PointeringNumberValue = 1>
 struct pointer { using type = typename pointer<Type, PointeringNumberValue - 1>::type*; };
@@ -164,10 +153,6 @@ template <class BaseType, class DerivedType> struct is_virtual_base_of
     : all<std::is_base_of<BaseType, DerivedType>,
           negation<is_static_castable<BaseType*, DerivedType*>>> {};
 
-template <typename> struct is_std_array : std::false_type {};
-template <typename ValueType, std::size_t SizeValue>
-struct is_std_array<std::array<ValueType, SizeValue>> : std::true_type {};
-
 template <typename> struct is_void_pointer : std::false_type {};
 template <> struct is_void_pointer<void*> : std::true_type {};
 
@@ -177,13 +162,6 @@ template <> struct is_null_pointer<std::nullptr_t> : std::true_type {};
 template <typename> struct is_function_pointer : std::false_type {};
 template <typename ReturnType, typename... ArgumentTypes>
 struct is_function_pointer<ReturnType (*)(ArgumentTypes...)> : std::true_type {};
-
-#if __cplusplus >= 201703L
-template <typename AggregateType> struct is_aggregate
-    : all<std::is_aggregate<AggregateType>,
-          negation<is_std_array<AggregateType>>,
-          negation<std::is_array<AggregateType>>> {};
-#endif // if
 
 template <typename SerializableType> struct is_unsupported :
     one<is_void_pointer<SerializableType>,

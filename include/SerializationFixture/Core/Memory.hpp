@@ -59,6 +59,9 @@ namespace memory
 template <typename SerializableType>
 struct pointer_traits<SerializableType*>
 {
+    template <typename OtherSerializableType>
+    using pointer_template = OtherSerializableType*;
+
     using element_type = SerializableType;
 };
 
@@ -126,6 +129,9 @@ namespace memory
 template <typename SerializableType>
 struct pointer_traits<std::shared_ptr<SerializableType>>
 {
+    template <typename OtherSerializableType>
+    using pointer_template = std::shared_ptr<OtherSerializableType>;
+
     using element_type = SerializableType;
 };
 
