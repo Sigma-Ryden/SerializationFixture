@@ -27,7 +27,7 @@ public:
 public:
     struct instantiable_proxy_t
     {
-        ::xxsf_instantiable_traits_key_type key = ::xxsf_archive_traits_base_key;
+        ::xxsf_instantiable_traits_key_type key = ::xxsf_instantiable_traits_base_key;
 
         std::shared_ptr<instantiable_type>(*shared)() = nullptr;
         std::shared_ptr<instantiable_type>(*cast_shared)(std::shared_ptr<void> const&) = nullptr;
