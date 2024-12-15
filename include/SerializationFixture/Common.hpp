@@ -34,7 +34,7 @@ CONDITIONAL_SERIALIZATION(saveload, array, std::is_array<S>::value)
     ::sf::compress::zip(archive, array);
 }
 
-CONDITIONAL_SERIALIZATION(saveload, pointer, ::sf::meta::is_serializable_raw_pointer<S>::value)
+CONDITIONAL_SERIALIZATION(saveload, pointer, ::sf::meta::all<std::is_pointer<S>, ::sf::meta::is_pointer_to_any<S>>::value)
 {
 #ifdef SF_PTRTRACK_DISABLE
     ::sf::raw(archive, pointer);

@@ -27,11 +27,11 @@ private:
     std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
 
 public:
-    template <typename PointerType, SF_REQUIRES(meta::is_std_shared_ptr<PointerType>::value)>
-    auto pointer() noexcept -> decltype(xxshared)& { return xxshared; }
+    template <typename SerializableType>
+    auto pointer(std::shared_ptr<SerializableType> const&) noexcept -> decltype(xxshared)& { return xxshared; }
 
-    template <typename PointerType, SF_REQUIRES(meta::is_raw_pointer<PointerType>::value)>
-    auto pointer() noexcept -> decltype(xxraw)& { return xxraw; }
+    template <typename SerializableType>
+    auto pointer(SerializableType*) noexcept -> decltype(xxraw)& { return xxraw; }
 
     auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
 };

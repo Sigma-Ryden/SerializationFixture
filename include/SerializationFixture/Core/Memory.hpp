@@ -30,6 +30,27 @@ ByteType* byte_cast(DataType* data) noexcept
 
 } // namespace memory
 
+namespace meta
+{
+
+template <typename PointerType> struct is_pointer_to_any
+    : meta::is_complete<memory::pointer_traits<PointerType>> {};
+
+template <typename PointerType, bool = is_pointer_to_any<PointerType>::value>
+struct is_pointer_to_polymorphic
+    : std::integral_constant<bool, std::is_polymorphic<typename memory::pointer_traits<PointerType>::element_type>::value> {};
+
+template <typename PointerType>
+struct is_pointer_to_polymorphic<PointerType, false> : std::false_type {};
+
+template <typename PointerType, bool = is_pointer_to_any<PointerType>::value>
+struct is_pointer_to_standard_layout
+    : std::integral_constant<bool, not std::is_polymorphic<typename memory::pointer_traits<PointerType>::element_type>::value> {};
+
+template <typename PointerType>
+struct is_pointer_to_standard_layout<PointerType, false> : std::false_type {};
+
+} // namespace meta
 
 // raw ptr
 namespace memory

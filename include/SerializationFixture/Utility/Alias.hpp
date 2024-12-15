@@ -56,7 +56,7 @@ TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias
     auto pointer = std::addressof(alias.get());
     auto const key = ::sf::detail::tracking_key(archive, pointer);
 
-    auto& is_tracking = archive.tracking().template pointer<ElementType*>()[key];
+    auto& is_tracking = archive.tracking().pointer(pointer)[key];
 
     if (not is_tracking)
         throw "The write alias_t must be tracked before.";
@@ -74,12 +74,11 @@ TEMPLATE_SERIALIZATION(load, alias, template <typename ElementType>, ::sf::alias
     std::uintptr_t key{};
     archive & key;
 
-    auto& address = archive.tracking().template pointer<ElementType*>()[key];
+    ElementType* pointer = nullptr;
+    auto& address = archive.tracking().pointer(pointer)[key];
 
     if (address == nullptr)
         throw "The read alias_t must be tracked before.";
-
-    ElementType* pointer = nullptr;
 
     ::sf::detail::native_load(archive, pointer, address);
 

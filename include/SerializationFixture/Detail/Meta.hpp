@@ -164,44 +164,19 @@ template <class BaseType, class DerivedType> struct is_virtual_base_of
     : all<std::is_base_of<BaseType, DerivedType>,
           negation<is_static_castable<BaseType*, DerivedType*>>> {};
 
-template <typename> struct is_std_shared_ptr : std::false_type {};
-template <typename ElementType>
-struct is_std_shared_ptr<std::shared_ptr<ElementType>> : std::true_type {};
-
 template <typename> struct is_std_array : std::false_type {};
 template <typename ValueType, std::size_t SizeValue>
 struct is_std_array<std::array<ValueType, SizeValue>> : std::true_type {};
 
-template <typename PointerType> struct is_shared_pointer : is_std_shared_ptr<PointerType> {};
-template <typename PointerType> struct is_raw_pointer : std::is_pointer<PointerType> {};
+template <typename> struct is_void_pointer : std::false_type {};
+template <> struct is_void_pointer<void*> : std::true_type {};
 
-template <typename PointerType> struct is_pointer : one<is_shared_pointer<PointerType>, is_raw_pointer<PointerType>> {};
-
-template <typename PointerType> struct is_pointer_to_polymorphic
-    : all<is_pointer<PointerType>, std::is_polymorphic<typename dereference<PointerType>::type>> {};
-
-template <typename PointerType> struct is_void_pointer
-    : all<is_pointer<PointerType>, std::is_void<typename dereference<PointerType>::type>> {};
-
-template <typename PointerType> struct is_null_pointer : std::is_same<PointerType, std::nullptr_t> {};
+template <typename> struct is_null_pointer : std::false_type {};
+template <> struct is_null_pointer<std::nullptr_t> : std::true_type {};
 
 template <typename> struct is_function_pointer : std::false_type {};
 template <typename ReturnType, typename... ArgumentTypes>
 struct is_function_pointer<ReturnType (*)(ArgumentTypes...)> : std::true_type {};
-
-template <typename PointerType> struct is_pointer_to_standard_layout :
-    all<is_pointer<PointerType>,
-        negation<is_void_pointer<PointerType>>,
-        negation<is_pointer_to_polymorphic<PointerType>>,
-        negation<is_function_pointer<PointerType>>,
-        negation<is_null_pointer<PointerType>>,
-        negation<std::is_member_pointer<PointerType>>> {};
-
-template <typename PointerType> struct is_serializable_pointer
-    : one<is_pointer_to_standard_layout<PointerType>, is_pointer_to_polymorphic<PointerType>> {};
-
-template <typename PointerType> struct is_serializable_raw_pointer
-    : all<is_raw_pointer<PointerType>, is_serializable_pointer<PointerType>> {};
 
 #if __cplusplus >= 201703L
 template <typename AggregateType> struct is_aggregate

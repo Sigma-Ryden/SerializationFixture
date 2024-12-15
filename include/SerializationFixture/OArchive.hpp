@@ -27,20 +27,26 @@ private:
     std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
 
 public:
-    template <typename PointerType, SF_REQUIRES(meta::is_std_shared_ptr<PointerType>::value)>
-    auto pointer() noexcept -> decltype(xxshared)& { return xxshared; }
+    template <typename SerializableType>
+    auto pointer(std::shared_ptr<SerializableType> const&) noexcept -> decltype(xxshared)& { return xxshared; }
 
-    template <typename PointerType, SF_REQUIRES(meta::is_raw_pointer<PointerType>::value)>
-    auto pointer() noexcept -> decltype(xxraw)& { return xxraw; }
+    template <typename SerializableType>
+    auto pointer(SerializableType*) noexcept -> decltype(xxraw)& { return xxraw; }
 
     auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
 
 #ifdef SF_DEBUG
-    template <typename PointerType, SF_REQUIRES(meta::is_std_shared_ptr<PointerType>::value)>
-    bool is_mixed(std::uintptr_t refer_key) const noexcept { return xxraw.count(refer_key)>0; }
+    template <typename SerializableType>
+    bool is_mixed(std::uintptr_t refer_key, std::shared_ptr<SerializableType> const&) const noexcept
+    {
+        return xxraw.count(refer_key)>0;
+    }
 
-    template <typename PointerType, SF_REQUIRES(meta::is_raw_pointer<PointerType>::value)>
-    bool is_mixed(std::uintptr_t refer_key) const noexcept { return xxshared.count(refer_key)>0; }
+    template <typename SerializableType>
+    bool is_mixed(std::uintptr_t refer_key, SerializableType*) const noexcept
+    {
+        return xxshared.count(refer_key)>0;
+    }
 #endif // SF_DEBUG
 };
 
