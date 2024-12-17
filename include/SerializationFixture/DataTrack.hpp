@@ -162,7 +162,7 @@ template <class ArchiveType, typename PointerType,
                                 meta::is_pointer_to_any<PointerType>>::value)>
 void strict(ArchiveType& archive, PointerType& pointer)
 {
-    auto cache = memory::static_pointer_cast<void>(pointer); // mock
+    typename memory::pointer_traits<PointerType>::template pointer_template<void> cache = nullptr; // mock
     strict(archive, pointer, cache);
 }
 
