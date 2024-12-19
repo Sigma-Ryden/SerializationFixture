@@ -1,6 +1,8 @@
 #ifndef SF_BINARY_HPP
 #define SF_BINARY_HPP
 
+#include <memory> // addressof
+
 #include <SerializationFixture/Core/Serialization.hpp>
 #include <SerializationFixture/ApplyFunctor.hpp>
 
