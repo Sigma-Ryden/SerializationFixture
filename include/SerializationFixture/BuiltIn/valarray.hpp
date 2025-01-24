@@ -9,21 +9,28 @@
 
 #include <SerializationFixture/Compress.hpp>
 
-TEMPLATE_SERIALIZATION(save, valarray, template <typename ValueType>, std::valarray<ValueType>)
-{
-    std::uint64_t size = valarray.size();
-    archive & size;
+TEMPLATE_SERIALIZABLE_DECLARATION(template <typename ValueType>, std::valarray<ValueType>)
+SERIALIZABLE_DECLARATION_INIT()
 
-    ::sf::compress::zip(archive, valarray);
-}
+TEMPLATE_SERIALIZABLE(save, valarray, template <typename ValueType>, std::valarray<ValueType>)
+    SERIALIZATION
+    (
+        std::uint64_t size = valarray.size();
+        archive & size;
 
-TEMPLATE_SERIALIZATION(load, valarray, template <typename ValueType>, std::valarray<ValueType>)
-{
-    std::uint64_t size{};
-    archive & size;
+        ::sf::compress::zip(archive, valarray);
+    )
+SERIALIZABLE_INIT()
 
-    valarray.resize(size);
-    ::sf::compress::zip(archive, valarray);
-}
+TEMPLATE_SERIALIZABLE(load, valarray, template <typename ValueType>, std::valarray<ValueType>)
+    SERIALIZATION
+    (
+        std::uint64_t size{};
+        archive & size;
+
+        valarray.resize(size);
+        ::sf::compress::zip(archive, valarray);
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_VALARRAY_HPP

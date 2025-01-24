@@ -7,9 +7,14 @@
 
 #include <SerializationFixture/DataTrack.hpp>
 
-TEMPLATE_SERIALIZATION(saveload, shared_ptr, template <typename ElementType>, std::shared_ptr<ElementType>)
-{
-    ::sf::track(archive, shared_ptr);
-}
+TEMPLATE_SERIALIZABLE_DECLARATION(template <typename ElementType>, std::shared_ptr<ElementType>)
+SERIALIZABLE_DECLARATION_INIT()
+
+TEMPLATE_SERIALIZABLE(saveload, shared_ptr, template <typename ElementType>, std::shared_ptr<ElementType>)
+    SERIALIZATION
+    (
+        ::sf::track(archive, shared_ptr);
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_SHARED_PTR_HPP

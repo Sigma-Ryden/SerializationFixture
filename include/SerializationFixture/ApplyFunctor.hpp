@@ -25,9 +25,14 @@ template <typename ApplyFunctorType> struct is_apply_functor : std::is_base_of<a
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(saveload, apply_functor, ::sf::meta::is_apply_functor<typename std::decay<S>::type>::value)
-{
-    apply_functor(archive);
-}
+CONDITIONAL_SERIALIZABLE_DECLARATION(::sf::meta::is_apply_functor<typename std::decay<S>::type>::value)
+SERIALIZABLE_DECLARATION_INIT()
+
+CONDITIONAL_SERIALIZABLE(saveload, apply_functor, ::sf::meta::is_apply_functor<typename std::decay<S>::type>::value)
+    SERIALIZATION
+    (
+        apply_functor(archive);
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_APPLY_FUNCTOR_HPP

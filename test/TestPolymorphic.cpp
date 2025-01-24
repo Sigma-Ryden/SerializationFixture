@@ -33,17 +33,27 @@ public:
 
 } // TEST_SPACE
 
-TEMPLATE_SERIALIZATION(saveload, self, template <class SomeType>, Base<SomeType>)
-{
-    // more specialize version
-    archive & self.data;
-}
+TEMPLATE_SERIALIZABLE_DECLARATION(template <class SomeType>, Base<SomeType>)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, internal::Derived)
-{
-    archive & hierarchy<Base<std::string>>(self);
-    archive & self.value;
-}
+TEMPLATE_SERIALIZABLE(saveload, self, template <class SomeType>, Base<SomeType>)
+    SERIALIZATION
+    (
+        // more specialize version
+        archive & self.data;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(internal::Derived)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, internal::Derived)
+    SERIALIZATION
+    (
+        archive & hierarchy<Base<std::string>>(self);
+        archive & self.value;
+    )
+SERIALIZABLE_INIT()
 
 // we can overload polymorphic key for each class (or full template specialization)
 

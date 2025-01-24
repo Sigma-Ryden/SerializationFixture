@@ -79,10 +79,16 @@ apply::aggregate_functor_t<SerializableType> aggregate(SerializableType& object)
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(saveload, object, ::sf::meta::is_serializable_aggregate<S>::value)
-{
-    ::sf::aggregate(archive, object);
-}
+
+CONDITIONAL_SERIALIZABLE_DECLARATION(::sf::meta::is_serializable_aggregate<S>::value)
+SERIALIZABLE_DECLARATION_INIT()
+
+CONDITIONAL_SERIALIZABLE(saveload, object, ::sf::meta::is_serializable_aggregate<S>::value)
+    SERIALIZATION
+    (
+        ::sf::aggregate(archive, object);
+    )
+SERIALIZABLE_INIT()
 
 // clean up
 #undef SF_AGGREGATE_IMPLEMENTATION_GENERIC

@@ -32,20 +32,35 @@ EXPORT_INSTANTIABLE(Entity)
 EXPORT_INSTANTIABLE(Boy)
 EXPORT_INSTANTIABLE(Girl)
 
-SERIALIZATION(saveload, self, Boy)
-{
-    archive & hierarchy<Entity>(self) & self.b;
-}
+SERIALIZABLE_DECLARATION(Boy)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, Girl)
-{
-    archive & hierarchy<Entity>(self) & self.g;
-}
+SERIALIZABLE(saveload, self, Boy)
+    SERIALIZATION
+    (
+        archive & hierarchy<Entity>(self) & self.b;
+    )
+SERIALIZABLE_INIT()
 
-SERIALIZATION(saveload, self, Entity)
-{
-    archive & self.e;
-}
+SERIALIZABLE_DECLARATION(Girl)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Girl)
+    SERIALIZATION
+    (
+        archive & hierarchy<Entity>(self) & self.g;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(Entity)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Entity)
+    SERIALIZATION
+    (
+        archive & self.e;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestUtility, TestAny)
 {

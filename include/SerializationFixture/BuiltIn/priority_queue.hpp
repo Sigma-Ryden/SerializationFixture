@@ -10,10 +10,14 @@
 // default container for priority_queue
 #include <SerializationFixture/BuiltIn/vector.hpp>
 
-TEMPLATE_SERIALIZATION(saveload, priority_queue,
-    (template <typename ValueType, class ContainerType>), std::priority_queue<ValueType, ContainerType>)
-{
-    archive & ::sf::meta::underlying(priority_queue);
-}
+TEMPLATE_SERIALIZABLE_DECLARATION((template <typename ValueType, class ContainerType>), std::priority_queue<ValueType, ContainerType>)
+SERIALIZABLE_DECLARATION_INIT()
+
+TEMPLATE_SERIALIZABLE(saveload, priority_queue, (template <typename ValueType, class ContainerType>), std::priority_queue<ValueType, ContainerType>)
+    SERIALIZATION
+    (
+        archive & ::sf::meta::underlying(priority_queue);
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_PRIORITY_QUEUE_HPP

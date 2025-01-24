@@ -9,7 +9,7 @@ struct DerivedObject : BaseObject
     float data;
 };
 
-SERIALIZATION_DECLARATION(save, self, DerivedObject) // will use as load
-SERIALIZATION_DECLARATION(load, self, DerivedObject)
+SERIALIZABLE_DECLARATION(DerivedObject)
+SERIALIZABLE_DECLARATION_INIT()
 
 #endif // DERIVED_OBJECT_HPP

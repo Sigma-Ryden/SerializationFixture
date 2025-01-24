@@ -9,23 +9,28 @@
 
 #include <SerializationFixture/Compress.hpp>
 
-TEMPLATE_SERIALIZATION(save, forward_list,
-    (template <typename ValueType, typename AllocatorType>), std::forward_list<ValueType, AllocatorType>)
-{
-    std::uint64_t size = std::distance(forward_list.begin(), forward_list.end());
-    archive & size;
+TEMPLATE_SERIALIZABLE_DECLARATION((template <typename ValueType, typename AllocatorType>), std::forward_list<ValueType, AllocatorType>)
+SERIALIZABLE_DECLARATION_INIT()
 
-    ::sf::compress::slow(archive, forward_list);
-}
+TEMPLATE_SERIALIZABLE(save, forward_list, (template <typename ValueType, typename AllocatorType>), std::forward_list<ValueType, AllocatorType>)
+    SERIALIZATION
+    (
+        std::uint64_t size = std::distance(forward_list.begin(), forward_list.end());
+        archive & size;
 
-TEMPLATE_SERIALIZATION(load, forward_list,
-    (template <typename ValueType, typename AllocatorType>), std::forward_list<ValueType, AllocatorType>)
-{
-    std::uint64_t size{};
-    archive & size;
+        ::sf::compress::slow(archive, forward_list);
+    )
+SERIALIZABLE_INIT()
 
-    forward_list.resize(size);
-    ::sf::compress::slow(archive, forward_list);
-}
+TEMPLATE_SERIALIZABLE(load, forward_list, (template <typename ValueType, typename AllocatorType>), std::forward_list<ValueType, AllocatorType>)
+    SERIALIZATION
+    (
+        std::uint64_t size{};
+        archive & size;
+
+        forward_list.resize(size);
+        ::sf::compress::slow(archive, forward_list);
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_FORWARD_LIST_HPP

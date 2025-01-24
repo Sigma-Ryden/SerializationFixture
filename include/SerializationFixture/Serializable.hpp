@@ -6,11 +6,9 @@
 #include <SerializationFixture/Dynamic/InstantiableRegistry.hpp>
 #include <SerializationFixture/Dynamic/AnyRegistry.hpp>
 
-#define SERIALIZATION_ACCESS(...)                                                                       \
-    friend struct ::xxsf_cast_to_non_public_base;                                                       \
-    template <typename, typename> friend struct ::xxsf_save;                                            \
-    template <typename, typename> friend struct ::xxsf_load;                                            \
-    template <typename, typename> friend struct ::xxsf_saveload;
+#define SERIALIZABLE_ACCESS(...) \
+    friend struct ::xxsf_cast_to_non_public_base; \
+    template <typename, typename> friend struct ::xxsf;
 
 namespace sf
 {

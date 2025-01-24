@@ -5,9 +5,14 @@
 
 #include <SerializationFixture/Core/Serialization.hpp>
 
-TEMPLATE_SERIALIZATION(saveload, pair, (template <typename FirstType, typename SecondType>), std::pair<FirstType, SecondType>)
-{
-    archive & pair.first & pair.second;
-}
+TEMPLATE_SERIALIZABLE_DECLARATION((template <typename FirstType, typename SecondType>), std::pair<FirstType, SecondType>)
+SERIALIZABLE_DECLARATION_INIT()
+
+TEMPLATE_SERIALIZABLE(saveload, pair, (template <typename FirstType, typename SecondType>), std::pair<FirstType, SecondType>)
+    SERIALIZATION
+    (
+       archive & pair.first & pair.second;
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_PAIR_HPP

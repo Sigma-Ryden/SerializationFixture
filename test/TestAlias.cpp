@@ -20,15 +20,25 @@ struct Derived : Base
 EXPORT_INSTANTIABLE(Base)
 EXPORT_INSTANTIABLE(Derived)
 
-SERIALIZATION(saveload, self, Base)
-{
-    archive & self.x;
-}
+SERIALIZABLE_DECLARATION(Base)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, Derived)
-{
-    archive & hierarchy<Base>(self) & self.y;
-}
+SERIALIZABLE(saveload, self, Base)
+    SERIALIZATION
+    (
+        archive & self.x;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(Derived)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Derived)
+    SERIALIZATION
+    (
+        archive & hierarchy<Base>(self) & self.y;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestCommon, TestAlias)
 {

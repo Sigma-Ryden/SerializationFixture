@@ -11,7 +11,7 @@ struct BaseObject : sf::instantiable_t
     std::string name;
 };
 
-SERIALIZATION_DECLARATION(save, self, BaseObject)
-SERIALIZATION_DECLARATION(load, self, BaseObject)
+SERIALIZABLE_DECLARATION(BaseObject)
+SERIALIZABLE_DECLARATION_INIT()
 
 #endif // BASE_OBJECT_HPP

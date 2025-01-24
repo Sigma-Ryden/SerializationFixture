@@ -9,25 +9,42 @@
 
 #include <SerializationFixture/Compress.hpp>
 
-TEMPLATE_SERIALIZATION(save, string,
+TEMPLATE_SERIALIZABLE_DECLARATION
+(
     (template <typename CharType, typename TraitsType, typename AllocatorType>),
-    std::basic_string<CharType, TraitsType, AllocatorType>)
-{
-    std::uint64_t size = string.size();
-    archive & size;
+    std::basic_string<CharType, TraitsType, AllocatorType>
+)
+SERIALIZABLE_DECLARATION_INIT()
 
-    ::sf::compress::zip(archive, string);
-}
-
-TEMPLATE_SERIALIZATION(load, string,
+TEMPLATE_SERIALIZABLE
+(
+    save, string,
     (template <typename CharType, typename TraitsType, typename AllocatorType>),
-    std::basic_string<CharType, TraitsType, AllocatorType>)
-{
-    std::uint64_t size{};
-    archive & size;
+    std::basic_string<CharType, TraitsType, AllocatorType>
+)
+    SERIALIZATION
+    (
+        std::uint64_t size = string.size();
+        archive & size;
 
-    string.resize(size);
-    ::sf::compress::zip(archive, string);
-}
+        ::sf::compress::zip(archive, string);
+    )
+SERIALIZABLE_INIT()
+
+TEMPLATE_SERIALIZABLE
+(
+    load, string,
+    (template <typename CharType, typename TraitsType, typename AllocatorType>),
+    std::basic_string<CharType, TraitsType, AllocatorType>
+)
+    SERIALIZATION
+    (
+        std::uint64_t size{};
+        archive & size;
+
+        string.resize(size);
+        ::sf::compress::zip(archive, string);
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_STRING_HPP

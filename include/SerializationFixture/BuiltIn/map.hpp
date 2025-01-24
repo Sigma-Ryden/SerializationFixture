@@ -17,42 +17,38 @@
 // serialization of core map value_type
 #include <SerializationFixture/BuiltIn/pair.hpp>
 
-#define SF_IS_STD_MAP_TYPE_META_GENERIC(map_type)                                                       \
-    template <typename> struct is_std_##map_type : std::false_type {};                                  \
-    template <typename KeyType, typename ValueType, typename ComparatorType, typename AllocatorType>    \
-    struct is_std_##map_type<std::map_type<KeyType, ValueType, ComparatorType, AllocatorType>> : std::true_type {};
+#define SF_IS_STD_MAP_TYPE_META_GENERIC(map_type) \
+    template <typename> struct xxsf_is_std_##map_type : std::false_type {}; \
+    template <typename KeyType, typename ValueType, typename ComparatorType, typename AllocatorType> \
+    struct xxsf_is_std_##map_type<std::map_type<KeyType, ValueType, ComparatorType, AllocatorType>> : std::true_type {};
 
-namespace sf
-{
-
-namespace meta
-{
 
 SF_IS_STD_MAP_TYPE_META_GENERIC(map)
 SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_map)
 SF_IS_STD_MAP_TYPE_META_GENERIC(multimap)
 SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_multimap)
 
-template <class StdMapType> struct is_std_any_unordered_map
-    : one<is_std_unordered_map<StdMapType>,
-          is_std_unordered_multimap<StdMapType>> {};
+template <class StdMapType> struct xxsf_is_std_any_unordered_map
+    : ::sf::meta::one<::xxsf_is_std_unordered_map<StdMapType>,
+                      ::xxsf_is_std_unordered_multimap<StdMapType>> {};
 
-template <class StdMapType> struct is_std_any_map
-    : one<is_std_map<StdMapType>,
-          is_std_multimap<StdMapType>,
-          is_std_any_unordered_map<StdMapType>> {};
+template <class StdMapType> struct xxsf_is_std_any_map
+    : ::sf::meta::one<::xxsf_is_std_map<StdMapType>,
+                      ::xxsf_is_std_multimap<StdMapType>,
+                      ::xxsf_is_std_any_unordered_map<StdMapType>> {};
 
-} // namespace meta
+namespace sf
+{
 
 namespace detail
 {
 
 template <class StdMapType,
-          SF_REQUIRES(meta::negation<meta::is_std_any_unordered_map<StdMapType>>::value)>
+          SF_REQUIRES(meta::negation<::xxsf_is_std_any_unordered_map<StdMapType>>::value)>
 void reserve_unordered(StdMapType&, std::size_t) noexcept { /*pass*/ }
 
 template <class StdMapType,
-          SF_REQUIRES(meta::is_std_any_unordered_map<StdMapType>::value)>
+          SF_REQUIRES(::xxsf_is_std_any_unordered_map<StdMapType>::value)>
 void reserve_unordered(StdMapType& unordered, std::size_t size)
 {
     unordered.reserve(size);
@@ -62,36 +58,40 @@ void reserve_unordered(StdMapType& unordered, std::size_t size)
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(save, map, ::sf::meta::is_std_any_map<S>::value)
-{
-    std::uint64_t size = map.size();
-    archive & size;
+CONDITIONAL_SERIALIZABLE_DECLARATION(::xxsf_is_std_any_map<S>::value)
+SERIALIZABLE_DECLARATION_INIT()
 
-    ::sf::compress::slow(archive, map);
-}
+CONDITIONAL_SERIALIZABLE(save, map, ::xxsf_is_std_any_map<S>::value)
+    SERIALIZATION
+    (
+        std::uint64_t size = map.size();
+        archive & size;
 
-CONDITIONAL_SERIALIZATION(load, map, ::sf::meta::is_std_any_map<S>::value)
-{
-    using key_type   = typename S::key_type;
-    using value_type = typename S::mapped_type;
+        ::sf::compress::slow(archive, map);
+    )
+SERIALIZABLE_INIT()
 
-    std::uint64_t size{};
-    archive & size;
+CONDITIONAL_SERIALIZABLE(load, map, ::xxsf_is_std_any_map<S>::value)
+    SERIALIZATION
+    (
+        std::uint64_t size{};
+        archive & size;
 
-    map.clear();
-    ::sf::detail::reserve_unordered(map, size);
+        map.clear();
+        ::sf::detail::reserve_unordered(map, size);
 
-    auto hint = map.begin();
-    for (std::uint64_t i = 0; i < size; ++i)
-    {
-        key_type key{};
-        value_type value{};
+        auto hint = map.begin();
+        for (std::uint64_t i = 0; i < size; ++i)
+        {
+            typename S::key_type key{};
+            typename S::mapped_type value{};
 
-        archive & key & value;
+            archive & key & value;
 
-        hint = map.emplace_hint(hint, std::move(key), std::move(value));
-    }
-}
+            hint = map.emplace_hint(hint, std::move(key), std::move(value));
+        }
+    )
+SERIALIZABLE_INIT()
 
 //clear
 #undef SF_IS_STD_MAP_TYPE_META_GENERIC

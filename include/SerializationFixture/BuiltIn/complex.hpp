@@ -5,23 +5,30 @@
 
 #include <SerializationFixture/Core/Serialization.hpp>
 
-TEMPLATE_SERIALIZATION(save, complex, template <typename ValueType>, std::complex<ValueType>)
-{
-    auto re = complex.real();
-    auto im = complex.imag();
+TEMPLATE_SERIALIZABLE_DECLARATION(template <typename ValueType>, std::complex<ValueType>)
+SERIALIZABLE_DECLARATION_INIT()
 
-    archive & re & im;
-}
+TEMPLATE_SERIALIZABLE(save, complex, template <typename ValueType>, std::complex<ValueType>)
+    SERIALIZATION
+    (
+        auto re = complex.real();
+        auto im = complex.imag();
 
-TEMPLATE_SERIALIZATION(load, complex, template <typename ValueType>, std::complex<ValueType>)
-{
-    ValueType re{};
-    ValueType im{};
+        archive & re & im;
+    )
+SERIALIZABLE_INIT()
 
-    archive & re & im;
+TEMPLATE_SERIALIZABLE(load, complex, template <typename ValueType>, std::complex<ValueType>)
+    SERIALIZATION
+    (
+        ValueType re{};
+        ValueType im{};
 
-    complex.real(re);
-    complex.imag(im);
-}
+        archive & re & im;
+
+        complex.real(re);
+        complex.imag(im);
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_COMPLEX_HPP

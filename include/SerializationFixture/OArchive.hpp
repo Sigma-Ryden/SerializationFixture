@@ -75,7 +75,7 @@ public:
     template <typename SerializableType, typename... SerializableTypes>
     oarchive_t& operator() (SerializableType const& data, SerializableTypes const&... datas)
     {
-        ::xxsf_save<SerializableType>(*this, const_cast<SerializableType&>(data));
+        ::xxsf<SerializableType>::save(*this, const_cast<SerializableType&>(data));
         return operator()(datas...);
     }
 

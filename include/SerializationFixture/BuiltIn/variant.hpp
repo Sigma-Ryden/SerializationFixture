@@ -62,23 +62,28 @@ void variant_load(ArchiveType& archive, VariantType& variant, std::uint64_t inde
 
 } // namespace sf
 
-TEMPLATE_SERIALIZATION(save, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
-{
-    std::uint64_t index = variant.index();
-    archive & index;
+TEMPLATE_SERIALIZABLE_DECLARATION(template <typename... ArgumentTypes>, std::variant<ArgumentTypes...>)
+SERIALIZABLE_DECLARATION_INIT()
 
-    if (index != std::variant_npos)
-        ::sf::detail::variant_save(archive, variant, index);
-}
+TEMPLATE_SERIALIZABLE(save, variant, template <typename... ArgumentTypes>, std::variant<ArgumentTypes...>)
+    SERIALIZATION
+    (
+        std::uint64_t index = variant.index();
+        archive & index;
 
-TEMPLATE_SERIALIZATION(load, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
-{
-    std::uint64_t index{};
-    archive & index;
+        if (index != std::variant_npos) ::sf::detail::variant_save(archive, variant, index);
+    )
+SERIALIZABLE_INIT()
 
-    if (index != std::variant_npos)
-        ::sf::detail::variant_load(archive, variant, index);
-}
+TEMPLATE_SERIALIZABLE(load, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
+    SERIALIZATION
+    (
+        std::uint64_t index{};
+        archive & index;
+
+        if (index != std::variant_npos) ::sf::detail::variant_load(archive, variant, index);
+    )
+SERIALIZABLE_INIT()
 
 #endif // if
 

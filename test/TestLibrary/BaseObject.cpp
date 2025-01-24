@@ -4,12 +4,16 @@
 
 EXPORT_INSTANTIABLE(BaseObject)
 
-SERIALIZATION_DEFINITION(save, self, BaseObject)
-{
-    archive << self.id << self.name;
-}
+SERIALIZABLE(save, self, BaseObject)
+    SERIALIZATION
+    (
+        archive << self.id << self.name;
+    )
+SERIALIZABLE_INIT()
 
-SERIALIZATION_DEFINITION(load, self, BaseObject)
-{
-    archive >> self.id >> self.name;
-}
+SERIALIZABLE(load, self, BaseObject)
+    SERIALIZATION
+    (
+        archive >> self.id >> self.name;
+    )
+SERIALIZABLE_INIT()

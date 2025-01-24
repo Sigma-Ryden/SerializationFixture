@@ -26,15 +26,25 @@ bool operator== (const Child& lhs, const Child& rhs)
 EXPORT_INSTANTIABLE(Parent)
 EXPORT_INSTANTIABLE(Child)
 
-SERIALIZATION(saveload, self, Parent)
-{
-    archive & self.p;
-}
+SERIALIZABLE_DECLARATION(Parent)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, Child)
-{
-    archive & hierarchy<Parent>(self) & self.c;
-}
+SERIALIZABLE(saveload, self, Parent)
+    SERIALIZATION
+    (
+        archive & self.p;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(Child)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Child)
+    SERIALIZATION
+    (
+        archive & hierarchy<Parent>(self) & self.c;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestMemory, TestUniquePtr)
 {
@@ -111,28 +121,48 @@ EXPORT_INSTANTIABLE(A)
 EXPORT_INSTANTIABLE(B)
 EXPORT_INSTANTIABLE(C)
 
-SERIALIZATION(saveload, self, A)
-{
-    archive & self.a;
-}
+SERIALIZABLE_DECLARATION(A)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, B)
-{
-    archive & hierarchy<A>(self)
-            & self.b;
-}
+SERIALIZABLE_DECLARATION(B)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, C)
-{
-    archive & hierarchy<A>(self)
-            & self.c;
-}
+SERIALIZABLE_DECLARATION(C)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, D)
-{
-    archive & hierarchy<B, C>(self) // type order does not matter
-            & self.d;
-}
+SERIALIZABLE_DECLARATION(D)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, A)
+    SERIALIZATION
+    (
+        archive & self.a;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, B)
+    SERIALIZATION
+    (
+        archive & hierarchy<A>(self)
+                & self.b;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, C)
+    SERIALIZATION
+    (
+        archive & hierarchy<A>(self)
+                & self.c;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, D)
+    SERIALIZATION
+    (
+        archive & hierarchy<B, C>(self) // type order does not matter
+                & self.d;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestMemory, TestSharedPtr)
 {
@@ -278,10 +308,15 @@ struct Human
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, Human)
-{
-    archive & self.name & self.partner;
-}
+SERIALIZABLE_DECLARATION(Human)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Human)
+    SERIALIZATION
+    (
+        archive & self.name & self.partner;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestMemory, TestReferenceCycles)
 {

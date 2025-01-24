@@ -7,7 +7,7 @@
     #define SF_ARCHIVE_TRAIT_MAX_KEY_SIZE 3
 #endif // SF_ARCHIVE_TRAIT_MAX_KEY_SIZE
 
-#define EXPORT_SERIALIZATION_ARCHIVE(archive_key, archive_type, ...)                                \
+#define EXPORT_SERIALIZABLE_ARCHIVE(archive_key, archive_type, ...)                                 \
     template <> struct xxsf_archive_traits<__VA_ARGS__> {                                           \
         static constexpr auto key = ::xxsf_archive_traits_key_type(archive_key);                    \
     };                                                                                              \
@@ -23,7 +23,7 @@ struct ioarchive_t;
 } // namespace sf
 
 using xxsf_archive_traits_key_type = std::uint8_t;
-static constexpr auto xxsf_archive_traits_base_key = ::xxsf_archive_traits_key_type(-1);
+static constexpr auto xxsf_archive_traits_base_key = ::xxsf_archive_traits_key_type(SF_ARCHIVE_TRAIT_MAX_KEY_SIZE);
 
 template <class ArchiveType>
 struct xxsf_archive_traits

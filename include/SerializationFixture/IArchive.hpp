@@ -61,7 +61,7 @@ public:
     template <typename SerializableType, typename... SerializableTypes>
     iarchive_t& operator() (SerializableType const& data, SerializableTypes const&... datas)
     {
-        ::xxsf_load<SerializableType>(*this, const_cast<SerializableType&>(data));
+        ::xxsf<SerializableType>::load(*this, const_cast<SerializableType&>(data));
         return operator()(datas...);
     }
 

@@ -48,41 +48,48 @@ public:
 
 } // namespace sf
 
-TEMPLATE_SERIALIZATION(save, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
-{
-    if (not alias.is_refer())
-        throw "The write alias_t must be initialized.";
+TEMPLATE_SERIALIZABLE_DECLARATION(template <typename ElementType>, ::sf::alias_t<ElementType>)
+SERIALIZABLE_DECLARATION_INIT()
 
-    auto pointer = std::addressof(alias.get());
-    auto const key = ::sf::detail::tracking_key(archive, pointer);
+TEMPLATE_SERIALIZABLE(save, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
+    SERIALIZATION
+    (
+        if (not alias.is_refer())
+            throw "The write alias_t must be initialized.";
 
-    auto& is_tracking = archive.tracking().pointer(pointer)[key];
+        auto pointer = std::addressof(alias.get());
+        auto const key = ::sf::detail::tracking_key(archive, pointer);
 
-    if (not is_tracking)
-        throw "The write alias_t must be tracked before.";
+        auto& is_tracking = archive.tracking().pointer(pointer)[key];
 
-    ::sf::detail::native_save(archive, pointer, key);
-}
+        if (not is_tracking)
+            throw "The write alias_t must be tracked before.";
 
-TEMPLATE_SERIALIZATION(load, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
-{
-#ifndef SF_GARBAGE_CHECK_DISABLE
-    if (alias.is_refer())
-        throw "The read alias_t must be null.";
-#endif // SF_GARBAGE_CHECK_DISABLE
+        ::sf::detail::native_save(archive, pointer, key);
+    )
+SERIALIZABLE_INIT()
 
-    std::uintptr_t key{};
-    archive & key;
+TEMPLATE_SERIALIZABLE(load, alias, template <typename ElementType>, ::sf::alias_t<ElementType>)
+    SERIALIZATION
+    (
+    #ifndef SF_GARBAGE_CHECK_DISABLE
+        if (alias.is_refer())
+            throw "The read alias_t must be null.";
+    #endif // SF_GARBAGE_CHECK_DISABLE
 
-    ElementType* pointer = nullptr;
-    auto& address = archive.tracking().pointer(pointer)[key];
+        std::uintptr_t key{};
+        archive & key;
 
-    if (address == nullptr)
-        throw "The read alias_t must be tracked before.";
+        ElementType* pointer = nullptr;
+        auto& address = archive.tracking().pointer(pointer)[key];
 
-    ::sf::detail::native_load(archive, pointer, address);
+        if (address == nullptr)
+            throw "The read alias_t must be tracked before.";
 
-    alias.set(*pointer); // pointer will never nullptr
-}
+        ::sf::detail::native_load(archive, pointer, address);
+
+        alias.set(*pointer); // pointer will never nullptr
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_UTILITY_ALIAS_HPP

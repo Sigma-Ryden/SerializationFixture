@@ -22,11 +22,16 @@ union Variant
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, Variant)
-{
-    // specify impl here
-    archive & self.a;
-}
+SERIALIZABLE_DECLARATION(Variant)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Variant)
+    SERIALIZATION
+    (
+        // specify impl here
+        archive & self.a;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestCommon, TestUnion)
 {

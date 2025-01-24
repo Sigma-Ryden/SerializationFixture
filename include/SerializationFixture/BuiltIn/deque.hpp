@@ -9,21 +9,28 @@
 
 #include <SerializationFixture/Compress.hpp>
 
-TEMPLATE_SERIALIZATION(save, deque, (template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
-{
-    std::uint64_t size = deque.size();
-    archive & size;
+TEMPLATE_SERIALIZABLE_DECLARATION((template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
+SERIALIZABLE_DECLARATION_INIT()
 
-    ::sf::compress::slow(archive, deque);
-}
+TEMPLATE_SERIALIZABLE(save, deque, (template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
+    SERIALIZATION
+    (
+        std::uint64_t size = deque.size();
+        archive & size;
 
-TEMPLATE_SERIALIZATION(load, deque, (template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
-{
-    std::uint64_t size{};
-    archive & size;
+        ::sf::compress::slow(archive, deque);
+    )
+SERIALIZABLE_INIT()
 
-    deque.resize(size);
-    ::sf::compress::slow(archive, deque);
-}
+TEMPLATE_SERIALIZABLE(load, deque, (template <typename ValueType, typename AllocatorType>), std::deque<ValueType, AllocatorType>)
+    SERIALIZATION
+    (
+        std::uint64_t size{};
+        archive & size;
+
+        deque.resize(size);
+        ::sf::compress::slow(archive, deque);
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_DEQUE_HPP

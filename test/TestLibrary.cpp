@@ -90,9 +90,26 @@ class Square {};
 
 EXPORT_INSTANTIABLE_KEY(SF_TYPE_HASH(Cyrcle), Triangle) // export Triangle as Cyrcle - will collide
 
-SERIALIZATION(saveload, self, Triangle) {}
-SERIALIZATION(saveload, self, Cyrcle) {}
-SERIALIZATION(saveload, self, Square) {}
+SERIALIZABLE_DECLARATION(Triangle)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE_DECLARATION(Cyrcle)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE_DECLARATION(Square)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Triangle)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, Cyrcle)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, Square)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
 
 TEST(TestLibrary, TestInstantiableRegistry)
 {
@@ -168,10 +185,33 @@ EXPORT_INSTANTIABLE_KEY(SF_STRING_HASH("MyDerived"), MyDerivedClass)
 
 EXPORT_INSTANTIABLE(MyCustomType)
 
-SERIALIZATION(saveload, self, MyStruct) {}
-SERIALIZATION(saveload, self, MyClass) {}
-SERIALIZATION(saveload, self, MyDerivedClass) {}
-SERIALIZATION(saveload, self, MyCustomType) {}
+SERIALIZABLE_DECLARATION(MyStruct)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, MyStruct)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(MyClass)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, MyClass)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(MyDerivedClass)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, MyDerivedClass)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(MyCustomType)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, MyCustomType)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
 
 TEST(TestLibrary, TestExportInstantiable)
 {
@@ -254,7 +294,7 @@ TEST(TestLibrary, TestStreamWrapper)
 
 // if you won't serialize object just omit SERIlALIZABLE(type)
 // but if you are going to serialize it in the future -
-// write SERIALIZABLE(type) and omit SERIALIZATION(mode, type)
+// write SERIALIZABLE(type) and omit SERIALIZABLE(mode, type)
 
 TEST_SPACE()
 {
@@ -306,46 +346,82 @@ EXPORT_INSTANTIABLE(DecorativeObject)
 EXPORT_INSTANTIABLE(FoliageObject)
 EXPORT_INSTANTIABLE(DecorativeFoliageObject)
 
-SERIALIZATION(saveload, self, WorldObject)
-{
-    ++self.wo;
-}
+SERIALIZABLE_DECLARATION(WorldObject)
+    //INSTANTIABLE(WorldObject)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, EnvironmentObject)
-{
-    ++self.eo;
-    archive & hierarchy<WorldObject>(self);
-}
+SERIALIZABLE_DECLARATION(EnvironmentObject)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, MoveableObject)
-{
-    ++self.mo;
-    archive & hierarchy<EnvironmentObject>(self);
-}
+SERIALIZABLE_DECLARATION(MoveableObject)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, DestructibleObject)
-{
-    ++self.dso;
-    archive & hierarchy<EnvironmentObject>(self);
-}
+SERIALIZABLE_DECLARATION(DestructibleObject)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, DecorativeObject)
-{
-    ++self.dco;
-    archive & hierarchy<DestructibleObject, MoveableObject>(self);
-}
+SERIALIZABLE_DECLARATION(DecorativeObject)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, FoliageObject)
-{
-    ++self.fo;
-    archive & hierarchy<WorldObject>(self);
-}
+SERIALIZABLE_DECLARATION(FoliageObject)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, DecorativeFoliageObject)
-{
-    ++self.dcfo;
-    archive & hierarchy<DecorativeObject, FoliageObject>(self);
-}
+SERIALIZABLE_DECLARATION(DecorativeFoliageObject)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, WorldObject)
+    SERIALIZATION
+    (
+        ++self.wo;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, EnvironmentObject)
+    SERIALIZATION
+    (
+        ++self.eo;
+        archive & hierarchy<WorldObject>(self);
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, MoveableObject)
+    SERIALIZATION
+    (
+        ++self.mo;
+        archive & hierarchy<EnvironmentObject>(self);
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, DestructibleObject)
+    SERIALIZATION
+    (
+        ++self.dso;
+        archive & hierarchy<EnvironmentObject>(self);
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, DecorativeObject)
+    SERIALIZATION
+    (
+        ++self.dco;
+        archive & hierarchy<DestructibleObject, MoveableObject>(self);
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, FoliageObject)
+    SERIALIZATION
+    (
+        ++self.fo;
+        archive & hierarchy<WorldObject>(self);
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, DecorativeFoliageObject)
+    SERIALIZATION
+    (
+        ++self.dcfo;
+        archive & hierarchy<DecorativeObject, FoliageObject>(self);
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestLibrary, TestInheritance)
 {
@@ -382,7 +458,7 @@ TEST_SPACE()
 
 class SomeObjectImpl
 {
-    SERIALIZATION_ACCESS()
+    SERIALIZABLE_ACCESS()
 
 public:
     SomeObjectImpl() = default;
@@ -394,7 +470,7 @@ protected:
 
 class SomeObject : protected SomeObjectImpl
 {
-    SERIALIZATION_ACCESS()
+    SERIALIZABLE_ACCESS()
 
 public:
     SomeObject(int data = 0) : SomeObjectImpl(data), inner_data_(data/2) {}
@@ -422,28 +498,53 @@ struct PolymorphicDerived : public PolymorphicBase {};
 //EXPORT_INSTANTIABLE(PolymorphicBase)
 //EXPORT_INSTANTIABLE(PolymorphicBaseImpl)
 
-SERIALIZATION(saveload, self, SomeObjectImpl)
-{
-    archive & self.data_;
-}
+SERIALIZABLE_DECLARATION(SomeObjectImpl)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, SomeObject)
-{
-    archive & hierarchy<SomeObjectImpl>(self) & self.inner_data_;
-}
+SERIALIZABLE(saveload, self, SomeObjectImpl)
+    SERIALIZATION
+    (
+        archive & self.data_;
+    )
+SERIALIZABLE_INIT()
 
-SERIALIZATION(saveload, self, PolymorphicBaseImpl) {}
+SERIALIZABLE_DECLARATION(SomeObject)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, PolymorphicBase)
-{
-    // not compile for: non-public inheritance
-    // archive & hierarchy<PolymorphicBaseImpl>(self);
-}
+SERIALIZABLE(saveload, self, SomeObject)
+    SERIALIZATION
+    (
+        archive & hierarchy<SomeObjectImpl>(self) & self.inner_data_;
+    )
+SERIALIZABLE_INIT()
 
-SERIALIZATION(saveload, self, PolymorphicDerived)
-{
-    archive & hierarchy<PolymorphicBase>(self);
-}
+SERIALIZABLE_DECLARATION(PolymorphicBaseImpl)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, PolymorphicBaseImpl)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(PolymorphicBase)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, PolymorphicBase)
+    SERIALIZATION
+    (
+        // not compile for: non-public inheritance
+        // archive & hierarchy<PolymorphicBaseImpl>(self);
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(PolymorphicDerived)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, PolymorphicDerived)
+    SERIALIZATION
+    (
+        archive & hierarchy<PolymorphicBase>(self);
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestLibrary, TestAccess)
 {
@@ -495,15 +596,25 @@ struct NoTraitsDerived : NoTraitsBase
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, NoTraitsBase)
-{
-    archive & self.b;
-}
+SERIALIZABLE_DECLARATION(NoTraitsBase)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, NoTraitsDerived)
-{
-    archive & hierarchy<NoTraitsBase>(self) & self.d;
-}
+SERIALIZABLE(saveload, self, NoTraitsBase)
+    SERIALIZATION
+    (
+        archive & self.b;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(NoTraitsDerived)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, NoTraitsDerived)
+    SERIALIZATION
+    (
+        archive & hierarchy<NoTraitsBase>(self) & self.d;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestLibrary, TestNoTraits)
 {
@@ -580,11 +691,16 @@ struct AggregateObject
 
 } // TEST_SPACE
 
+SERIALIZABLE_DECLARATION(AggregateObject)
+SERIALIZABLE_DECLARATION_INIT()
+
 // it's works only for full template specialization
-SERIALIZATION(saveload, self, AggregateObject)
-{
-    archive & self.i & self.f; // ignoring self.c
-}
+SERIALIZABLE(saveload, self, AggregateObject)
+    SERIALIZATION
+    (
+        archive & self.i & self.f; // ignoring self.c
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestLibrary, TestAggregateOverload)
 {
@@ -637,11 +753,22 @@ struct Implementation : Interface
 EXPORT_INSTANTIABLE(Interface)
 EXPORT_INSTANTIABLE(Implementation)
 
-SERIALIZATION(saveload, self, Interface) {}
-SERIALIZATION(saveload, self, Implementation) {}
+SERIALIZABLE_DECLARATION(Interface)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Interface)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(Implementation)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Implementation)
+    SERIALIZATION()
+SERIALIZABLE_INIT()
 
 // or general solution
-// CONDITIONAL_SERIALIZATION(saveload, std::is_base_of<Interface, T>::value) {}
+// CONDITIONAL_SERIALIZABLE(saveload, std::is_base_of<Interface, T>::value) {}
 
 TEST(TestLibrary, TestAbstract)
 {
@@ -705,20 +832,16 @@ ArchiveType& operator& (ArchiveType& archive, NoMacroObject& self)
 
 // inner serialization - useful for open/close class attributes (standard serialization)
 template <>
-struct xxsf_save<NoMacroDerived>
+struct xxsf<NoMacroDerived>
 {
     template <class ArchiveType>
-    xxsf_save(ArchiveType& archive, NoMacroDerived& self)
+    static void save(ArchiveType& archive, NoMacroDerived& self)
     {
         archive & sf::hierarchy<NoMacroBase>(self) & self.d;
     }
-};
 
-template <>
-struct xxsf_load<NoMacroDerived>
-{
     template <class ArchiveType>
-    xxsf_load(ArchiveType& archive, NoMacroDerived& self)
+    static void load(ArchiveType& archive, NoMacroDerived& self)
     {
         archive & sf::hierarchy<NoMacroBase>(self) & self.d;
     }
@@ -727,20 +850,16 @@ struct xxsf_load<NoMacroDerived>
 // inner serialization with split
 // polymorphic archive - useful for hide impl to translation unit
 template <>
-struct xxsf_save<NoMacroBase>
+struct xxsf<NoMacroBase>
 {
-    xxsf_save(sf::ioarchive_t& archive, NoMacroBase& self)
+    static void save(sf::ioarchive_t& archive, NoMacroBase& self)
     {
         archive << self.b;
     }
-};
 
-// for non polymorphic archive we can use operator&, and not only operator>>
-template <>
-struct xxsf_load<NoMacroBase>
-{
+    // for non polymorphic archive we can use operator&, and not only operator>>
     template <class ArchiveType>
-    xxsf_load(ArchiveType& archive, NoMacroBase& self)
+    static void load(ArchiveType& archive, NoMacroBase& self)
     {
         archive & self.b; // or archive >> self.b
     }

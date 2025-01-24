@@ -13,21 +13,8 @@
 #include <SerializationFixture/Dynamic/AnyRegistry.hpp>
 
 // please, use 'sf::serializable' for type any registry before std::any serialization
-SERIALIZATION(save, any, std::any)
-{
-    std::uint64_t hash = any.type().hash_code();
-    archive & hash;
-
-    ::sf::dynamic::any_registry.save(archive, any, hash);
-}
-
-SERIALIZATION(load, any, std::any)
-{
-    std::uint64_t hash{};
-    archive & hash;
-
-    ::sf::dynamic::any_registry.load(archive, any, hash);
-}
+SERIALIZABLE_DECLARATION(std::any)
+SERIALIZABLE_DECLARATION_INIT()
 
 #endif // if
 

@@ -13,42 +13,38 @@
 
 #include <SerializationFixture/Compress.hpp>
 
-#define SF_IS_STD_SET_TYPE_META_GENERIC(set_type)                                                       \
-    template <typename> struct is_std_##set_type : std::false_type {};                                  \
-    template <typename KeyType, typename ComparatorType, typename AllocatorType>                        \
-    struct is_std_##set_type<std::set_type<KeyType, ComparatorType, AllocatorType>> : std::true_type {};
+#define SF_IS_STD_SET_TYPE_META_GENERIC(set_type) \
+    template <typename> struct xxsf_is_std_##set_type : std::false_type {}; \
+    template <typename KeyType, typename ComparatorType, typename AllocatorType> \
+    struct xxsf_is_std_##set_type<std::set_type<KeyType, ComparatorType, AllocatorType>> : std::true_type {};
 
-namespace sf
-{
-
-namespace meta
-{
 
 SF_IS_STD_SET_TYPE_META_GENERIC(set)
 SF_IS_STD_SET_TYPE_META_GENERIC(unordered_set)
 SF_IS_STD_SET_TYPE_META_GENERIC(multiset)
 SF_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
 
-template <class StdSetType> struct is_std_any_unordered_set
-    : one<is_std_unordered_set<StdSetType>,
-          is_std_unordered_multiset<StdSetType>> {};
+template <class StdSetType> struct xxsf_is_std_any_unordered_set
+    : ::sf::meta::one<::xxsf_is_std_unordered_set<StdSetType>,
+                      ::xxsf_is_std_unordered_multiset<StdSetType>> {};
 
-template <class StdSetType> struct is_std_any_set
-    : one<is_std_set<StdSetType>,
-          is_std_multiset<StdSetType>,
-          is_std_any_unordered_set<StdSetType>> {};
+template <class StdSetType> struct xxsf_is_std_any_set
+    : ::sf::meta::one<::xxsf_is_std_set<StdSetType>,
+                      ::xxsf_is_std_multiset<StdSetType>,
+                      ::xxsf_is_std_any_unordered_set<StdSetType>> {};
 
-} // namespace meta
+namespace sf
+{
 
 namespace detail
 {
 
 template <class StdSetType,
-          SF_REQUIRES(meta::negation<meta::is_std_any_unordered_set<StdSetType>>::value)>
+          SF_REQUIRES(meta::negation<::xxsf_is_std_any_unordered_set<StdSetType>>::value)>
 void reserve_unordered(StdSetType&, std::size_t) noexcept { /*pass*/ }
 
 template <class StdSetType,
-          SF_REQUIRES(meta::is_std_any_unordered_set<StdSetType>::value)>
+          SF_REQUIRES(::xxsf_is_std_any_unordered_set<StdSetType>::value)>
 void reserve_unordered(StdSetType& unordered, std::size_t size)
 {
     unordered.reserve(size);
@@ -58,33 +54,40 @@ void reserve_unordered(StdSetType& unordered, std::size_t size)
 
 } // namespace sf
 
-CONDITIONAL_SERIALIZATION(save, set, ::sf::meta::is_std_any_set<S>::value)
-{
-    std::uint64_t size = set.size();
-    archive & size;
+CONDITIONAL_SERIALIZABLE_DECLARATION(::xxsf_is_std_any_set<S>::value)
+SERIALIZABLE_DECLARATION_INIT()
 
-    ::sf::compress::slow(archive, set);
-}
+CONDITIONAL_SERIALIZABLE(save, set, ::xxsf_is_std_any_set<S>::value)
+    SERIALIZATION
+    (
+        std::uint64_t size = set.size();
+        archive & size;
 
-CONDITIONAL_SERIALIZATION(load, set, ::sf::meta::is_std_any_set<S>::value)
-{
-    using value_type = typename S::value_type;
+        ::sf::compress::slow(archive, set);
+    )
+SERIALIZABLE_INIT()
 
-    std::uint64_t size{};
-    archive & size;
+CONDITIONAL_SERIALIZABLE(load, set, ::xxsf_is_std_any_set<S>::value)
+    SERIALIZATION
+    (
+        using value_type = typename S::value_type;
 
-    set.clear();
-    ::sf::detail::reserve_unordered(set, size);
+        std::uint64_t size{};
+        archive & size;
 
-    auto hint = set.begin();
-    for (std::uint64_t i = 0; i < size; ++i)
-    {
-        value_type item{}; // temp
-        archive & item;
+        set.clear();
+        ::sf::detail::reserve_unordered(set, size);
 
-        hint = set.emplace_hint(hint, std::move(item));
-    }
-}
+        auto hint = set.begin();
+        for (std::uint64_t i = 0; i < size; ++i)
+        {
+            value_type item{}; // temp
+            archive & item;
+
+            hint = set.emplace_hint(hint, std::move(item));
+        }
+    )
+SERIALIZABLE_INIT()
 
 // clean up
 #undef SF_IS_STD_SET_TYPE_META_GENERIC

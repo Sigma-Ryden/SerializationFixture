@@ -25,15 +25,25 @@ struct Box
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, Vector)
-{
-    archive & self.X & self.Y & self.Z;
-}
+SERIALIZABLE_DECLARATION(Vector)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, Box)
-{
-    archive & self.Min & self.Max;
-}
+SERIALIZABLE(saveload, self, Vector)
+    SERIALIZATION
+    (
+        archive & self.X & self.Y & self.Z;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(Box)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Box)
+    SERIALIZATION
+    (
+        archive & self.Min & self.Max;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestCommon, TestUserType)
 {
@@ -84,18 +94,28 @@ struct Printer : Product
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, Product)
-{
-    archive & self.name & self.series & self.price;
-}
+SERIALIZABLE_DECLARATION(Product)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, Printer)
-{
-    archive & hierarchy<Product>(self);
-#if __cplusplus >= 201703L
-    archive & self.owner;
-#endif // if
-}
+SERIALIZABLE(saveload, self, Product)
+    SERIALIZATION
+    (
+        archive & self.name & self.series & self.price;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE_DECLARATION(Printer)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, Printer)
+    SERIALIZATION
+    (
+        archive & hierarchy<Product>(self);
+    #if __cplusplus >= 201703L
+        archive & self.owner;
+    #endif // if
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestCommon, TestInheritance)
 {

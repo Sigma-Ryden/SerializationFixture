@@ -9,18 +9,25 @@
 // serialization of shared_ptr
 #include <SerializationFixture/BuiltIn/shared_ptr.hpp>
 
-TEMPLATE_SERIALIZATION(save, weak_ptr, template <typename ElementType>, std::weak_ptr<ElementType>)
-{
-    auto sptr = weak_ptr.lock();
-    archive & sptr;
-}
+TEMPLATE_SERIALIZABLE_DECLARATION(template <typename ElementType>, std::weak_ptr<ElementType>)
+SERIALIZABLE_DECLARATION_INIT()
 
-TEMPLATE_SERIALIZATION(load, weak_ptr, template <typename ElementType>, std::weak_ptr<ElementType>)
-{
-    std::shared_ptr<ElementType> sptr;
-    archive & sptr;
+TEMPLATE_SERIALIZABLE(save, weak_ptr, template <typename ElementType>, std::weak_ptr<ElementType>)
+    SERIALIZATION
+    (
+        auto sptr = weak_ptr.lock();
+        archive & sptr;
+    )
+SERIALIZABLE_INIT()
 
-    weak_ptr = sptr;
-}
+TEMPLATE_SERIALIZABLE(load, weak_ptr, template <typename ElementType>, std::weak_ptr<ElementType>)
+    SERIALIZATION
+    (
+        std::shared_ptr<ElementType> sptr;
+        archive & sptr;
+
+        weak_ptr = sptr;
+    )
+SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_WEAK_PTR_HPP

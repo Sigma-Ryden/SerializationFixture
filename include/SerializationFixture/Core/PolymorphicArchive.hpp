@@ -74,17 +74,17 @@ private:
     }
 
     template <class DerivedArchiveType, typename SerializableType,
-              SF_REQUIRES(meta::is_iarchive<DerivedArchiveType>::value)>
-    static void try_call_impl(ioarchive_t& archive, SerializableType& data)
-    {
-        ::xxsf_load<SerializableType>(static_cast<DerivedArchiveType&>(archive), data);
-    }
-
-    template <class DerivedArchiveType, typename SerializableType,
               SF_REQUIRES(meta::is_oarchive<DerivedArchiveType>::value)>
     static void try_call_impl(ioarchive_t& archive, SerializableType& data)
     {
-        ::xxsf_save<SerializableType>(static_cast<DerivedArchiveType&>(archive), data);
+        ::xxsf<SerializableType>::save(static_cast<DerivedArchiveType&>(archive), data);
+    }
+
+    template <class DerivedArchiveType, typename SerializableType,
+              SF_REQUIRES(meta::is_iarchive<DerivedArchiveType>::value)>
+    static void try_call_impl(ioarchive_t& archive, SerializableType& data)
+    {
+        ::xxsf<SerializableType>::load(static_cast<DerivedArchiveType&>(archive), data);
     }
 };
 

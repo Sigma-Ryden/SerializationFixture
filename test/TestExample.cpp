@@ -29,15 +29,29 @@ struct Handbook
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, Prototype)
-{
-    archive & self.name & self.properties;
-}
+// in .hpp files
+SERIALIZABLE_DECLARATION(Prototype)
+SERIALIZABLE_DECLARATION_INIT()
 
-SERIALIZATION(saveload, self, Handbook)
-{
-    archive & self.prototypes;
-}
+SERIALIZABLE_DECLARATION(Handbook)
+SERIALIZABLE_DECLARATION_INIT()
+// ~
+
+// in .cpp files
+SERIALIZABLE(saveload, self, Prototype)
+    SERIALIZATION
+    (
+        archive & self.name & self.properties;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, Handbook)
+    SERIALIZATION
+    (
+        archive & self.prototypes;
+    )
+SERIALIZABLE_INIT()
+// ~
 
 TEST(TestDemo, TestExample)
 {

@@ -9,51 +9,32 @@
 
 #include <SerializationFixture/Compress.hpp>
 
-TEMPLATE_SERIALIZATION(save, vector,
-    (template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
-{
-    std::uint64_t size = vector.size();
-    archive & size;
+TEMPLATE_SERIALIZABLE_DECLARATION((template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
+SERIALIZABLE_DECLARATION_INIT()
 
-    ::sf::compress::zip(archive, vector);
-}
+TEMPLATE_SERIALIZABLE(save, vector, (template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
+    SERIALIZATION
+    (
+        std::uint64_t size = vector.size();
+        archive & size;
 
-TEMPLATE_SERIALIZATION(load, vector,
-    (template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
-{
-    std::uint64_t size{};
-    archive & size;
+        ::sf::compress::zip(archive, vector);
+    )
+SERIALIZABLE_INIT()
 
-    vector.resize(size);
-    ::sf::compress::zip(archive, vector);
-}
+TEMPLATE_SERIALIZABLE(load, vector, (template <typename ValueType, typename AllocatorType>), std::vector<ValueType, AllocatorType>)
+    SERIALIZATION
+    (
+        std::uint64_t size{};
+        archive & size;
 
-// slow impl
-SERIALIZATION(save, vector, std::vector<bool>)
-{
-    std::uint64_t size = vector.size();
-    archive & size;
+        vector.resize(size);
+        ::sf::compress::zip(archive, vector);
+    )
+SERIALIZABLE_INIT()
 
-    for(auto item:vector)
-    {
-        bool boolean = item;
-        archive & boolean;
-    }
-}
 
-SERIALIZATION(load, vector, std::vector<bool>)
-{
-    std::uint64_t size{};
-    archive & size;
-
-    vector.resize(size);
-
-    for(auto item/*bit_reference*/:vector)
-    {
-        bool boolean{};
-        archive & boolean;
-        item = boolean;
-    }
-}
+SERIALIZABLE_DECLARATION(std::vector<bool>)
+SERIALIZABLE_DECLARATION_INIT()
 
 #endif // SF_BUILT_IN_VECTOR_HPP

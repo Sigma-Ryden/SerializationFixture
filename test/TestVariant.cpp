@@ -17,10 +17,15 @@ struct OwnType
 
 } // TEST_SPACE
 
-SERIALIZATION(saveload, self, OwnType)
-{
-    archive & self.var;
-}
+SERIALIZABLE_DECLARATION(OwnType)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE(saveload, self, OwnType)
+    SERIALIZATION
+    (
+        archive & self.var;
+    )
+SERIALIZABLE_INIT()
 
 TEST(TestUtility, TestVariant)
 {
