@@ -40,6 +40,7 @@ public:
 public:
     using oarchive_track_overload_t<VoidPointerTypes>::pointer...;
 
+    // TODO: rework, since is not correct!
 #ifdef SF_DEBUG
     template <typename PointerType>
     bool is_mixed(std::uintptr_t refer_key, PointerType const& pointer) const noexcept
