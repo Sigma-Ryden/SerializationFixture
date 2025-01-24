@@ -82,40 +82,54 @@ private:
     }
 
 public:
-    template <class InstantiableType, SF_REQUIRES(meta::negation<is_instantiable<InstantiableType>>::value)>
-    void add() { /*pass*/ }
+    template <typename InstantiableType>
+    ::xxsf_instantiable_traits_key_type key()
+    {
+        if constexpr (meta::is_key<InstantiableType>::value)
+        {
+            return ::xxsf<InstantiableType>::key();
+        }
+        else
+        {
+            return SF_TYPE_HASH(InstantiableType);
+        }
+    }
 
-    template <class InstantiableType, SF_REQUIRES(is_instantiable<InstantiableType>::value)>
+public:
+    template <class InstantiableType>
     void add()
     {
-        static auto lock = false; if (lock) return;
-        lock = true;
-
-        auto const key = ::xxsf_instantiable_traits<InstantiableType>::key();
-    #ifdef SF_DEBUG
-        if (key == ::xxsf_instantiable_traits_base_key)
-            throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
-    #endif // SF_DEBUG
-        instantiable_proxy_t proxy;
-
-        add_impl<InstantiableType, VoidPointerTypes...>(proxy);
-
-        proxy.key = key;
-
-        proxy.save = [](ioarchive_t& archive, instantiable_type* instance)
+        if constexpr (is_instantiable<InstantiableType>::value)
         {
-            archive << *memory::dynamic_pointer_cast<InstantiableType>(instance);
-        };
+            static auto lock = false; if (lock) return;
+            lock = true;
 
-        proxy.load = [](ioarchive_t& archive, instantiable_type* instance)
-        {
-            archive >> *memory::dynamic_pointer_cast<InstantiableType>(instance);
-        };
+            auto const instantiable_key = key<InstantiableType>();
+        #ifdef SF_DEBUG
+            if (instantiable_key == ::xxsf_instantiable_traits_base_key)
+                throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
+        #endif // SF_DEBUG
+            instantiable_proxy_t proxy;
 
-        all.emplace(key, proxy);
+            add_impl<InstantiableType, VoidPointerTypes...>(proxy);
 
-        auto const hash = SF_TYPE_HASH(InstantiableType);
-        rtti_all.emplace(hash, proxy);
+            proxy.key = instantiable_key;
+
+            proxy.save = [](ioarchive_t& archive, instantiable_type* instance)
+            {
+                archive << *memory::dynamic_pointer_cast<InstantiableType>(instance);
+            };
+
+            proxy.load = [](ioarchive_t& archive, instantiable_type* instance)
+            {
+                archive >> *memory::dynamic_pointer_cast<InstantiableType>(instance);
+            };
+
+            all.emplace(instantiable_key, proxy);
+
+            auto const hash = SF_TYPE_HASH(InstantiableType);
+            rtti_all.emplace(hash, proxy);
+        }
     }
 
     template <class InstantiableType>
@@ -126,7 +140,7 @@ public:
             throw "The polymorphic 'InstantiableType' type is not convertible to 'instantiable_t'.";
     #endif // SF_DEBUG
 
-        if (all.find(::xxsf_instantiable_traits<InstantiableType>::key()) != all.end())
+        if (all.find(key<InstantiableType>()) != all.end())
         #ifdef SF_DEBUG
             throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with unique key.";
         #else

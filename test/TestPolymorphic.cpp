@@ -34,38 +34,31 @@ public:
 } // TEST_SPACE
 
 TEMPLATE_SERIALIZABLE_DECLARATION(template <class SomeType>, Base<SomeType>)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 TEMPLATE_SERIALIZABLE(saveload, self, template <class SomeType>, Base<SomeType>)
-    SERIALIZATION
-    (
-        // more specialize version
-        archive & self.data;
-    )
+    // more specialize version
+    archive & self.data;
 SERIALIZABLE_INIT()
 
 SERIALIZABLE_DECLARATION(internal::Derived)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, internal::Derived)
-    SERIALIZATION
-    (
-        archive & hierarchy<Base<std::string>>(self);
-        archive & self.value;
-    )
+    archive & hierarchy<Base<std::string>>(self);
+    archive & self.value;
 SERIALIZABLE_INIT()
 
-// we can overload polymorphic key for each class (or full template specialization)
-
-// smae as EXPORT_INSTANTIABLE_KEY(SF_TYPE_HASH(Base<double>), Base<double>)
-EXPORT_INSTANTIABLE(Base<double>)
-EXPORT_INSTANTIABLE(Base<std::string>)
-
-EXPORT_INSTANTIABLE(internal::Derived)
-// EXPORT_INSTANTIABLE_KEY(SF_STRING_HASH("Other Derived"), internal::Derived) // - possible use
+// INSTANTIABLE(Base<double>) // same as INSTANTIABLE_KEY(SF_TYPE_HASH(Base<double>), Base<double>)
+// INSTANTIABLE_KEY(SF_STRING_HASH("Other Derived"), internal::Derived) // possible use
 
 TEST(TestCommon, TestPolymorphic)
 {
+    sf::serializable<Base<double>>();
+    sf::serializable<Base<std::string>>();
+
     using Parent = Base<std::string>;
     using Child  = internal::Derived;
 

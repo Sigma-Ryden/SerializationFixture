@@ -1,7 +1,5 @@
 #include "DerivedObject.hpp"
 
-EXPORT_INSTANTIABLE(DerivedObject)
-
 SERIALIZABLE(saveload, self, DerivedObject)
     SERIALIZATION
     (

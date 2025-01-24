@@ -12,6 +12,7 @@ struct BaseObject : sf::instantiable_t
 };
 
 SERIALIZABLE_DECLARATION(BaseObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 #endif // BASE_OBJECT_HPP

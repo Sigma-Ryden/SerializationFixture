@@ -1,5 +1,3 @@
-#if __cplusplus >= 201703L
-
 #include <SFTestingBase.hpp>
 
 #include <SerializationFixture/BuiltIn/string.hpp>
@@ -115,5 +113,3 @@ TEST(TestCommon, TestAggregate)
         EXPECT("inheritance.value", dat.base.data == s_b_data && dat.base.id == s_b_id && dat.state == s_d_state);
     }
 }
-
-#endif // if

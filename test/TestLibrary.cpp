@@ -88,9 +88,8 @@ class Square {};
 
 } // TEST_SPACE
 
-EXPORT_INSTANTIABLE_KEY(SF_TYPE_HASH(Cyrcle), Triangle) // export Triangle as Cyrcle - will collide
-
 SERIALIZABLE_DECLARATION(Triangle)
+    INSTANTIABLE_KEY(SF_TYPE_HASH(Cyrcle), S) // export Triangle as Cyrcle - will collide
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE_DECLARATION(Cyrcle)
@@ -129,7 +128,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         EXPECT("non-instantiable type", success);
     }
 
-    const auto key = ::xxsf_instantiable_traits<Square>::key();
+    const auto key = instantiable_registry.key<Square>();
 
     {
         auto success = false;
@@ -178,14 +177,8 @@ struct MyCustomType : instantiable_t {};
 
 } // TEST_SPACE
 
-EXPORT_INSTANTIABLE_KEY(SF_STRING_HASH("MyClass"), MyStruct)
-EXPORT_INSTANTIABLE_KEY(SF_STRING_HASH("MyStruct"), MyClass)
-
-EXPORT_INSTANTIABLE_KEY(SF_STRING_HASH("MyDerived"), MyDerivedClass)
-
-EXPORT_INSTANTIABLE(MyCustomType)
-
 SERIALIZABLE_DECLARATION(MyStruct)
+    INSTANTIABLE_KEY(SF_STRING_HASH("MyClass"), S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, MyStruct)
@@ -193,6 +186,7 @@ SERIALIZABLE(saveload, self, MyStruct)
 SERIALIZABLE_INIT()
 
 SERIALIZABLE_DECLARATION(MyClass)
+    INSTANTIABLE_KEY(SF_STRING_HASH("MyStruct"), S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, MyClass)
@@ -200,6 +194,7 @@ SERIALIZABLE(saveload, self, MyClass)
 SERIALIZABLE_INIT()
 
 SERIALIZABLE_DECLARATION(MyDerivedClass)
+    INSTANTIABLE_KEY(SF_STRING_HASH("MyDerived"), S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, MyDerivedClass)
@@ -207,6 +202,7 @@ SERIALIZABLE(saveload, self, MyDerivedClass)
 SERIALIZABLE_INIT()
 
 SERIALIZABLE_DECLARATION(MyCustomType)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, MyCustomType)
@@ -222,14 +218,14 @@ TEST(TestLibrary, TestExportInstantiable)
 
     {
         EXPECT("export instantiable key.traits",
-            ::xxsf_instantiable_traits<MyStruct>::key() == sv_s &&
-            ::xxsf_instantiable_traits<MyClass>::key() == sv_c);
+            instantiable_registry.key<MyStruct>() == sv_s &&
+            instantiable_registry.key<MyClass>() == sv_c);
     }
 
     static auto sv_ct = SF_TYPE_HASH(MyCustomType);
 
     {
-        EXPECT("export instantiable.equivalent", ::xxsf_instantiable_traits<MyCustomType>::key() == sv_ct);
+        EXPECT("export instantiable.equivalent", instantiable_registry.key<MyCustomType>() == sv_ct);
     }
 
     static auto sv_dc = SF_STRING_HASH("MyDerived");
@@ -338,34 +334,32 @@ struct DecorativeFoliageObject : DecorativeObject, FoliageObjectInstance
 
 } // TEST_SPACE
 
-EXPORT_INSTANTIABLE(WorldObject)
-EXPORT_INSTANTIABLE(EnvironmentObject)
-EXPORT_INSTANTIABLE(MoveableObject)
-EXPORT_INSTANTIABLE(DestructibleObject)
-EXPORT_INSTANTIABLE(DecorativeObject)
-EXPORT_INSTANTIABLE(FoliageObject)
-EXPORT_INSTANTIABLE(DecorativeFoliageObject)
-
 SERIALIZABLE_DECLARATION(WorldObject)
-    //INSTANTIABLE(WorldObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE_DECLARATION(EnvironmentObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE_DECLARATION(MoveableObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE_DECLARATION(DestructibleObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE_DECLARATION(DecorativeObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE_DECLARATION(FoliageObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE_DECLARATION(DecorativeFoliageObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, WorldObject)
@@ -492,11 +486,11 @@ struct PolymorphicDerived : public PolymorphicBase {};
 } // TEST_SPACE
 
 // will throw expection
-//EXPORT_INSTANTIABLE(SomeObjectImpl)
-//EXPORT_INSTANTIABLE(SomeObject)
-//EXPORT_INSTANTIABLE(PolymorphicDerived)
-//EXPORT_INSTANTIABLE(PolymorphicBase)
-//EXPORT_INSTANTIABLE(PolymorphicBaseImpl)
+//INSTANTIABLE(SomeObjectImpl)
+//INSTANTIABLE(SomeObject)
+//INSTANTIABLE(PolymorphicDerived)
+//INSTANTIABLE(PolymorphicBase)
+//INSTANTIABLE(PolymorphicBaseImpl)
 
 SERIALIZABLE_DECLARATION(SomeObjectImpl)
 SERIALIZABLE_DECLARATION_INIT()
@@ -677,8 +671,6 @@ TEST(TestLibrary, TestPartition)
     }
 }
 
-#if __cplusplus >= 201703L
-
 TEST_SPACE()
 {
 
@@ -731,8 +723,6 @@ TEST(TestLibrary, TestAggregateOverload)
     }
 }
 
-#endif // if
-
 #include <SerializationFixture/BuiltIn/unique_ptr.hpp>
 
 TEST_SPACE()
@@ -750,10 +740,8 @@ struct Implementation : Interface
 
 } // TEST_SPACE
 
-EXPORT_INSTANTIABLE(Interface)
-EXPORT_INSTANTIABLE(Implementation)
-
 SERIALIZABLE_DECLARATION(Interface)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, Interface)
@@ -761,6 +749,7 @@ SERIALIZABLE(saveload, self, Interface)
 SERIALIZABLE_INIT()
 
 SERIALIZABLE_DECLARATION(Implementation)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, Implementation)
@@ -792,7 +781,7 @@ TEST(TestLibrary, TestAbstract)
         auto& ri = *i;
 
         const auto hash = SF_EXPRESSION_HASH(ri);
-        const auto key = ::xxsf_instantiable_traits<Implementation>::key();
+        const auto key = instantiable_registry.key<Implementation>();
 
         EXPECT("traits", instantiable_registry.rtti_all.at(hash).key == instantiable_registry.all.at(key).key);
     }
@@ -863,11 +852,7 @@ struct xxsf<NoMacroBase>
     {
         archive & self.b; // or archive >> self.b
     }
-};
 
-template <>
-struct xxsf_instantiable_traits<NoMacroDerived>
-{
     static ::xxsf_instantiable_traits_key_type key()
     {
         return SF_STRING_HASH("NoMacroDerived");

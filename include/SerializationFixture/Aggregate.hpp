@@ -1,8 +1,6 @@
 #ifndef SF_AGGREGATE_HPP
 #define SF_AGGREGATE_HPP
 
-#if __cplusplus >= 201703L
-
 #include <array> // array
 
 #include <SerializationFixture/Core/Serialization.hpp>
@@ -11,12 +9,12 @@
 
 #include <SerializationFixture/Detail/Preprocessor.hpp>
 
-#define SF_AGGREGATE_IMPLEMENTATION_GENERIC(count)                                                      \
-    template <class ArchiveType, typename SerializableType>                                             \
-    void aggregate_impl(ArchiveType& archive, SerializableType& object,                                 \
-                        std::integral_constant<std::size_t, count>) {                                   \
-        auto& [SF_PLACEHOLDERS(count)] = object;                                                        \
-        archive(SF_PLACEHOLDERS(count));                                                                \
+#define SF_AGGREGATE_IMPLEMENTATION_GENERIC(count) \
+    template <class ArchiveType, typename SerializableType> \
+    void aggregate_impl(ArchiveType& archive, SerializableType& object, \
+                        std::integral_constant<std::size_t, count>) { \
+        auto& [SF_PLACEHOLDERS(count)] = object; \
+        archive(SF_PLACEHOLDERS(count)); \
     }
 
 namespace sf
@@ -92,7 +90,5 @@ SERIALIZABLE_INIT()
 
 // clean up
 #undef SF_AGGREGATE_IMPLEMENTATION_GENERIC
-
-#endif // if
 
 #endif // SF_AGGREGATE_HPP

@@ -21,7 +21,7 @@ template <typename SerializableType> void serializable()
 
     dynamic::instantiable_registry.add<SerializableType>();
 
-#if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
+#if !defined(SF_ANY_SUPPORT_DISABLE)
     dynamic::any_registry.add<SerializableType>();
 #endif // if
 }

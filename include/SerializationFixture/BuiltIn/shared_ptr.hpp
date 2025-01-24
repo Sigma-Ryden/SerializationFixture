@@ -11,10 +11,7 @@ TEMPLATE_SERIALIZABLE_DECLARATION(template <typename ElementType>, std::shared_p
 SERIALIZABLE_DECLARATION_INIT()
 
 TEMPLATE_SERIALIZABLE(saveload, shared_ptr, template <typename ElementType>, std::shared_ptr<ElementType>)
-    SERIALIZATION
-    (
-        ::sf::track(archive, shared_ptr);
-    )
+    ::sf::track(archive, shared_ptr);
 SERIALIZABLE_INIT()
 
 #endif // SF_BUILT_IN_SHARED_PTR_HPP

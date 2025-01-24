@@ -1,8 +1,6 @@
 #ifndef SF_BUILT_IN_OPTIONAL_HPP
 #define SF_BUILT_IN_OPTIONAL_HPP
 
-#if __cplusplus >= 201703L
-
 #include <optional> // optional
 
 #include <SerializationFixture/Core/Serialization.hpp>
@@ -33,7 +31,5 @@ TEMPLATE_SERIALIZABLE(load, optional, template <typename ValueType>, std::option
         }
     )
 SERIALIZABLE_INIT()
-
-#endif // if
 
 #endif // SF_BUILT_IN_OPTIONAL_HPP

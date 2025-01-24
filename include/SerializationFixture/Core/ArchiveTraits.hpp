@@ -4,16 +4,16 @@
 #include <cstdint> // uint8_t
 
 #ifndef SF_ARCHIVE_TRAIT_MAX_KEY_SIZE
-    #define SF_ARCHIVE_TRAIT_MAX_KEY_SIZE 3
+    #define SF_ARCHIVE_TRAIT_MAX_KEY_SIZE 4
 #endif // SF_ARCHIVE_TRAIT_MAX_KEY_SIZE
 
-#define EXPORT_SERIALIZABLE_ARCHIVE(archive_key, archive_type, ...)                                 \
-    template <> struct xxsf_archive_traits<__VA_ARGS__> {                                           \
-        static constexpr auto key = ::xxsf_archive_traits_key_type(archive_key);                    \
-    };                                                                                              \
-    template <> struct xxsf_##archive_type##archive_registry<archive_key> {                         \
-        using type = __VA_ARGS__;                                                                   \
-    };                                                                                              \
+#define EXPORT_SERIALIZABLE_ARCHIVE(archive_key, archive_type, ...) \
+    template <> struct xxsf_archive_traits<__VA_ARGS__> { \
+        static constexpr auto key = ::xxsf_archive_traits_key_type(archive_key); \
+    }; \
+    template <> struct xxsf_##archive_type##archive_registry<archive_key> { \
+        using type = __VA_ARGS__; \
+    };
 
 namespace sf
 {

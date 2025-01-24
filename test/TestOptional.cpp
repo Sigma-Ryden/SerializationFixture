@@ -1,5 +1,3 @@
-#if __cplusplus >= 201703L
-
 #include <SFTestingBase.hpp>
 
 #include <SerializationFixture/BuiltIn/optional.hpp>
@@ -41,5 +39,3 @@ TEST(TestUtility, TestOptional)
         EXPECT("std::optional<atomic>.value", c.value() == sv_c);
     }
 }
-
-#endif // if

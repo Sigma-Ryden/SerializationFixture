@@ -8,7 +8,7 @@
 #include <SerializationFixture/Core/Memory.hpp>
 #include <SerializationFixture/Core/Serialization.hpp>
 
-#include <SerializationFixture/Dynamic/InstantiableTraits.hpp>
+#include <SerializationFixture/Dynamic/InstantiableRegistry.hpp>
 
 #include <SerializationFixture/StreamWrapper.hpp>
 
@@ -18,42 +18,47 @@
 namespace sf
 {
 
-class oarchive_track_t
+template <typename VoidPointerType>
+class oarchive_track_overload_t
 {
-private:
-    std::unordered_map<std::uintptr_t, bool> xxshared;
-    std::unordered_map<std::uintptr_t, bool> xxraw;
+protected:
+    std::unordered_map<std::uintptr_t, bool> xxpointer;
 
+public:
+    auto pointer(VoidPointerType const&) noexcept -> decltype(xxpointer)& { return xxpointer; }
+};
+
+template <typename... VoidPointerTypes>
+class oarchive_track_t : public oarchive_track_overload_t<VoidPointerTypes>...
+{
+protected:
     std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
 
 public:
-    template <typename SerializableType>
-    auto pointer(std::shared_ptr<SerializableType> const&) noexcept -> decltype(xxshared)& { return xxshared; }
-
-    template <typename SerializableType>
-    auto pointer(SerializableType*) noexcept -> decltype(xxraw)& { return xxraw; }
-
     auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
 
-#ifdef SF_DEBUG
-    template <typename SerializableType>
-    bool is_mixed(std::uintptr_t refer_key, std::shared_ptr<SerializableType> const&) const noexcept
-    {
-        return xxraw.count(refer_key)>0;
-    }
+public:
+    using oarchive_track_overload_t<VoidPointerTypes>::pointer...;
 
-    template <typename SerializableType>
-    bool is_mixed(std::uintptr_t refer_key, SerializableType*) const noexcept
+#ifdef SF_DEBUG
+    template <typename PointerType>
+    bool is_mixed(std::uintptr_t refer_key, PointerType const& pointer) const noexcept
     {
-        return xxshared.count(refer_key)>0;
+        using pointer_traits = memory::pointer_traits<PointerType>;
+        using void_pointer = typename pointer_traits::template pointer_template<void>;
+
+        return (oarchive_track_overload_t<VoidPointerTypes>::xxpointer.count(refer_key) + ...) !=
+                oarchive_track_overload_t<void_pointer>::xxpointer.count(refer_key);
     }
 #endif // SF_DEBUG
 };
 
-template <class StreamWrapperType,
-          class TrackingType = oarchive_track_t>
+template <class StreamWrapperType>
 class oarchive_t : public ioarchive_t
 {
+public:
+    using TrackingType = oarchive_track_t<INSTANTIABLE_VOID_POINTER_TYPES>;
+
 private:
     StreamWrapperType xxstream;
     TrackingType xxtracking;
@@ -90,17 +95,15 @@ oarchive_t<wrapper::obyte_stream_t<OutputStreamType>> oarchive(OutputStreamType&
 }
 
 template <template <class, typename...> class StreamWrapperTemplate,
-          class TrackingType = oarchive_track_t,
           typename OutputStreamType>
-oarchive_t<StreamWrapperTemplate<OutputStreamType>, TrackingType> oarchive(OutputStreamType& stream)
+oarchive_t<StreamWrapperTemplate<OutputStreamType>> oarchive(OutputStreamType& stream)
 {
     return { stream };
 }
 
 template <class StreamWrapperType,
-          class TrackingType = oarchive_track_t,
           typename OutputStreamType>
-oarchive_t<StreamWrapperType, TrackingType> oarchive(OutputStreamType& stream)
+oarchive_t<StreamWrapperType> oarchive(OutputStreamType& stream)
 {
     return { stream };
 }
@@ -108,8 +111,8 @@ oarchive_t<StreamWrapperType, TrackingType> oarchive(OutputStreamType& stream)
 namespace meta
 {
 
-template <class StreamWrapperType, class TrackingType>
-struct is_oarchive<oarchive_t<StreamWrapperType, TrackingType>> : std::true_type {};
+template <class StreamWrapperType>
+struct is_oarchive<oarchive_t<StreamWrapperType>> : std::true_type {};
 
 } // namespace meta
 

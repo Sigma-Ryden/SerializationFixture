@@ -87,9 +87,7 @@ struct Product
 
 struct Printer : Product
 {
-#if __cplusplus >= 201703L
     std::any owner;
-#endif // if
 };
 
 } // TEST_SPACE
@@ -111,9 +109,7 @@ SERIALIZABLE(saveload, self, Printer)
     SERIALIZATION
     (
         archive & hierarchy<Product>(self);
-    #if __cplusplus >= 201703L
         archive & self.owner;
-    #endif // if
     )
 SERIALIZABLE_INIT()
 
@@ -126,9 +122,7 @@ TEST(TestCommon, TestInheritance)
     s_p.series = 37868723;
     s_p.price = 1000;
 
-#if __cplusplus >= 201703L
     s_p.owner = sf::serializable(s_owner);
-#endif // if
 
     std::vector<unsigned char> storage;
     {
@@ -143,10 +137,8 @@ TEST(TestCommon, TestInheritance)
         auto ar = iarchive(storage);
         ar & p;
 
-    #if __cplusplus >= 201703L
         auto owner = std::any_cast<std::string>(&p.owner);
         EXPECT("inheritance.inited", owner != nullptr && *owner == s_owner);
-    #endif // if
 
         EXPECT("inheritance.value",
             p.name == s_p.name && p.series == s_p.series && p.price == s_p.price);

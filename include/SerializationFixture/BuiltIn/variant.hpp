@@ -1,8 +1,6 @@
 #ifndef SF_BUILT_IN_VARIANT_HPP
 #define SF_BUILT_IN_VARIANT_HPP
 
-#if __cplusplus >= 201703L
-
 #include <cstdint> // uint64_t
 
 #include <variant> // variant
@@ -66,25 +64,17 @@ TEMPLATE_SERIALIZABLE_DECLARATION(template <typename... ArgumentTypes>, std::var
 SERIALIZABLE_DECLARATION_INIT()
 
 TEMPLATE_SERIALIZABLE(save, variant, template <typename... ArgumentTypes>, std::variant<ArgumentTypes...>)
-    SERIALIZATION
-    (
-        std::uint64_t index = variant.index();
-        archive & index;
+    std::uint64_t index = variant.index();
+    archive & index;
 
-        if (index != std::variant_npos) ::sf::detail::variant_save(archive, variant, index);
-    )
+    if (index != std::variant_npos) ::sf::detail::variant_save(archive, variant, index);
 SERIALIZABLE_INIT()
 
 TEMPLATE_SERIALIZABLE(load, variant, (template <typename... ArgumentTypes>), std::variant<ArgumentTypes...>)
-    SERIALIZATION
-    (
-        std::uint64_t index{};
-        archive & index;
+    std::uint64_t index{};
+    archive & index;
 
-        if (index != std::variant_npos) ::sf::detail::variant_load(archive, variant, index);
-    )
+    if (index != std::variant_npos) ::sf::detail::variant_load(archive, variant, index);
 SERIALIZABLE_INIT()
-
-#endif // if
 
 #endif // SF_BUILT_IN_VARIANT_HPP

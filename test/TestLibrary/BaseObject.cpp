@@ -2,8 +2,6 @@
 
 #include <SerializationFixture/BuiltIn/string.hpp>
 
-EXPORT_INSTANTIABLE(BaseObject)
-
 SERIALIZABLE(save, self, BaseObject)
     SERIALIZATION
     (

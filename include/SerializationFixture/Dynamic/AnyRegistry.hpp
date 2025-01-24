@@ -1,7 +1,7 @@
 #ifndef SF_DYNAMIC_ANY_REGISTRY_HPP
 #define SF_DYNAMIC_ANY_REGISTRY_HPP
 
-#if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
+#if !defined(SF_ANY_SUPPORT_DISABLE)
 
 #include <cstdint> // uint64_t
 

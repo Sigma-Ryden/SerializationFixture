@@ -7,9 +7,7 @@
 // is_arithmetic, is_array, is_pointer,
 // enable_if, is_same, true_type, false_type
 
-#if __cplusplus >= 201703L
 #include <any> // any
-#endif // if
 
 #include <SerializationFixture/Detail/MetaMacro.hpp>
 
@@ -98,14 +96,9 @@ struct pointer_count<PointerType, false>
 
 struct dummy_t
 {
-#if __cplusplus >= 201703L
     template <typename Type, SF_REQUIRES(negation<std::is_same<Type, std::any>>::value)> operator Type();
-#else
-    template <typename Type> operator Type();
-#endif // if
 };
 
-#if __cplusplus >= 201703L
 template <class AggregateType, typename SequenceType = index_sequence<>, typename overload = void>
 struct aggregate_size : SequenceType {};
 
@@ -113,7 +106,6 @@ template <class AggregateType, std::size_t... FieldIndexValues>
 struct aggregate_size<AggregateType, index_sequence<FieldIndexValues...>,
                       void_t<decltype(AggregateType{ declval<dummy_t>(), declval<dummy_t, FieldIndexValues>()... })>>
     : aggregate_size<AggregateType, index_sequence<FieldIndexValues..., sizeof...(FieldIndexValues)>> {};
-#endif // if
 
 template <class, typename enable = void>
 struct object_value { using type = dummy_t; };

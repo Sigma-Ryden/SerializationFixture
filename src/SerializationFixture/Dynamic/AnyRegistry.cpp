@@ -1,6 +1,6 @@
 #include <SerializationFixture/Dynamic/AnyRegistry.hpp>
 
-#if __cplusplus >= 201703L && !defined(SF_ANY_SUPPORT_DISABLE)
+#if !defined(SF_ANY_SUPPORT_DISABLE)
 
 namespace sf
 {

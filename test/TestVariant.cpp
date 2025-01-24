@@ -1,5 +1,3 @@
-#if __cplusplus >= 201703L
-
 #include <SFTestingBase.hpp>
 
 #include <SerializationFixture/BuiltIn/variant.hpp>
@@ -21,10 +19,7 @@ SERIALIZABLE_DECLARATION(OwnType)
 SERIALIZABLE_DECLARATION_INIT()
 
 SERIALIZABLE(saveload, self, OwnType)
-    SERIALIZATION
-    (
-        archive & self.var;
-    )
+    archive & self.var;
 SERIALIZABLE_INIT()
 
 TEST(TestUtility, TestVariant)
@@ -52,5 +47,3 @@ TEST(TestUtility, TestVariant)
         ASSERT("std::variant<monostate>.index", m.index() == 0);
     }
 }
-
-#endif // if

@@ -8,7 +8,7 @@
 #include <SerializationFixture/Core/Memory.hpp>
 #include <SerializationFixture/Core/Serialization.hpp>
 
-#include <SerializationFixture/Dynamic/InstantiableTraits.hpp>
+#include <SerializationFixture/Dynamic/InstantiableRegistry.hpp>
 
 #include <SerializationFixture/StreamWrapper.hpp>
 
@@ -18,28 +18,35 @@
 namespace sf
 {
 
-class iarchive_track_t
+template <typename VoidPointerType>
+class iarchive_track_overload_t
 {
-private:
-    std::unordered_map<std::uintptr_t, std::shared_ptr<void>> xxshared;
-    std::unordered_map<std::uintptr_t, void*> xxraw;
+protected:
+    std::unordered_map<std::uintptr_t, VoidPointerType> xxpointer;
 
+public:
+    auto pointer(VoidPointerType const&) noexcept -> decltype(xxpointer)& { return xxpointer; }
+};
+
+template <typename... VoidPointerTypes>
+class iarchive_track_t : public iarchive_track_overload_t<VoidPointerTypes>...
+{
+protected:
     std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
 
 public:
-    template <typename SerializableType>
-    auto pointer(std::shared_ptr<SerializableType> const&) noexcept -> decltype(xxshared)& { return xxshared; }
-
-    template <typename SerializableType>
-    auto pointer(SerializableType*) noexcept -> decltype(xxraw)& { return xxraw; }
-
     auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
+
+public:
+    using iarchive_track_overload_t<VoidPointerTypes>::pointer...;
 };
 
-template <class StreamWrapperType,
-          class TrackingType = iarchive_track_t>
+template <class StreamWrapperType>
 class iarchive_t : public ioarchive_t
 {
+public:
+    using TrackingType = iarchive_track_t<INSTANTIABLE_VOID_POINTER_TYPES>;
+
 private:
     StreamWrapperType xxstream;
     TrackingType xxtracking;
@@ -76,7 +83,6 @@ iarchive_t<wrapper::ibyte_stream_t<InputStreamType>> iarchive(InputStreamType& s
 }
 
 template <template <class, typename...> class StreamWrapperTemplate,
-          class TrackingType = iarchive_track_t,
           typename InputStreamType>
 iarchive_t<StreamWrapperTemplate<InputStreamType>> iarchive(InputStreamType& stream)
 {
@@ -84,7 +90,6 @@ iarchive_t<StreamWrapperTemplate<InputStreamType>> iarchive(InputStreamType& str
 }
 
 template <class StreamWrapperType,
-          class TrackingType = iarchive_track_t,
           typename InputStreamType>
 iarchive_t<StreamWrapperType> iarchive(InputStreamType& stream)
 {
@@ -94,8 +99,8 @@ iarchive_t<StreamWrapperType> iarchive(InputStreamType& stream)
 namespace meta
 {
 
-template <class StreamWrapperType, class TrackingType>
-struct is_iarchive<iarchive_t<StreamWrapperType, TrackingType>> : std::true_type {};
+template <class StreamWrapperType>
+struct is_iarchive<iarchive_t<StreamWrapperType>> : std::true_type {};
 
 } // namespace meta
 

@@ -10,6 +10,7 @@ struct DerivedObject : BaseObject
 };
 
 SERIALIZABLE_DECLARATION(DerivedObject)
+    INSTANTIABLE(S)
 SERIALIZABLE_DECLARATION_INIT()
 
 #endif // DERIVED_OBJECT_HPP

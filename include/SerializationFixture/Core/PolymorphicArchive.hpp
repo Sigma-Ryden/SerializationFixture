@@ -33,44 +33,40 @@ public:
 
 private:
     template <template <::xxsf_archive_traits_key_type> class ArchiveRegistryTemplate,
-              ::xxsf_archive_traits_key_type ArchiveKeyValue,
-              typename SerializableType,
-              SF_REQUIRES(ArchiveKeyValue == ::xxsf_archive_traits_base_key)>
-    static void call(ioarchive_t&, SerializableType&)
-    {
-        throw "The read/write archive has invalid type key.";
-    }
-
-    template <template <::xxsf_archive_traits_key_type> class ArchiveRegistryTemplate,
               ::xxsf_archive_traits_key_type ArchiveKeyValue = 0,
-              typename SerializableType,
-              SF_REQUIRES(ArchiveKeyValue < ::xxsf_archive_traits_base_key)>
+              typename SerializableType>
     static void call(ioarchive_t& archive, SerializableType& data)
     {
-        using DerivedArchiveType = typename ArchiveRegistryTemplate<ArchiveKeyValue>::type;
+        if constexpr (ArchiveKeyValue == ::xxsf_archive_traits_base_key)
+        {
+            throw "The read/write archive has invalid type key.";
+        }
+        else
+        {
+            using DerivedArchiveType = typename ArchiveRegistryTemplate<ArchiveKeyValue>::type;
 
-        if (::xxsf_archive_traits<DerivedArchiveType>::key == archive.trait)
-            return try_call<DerivedArchiveType>(archive, data);
+            if (::xxsf_archive_traits<DerivedArchiveType>::key == archive.trait)
+                return try_call<DerivedArchiveType>(archive, data);
 
-        call<ArchiveRegistryTemplate, ArchiveKeyValue + 1>(archive, data);
+            call<ArchiveRegistryTemplate, ArchiveKeyValue + 1>(archive, data);
+        }
     }
 
-    template <class DerivedArchiveType, typename SerializableType,
-              SF_REQUIRES(::xxsf_archive_traits<DerivedArchiveType>::key == ::xxsf_archive_traits_base_key)>
-    static void try_call(ioarchive_t&, SerializableType&)
-    {
-        throw "The read/write archive was not registered.";
-    }
-
-    template <class DerivedArchiveType, typename SerializableType,
-              SF_REQUIRES(::xxsf_archive_traits<DerivedArchiveType>::key != ::xxsf_archive_traits_base_key)>
+    template <class DerivedArchiveType, typename SerializableType>
     static void try_call(ioarchive_t& archive, SerializableType& data)
     {
-    #ifdef SF_DEBUG
-        if (typeid(archive) != typeid(DerivedArchiveType))
-            throw "The read/write archive was registered incorrect.";
-    #endif // SF_DEBUG
-        try_call_impl<DerivedArchiveType>(static_cast<DerivedArchiveType&>(archive), data);
+        if constexpr (::xxsf_archive_traits<DerivedArchiveType>::key == ::xxsf_archive_traits_base_key)
+        {
+            throw "The read/write archive was not registered.";
+        }
+        else
+        {
+        #ifdef SF_DEBUG
+            if (typeid(archive) != typeid(DerivedArchiveType))
+                throw "The read/write archive was registered incorrect.";
+        #endif // SF_DEBUG
+            try_call_impl<DerivedArchiveType>(static_cast<DerivedArchiveType&>(archive), data);
+        }
     }
 
     template <class DerivedArchiveType, typename SerializableType,

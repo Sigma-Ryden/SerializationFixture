@@ -24,6 +24,7 @@
         static void save(::sf::ioarchive_t&, S&); \
         static void load(::sf::ioarchive_t&, S&);
 
+
 #define SERIALIZABLE_DECLARATION_INIT(...) \
     };
 
@@ -94,5 +95,19 @@ struct xxsf_cast_to_non_public_base
         return static_cast<BaseType&>(object);
     }
 };
+
+namespace sf
+{
+
+namespace meta
+{
+
+template <typename, typename enable = void> struct is_key : std::false_type {};
+template <typename SerializableType>
+struct is_key<SerializableType, std::void_t<decltype(&::xxsf<SerializableType>::key)>> : std::true_type {};
+
+} // namespace meta
+
+} // namespace sf
 
 #endif // SF_CORE_SERIALIZABLE_HPP
