@@ -470,7 +470,7 @@ public:
     SomeObject(int data = 0) : SomeObjectImpl(data), inner_data_(data/2) {}
 
 public:
-    bool operator== (const SomeObject& s)
+    bool operator== (const SomeObject& s) const
     {
         return data_ == s.data_ && inner_data_ == s.inner_data_;
     }
@@ -560,7 +560,7 @@ TEST(TestLibrary, TestAccess)
         EXPECT("non-public inheritance.value", so == s_so);
     }
 
-    using instantiable_registry_type = sf::dynamic::instantiable_registry_t<INSTANTIABLE_VOID_POINTER_TYPES>;
+    using instantiable_registry_type = sf::dynamic::instantiable_registry_t;
 
     {
         // since PolymorphicBase protected inherited from PolymorphicBaseImpl, where
