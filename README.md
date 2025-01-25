@@ -42,5 +42,130 @@ See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/ma
 ## Auto Tests:
 See library testing [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test).
 
+## Quick start:
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/).
+
+Preparing:
+
+```C++
+#include <SF/Core.hpp>
+```
+Let's include serialization support of common STL types:
+```C++
+#include <SF/BuiltIn/string.hpp>
+#include <SF/BuiltIn/vector.hpp>
+#include <SF/BuiltIn/map.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
+```
+And let's write own serializable types:
+```C++
+enum class Property
+{
+    Speed,
+    Force,
+    inteligance,
+    Fly
+};
+
+struct Prototype
+{
+    std::string name;
+    std::vector<Property> properties;
+};
+
+struct Handbook
+{
+    std::map<int, std::shared_ptr<Prototype>> prototypes;
+};
+```
+Since C++17 we can ommit it, for aggregate types:
+```C++
+// in .hpp files
+SERIALIZABLE_DECLARATION(Prototype)
+SERIALIZABLE_DECLARATION_INIT()
+
+SERIALIZABLE_DECLARATION(Handbook)
+SERIALIZABLE_DECLARATION_INIT()
+// ~
+
+// in .cpp files
+SERIALIZABLE(saveload, self, Prototype)
+    SERIALIZATION
+    (
+        archive & self.name & self.properties;
+    )
+SERIALIZABLE_INIT()
+
+SERIALIZABLE(saveload, self, Handbook)
+    SERIALIZATION
+    (
+        archive & self.prototypes;
+    )
+SERIALIZABLE_INIT()
+// ~
+```
+Explaining of using macros above:
+- ```SERIALIZABLE_DECLARATION(<type>) <properties> SERIALIZABLE_DECLARATION_INIT()``` - Generate header code to access the implementation for the specified class.
+- ```SERIALIZABLE(<mode>, <object>, <type>) <serialization> SERIALIZABLE_INIT()``` - Generate 'save/load/saveload' serialization functions for the specified class.
+- ```SERIALIZATION(<body>)``` - Generate 'if' branch for 'bin/xml/json' and custom archive types (bin is the default).
+
+### Using of serialization library:
+
+Sinse we are going to use memory storage, let's define a variable for it:
+```C++
+std::vector<unsigned char> storage;
+```
+Let's prepare our data for save:
+```C++
+Handbook db;
+
+auto zero = std::make_shared<Prototype>();
+zero->name = "Zero";
+zero->properties = {Property::Speed};
+
+auto rew = std::make_shared<Prototype>();
+rew->name = "Rew";
+rew->properties = {Property::Force};
+
+auto ifly = std::make_shared<Prototype>();
+ifly->name = "I.Fly";
+ifly->properties = {Property::inteligance, Property::Fly};
+
+db.prototypes[0] = zero;
+db.prototypes[3] = rew;
+db.prototypes[2] = ifly;
+```
+
+Serialization prepared data:
+```C++
+auto ar = sf::oarchive(storage);
+ar & db;
+```
+
+Deserialization from storage:
+```C++
+Handbook db; // some other clear db
+
+auto ar = sf::iarchive(storage);
+ar & db;
+```
+See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/TestExample.cpp)
+
+### Notes:
+For ```oarchive_t``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
+or ```operator()```, and also ```operator >>``` for ```iarchive_t``` objects.
+
+Examples:
+```C++
+// saving objects to the archive
+archive << obj_0 << ... << obj_n;
+// loading objects from the archive
+archive >> obj_0 >> ... >> obj_n;
+
+//depends on archive type
+archive & obj_0 & ... & obj_n;
+// or
+archive(obj_0, ..., obj_n);
+```
 ## License:
 This library is an open source project licensed under: [MIT](https://opensource.org/licenses/MIT).
