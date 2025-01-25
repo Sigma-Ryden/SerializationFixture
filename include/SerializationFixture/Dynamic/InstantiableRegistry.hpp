@@ -112,7 +112,7 @@ public:
             if (instantiable_key == ::xxsf_instantiable_traits_base_key)
                 throw "The 'sf::dynamic::instantiable_registry_t' must contains instance with valid key.";
         #endif // SF_DEBUG
-            instantiable_proxy_t proxy;
+            instantiable_proxy_type proxy;
 
             add_impl<InstantiableType, INSTANTIABLE_VOID_POINTER_TYPES>(proxy);
 
