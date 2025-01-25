@@ -10,7 +10,7 @@ Both classes can be equipped with additional helper classes via template paramet
 A wrapper for streams will help you flexibly configure the process of writing and reading data.
 The type registrar will allow you to properly serialize and deserialize polymorphic and abstract types.
 
-A library implemented purely in C++11.
+A library implemented purely in C++11 (until v2.4.0) and C++17 (since v2.5.0).
 
 See last stable library version [here](https://github.com/Sigma-Ryden/SerializationFixture/releases).
 
