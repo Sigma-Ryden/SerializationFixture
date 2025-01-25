@@ -18,32 +18,31 @@
 namespace sf
 {
 
-template <typename VoidPointerType>
-class iarchive_track_overload_t
-{
-protected:
-    std::unordered_map<std::uintptr_t, VoidPointerType> xxpointer;
-
-public:
-    auto pointer(VoidPointerType const&) noexcept -> decltype(xxpointer)& { return xxpointer; }
-};
-
-template <typename... VoidPointerTypes>
-class iarchive_track_t : public iarchive_track_overload_t<VoidPointerTypes>...
-{
-protected:
-    std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
-
-public:
-    auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
-
-public:
-    using iarchive_track_overload_t<VoidPointerTypes>::pointer...;
-};
-
 template <class StreamWrapperType>
 class iarchive_t : public ioarchive_t
 {
+public:
+    template <typename VoidPointerType>
+    struct iarchive_track_overload_t
+    {
+    private:
+        std::unordered_map<std::uintptr_t, VoidPointerType> xxpointer;
+
+    public:
+        auto pointer(VoidPointerType const&) noexcept -> decltype(xxpointer)& { return xxpointer; }
+    };
+
+    template <typename... VoidPointerTypes>
+    struct iarchive_track_t : iarchive_track_overload_t<VoidPointerTypes>...
+    {
+    private:
+        std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
+
+    public:
+        using iarchive_track_overload_t<VoidPointerTypes>::pointer...;
+        auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
+    };
+
 public:
     using TrackingType = iarchive_track_t<INSTANTIABLE_VOID_POINTER_TYPES>;
 

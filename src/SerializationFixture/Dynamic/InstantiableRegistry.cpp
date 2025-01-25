@@ -6,8 +6,7 @@ namespace sf
 namespace dynamic
 {
 
-template struct instantiable_registry_t<INSTANTIABLE_VOID_POINTER_TYPES>;
-instantiable_registry_t<INSTANTIABLE_VOID_POINTER_TYPES> instantiable_registry;
+instantiable_registry_t instantiable_registry;
 
 } // namespace dynamic
 

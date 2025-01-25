@@ -26,8 +26,7 @@ namespace sf
 namespace dynamic
 {
 
-template <typename... VoidPointerTypes>
-struct instantiable_registry_t
+struct instantiable_registry_t final
 {
 public:
     using instantiable_type = INSTANTIABLE_TYPE;
@@ -42,6 +41,7 @@ public:
         instantiable_pointer_type(*xxcast)(VoidPointerType const&) = nullptr;
     };
 
+    template <typename... VoidPointerTypes>
     struct instantiable_proxy_t : instantiable_proxy_overload_t<VoidPointerTypes>...
     {
         ::xxsf_instantiable_traits_key_type key = ::xxsf_instantiable_traits_base_key;
@@ -51,8 +51,11 @@ public:
     };
 
 public:
-    std::unordered_map<::xxsf_instantiable_traits_key_type, instantiable_proxy_t> all;
-    std::unordered_map<std::uint64_t, instantiable_proxy_t> rtti_all;
+    using instantiable_proxy_type = instantiable_proxy_t<INSTANTIABLE_VOID_POINTER_TYPES>;
+
+public:
+    std::unordered_map<::xxsf_instantiable_traits_key_type, instantiable_proxy_type> all;
+    std::unordered_map<std::uint64_t, instantiable_proxy_type> rtti_all;
 
 public:
     template <typename InstantiableType> struct is_instantiable
@@ -61,10 +64,10 @@ public:
 
 private:
     template <class InstantiableType>
-    void add_impl(instantiable_proxy_t&) { /*pass*/ }
+    void add_impl(instantiable_proxy_type&) { /*pass*/ }
 
     template <class InstantiableType, typename OtherVoidPointerType, typename... OtherVoidPointerTypes>
-    void add_impl(instantiable_proxy_t& proxy)
+    void add_impl(instantiable_proxy_type& proxy)
     {
         proxy.instantiable_proxy_overload_t<OtherVoidPointerType>::xxclone = []
         {
@@ -111,7 +114,7 @@ public:
         #endif // SF_DEBUG
             instantiable_proxy_t proxy;
 
-            add_impl<InstantiableType, VoidPointerTypes...>(proxy);
+            add_impl<InstantiableType, INSTANTIABLE_VOID_POINTER_TYPES>(proxy);
 
             proxy.key = instantiable_key;
 
@@ -212,7 +215,7 @@ public:
     }
 };
 
-extern instantiable_registry_t<INSTANTIABLE_VOID_POINTER_TYPES> instantiable_registry;
+extern instantiable_registry_t instantiable_registry;
 
 } // namespace dynamic
 

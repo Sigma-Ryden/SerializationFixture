@@ -18,45 +18,44 @@
 namespace sf
 {
 
-template <typename VoidPointerType>
-class oarchive_track_overload_t
-{
-protected:
-    std::unordered_map<std::uintptr_t, bool> xxpointer;
-
-public:
-    auto pointer(VoidPointerType const&) noexcept -> decltype(xxpointer)& { return xxpointer; }
-};
-
-template <typename... VoidPointerTypes>
-class oarchive_track_t : public oarchive_track_overload_t<VoidPointerTypes>...
-{
-protected:
-    std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
-
-public:
-    auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
-
-public:
-    using oarchive_track_overload_t<VoidPointerTypes>::pointer...;
-
-    // TODO: rework, since is not correct!
-#ifdef SF_DEBUG
-    template <typename PointerType>
-    bool is_mixed(std::uintptr_t refer_key, PointerType const& pointer) const noexcept
-    {
-        using pointer_traits = memory::pointer_traits<PointerType>;
-        using void_pointer = typename pointer_traits::template pointer_template<void>;
-
-        return (oarchive_track_overload_t<VoidPointerTypes>::xxpointer.count(refer_key) + ...) !=
-                oarchive_track_overload_t<void_pointer>::xxpointer.count(refer_key);
-    }
-#endif // SF_DEBUG
-};
-
 template <class StreamWrapperType>
 class oarchive_t : public ioarchive_t
 {
+public:
+    template <typename VoidPointerType>
+    struct oarchive_track_overload_t
+    {
+    protected:
+        std::unordered_map<std::uintptr_t, bool> xxpointer;
+
+    public:
+        auto pointer(VoidPointerType const&) noexcept -> decltype(xxpointer)& { return xxpointer; }
+    };
+
+    template <typename... VoidPointerTypes>
+    struct oarchive_track_t : public oarchive_track_overload_t<VoidPointerTypes>...
+    {
+    protected:
+        std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
+
+    public:
+        using oarchive_track_overload_t<VoidPointerTypes>::pointer...;
+        auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
+
+        // TODO: rework, since is not correct!
+    #ifdef SF_DEBUG
+        template <typename PointerType>
+        bool is_mixed(std::uintptr_t refer_key, PointerType const& pointer) const noexcept
+        {
+            using pointer_traits = memory::pointer_traits<PointerType>;
+            using void_pointer = typename pointer_traits::template pointer_template<void>;
+
+            return (oarchive_track_overload_t<VoidPointerTypes>::xxpointer.count(refer_key) + ...) !=
+                    oarchive_track_overload_t<void_pointer>::xxpointer.count(refer_key);
+        }
+    #endif // SF_DEBUG
+    };
+
 public:
     using TrackingType = oarchive_track_t<INSTANTIABLE_VOID_POINTER_TYPES>;
 

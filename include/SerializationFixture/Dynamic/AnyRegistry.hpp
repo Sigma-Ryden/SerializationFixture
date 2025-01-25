@@ -18,7 +18,7 @@ namespace sf
 namespace dynamic
 {
 
-struct any_registry_t
+struct any_registry_t final
 {
 public:
     struct any_proxy_t
