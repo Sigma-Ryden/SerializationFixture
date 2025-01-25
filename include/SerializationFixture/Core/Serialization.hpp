@@ -5,7 +5,9 @@
 
 #include <SerializationFixture/Detail/Preprocessor.hpp>
 
-#define SERIALIZATION(...) __VA_ARGS__
+#define SERIALIZATION(...) SF_SERIALIZATION(bin, __VA_ARGS__)
+#define SERIALIZATION_XML(...) SF_SERIALIZATION(xml, __VA_ARGS__)
+#define SERIALIZATION_JSON(...) SF_SERIALIZATION(json, __VA_ARGS__)
 
 #define TEMPLATE_SERIALIZABLE_DECLARATION(object_template_header, ...) \
     SF_DEPAREN(object_template_header) struct xxsf<__VA_ARGS__> { \
@@ -42,6 +44,8 @@
 
 
 // impl
+#define SF_SERIALIZATION(archive_type, ...) if (archive.type == ::sf::archive_type) { __VA_ARGS__ return; }
+
 #define SF_TEMPLATE_SERIALIZABLE(mode, object, object_template_header, ...) \
     SF_DEPAREN(object_template_header) \
     template <class ArchiveType> void xxsf<__VA_ARGS__>::mode(ArchiveType& archive, S& object) {

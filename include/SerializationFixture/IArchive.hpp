@@ -52,7 +52,8 @@ private:
 
 public:
     template <typename InputStreamType>
-    iarchive_t(InputStreamType& stream) : ioarchive_t(::xxsf_archive_traits<iarchive_t>::key, true)
+    iarchive_t(InputStreamType& stream, ::xxsf_archive_type_key_type type = bin)
+        : ioarchive_t(::xxsf_archive_traits<iarchive_t>::key, type, true)
         , xxstream{stream}, xxtracking() {}
 
     StreamWrapperType& stream() noexcept { return xxstream; }

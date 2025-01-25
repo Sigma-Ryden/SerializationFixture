@@ -64,7 +64,8 @@ private:
 
 public:
     template <typename OutputStreamType>
-    oarchive_t(OutputStreamType& stream) : ioarchive_t(::xxsf_archive_traits<oarchive_t>::key, false)
+    oarchive_t(OutputStreamType& stream, ::xxsf_archive_type_key_type type = bin)
+        : ioarchive_t(::xxsf_archive_traits<oarchive_t>::key, type, false)
         , xxstream{stream}, xxtracking() {}
 
     StreamWrapperType& stream() noexcept { return xxstream; }

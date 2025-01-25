@@ -5,20 +5,27 @@
 
 #include <SerializationFixture/Detail/Meta.hpp>
 
+using xxsf_archive_type_key_type = std::uint8_t;
+
 namespace sf
 {
 
+constexpr xxsf_archive_type_key_type bin = 0;
+constexpr xxsf_archive_type_key_type xml = 1;
+constexpr xxsf_archive_type_key_type json = 2;
+
 struct ioarchive_t
 {
-    ioarchive_t(::xxsf_archive_traits_key_type trait = ::xxsf_archive_traits_base_key, bool readonly = false)
-        : trait(trait), readonly(readonly) {}
+    ioarchive_t(::xxsf_archive_traits_key_type trait, ::xxsf_archive_type_key_type type, bool readonly)
+        : trait(trait), type(type), readonly(readonly) {}
 
 #ifdef SF_DEBUG
     virtual ~ioarchive_t() = default;
 #endif // SF_DEBUG
 
-    ::xxsf_archive_traits_key_type const trait;
-    bool const readonly;
+    std::uint64_t trait : sizeof(xxsf_archive_traits_key_type) * 8;
+    std::uint64_t type : sizeof(xxsf_archive_type_key_type) * 8;
+    std::uint64_t readonly : 1;
 };
 
 namespace meta
