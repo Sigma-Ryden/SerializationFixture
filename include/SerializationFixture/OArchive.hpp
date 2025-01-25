@@ -42,7 +42,6 @@ public:
         using oarchive_track_overload_t<VoidPointerTypes>::pointer...;
         auto hierarchy() noexcept -> decltype(xxhierarchy)& { return xxhierarchy; }
 
-        // TODO: rework, since is not correct!
     #ifdef SF_DEBUG
         template <typename PointerType>
         bool is_mixed(std::uintptr_t refer_key, PointerType const& pointer) const noexcept
@@ -50,8 +49,8 @@ public:
             using pointer_traits = memory::pointer_traits<PointerType>;
             using void_pointer = typename pointer_traits::template pointer_template<void>;
 
-            return (oarchive_track_overload_t<VoidPointerTypes>::xxpointer.count(refer_key) + ...) !=
-                    oarchive_track_overload_t<void_pointer>::xxpointer.count(refer_key);
+            return ((std::is_same_v<void_pointer, VoidPointerTypes> ?
+                    0 : oarchive_track_overload_t<VoidPointerTypes>::xxpointer.count(refer_key)) + ...) > 0;
         }
     #endif // SF_DEBUG
     };
