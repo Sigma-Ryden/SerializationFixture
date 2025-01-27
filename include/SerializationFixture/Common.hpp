@@ -57,7 +57,7 @@ SERIALIZABLE_INIT()
 
 template <typename SerializableType>
 struct xxsf_is_pointer
-    : ::sf::meta::all<std::is_pointer<SerializableType>, ::sf::meta::is_pointer_to_any<SerializableType>> {};
+    : std::conjunction<std::is_pointer<SerializableType>, ::sf::meta::is_pointer_to_any<SerializableType>> {};
 
 CONDITIONAL_SERIALIZABLE_DECLARATION(xxsf_is_pointer<S>::value)
 SERIALIZABLE_DECLARATION_INIT()

@@ -25,13 +25,13 @@ SF_IS_STD_SET_TYPE_META_GENERIC(multiset)
 SF_IS_STD_SET_TYPE_META_GENERIC(unordered_multiset)
 
 template <class StdSetType> struct xxsf_is_std_any_unordered_set
-    : ::sf::meta::one<::xxsf_is_std_unordered_set<StdSetType>,
-                      ::xxsf_is_std_unordered_multiset<StdSetType>> {};
+    : std::disjunction<::xxsf_is_std_unordered_set<StdSetType>,
+                       ::xxsf_is_std_unordered_multiset<StdSetType>> {};
 
 template <class StdSetType> struct xxsf_is_std_any_set
-    : ::sf::meta::one<::xxsf_is_std_set<StdSetType>,
-                      ::xxsf_is_std_multiset<StdSetType>,
-                      ::xxsf_is_std_any_unordered_set<StdSetType>> {};
+    : std::disjunction<::xxsf_is_std_set<StdSetType>,
+                       ::xxsf_is_std_multiset<StdSetType>,
+                       ::xxsf_is_std_any_unordered_set<StdSetType>> {};
 
 namespace sf
 {
@@ -40,7 +40,7 @@ namespace detail
 {
 
 template <class StdSetType,
-          SF_REQUIRES(meta::negation<::xxsf_is_std_any_unordered_set<StdSetType>>::value)>
+          SF_REQUIRES(std::negation<::xxsf_is_std_any_unordered_set<StdSetType>>::value)>
 void reserve_unordered(StdSetType&, std::size_t) noexcept { /*pass*/ }
 
 template <class StdSetType,

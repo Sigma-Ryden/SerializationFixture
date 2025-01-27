@@ -1,10 +1,10 @@
 #ifndef SF_UTILITY_DETAIL_MACRO_HPP
 #define SF_UTILITY_DETAIL_MACRO_HPP
 
-#define SF_BITPACK(common_fields_type, archive, ...)                                                    \
-    {                                                                                                   \
-        auto xxbitpack = ::sf::bitpack<common_fields_type>(archive);                                    \
-        SF_CONCAT(SF_BITPACK_, SF_VA_ARGS_SIZE(__VA_ARGS__))(__VA_ARGS__)                               \
+#define SF_BITPACK(common_fields_type, archive, ...) \
+    { \
+        auto xxbitpack = ::sf::bitpack<common_fields_type>(archive); \
+        SF_CONCAT(SF_BITPACK_, SF_VA_ARGS_SIZE(__VA_ARGS__))(__VA_ARGS__) \
     }
 
 #define SF_BITFIELD(field_and_bits) SF_FIRST_ARGUMENT field_and_bits = xxbitpack field_and_bits;

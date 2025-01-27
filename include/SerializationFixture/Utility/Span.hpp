@@ -74,7 +74,7 @@ private:
 
 public:
     template <typename SizeType, typename... SizeTypes,
-              SF_REQUIRES(meta::negation<std::is_array<SizeType>>::value)>
+              SF_REQUIRES(std::negation<std::is_array<SizeType>>::value)>
     span_t(pointer& data, SizeType dimension, SizeTypes... dimensions) noexcept
         : BaseSpanType(data, dimension, dimensions...), xxchild_scope(data[0], dimensions...) {}
 
@@ -124,9 +124,9 @@ struct is_span<utility::span_t<ValueType, DimensionNumberValue>> : std::true_typ
 
 template <typename PointerType, typename SizeType, typename... SizeTypes>
 struct is_span_set
-    : meta::all<std::integral_constant<bool, meta::pointer_count<PointerType>::value >= sizeof...(SizeTypes) + 1>,
-                meta::all<std::is_arithmetic<SizeType>,
-                          std::is_arithmetic<SizeTypes>...>> {};
+    : std::conjunction<std::integral_constant<bool, meta::pointer_count<PointerType>::value >= sizeof...(SizeTypes) + 1>,
+                       std::conjunction<std::is_arithmetic<SizeType>,
+                                        std::is_arithmetic<SizeTypes>...>> {};
 
 } // namespace meta
 
@@ -149,8 +149,8 @@ namespace detail
 {
 
 template <class ArchiveType, typename SpanType,
-          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
-                               meta::negation<meta::is_span<SpanType>>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_ioarchive<ArchiveType>,
+                                       std::negation<meta::is_span<SpanType>>>::value)>
 void span_impl(ArchiveType& archive, SpanType& data)
 {
     archive & data;
@@ -158,8 +158,8 @@ void span_impl(ArchiveType& archive, SpanType& data)
 
 // serialization of scoped data with previous dimension initialization
 template <class ArchiveType, typename SpanType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_span<SpanType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       meta::is_span<SpanType>>::value)>
 void span_impl(ArchiveType& archive, SpanType& array)
 {
     using size_type = typename SpanType::size_type;
@@ -169,8 +169,8 @@ void span_impl(ArchiveType& archive, SpanType& array)
 }
 
 template <class ArchiveType, typename SpanType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_span<SpanType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       meta::is_span<SpanType>>::value)>
 void span_impl(ArchiveType& archive, SpanType& array)
 {
     using size_type = typename SpanType::size_type;
@@ -191,8 +191,8 @@ inline namespace common
 
 template <class ArchiveType, typename PointerType,
           typename SizeType, typename... SizeTypes,
-          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
-                                meta::is_span_set<PointerType, SizeType, SizeTypes...>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_ioarchive<ArchiveType>,
+                                       meta::is_span_set<PointerType, SizeType, SizeTypes...>>::value)>
 void span(ArchiveType& archive, PointerType& pointer, SizeType& dimension, SizeTypes&... dimensions)
 {
     if (not detail::tracking_key(archive, pointer)) return; // serialize refer info
@@ -220,12 +220,12 @@ struct span_functor_t : apply_functor_t
     template <class ArchiveType>
     void operator() (ArchiveType& archive) const
     {
-        invoke(archive, meta::make_index_sequence<std::tuple_size<PackType>::value>{});
+        invoke(archive, std::make_index_sequence<std::tuple_size<PackType>::value>{});
     }
 
 private:
     template <class ArchiveType, std::size_t... SizeTypeIndexValues>
-    void invoke(ArchiveType& archive, meta::index_sequence<SizeTypeIndexValues...>) const
+    void invoke(ArchiveType& archive, std::index_sequence<SizeTypeIndexValues...>) const
     {
         span(archive, std::get<SizeTypeIndexValues>(pack)...);
     }

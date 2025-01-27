@@ -14,16 +14,16 @@ namespace sf
 {
 
 template <class BaseType, class ArchiveType, class DerivedType,
-          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
-                                std::is_base_of<BaseType, DerivedType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_ioarchive<ArchiveType>,
+                                       std::is_base_of<BaseType, DerivedType>>::value)>
 void base(ArchiveType& archive, DerivedType& object)
 {
     archive & ::xxsf_cast_to_non_public_base::call<BaseType>(object);
 }
 
 template <class BaseType, class ArchiveType, class DerivedType,
-          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
-                                std::is_base_of<BaseType, DerivedType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_ioarchive<ArchiveType>,
+                                       std::is_base_of<BaseType, DerivedType>>::value)>
 void virtual_base(ArchiveType& archive, DerivedType& object)
 {
 #ifdef SF_PTRTRACK_DISABLE
@@ -48,7 +48,7 @@ namespace detail
 {
 
 template <class BaseType, class ArchiveType, class DerivedType,
-          SF_REQUIRES(meta::negation<meta::is_virtual_base_of<BaseType, DerivedType>>::value)>
+          SF_REQUIRES(std::negation<meta::is_virtual_base_of<BaseType, DerivedType>>::value)>
 void native_base(ArchiveType& archive, DerivedType& object_with_base)
 {
     base<BaseType>(archive, object_with_base);
@@ -104,8 +104,8 @@ void hierarchy(ArchiveType&, DerivedType&) noexcept { /*pass*/ }
 
 // Variadic native_base function
 template <class BaseType, class... BaseTypes, class ArchiveType, class DerivedType,
-          SF_REQUIRES(meta::all<meta::is_ioarchive<ArchiveType>,
-                                meta::is_derived_of<DerivedType, BaseType, BaseTypes...>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_ioarchive<ArchiveType>,
+                                       meta::is_derived_of<DerivedType, BaseType, BaseTypes...>>::value)>
 void hierarchy(ArchiveType& archive, DerivedType& object)
 {
     detail::native_base<BaseType>(archive, object);

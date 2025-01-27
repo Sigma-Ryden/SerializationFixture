@@ -16,7 +16,7 @@ namespace sf
 // Type registry for instantiable & any serialization, allowed registered and supported types only
 template <typename SerializableType> void serializable()
 {
-    static_assert(meta::negation<meta::is_unsupported<SerializableType>>::value,
+    static_assert(std::negation<meta::is_unsupported<SerializableType>>::value,
         "The 'SerializableType' is an unsupported type for serialization.");
 
     dynamic::instantiable_registry.add<SerializableType>();

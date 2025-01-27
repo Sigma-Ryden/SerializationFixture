@@ -1,7 +1,7 @@
 #ifndef SF_BUILT_IN_ARRAY_HPP
 #define SF_BUILT_IN_ARRAY_HPP
 
-#include <array> // array
+//#include <array> // array
 
 #include <SerializationFixture/Core/Serialization.hpp>
 

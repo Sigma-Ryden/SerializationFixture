@@ -20,8 +20,8 @@ namespace detail
 {
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_any<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       meta::is_pointer_to_any<PointerType>>::value)>
 std::uintptr_t tracking_key(ArchiveType& archive, PointerType& pointer)
 {
     auto const pure = memory::pure(pointer);
@@ -32,8 +32,8 @@ std::uintptr_t tracking_key(ArchiveType& archive, PointerType& pointer)
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_any<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       meta::is_pointer_to_any<PointerType>>::value)>
 std::uintptr_t tracking_key(ArchiveType& archive, PointerType& pointer)
 {
 #ifdef SF_DEBUG
@@ -48,8 +48,8 @@ std::uintptr_t tracking_key(ArchiveType& archive, PointerType& pointer)
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       meta::is_pointer_to_polymorphic<PointerType>>::value)>
 static ::xxsf_instantiable_traits_key_type instantiable_key(ArchiveType& archive, PointerType& pointer)
 {
     if (pointer == nullptr)
@@ -64,8 +64,8 @@ static ::xxsf_instantiable_traits_key_type instantiable_key(ArchiveType& archive
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       meta::is_pointer_to_polymorphic<PointerType>>::value)>
 static ::xxsf_instantiable_traits_key_type instantiable_key(ArchiveType& archive, PointerType& pointer)
 {
 #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -80,21 +80,21 @@ static ::xxsf_instantiable_traits_key_type instantiable_key(ArchiveType& archive
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       meta::is_pointer_to_polymorphic<PointerType>>::value)>
 void native_save(ArchiveType& archive, PointerType& pointer, ::xxsf_instantiable_traits_key_type track_key)
 {
     instantiable_key(archive, pointer); // write class info
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       std::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
 void native_save(ArchiveType&, PointerType&, ::xxsf_instantiable_traits_key_type) noexcept { /*pass*/ }
 
 template <class ArchiveType, typename PointerType, typename VoidPointerType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       meta::is_pointer_to_polymorphic<PointerType>>::value)>
 void native_load(ArchiveType& archive, PointerType& pointer, VoidPointerType& address)
 {
     auto const key = instantiable_key(archive, pointer);
@@ -102,8 +102,8 @@ void native_load(ArchiveType& archive, PointerType& pointer, VoidPointerType& ad
 }
 
 template <class ArchiveType, typename PointerType, typename VoidPointerType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       std::negation<meta::is_pointer_to_polymorphic<PointerType>>>::value)>
 void native_load(ArchiveType&, PointerType& pointer, VoidPointerType const& address) noexcept
 {
     pointer = memory::static_pointer_cast<typename memory::pointer_traits<PointerType>::element_type>(address);
@@ -112,8 +112,8 @@ void native_load(ArchiveType&, PointerType& pointer, VoidPointerType const& addr
 } // namespace detail
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_standard_layout<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       meta::is_pointer_to_standard_layout<PointerType>>::value)>
 void strict(ArchiveType& archive, PointerType& pointer)
 {
     if (pointer == nullptr)
@@ -123,8 +123,8 @@ void strict(ArchiveType& archive, PointerType& pointer)
 }
 
 template <class ArchiveType, typename PointerType, typename VoidPointerType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_standard_layout<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       meta::is_pointer_to_standard_layout<PointerType>>::value)>
 void strict(ArchiveType& archive, PointerType& pointer, VoidPointerType& cache)
 {
 #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -139,8 +139,8 @@ void strict(ArchiveType& archive, PointerType& pointer, VoidPointerType& cache)
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       meta::is_pointer_to_polymorphic<PointerType>>::value)>
 void strict(ArchiveType& archive, PointerType& pointer)
 {
     detail::instantiable_key(archive, pointer);
@@ -148,8 +148,8 @@ void strict(ArchiveType& archive, PointerType& pointer)
 }
 
 template <class ArchiveType, typename PointerType, typename VoidPointerType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_polymorphic<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       meta::is_pointer_to_polymorphic<PointerType>>::value)>
 void strict(ArchiveType& archive, PointerType& pointer, VoidPointerType& cache)
 {
     auto const key = detail::instantiable_key(archive, pointer);
@@ -158,8 +158,8 @@ void strict(ArchiveType& archive, PointerType& pointer, VoidPointerType& cache)
 
 // verison without cache using
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_any<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       meta::is_pointer_to_any<PointerType>>::value)>
 void strict(ArchiveType& archive, PointerType& pointer)
 {
     typename memory::pointer_traits<PointerType>::template pointer_template<void> cache = nullptr; // mock
@@ -167,8 +167,8 @@ void strict(ArchiveType& archive, PointerType& pointer)
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::is_pointer_to_any<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       meta::is_pointer_to_any<PointerType>>::value)>
 void track(ArchiveType& archive, PointerType& pointer)
 {
     auto const key = detail::tracking_key(archive, pointer); // serialize refer info
@@ -193,8 +193,8 @@ void track(ArchiveType& archive, PointerType& pointer)
 }
 
 template <class ArchiveType, typename SerializableType,
-          SF_REQUIRES(meta::all<meta::is_oarchive<ArchiveType>,
-                                meta::negation<meta::is_pointer_to_any<SerializableType>>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_oarchive<ArchiveType>,
+                                       std::negation<meta::is_pointer_to_any<SerializableType>>>::value)>
 void track(ArchiveType& archive, SerializableType& data)
 {
     auto const pointer = std::addressof(data);
@@ -213,8 +213,8 @@ void track(ArchiveType& archive, SerializableType& data)
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::is_pointer_to_any<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       meta::is_pointer_to_any<PointerType>>::value)>
 void track(ArchiveType& archive, PointerType& pointer)
 {
 #ifndef SF_GARBAGE_CHECK_DISABLE
@@ -239,8 +239,8 @@ void track(ArchiveType& archive, PointerType& pointer)
 }
 
 template <class ArchiveType, typename SerializableType,
-          SF_REQUIRES(meta::all<meta::is_iarchive<ArchiveType>,
-                                meta::negation<meta::is_pointer_to_any<SerializableType>>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_iarchive<ArchiveType>,
+                                       std::negation<meta::is_pointer_to_any<SerializableType>>>::value)>
 void track(ArchiveType& archive, SerializableType& data)
 {
     std::uintptr_t key{};
@@ -258,8 +258,8 @@ void track(ArchiveType& archive, SerializableType& data)
 }
 
 template <class ArchiveType, typename PointerType,
-          SF_REQUIRES(meta::all<meta::is_ioarchive<PointerType>,
-                                meta::is_pointer_to_any<PointerType>>::value)>
+          SF_REQUIRES(std::conjunction<meta::is_ioarchive<PointerType>,
+                                       meta::is_pointer_to_any<PointerType>>::value)>
 void raw(ArchiveType& archive, PointerType& pointer)
 {
     if (detail::tracking_key(archive, pointer)) // serialize refer info

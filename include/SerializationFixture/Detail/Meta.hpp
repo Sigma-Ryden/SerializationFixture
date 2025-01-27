@@ -7,7 +7,7 @@
 // is_arithmetic, is_array, is_pointer,
 // enable_if, is_same, true_type, false_type
 
-#include <any> // any
+#include <utility> // index_sequence, make_index_sequence
 
 #include <SerializationFixture/Detail/MetaMacro.hpp>
 
@@ -22,23 +22,7 @@ template <typename...> constexpr bool to_false() noexcept { return false; }
 template <typename Type, std::size_t IndexableValue = 0>
 auto declval() noexcept -> decltype(std::declval<Type>()) { return std::declval<Type>(); }
 
-template <class...> struct all : std::true_type {};
-template <class ConditionType> struct all<ConditionType> : ConditionType {};
-template <class ConditionType, class... OtherConditionTypes>
-struct all<ConditionType, OtherConditionTypes...>
-    : std::conditional<bool(ConditionType::value), all<OtherConditionTypes...>, ConditionType>::type {};
-
-template <class...> struct one : std::false_type {};
-template <class ConditionType> struct one<ConditionType> : ConditionType {};
-template <class ConditionType, class... OtherConditionTypes>
-struct one<ConditionType, OtherConditionTypes...>
-    : std::conditional<bool(ConditionType::value), ConditionType, one<OtherConditionTypes...>>::type {};
-
-template <class ConditionType> struct negation : std::integral_constant<bool, not bool(ConditionType::value)> {};
-
-template <typename Type, typename... OtherTypes> struct is_same : all<std::is_same<Type, OtherTypes>...> {};
-
-template <typename...> using void_t = void;
+template <typename Type, typename... OtherTypes> struct is_same : std::conjunction<std::is_same<Type, OtherTypes>...> {};
 
 template <typename Type, std::size_t PointeringNumberValue = 1> struct remove_pointer { using type = Type; };
 template <typename Type> struct remove_pointer<Type*, 1> { using type = Type; };
@@ -53,34 +37,15 @@ template <typename Type, std::size_t PointeringNumberValue = 1>
 struct pointer { using type = typename pointer<Type, PointeringNumberValue - 1>::type*; };
 template <typename Type> struct pointer<Type, 0> { using type = Type; };
 
- // limited by template depth
-template <std::size_t... SequenceValues> struct index_sequence
-{
-    static constexpr auto value = sizeof...(SequenceValues);
-};
-
-namespace detail
-{
-
-template <std::size_t SequenceValue, std::size_t... SequenceValues>
-struct index_sequence_helper : index_sequence_helper<SequenceValue - 1, SequenceValue - 1, SequenceValues...> {};
-template <std::size_t... SequenceValues>
-struct index_sequence_helper<0, SequenceValues...> { using type = index_sequence<SequenceValues...>; };
-
-} // namespace detail
-
-template <std::size_t SequenceSizeValue>
-using make_index_sequence = typename detail::index_sequence_helper<SequenceSizeValue>::type;
-
 // meta
 template <typename, typename enable = void> struct is_complete : std::false_type {};
-template <typename Type> struct is_complete<Type, void_t<decltype(sizeof(Type))>> : std::true_type {};
+template <typename Type> struct is_complete<Type, std::void_t<decltype(sizeof(Type))>> : std::true_type {};
 
 template <typename FromType, typename ToType, typename enable = void>
 struct is_static_castable : std::false_type {};
 
 template <typename FromType, typename ToType>
-struct is_static_castable<FromType, ToType, void_t<decltype( static_cast<ToType>(std::declval<FromType>()) )>> : std::true_type {};
+struct is_static_castable<FromType, ToType, std::void_t<decltype( static_cast<ToType>(std::declval<FromType>()) )>> : std::true_type {};
 
 template <typename PointerType, bool = std::is_pointer<PointerType>::value>
 struct pointer_count
@@ -96,22 +61,22 @@ struct pointer_count<PointerType, false>
 
 struct dummy_t
 {
-    template <typename Type, SF_REQUIRES(negation<std::is_same<Type, std::any>>::value)> operator Type();
+    template <typename Type> operator Type() const;
 };
 
-template <class AggregateType, typename SequenceType = index_sequence<>, typename overload = void>
+template <class AggregateType, typename SequenceType = std::index_sequence<>, typename overload = void>
 struct aggregate_size : SequenceType {};
 
 template <class AggregateType, std::size_t... FieldIndexValues>
-struct aggregate_size<AggregateType, index_sequence<FieldIndexValues...>,
-                      void_t<decltype(AggregateType{ declval<dummy_t>(), declval<dummy_t, FieldIndexValues>()... })>>
-    : aggregate_size<AggregateType, index_sequence<FieldIndexValues..., sizeof...(FieldIndexValues)>> {};
+struct aggregate_size<AggregateType, std::index_sequence<FieldIndexValues...>,
+                      std::void_t<decltype(AggregateType{ declval<dummy_t>(), declval<dummy_t, FieldIndexValues>()... })>>
+    : aggregate_size<AggregateType, std::index_sequence<FieldIndexValues..., sizeof...(FieldIndexValues)>> {};
 
 template <class, typename enable = void>
 struct object_value { using type = dummy_t; };
 
 template <class SerializableObjectType>
-struct object_value<SerializableObjectType, void_t<typename SerializableObjectType::value_type>>
+struct object_value<SerializableObjectType, std::void_t<typename SerializableObjectType::value_type>>
 {
     using type = typename SerializableObjectType::value_type;
 };
@@ -138,12 +103,12 @@ struct value<SerializableArrayType, typename std::enable_if<std::is_array<Serial
 template <typename SerializableType> struct is_compressible : std::is_arithmetic<typename value<SerializableType>::type> {};
 
 template <class DerivedType, class BaseType, class... BaseTypes> struct is_derived_of
-    : all<std::is_base_of<BaseType, DerivedType>,
-          std::is_base_of<BaseTypes, DerivedType>...> {};
+    : std::conjunction<std::is_base_of<BaseType, DerivedType>,
+                       std::is_base_of<BaseTypes, DerivedType>...> {};
 
 template <class BaseType, class DerivedType> struct is_virtual_base_of
-    : all<std::is_base_of<BaseType, DerivedType>,
-          negation<is_static_castable<BaseType*, DerivedType*>>> {};
+    : std::conjunction<std::is_base_of<BaseType, DerivedType>,
+                       std::negation<is_static_castable<BaseType*, DerivedType*>>> {};
 
 template <typename> struct is_void_pointer : std::false_type {};
 template <> struct is_void_pointer<void*> : std::true_type {};
@@ -156,13 +121,16 @@ template <typename ReturnType, typename... ArgumentTypes>
 struct is_function_pointer<ReturnType (*)(ArgumentTypes...)> : std::true_type {};
 
 template <typename SerializableType> struct is_unsupported :
-    one<is_void_pointer<SerializableType>,
+    std::disjunction
+    <
+        is_void_pointer<SerializableType>,
         is_function_pointer<SerializableType>,
         is_null_pointer<SerializableType>,
         std::is_function<SerializableType>,
         std::is_member_function_pointer<SerializableType>,
         std::is_member_object_pointer<SerializableType>,
-        std::is_reference<SerializableType>> {};
+        std::is_reference<SerializableType>
+    > {};
 
 } // namespace meta
 

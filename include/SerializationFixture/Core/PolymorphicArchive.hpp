@@ -95,7 +95,7 @@ ioarchive_t& operator& (ioarchive_t& archive, SerializableType const&)
 }
 
 template <typename SerializableType,
-          SF_REQUIRES(meta::negation<meta::is_unsupported<SerializableType>>::value)>
+          SF_REQUIRES(std::negation<meta::is_unsupported<SerializableType>>::value)>
 ioarchive_t& operator<< (ioarchive_t& archive, SerializableType const& data)
 {
     polymorphic_archive_t::save(archive, const_cast<SerializableType&>(data));
@@ -103,7 +103,7 @@ ioarchive_t& operator<< (ioarchive_t& archive, SerializableType const& data)
 }
 
 template <typename SerializableType,
-          SF_REQUIRES(meta::negation<meta::is_unsupported<SerializableType>>::value)>
+          SF_REQUIRES(std::negation<meta::is_unsupported<SerializableType>>::value)>
 ioarchive_t& operator>> (ioarchive_t& archive, SerializableType const& data)
 {
     polymorphic_archive_t::load(archive, const_cast<SerializableType&>(data));
@@ -111,7 +111,7 @@ ioarchive_t& operator>> (ioarchive_t& archive, SerializableType const& data)
 }
 
 template <typename SerializableType,
-          SF_REQUIRES(meta::negation<meta::is_unsupported<SerializableType>>::value)>
+          SF_REQUIRES(std::negation<meta::is_unsupported<SerializableType>>::value)>
 ioarchive_t& operator& (ioarchive_t& archive, SerializableType const& data)
 {
     return archive.readonly ? archive >> data : archive << data;

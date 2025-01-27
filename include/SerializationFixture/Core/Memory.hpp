@@ -72,7 +72,7 @@ ToType* dynamic_pointer_cast(SerializableType* pointer)
 }
 
 template <typename ToType, typename FromType,
-          SF_REQUIRES(meta::negation<meta::is_static_castable<FromType*, ToType*>>::value)>
+          SF_REQUIRES(std::negation<meta::is_static_castable<FromType*, ToType*>>::value)>
 ToType* static_pointer_cast(FromType*) noexcept
 {
     return nullptr;
@@ -86,7 +86,7 @@ ToType* static_pointer_cast(FromType* pointer) noexcept
 }
 
 template <typename SerializableType,
-          SF_REQUIRES(meta::negation<std::is_polymorphic<SerializableType>>::value)>
+          SF_REQUIRES(std::negation<std::is_polymorphic<SerializableType>>::value)>
 void* pure(SerializableType* pointer) noexcept
 {
     return memory::static_pointer_cast<void>(pointer);
@@ -106,7 +106,7 @@ SerializableType* raw(SerializableType* pointer)
 }
 
 template <typename SerializableType,
-          SF_REQUIRES(meta::negation<std::is_abstract<SerializableType>>::value)>
+          SF_REQUIRES(std::negation<std::is_abstract<SerializableType>>::value)>
 void allocate(SerializableType*& pointer)
 {
     pointer = new SerializableType;
@@ -142,7 +142,7 @@ std::shared_ptr<ToType> dynamic_pointer_cast(std::shared_ptr<FromType> const& po
 }
 
 template <typename ToType, typename FromType,
-          SF_REQUIRES(meta::negation<meta::is_static_castable<FromType*, ToType*>>::value)>
+          SF_REQUIRES(std::negation<meta::is_static_castable<FromType*, ToType*>>::value)>
 std::shared_ptr<ToType> static_pointer_cast(std::shared_ptr<FromType> const&) noexcept
 {
     return nullptr;
@@ -156,7 +156,7 @@ std::shared_ptr<ToType> static_pointer_cast(std::shared_ptr<FromType> const& poi
 }
 
 template <typename SerializableType,
-          SF_REQUIRES(meta::negation<std::is_polymorphic<SerializableType>>::value)>
+          SF_REQUIRES(std::negation<std::is_polymorphic<SerializableType>>::value)>
 std::shared_ptr<void> pure(std::shared_ptr<SerializableType> const& pointer) noexcept
 {
     return memory::static_pointer_cast<void>(pointer);
@@ -176,7 +176,7 @@ SerializableType* raw(std::shared_ptr<SerializableType> const& pointer)
 }
 
 template <typename SerializableType,
-          SF_REQUIRES(meta::negation<std::is_abstract<SerializableType>>::value)>
+          SF_REQUIRES(std::negation<std::is_abstract<SerializableType>>::value)>
 void allocate(std::shared_ptr<SerializableType>& pointer)
 {
     pointer = std::make_shared<SerializableType>();

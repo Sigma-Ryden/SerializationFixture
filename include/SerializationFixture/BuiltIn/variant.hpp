@@ -29,7 +29,7 @@ void variant_save(ArchiveType& archive, VariantType& variant, std::uint64_t inde
 }
 
 template <typename ElementType, class ArchiveType, class VariantType,
-          SF_REQUIRES(meta::negation<std::is_constructible<ElementType>>::value)>
+          SF_REQUIRES(std::negation<std::is_constructible<ElementType>>::value)>
 void variant_load_impl(ArchiveType&, VariantType&)
 {
     throw "Require default constructor for specify type.";

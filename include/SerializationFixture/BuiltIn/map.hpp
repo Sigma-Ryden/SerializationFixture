@@ -29,13 +29,13 @@ SF_IS_STD_MAP_TYPE_META_GENERIC(multimap)
 SF_IS_STD_MAP_TYPE_META_GENERIC(unordered_multimap)
 
 template <class StdMapType> struct xxsf_is_std_any_unordered_map
-    : ::sf::meta::one<::xxsf_is_std_unordered_map<StdMapType>,
-                      ::xxsf_is_std_unordered_multimap<StdMapType>> {};
+    : std::disjunction<::xxsf_is_std_unordered_map<StdMapType>,
+                       ::xxsf_is_std_unordered_multimap<StdMapType>> {};
 
 template <class StdMapType> struct xxsf_is_std_any_map
-    : ::sf::meta::one<::xxsf_is_std_map<StdMapType>,
-                      ::xxsf_is_std_multimap<StdMapType>,
-                      ::xxsf_is_std_any_unordered_map<StdMapType>> {};
+    : std::disjunction<::xxsf_is_std_map<StdMapType>,
+                       ::xxsf_is_std_multimap<StdMapType>,
+                       ::xxsf_is_std_any_unordered_map<StdMapType>> {};
 
 namespace sf
 {
@@ -44,7 +44,7 @@ namespace detail
 {
 
 template <class StdMapType,
-          SF_REQUIRES(meta::negation<::xxsf_is_std_any_unordered_map<StdMapType>>::value)>
+          SF_REQUIRES(std::negation<::xxsf_is_std_any_unordered_map<StdMapType>>::value)>
 void reserve_unordered(StdMapType&, std::size_t) noexcept { /*pass*/ }
 
 template <class StdMapType,

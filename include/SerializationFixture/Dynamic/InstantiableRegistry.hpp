@@ -59,8 +59,8 @@ public:
 
 public:
     template <typename InstantiableType> struct is_instantiable
-        : meta::one<meta::is_static_castable<InstantiableType*, instantiable_type*>,
-                    std::is_convertible<InstantiableType*, instantiable_type*>> {};
+        : std::disjunction<meta::is_static_castable<InstantiableType*, instantiable_type*>,
+                           std::is_convertible<InstantiableType*, instantiable_type*>> {};
 
 private:
     template <class InstantiableType>
@@ -139,7 +139,7 @@ public:
     bool fixture()
     {
     #ifdef SF_DEBUG
-        if (meta::negation<is_instantiable<InstantiableType>>::value)
+        if (std::negation<is_instantiable<InstantiableType>>::value)
             throw "The polymorphic 'InstantiableType' type is not convertible to 'instantiable_t'.";
     #endif // SF_DEBUG
 
