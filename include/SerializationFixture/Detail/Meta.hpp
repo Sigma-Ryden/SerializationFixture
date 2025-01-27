@@ -61,7 +61,7 @@ struct pointer_count<PointerType, false>
 
 struct dummy_t
 {
-    template <typename Type> operator Type() const;
+    template <typename Type> operator Type() const; // not impl
 };
 
 template <class AggregateType, typename SequenceType = std::index_sequence<>, typename overload = void>
