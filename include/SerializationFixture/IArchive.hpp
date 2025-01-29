@@ -25,7 +25,7 @@ public:
     template <typename VoidPointerType>
     struct iarchive_track_overload_t
     {
-    private:
+    protected:
         std::unordered_map<std::uintptr_t, VoidPointerType> xxpointer;
 
     public:
@@ -35,7 +35,7 @@ public:
     template <typename... VoidPointerTypes>
     struct iarchive_track_t : iarchive_track_overload_t<VoidPointerTypes>...
     {
-    private:
+    protected:
         std::unordered_map<std::uintptr_t, std::unordered_map<::xxsf_instantiable_traits_key_type, bool>> xxhierarchy;
 
     public:
@@ -77,23 +77,23 @@ public:
 
 // create default iarchive_t with wrapper::ibyte_stream_t<>
 template <typename InputStreamType>
-iarchive_t<wrapper::ibyte_stream_t<InputStreamType>> iarchive(InputStreamType& stream)
+iarchive_t<wrapper::ibyte_stream_t<InputStreamType>> iarchive(InputStreamType& stream, ::xxsf_archive_type_key_type type = bin)
 {
-    return { stream };
+    return { stream, type };
 }
 
 template <template <class, typename...> class StreamWrapperTemplate,
           typename InputStreamType>
-iarchive_t<StreamWrapperTemplate<InputStreamType>> iarchive(InputStreamType& stream)
+iarchive_t<StreamWrapperTemplate<InputStreamType>> iarchive(InputStreamType& stream, ::xxsf_archive_type_key_type type = bin)
 {
-    return { stream };
+    return { stream, type };
 }
 
 template <class StreamWrapperType,
           typename InputStreamType>
-iarchive_t<StreamWrapperType> iarchive(InputStreamType& stream)
+iarchive_t<StreamWrapperType> iarchive(InputStreamType& stream, ::xxsf_archive_type_key_type type = bin)
 {
-    return { stream };
+    return { stream, type };
 }
 
 namespace meta

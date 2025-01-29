@@ -89,23 +89,23 @@ public:
 
 // create default oarchive_t with wrapper::obyte_stream_t<>
 template <typename OutputStreamType>
-oarchive_t<wrapper::obyte_stream_t<OutputStreamType>> oarchive(OutputStreamType& stream)
+oarchive_t<wrapper::obyte_stream_t<OutputStreamType>> oarchive(OutputStreamType& stream, ::xxsf_archive_type_key_type type = bin)
 {
-    return { stream };
+    return { stream, type };
 }
 
 template <template <class, typename...> class StreamWrapperTemplate,
           typename OutputStreamType>
-oarchive_t<StreamWrapperTemplate<OutputStreamType>> oarchive(OutputStreamType& stream)
+oarchive_t<StreamWrapperTemplate<OutputStreamType>> oarchive(OutputStreamType& stream, ::xxsf_archive_type_key_type type = bin)
 {
-    return { stream };
+    return { stream, type };
 }
 
 template <class StreamWrapperType,
           typename OutputStreamType>
-oarchive_t<StreamWrapperType> oarchive(OutputStreamType& stream)
+oarchive_t<StreamWrapperType> oarchive(OutputStreamType& stream, ::xxsf_archive_type_key_type type = bin)
 {
-    return { stream };
+    return { stream, type };
 }
 
 namespace meta
