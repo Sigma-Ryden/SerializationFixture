@@ -5,9 +5,13 @@
 
 #include <SerializationFixture/Detail/Preprocessor.hpp>
 
-#define SERIALIZATION(...) SF_SERIALIZATION(bin, __VA_ARGS__)
-#define SERIALIZATION_XML(...) SF_SERIALIZATION(xml, __VA_ARGS__)
-#define SERIALIZATION_JSON(...) SF_SERIALIZATION(json, __VA_ARGS__)
+#ifdef SF_EXTENDED_SERIALIZATION
+    #define SERIALIZATION(...) SF_SERIALIZATION(bin, __VA_ARGS__)
+    #define SERIALIZATION_XML(...) SF_SERIALIZATION(xml, __VA_ARGS__)
+    #define SERIALIZATION_JSON(...) SF_SERIALIZATION(json, __VA_ARGS__)
+#else
+    #define SERIALIZATION(...) __VA_ARGS__
+#endif // SF_MULTY_SERIALIZATION
 
 #define TEMPLATE_SERIALIZABLE_DECLARATION(object_template_header, ...) \
     SF_DEPAREN(object_template_header) struct xxsf<__VA_ARGS__> { \
@@ -44,7 +48,9 @@
 
 
 // impl
-#define SF_SERIALIZATION(archive_type, ...) if (archive.type == ::sf::archive_type) { __VA_ARGS__ return; }
+#ifdef SF_EXTENDED_SERIALIZATION
+    #define SF_SERIALIZATION(archive_type, ...) if (archive.type == ::sf::archive_type) { __VA_ARGS__ return; }
+#endif // SF_EXTENDED_SERIALIZATION
 
 #define SF_TEMPLATE_SERIALIZABLE(mode, object, object_template_header, ...) \
     SF_DEPAREN(object_template_header) \

@@ -11,8 +11,11 @@ namespace sf
 {
 
 constexpr xxsf_archive_type_key_type bin = 0;
+
+#ifdef SF_EXTENDED_SERIALIZATION
 constexpr xxsf_archive_type_key_type xml = 1;
 constexpr xxsf_archive_type_key_type json = 2;
+#endif // SF_EXTENDED_SERIALIZATION
 
 struct ioarchive_t
 {

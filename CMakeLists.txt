@@ -23,6 +23,7 @@ file(GLOB_RECURSE ${PROJECT_NAME}_TEST_HEADERS test/*.hpp) # optionaly
 
 # we should define this macro to enable additional checks for testing
 add_compile_definitions(SF_DEBUG)
+# add_compile_definitions(SF_EXTENDED_SERIALIZATION)
 
 add_executable(${PROJECT_NAME}
     ${${PROJECT_NAME}_TEST_SOURCES}
