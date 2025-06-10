@@ -48,14 +48,14 @@ Warning! This is a simple example. You can see more examples [here](https://gith
 Preparing:
 
 ```C++
-#include <SF/Core.hpp>
+#include <SerializationFixture/Core.hpp>
 ```
 Let's include serialization support of common STL types:
 ```C++
-#include <SF/BuiltIn/string.hpp>
-#include <SF/BuiltIn/vector.hpp>
-#include <SF/BuiltIn/map.hpp>
-#include <SF/BuiltIn/shared_ptr.hpp>
+#include <SerializationFixture/BuiltIn/string.hpp>
+#include <SerializationFixture/BuiltIn/vector.hpp>
+#include <SerializationFixture/BuiltIn/map.hpp>
+#include <SerializationFixture/BuiltIn/shared_ptr.hpp>
 ```
 And let's write own serializable types:
 ```C++
