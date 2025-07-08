@@ -43,7 +43,7 @@ See full list [here](https://github.com/Sigma-Ryden/SF/tree/master/include/SF/Bu
 See library testing [here](https://github.com/Sigma-Ryden/SF/tree/master/test).
 
 ## Quick start:
-Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SF/tree/master/test/).
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SF/tree/master/test/src).
 
 Preparing:
 
@@ -149,7 +149,7 @@ Handbook db; // some other clear db
 auto ar = sf::iarchive(storage);
 ar & db;
 ```
-See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SF/tree/master/test/TestExample.cpp)
+See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SF/tree/master/test/src/TestExample.cpp)
 
 ### Notes:
 For ```oarchive_t``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
