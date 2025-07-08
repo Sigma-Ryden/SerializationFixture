@@ -1,7 +1,7 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/tuple.hpp>
-#include <SerializationFixture/BuiltIn/string.hpp>
+#include <SF/BuiltIn/tuple.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 TEST(TestUtility, TestTuple)
 {

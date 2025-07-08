@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/string.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 TEST(TestSTL, TestString)
 {

@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/pair.hpp>
+#include <SF/BuiltIn/pair.hpp>
 
 TEST_SPACE()
 {

@@ -72,8 +72,8 @@ TEST(TestCommon, TestUserType)
     }
 }
 
-#include <SerializationFixture/BuiltIn/string.hpp>
-#include <SerializationFixture/BuiltIn/any.hpp>
+#include <SF/BuiltIn/string.hpp>
+#include <SF/BuiltIn/any.hpp>
 
 TEST_SPACE()
 {

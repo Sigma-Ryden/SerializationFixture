@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/vector.hpp>
+#include <SF/BuiltIn/vector.hpp>
 
 TEST(TestSTL, TestVector)
 {

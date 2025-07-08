@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/Utility/BitPack.hpp>
+#include <SF/Utility/BitPack.hpp>
 
 TEST_SPACE()
 {

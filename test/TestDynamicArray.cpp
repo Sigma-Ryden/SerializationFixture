@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/Utility/Span.hpp>
+#include <SF/Utility/Span.hpp>
 
 TEST(TestCommon, TestDynamicArray)
 {

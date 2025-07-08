@@ -1,4 +1,4 @@
-#include <Automation/Core.hpp>
+#include <SFTestingBase.hpp>
 
 int main()
 {

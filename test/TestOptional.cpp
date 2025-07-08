@@ -1,7 +1,7 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/optional.hpp>
-#include <SerializationFixture/BuiltIn/atomic.hpp>
+#include <SF/BuiltIn/optional.hpp>
+#include <SF/BuiltIn/atomic.hpp>
 
 TEST(TestUtility, TestOptional)
 {

@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/deque.hpp>
+#include <SF/BuiltIn/deque.hpp>
 
 TEST(TestSTL, TestDeque)
 {

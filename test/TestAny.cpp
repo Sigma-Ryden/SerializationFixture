@@ -2,11 +2,11 @@
 
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/any.hpp>
+#include <SF/BuiltIn/any.hpp>
 
-#include <SerializationFixture/BuiltIn/string.hpp>
-#include <SerializationFixture/BuiltIn/vector.hpp>
-#include <SerializationFixture/BuiltIn/shared_ptr.hpp>
+#include <SF/BuiltIn/string.hpp>
+#include <SF/BuiltIn/vector.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
 
 TEST_SPACE()
 {

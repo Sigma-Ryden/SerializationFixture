@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/priority_queue.hpp>
+#include <SF/BuiltIn/priority_queue.hpp>
 
 TEST(TestSTLAdapter, TestPriorityQueue)
 {

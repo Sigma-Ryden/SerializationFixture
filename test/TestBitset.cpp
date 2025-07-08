@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/bitset.hpp>
+#include <SF/BuiltIn/bitset.hpp>
 
 TEST(TestUtility, TestBitset)
 {

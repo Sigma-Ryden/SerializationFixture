@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/shared_ptr.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
 
 TEST(TestLibrary, TestValidation)
 {
@@ -238,7 +238,7 @@ TEST(TestLibrary, TestExportInstantiable)
     }
 }
 
-#include <SerializationFixture/BuiltIn/string.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 TEST(TestLibrary, TestStreamWrapper)
 {
@@ -723,7 +723,7 @@ TEST(TestLibrary, TestAggregateOverload)
     }
 }
 
-#include <SerializationFixture/BuiltIn/unique_ptr.hpp>
+#include <SF/BuiltIn/unique_ptr.hpp>
 
 TEST_SPACE()
 {

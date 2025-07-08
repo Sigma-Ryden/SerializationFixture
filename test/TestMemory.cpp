@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/unique_ptr.hpp>
+#include <SF/BuiltIn/unique_ptr.hpp>
 
 TEST_SPACE()
 {
@@ -80,7 +80,7 @@ TEST(TestMemory, TestUniquePtr)
     }
 }
 
-#include <SerializationFixture/BuiltIn/shared_ptr.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
 
 TEST_SPACE()
 {
@@ -214,7 +214,7 @@ TEST(TestMemory, TestSharedPtr)
     }
 }
 
-#include <SerializationFixture/BuiltIn/weak_ptr.hpp>
+#include <SF/BuiltIn/weak_ptr.hpp>
 
 TEST(TestMemory, TestWeakPtr)
 {
@@ -291,7 +291,7 @@ TEST(TestMemory, TestSharedAndWeakPtr)
     }
 }
 
-#include <SerializationFixture/BuiltIn/string.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 TEST_SPACE()
 {

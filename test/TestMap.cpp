@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/map.hpp>
+#include <SF/BuiltIn/map.hpp>
 
 template <typename Tree>
 static bool is_tree_equal(const Tree& lhs, const Tree& rhs)

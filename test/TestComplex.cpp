@@ -1,6 +1,6 @@
 #include <SFTestingBase.hpp>
 
-#include <SerializationFixture/BuiltIn/complex.hpp>
+#include <SF/BuiltIn/complex.hpp>
 
 TEST(TestNumeric, TestComplex)
 {

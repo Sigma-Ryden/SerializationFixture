@@ -12,7 +12,7 @@ The type registrar will allow you to properly serialize and deserialize polymorp
 
 A library implemented purely in C++11 (until v2.4.0) and C++17 (since v2.5.0).
 
-See last stable library version [here](https://github.com/Sigma-Ryden/SerializationFixture/releases).
+See last stable library version [here](https://github.com/Sigma-Ryden/SF/releases).
 
 ## Functional:
 
@@ -31,7 +31,7 @@ See last stable library version [here](https://github.com/Sigma-Ryden/Serializat
 - C++11: string, vector, map, and many others
 - C++17: any, optional, variant
 
-See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/include/SF/BuiltIn).
+See full list [here](https://github.com/Sigma-Ryden/SF/tree/master/include/SF/BuiltIn).
 ### Serialization of user classes:
 - Aggregate (since C++17)
 - Common/Union/Template
@@ -40,22 +40,22 @@ See full list [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/ma
 - Virtual Inheritance
 
 ## Auto Tests:
-See library testing [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test).
+See library testing [here](https://github.com/Sigma-Ryden/SF/tree/master/test).
 
 ## Quick start:
-Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/).
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SF/tree/master/test/).
 
 Preparing:
 
 ```C++
-#include <SerializationFixture/Core.hpp>
+#include <SF/Core.hpp>
 ```
 Let's include serialization support of common STL types:
 ```C++
-#include <SerializationFixture/BuiltIn/string.hpp>
-#include <SerializationFixture/BuiltIn/vector.hpp>
-#include <SerializationFixture/BuiltIn/map.hpp>
-#include <SerializationFixture/BuiltIn/shared_ptr.hpp>
+#include <SF/BuiltIn/string.hpp>
+#include <SF/BuiltIn/vector.hpp>
+#include <SF/BuiltIn/map.hpp>
+#include <SF/BuiltIn/shared_ptr.hpp>
 ```
 And let's write own serializable types:
 ```C++
@@ -149,7 +149,7 @@ Handbook db; // some other clear db
 auto ar = sf::iarchive(storage);
 ar & db;
 ```
-See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SerializationFixture/tree/master/test/TestExample.cpp)
+See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SF/tree/master/test/TestExample.cpp)
 
 ### Notes:
 For ```oarchive_t``` objects, you may also using overloaded ```operator <<``` instead ```operator &```

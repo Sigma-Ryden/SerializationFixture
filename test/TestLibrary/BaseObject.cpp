@@ -1,6 +1,6 @@
 #include "BaseObject.hpp"
 
-#include <SerializationFixture/BuiltIn/string.hpp>
+#include <SF/BuiltIn/string.hpp>
 
 SERIALIZABLE(save, self, BaseObject)
     SERIALIZATION

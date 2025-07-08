@@ -1,34 +1,19 @@
-# base
+# [[Root]]
 cmake_minimum_required(VERSION 3.5)
 
-project(SerializationFixtureTesting LANGUAGES CXX)
+project(SF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# ~base
 
-# packages
-set(Automation_DIR ${CMAKE_CURRENT_LIST_DIR}/../Automation/cmake)
-find_package(Automation REQUIRED)
 
-set(SerializationFixture_DIR ${CMAKE_CURRENT_LIST_DIR}/cmake)
-find_package(SerializationFixture REQUIRED)
-# ~packages
+# [[Binaries]]
+file(GLOB_RECURSE PROJECT_SOURCES_FILES "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
+add_library("${PROJECT_NAME}" ${PROJECT_SOURCES_FILES})
+target_include_directories("${PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 
-# test
-include_directories(test)
 
-file(GLOB_RECURSE ${PROJECT_NAME}_TEST_SOURCES test/*.cpp)
-file(GLOB_RECURSE ${PROJECT_NAME}_TEST_HEADERS test/*.hpp) # optionaly
-
-# we should define this macro to enable additional checks for testing
-add_compile_definitions(SF_DEBUG)
-# add_compile_definitions(SF_EXTENDED_SERIALIZATION)
-
-add_executable(${PROJECT_NAME}
-    ${${PROJECT_NAME}_TEST_SOURCES}
-    ${${PROJECT_NAME}_TEST_HEADERS} # optionaly
-    ${SerializationFixture_HEADER_FILES} # optionaly
-)
-target_link_libraries(${PROJECT_NAME} Automation SerializationFixture)
-# ~test
+# [[Tests]]
+if(PROJECT_IS_TOP_LEVEL)
+    add_subdirectory("test")
+endif()
