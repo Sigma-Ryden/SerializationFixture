@@ -1,0 +1,39 @@
+name: Eightser-macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    env:
+      Eightser: ${{ github.workspace }}
+
+    steps:
+    - name: "Download project"
+      uses: actions/checkout@v3
+
+    - name: "Setup macOS (Dev)"
+      run: |
+        cmake --version
+        clang --version
+
+    - name: "Regenerate and Rebuild project"
+      run: |
+        cd ${Eightser}
+        rm -rf Intermediate
+        cmake -S . -B Intermediate -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DEIGHTSER_BUILD_TEST_LIBS=ON
+        cmake --build Intermediate --parallel
+
+    - name: "Package and Upload project"
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.workflow }}
+        path: |
+          ${{ env.Eightser }}/Build
+
+    - name: "Test project"
+      run: |
+        cd ${Eightser}/Build
+        ./Launcher

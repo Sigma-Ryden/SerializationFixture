@@ -1,0 +1,43 @@
+name: Eightser-Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      Eightser: ${{ github.workspace }}
+
+    steps:
+    - name: "Download project"
+      uses: actions/checkout@v3
+
+    - name: "Setup Windows (Dev)"
+      run: |
+        choco install ninja cmake mingw -y
+        cmake --version
+        gcc --version
+        g++ --version
+
+    - name: "Regenerate and Rebuild project"
+      shell: cmd
+      run: |
+        cd %Eightser%
+        rmdir /s /q Intermediate
+        cmake -S . -B Intermediate -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DEIGHTSER_BUILD_TEST_LIBS=ON
+        cmake --build Intermediate --parallel
+
+    - name: "Package and Upload project"
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.workflow }}
+        path: |
+          ${{ env.Eightser }}/Build
+
+    - name: "Test project"
+      shell: cmd
+      run: |
+        cd %Eightser%
+        Launcher.exe
