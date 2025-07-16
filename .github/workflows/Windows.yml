@@ -41,5 +41,5 @@ jobs:
     - name: "Test project"
       shell: cmd
       run: |
-        cd %Eightser%/Binaries
+        cd "%Eightser%/Binaries"
         Launcher.exe
