@@ -37,5 +37,5 @@ jobs:
 
     - name: "Test project"
       run: |
-        cd ${Eightser}/Binaries
-        ./Launcher
+        cd ${Eightser}/Binaries/Launcher.app/Contents/MacOS
+        Launcher
