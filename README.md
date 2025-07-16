@@ -43,7 +43,7 @@ See full list [here](https://github.com/Sigma-Ryden/Eightser/tree/master/include
 See library testing [here](https://github.com/Sigma-Ryden/Eightser/tree/master/test).
 
 ## Quick start:
-Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/Eightser/tree/master/test/src).
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/Eightser/tree/master/test).
 
 Preparing:
 
@@ -149,7 +149,7 @@ Handbook db; // some other clear db
 auto ar = eightser::iarchive(storage);
 ar & db;
 ```
-See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/Eightser/tree/master/test/src/TestExample.cpp)
+See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/Eightser/tree/master/test/TestExample.cpp)
 
 ### Notes:
 For ```oarchive_t``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
