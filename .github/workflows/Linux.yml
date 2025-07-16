@@ -39,5 +39,5 @@ jobs:
 
     - name: "Test project"
       run: |
-        "${Eightser}/Binaries"
+        cd "${Eightser}/Binaries"
         ./Launcher
