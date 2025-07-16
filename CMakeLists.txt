@@ -75,6 +75,7 @@ if(PROJECT_IS_TOP_LEVEL AND EIGHTSER_BUILD_TEST_LIBS)
     set(PROJECT_JAUNCHER_CPP "${CMAKE_BINARY_DIR}/Launcher.cpp")
     file(WRITE "${PROJECT_JAUNCHER_CPP}"
         "#include <Eightest/Core.hpp>
+        #include <iostream>
         #if defined(_WIN32)
             #include <windows.h>
             #define EIGHTSER_LOAD_MODULE(name) LoadLibraryA(#name\".dll\")
@@ -83,7 +84,12 @@ if(PROJECT_IS_TOP_LEVEL AND EIGHTSER_BUILD_TEST_LIBS)
             #define EIGHTSER_LOAD_MODULE(name) dlopen(#name\".so\", RTLD_NOW)
         #endif
         int main() {
-            EIGHTSER_LOAD_MODULE(EightserTesting);
+            if (EIGHTSER_LOAD_MODULE(EightserTesting) == NULL) {
+               const char* error = dlerror();
+                if (error) {
+                    std::cerr << \"Failed to load module: \" << error << std::endl;
+                } 
+            }
             TRY_CATCH(EXECUTE_ALL());
             return !TESTING_STAT();
         }"
