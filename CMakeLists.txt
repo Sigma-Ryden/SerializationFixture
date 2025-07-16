@@ -82,9 +82,12 @@ if(PROJECT_IS_TOP_LEVEL AND EIGHTSER_BUILD_TEST_LIBS)
         #if defined(_WIN32)
             #include <windows.h>
             #define EIGHTSER_LOAD_MODULE(name) LoadLibraryA(#name\".dll\")
-        #elif defined(__linux__) || defined(__APPLE__)
+        #elif defined(__APPLE__)
             #include <dlfcn.h>
             #define EIGHTSER_LOAD_MODULE(name) dlopen(#name\".so\", RTLD_NOW)
+        #elif defined(__APPLE__)
+            #include <dlfcn.h>
+            #define EIGHTSER_LOAD_MODULE(name) dlopen(#name\".dylib\", RTLD_NOW)
         #endif
         int main() {
             if (EIGHTSER_LOAD_MODULE(EightserTesting) == NULL) {
