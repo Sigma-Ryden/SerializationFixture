@@ -85,8 +85,7 @@ if(PROJECT_IS_TOP_LEVEL AND EIGHTSER_BUILD_TEST_LIBS)
         int main() {
             EIGHTSER_LOAD_MODULE(EightserTesting);
             TRY_CATCH(EXECUTE_ALL());
-            TESTING_STAT();
-            return 0;
+            return !TESTING_STAT();
         }"
     )
 
