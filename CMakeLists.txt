@@ -8,14 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 if(PROJECT_IS_TOP_LEVEL)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/Build")
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/Build")
-endif()
-
-if(LINUX)
-    set(EIGHTSER_RPATH "$ORIGIN")
-elseif(APPLE)
-    set(EIGHTSER_RPATH "@loader_path/../Frameworks")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 endif()
 
 
@@ -87,10 +81,22 @@ if(PROJECT_IS_TOP_LEVEL AND EIGHTSER_BUILD_TEST_LIBS)
     )
 
     add_executable("Launcher" "${PROJECT_JAUNCHER_CPP}")
-    target_link_libraries("Launcher" PUBLIC "Eightest")
-    set_target_properties("Launcher" PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE INSTALL_RPATH "${EIGHTSER_RPATH}")
 
+    target_link_libraries("Launcher" PUBLIC "Eightest")    
     if(LINUX)
         target_link_libraries("Launcher" PUBLIC "dl")
+    endif()
+
+    if(LINUX)
+         set_target_properties("Launcher" PROPERTIES
+             BUILD_WITH_INSTALL_RPATH TRUE
+             INSTALL_RPATH "$ORIGIN"
+         )
+    elseif(APPLE)
+        set_target_properties("Launcher" PROPERTIES
+            MACOSX_BUNDLE TRUE
+            BUILD_WITH_INSTALL_RPATH TRUE
+            INSTALL_RPATH "@loader_path/../Frameworks"
+        )
     endif()
 endif()
