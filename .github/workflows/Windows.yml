@@ -13,6 +13,9 @@ jobs:
     steps:
     - name: "Download project"
       uses: actions/checkout@v3
+      with:
+        submodules: true
+        recursive: true
 
     - name: "Setup Windows (Dev)"
       run: |
