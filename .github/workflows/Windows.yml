@@ -36,10 +36,10 @@ jobs:
       with:
         name: ${{ github.workflow }}
         path: |
-          ${{ env.Eightser }}/Build
+          ${{ env.Eightser }}/Binaries
 
     - name: "Test project"
       shell: cmd
       run: |
-        cd %Eightser%/Build
+        cd %Eightser%/Binaries
         Launcher.exe
