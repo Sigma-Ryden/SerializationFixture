@@ -1,3 +1,3 @@
-[submodule "test/Automation"]
-	path = test/Automation
-	url = https://github.com/Sigma-Ryden/Automation
+[submodule "Eightest"]
+	path = Eightest
+	url = https://github.com/Sigma-Ryden/Eightest

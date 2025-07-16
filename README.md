@@ -1,6 +1,6 @@
-# SF (SerializationFixture) - Simple serialization library
+# Eightser - Simple serialization library
 
-`SF` is a flexible and extensible C++ library with many features, that will allow you to easily
+`Eightser` is a flexible and extensible C++ library with many features, that will allow you to easily
 and quickly turn your objects into a sequence of bits.
 The library has a small code base, but enough to use it.
 
@@ -12,7 +12,7 @@ The type registrar will allow you to properly serialize and deserialize polymorp
 
 A library implemented purely in C++11 (until v2.4.0) and C++17 (since v2.5.0).
 
-See last stable library version [here](https://github.com/Sigma-Ryden/SF/releases).
+See last stable library version [here](https://github.com/Sigma-Ryden/Eightser/releases).
 
 ## Functional:
 
@@ -31,7 +31,7 @@ See last stable library version [here](https://github.com/Sigma-Ryden/SF/release
 - C++11: string, vector, map, and many others
 - C++17: any, optional, variant
 
-See full list [here](https://github.com/Sigma-Ryden/SF/tree/master/include/SF/BuiltIn).
+See full list [here](https://github.com/Sigma-Ryden/Eightser/tree/master/include/Eightser/BuiltIn).
 ### Serialization of user classes:
 - Aggregate (since C++17)
 - Common/Union/Template
@@ -40,22 +40,22 @@ See full list [here](https://github.com/Sigma-Ryden/SF/tree/master/include/SF/Bu
 - Virtual Inheritance
 
 ## Auto Tests:
-See library testing [here](https://github.com/Sigma-Ryden/SF/tree/master/test).
+See library testing [here](https://github.com/Sigma-Ryden/Eightser/tree/master/test).
 
 ## Quick start:
-Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/SF/tree/master/test/src).
+Warning! This is a simple example. You can see more examples [here](https://github.com/Sigma-Ryden/Eightser/tree/master/test/src).
 
 Preparing:
 
 ```C++
-#include <SF/Core.hpp>
+#include <Eightser/Core.hpp>
 ```
 Let's include serialization support of common STL types:
 ```C++
-#include <SF/BuiltIn/string.hpp>
-#include <SF/BuiltIn/vector.hpp>
-#include <SF/BuiltIn/map.hpp>
-#include <SF/BuiltIn/shared_ptr.hpp>
+#include <Eightser/BuiltIn/string.hpp>
+#include <Eightser/BuiltIn/vector.hpp>
+#include <Eightser/BuiltIn/map.hpp>
+#include <Eightser/BuiltIn/shared_ptr.hpp>
 ```
 And let's write own serializable types:
 ```C++
@@ -138,7 +138,7 @@ db.prototypes[2] = ifly;
 
 Serialization prepared data:
 ```C++
-auto ar = sf::oarchive(storage);
+auto ar = eightser::oarchive(storage);
 ar & db;
 ```
 
@@ -146,10 +146,10 @@ Deserialization from storage:
 ```C++
 Handbook db; // some other clear db
 
-auto ar = sf::iarchive(storage);
+auto ar = eightser::iarchive(storage);
 ar & db;
 ```
-See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/SF/tree/master/test/src/TestExample.cpp)
+See full code here: [TestExample.cpp](https://github.com/Sigma-Ryden/Eightser/tree/master/test/src/TestExample.cpp)
 
 ### Notes:
 For ```oarchive_t``` objects, you may also using overloaded ```operator <<``` instead ```operator &```
