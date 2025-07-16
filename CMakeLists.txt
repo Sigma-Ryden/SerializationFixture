@@ -12,6 +12,12 @@ if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/Binaries")
 endif()
 
+if(LINUX)
+    set(EIGHTSER_RPATH "$ORIGIN")
+elseif(APPLE)
+    set(EIGHTSER_RPATH "@loader_path/../Frameworks")
+endif()
+
 
 # [[Options]]
 option(EIGHTSER_BUILD_SHARED_LIBS "Build shared libraies by Default" ON)
@@ -87,16 +93,8 @@ if(PROJECT_IS_TOP_LEVEL AND EIGHTSER_BUILD_TEST_LIBS)
         target_link_libraries("Launcher" PUBLIC "dl")
     endif()
 
-    if(LINUX)
-         set_target_properties("Launcher" PROPERTIES
-             BUILD_WITH_INSTALL_RPATH TRUE
-             INSTALL_RPATH "$ORIGIN"
-         )
-    elseif(APPLE)
-        set_target_properties("Launcher" PROPERTIES
-            MACOSX_BUNDLE TRUE
-            BUILD_WITH_INSTALL_RPATH TRUE
-            INSTALL_RPATH "@loader_path/../Frameworks"
-        )
+    set_target_properties("Launcher" PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE INSTALL_RPATH "${EIGHTSER_RPATH}")
+    if(APPLE)
+        set_target_properties("Launcher" PROPERTIES MACOSX_BUNDLE TRUE)
     endif()
 endif()

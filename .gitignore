@@ -1,3 +1,4 @@
 build/
 Intermediate/
+Binaries/
 CMakeLists.txt.user
