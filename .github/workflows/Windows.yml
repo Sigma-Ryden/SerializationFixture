@@ -18,7 +18,7 @@ jobs:
 
     - name: "Setup Windows (Dev)"
       run: |
-        choco install ninja cmake mingw -y
+        choco install mingw -y
         cmake --version
         gcc --version
         g++ --version
@@ -28,7 +28,10 @@ jobs:
       run: |
         cd %Eightser%
         rmdir /s /q Intermediate
-        cmake -S . -B Intermediate -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DEIGHTSER_BUILD_TEST_LIBS=ON
+        cmake -S . -B Intermediate -G Ninja ^
+          -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DEIGHTSER_BUILD_TEST_LIBS=ON
         cmake --build Intermediate --parallel
 
     - name: "Package and Upload project"
