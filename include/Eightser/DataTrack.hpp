@@ -57,7 +57,7 @@ static ::xxeightser_instantiable_traits_key_type instantiable_key(ArchiveType& a
 
     auto const hash = EIGHTSER_EXPRESSION_HASH(*pointer);
 
-    auto key = dynamic::instantiable_registry.rtti_all.at(hash).key;
+    auto key = dynamic::instantiable_registry()->rtti_all.at(hash).key;
     archive & key;
 
     return key;
@@ -98,7 +98,7 @@ template <class ArchiveType, typename PointerType, typename VoidPointerType,
 void native_load(ArchiveType& archive, PointerType& pointer, VoidPointerType& address)
 {
     auto const key = instantiable_key(archive, pointer);
-    dynamic::instantiable_registry.cast(pointer, address, key);
+    dynamic::instantiable_registry()->cast(pointer, address, key);
 }
 
 template <class ArchiveType, typename PointerType, typename VoidPointerType,
@@ -144,7 +144,7 @@ template <class ArchiveType, typename PointerType,
 void strict(ArchiveType& archive, PointerType& pointer)
 {
     detail::instantiable_key(archive, pointer);
-    dynamic::instantiable_registry.save(archive, pointer);
+    dynamic::instantiable_registry()->save(archive, pointer);
 }
 
 template <class ArchiveType, typename PointerType, typename VoidPointerType,
@@ -153,7 +153,7 @@ template <class ArchiveType, typename PointerType, typename VoidPointerType,
 void strict(ArchiveType& archive, PointerType& pointer, VoidPointerType& cache)
 {
     auto const key = detail::instantiable_key(archive, pointer);
-    dynamic::instantiable_registry.load(archive, pointer, key, cache);
+    dynamic::instantiable_registry()->load(archive, pointer, key, cache);
 }
 
 // verison without cache using

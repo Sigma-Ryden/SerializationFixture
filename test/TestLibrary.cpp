@@ -119,28 +119,28 @@ TEST(TestLibrary, TestInstantiableRegistry)
 #ifdef EIGHTSER_DEBUG
     {
         auto success = false;
-        try { instantiable_registry.fixture<Cyrcle>(); } catch(...) { success = true; }
+        try { instantiable_registry()->fixture<Cyrcle>(); } catch(...) { success = true; }
 
         EXPECT("same polymorphic key", success);
     }
     {
         auto success = false;
-        try { instantiable_registry.fixture<Square>(); } catch(...) { success = true; }
+        try { instantiable_registry()->fixture<Square>(); } catch(...) { success = true; }
 
         EXPECT("non-instantiable type", success);
     }
 #endif // EIGHTSER_DEBUG
-    const auto key = instantiable_registry.key<Square>();
+    const auto key = instantiable_registry()->key<Square>();
 
     {
         auto success = false;
-        try { Square* r = nullptr; instantiable_registry.clone(r, key); } catch(...) { success = true; }
+        try { Square* r = nullptr; instantiable_registry()->clone(r, key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable raw", success);
     }
     {
         auto success = false;
-        try { std::shared_ptr<Square> s = nullptr; instantiable_registry.clone(s, key); } catch(...) { success = true; }
+        try { std::shared_ptr<Square> s = nullptr; instantiable_registry()->clone(s, key); } catch(...) { success = true; }
 
         EXPECT("clone non-instantiable shared", success);
     }
@@ -149,7 +149,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         auto r = new Square;
 
         auto success = false;
-        try { void* address = nullptr; (void)instantiable_registry.cast(r, address, key); } catch(...) { success = true; }
+        try { void* address = nullptr; (void)instantiable_registry()->cast(r, address, key); } catch(...) { success = true; }
 
         EXPECT("cast non-instantiable raw", success);
 
@@ -159,7 +159,7 @@ TEST(TestLibrary, TestInstantiableRegistry)
         auto s = std::make_shared<Square>();
 
         auto success = false;
-        try { std::shared_ptr<void> address = nullptr; (void)instantiable_registry.cast(s, address, key); } catch(...) { success = true; }
+        try { std::shared_ptr<void> address = nullptr; (void)instantiable_registry()->cast(s, address, key); } catch(...) { success = true; }
 
         EXPECT("cast non-instantiable shared", success);
     }
@@ -220,14 +220,14 @@ TEST(TestLibrary, TestExportInstantiable)
 
     {
         EXPECT("export instantiable key.traits",
-            instantiable_registry.key<MyStruct>() == sv_s &&
-            instantiable_registry.key<MyClass>() == sv_c);
+            instantiable_registry()->key<MyStruct>() == sv_s &&
+            instantiable_registry()->key<MyClass>() == sv_c);
     }
 
     static auto sv_ct = EIGHTSER_TYPE_HASH(MyCustomType);
 
     {
-        EXPECT("export instantiable.equivalent", instantiable_registry.key<MyCustomType>() == sv_ct);
+        EXPECT("export instantiable.equivalent", instantiable_registry()->key<MyCustomType>() == sv_ct);
     }
 
     static auto sv_dc = EIGHTSER_STRING_HASH("MyDerived");
@@ -236,7 +236,7 @@ TEST(TestLibrary, TestExportInstantiable)
         std::shared_ptr<MyClass> b = std::make_shared<MyDerivedClass>();
         auto& rb = *b;
 
-        EXPECT("instantiable runtime key.traits", instantiable_registry.rtti_all.at(EIGHTSER_EXPRESSION_HASH(rb)).key == sv_dc);
+        EXPECT("instantiable runtime key.traits", instantiable_registry()->rtti_all.at(EIGHTSER_EXPRESSION_HASH(rb)).key == sv_dc);
     }
 }
 
@@ -783,9 +783,9 @@ TEST(TestLibrary, TestAbstract)
         auto& ri = *i;
 
         const auto hash = EIGHTSER_EXPRESSION_HASH(ri);
-        const auto key = instantiable_registry.key<Implementation>();
+        const auto key = instantiable_registry()->key<Implementation>();
 
-        EXPECT("traits", instantiable_registry.rtti_all.at(hash).key == instantiable_registry.all.at(key).key);
+        EXPECT("traits", instantiable_registry()->rtti_all.at(hash).key == instantiable_registry()->all.at(key).key);
     }
 }
 

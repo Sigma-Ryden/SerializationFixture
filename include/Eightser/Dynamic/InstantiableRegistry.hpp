@@ -215,7 +215,7 @@ public:
     }
 };
 
-extern instantiable_registry_t instantiable_registry;
+extern instantiable_registry_t* instantiable_registry();
 
 } // namespace dynamic
 

@@ -19,10 +19,10 @@ template <typename SerializableType> void serializable()
     static_assert(std::negation<meta::is_unsupported<SerializableType>>::value,
         "The 'SerializableType' is an unsupported type for serialization.");
 
-    dynamic::instantiable_registry.add<SerializableType>();
+    dynamic::instantiable_registry()->add<SerializableType>();
 
 #if !defined(EIGHTSER_ANY_SUPPORT_DISABLE)
-    dynamic::any_registry.add<SerializableType>();
+    dynamic::any_registry()->add<SerializableType>();
 #endif // if
 }
 

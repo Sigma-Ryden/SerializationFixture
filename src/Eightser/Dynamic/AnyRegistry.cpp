@@ -18,7 +18,10 @@ void any_registry_t::load(ioarchive_t& archive, std::any& any, std::uint64_t has
     all.at(hash).load(archive, any);
 }
 
-any_registry_t any_registry;
+any_registry_t* any_registry()
+{
+    static any_registry_t self; return &self;
+}
 
 } // namespace dynamic
 

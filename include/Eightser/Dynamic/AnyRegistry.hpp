@@ -58,7 +58,7 @@ public:
     void load(ioarchive_t& archive, std::any& any, std::uint64_t hash);
 };
 
-extern any_registry_t any_registry;
+extern any_registry_t* any_registry();
 
 } // namespace dynamic
 
