@@ -44,7 +44,7 @@ add_library(Eightser ${PROJECT_LIBS_TYPE} ${PROJECT_SOURCES_FILES})
 target_include_directories(Eightser PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 
 if(EIGHTSER_BUILD_SHARED_LIBS)
-    set_target_properties(Eightser PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS $<BOOL:${WIN32}>)
+    set_target_properties(Eightser PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 endif()
 
 if(EIGHTSER_EXTENDED_SERIALIZATION)
