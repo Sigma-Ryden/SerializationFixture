@@ -43,4 +43,4 @@ jobs:
     - name: "Test project"
       run: |
         cd "${Eightser}/Binaries"
-        ./Launcher
+        ./EightestLauncher

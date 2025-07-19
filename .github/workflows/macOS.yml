@@ -40,5 +40,5 @@ jobs:
 
     - name: "Test project"
       run: |
-        cd "${Eightser}/Binaries/Launcher.app/Contents/MacOS"
-        ./Launcher
+        cd "${Eightser}/Binaries/EightestLauncher.app/Contents/MacOS"
+        ./EightestLauncher
