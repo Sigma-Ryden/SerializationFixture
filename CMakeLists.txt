@@ -15,8 +15,6 @@ option(EIGHTSER_BUILD_TEST_LIBS "Build testing libraies by Default" OFF)
 
 
 # [[Defaults]]
-set(EIGHTSER_TESTS_LAUNCHER_NAME "Launcher")
-
 if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/Binaries")
     if(APPLE)
@@ -42,68 +40,33 @@ endif()
 
 
 file(GLOB_RECURSE PROJECT_SOURCES_FILES "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/include/*.hpp")
-add_library("${PROJECT_NAME}" ${PROJECT_LIBS_TYPE} ${PROJECT_SOURCES_FILES})
-target_include_directories("${PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
+add_library(Eightser ${PROJECT_LIBS_TYPE} ${PROJECT_SOURCES_FILES})
+target_include_directories(Eightser PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 
 if(EIGHTSER_BUILD_SHARED_LIBS)
-    set_target_properties("${PROJECT_NAME}" PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    set_target_properties(Eightser PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS $<BOOL:${WIN32}>)
 endif()
 
 if(EIGHTSER_EXTENDED_SERIALIZATION)
-    target_compile_definitions("${PROJECT_NAME}" PUBLIC "EIGHTSER_EXTENDED_SERIALIZATION")
+    target_compile_definitions(Eightser PUBLIC "EIGHTSER_EXTENDED_SERIALIZATION")
 endif()
 
 
-# [[Testing]]
+# [[Tests]]
 if(EIGHTSER_BUILD_TEST_LIBS)
     file(GLOB_RECURSE PROJECT_TEST_SOURCES "${CMAKE_CURRENT_LIST_DIR}/test/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/test/*.hpp")
-    add_library("${PROJECT_NAME}Testing" ${PROJECT_LIBS_TYPE} ${PROJECT_TEST_SOURCES})
+    add_library(EightserTests ${PROJECT_LIBS_TYPE} ${PROJECT_TEST_SOURCES})
 
     if(PROJECT_IS_TOP_LEVEL)
         # you should manually download Eightest if not
+        set(EIGHTEST_RUN_MODULE "EightserTests")
         add_subdirectory("Eightest")
     endif()
 
-    target_link_libraries("${PROJECT_NAME}Testing" PUBLIC "${PROJECT_NAME}" "Eightest")
-    target_include_directories("${PROJECT_NAME}Testing" PRIVATE "${CMAKE_CURRENT_LIST_DIR}/test")
-    set_target_properties("${PROJECT_NAME}Testing" PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE INSTALL_RPATH "${EIGHTSER_RPATH}")
+    target_link_libraries(EightserTests PUBLIC Eightser Eightest)
+    target_include_directories(EightserTests PRIVATE "${CMAKE_CURRENT_LIST_DIR}/test")
+    set_target_properties(EightserTests PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE INSTALL_RPATH "${EIGHTSER_RPATH}")
 
     # we should define this macro to enable additional checks for testing
-    target_compile_definitions("${PROJECT_NAME}" PUBLIC EIGHTSER_DEBUG)
-endif()
-
-
-# [[InplaceTesting]]
-if(PROJECT_IS_TOP_LEVEL AND EIGHTSER_BUILD_TEST_LIBS)
-    set(EIGHTSER_TESTS_LAUNCHER_CPP "${CMAKE_BINARY_DIR}/Launcher.cpp")
-    file(WRITE "${EIGHTSER_TESTS_LAUNCHER_CPP}"
-        "#include <Eightest/Core.hpp>
-        #if defined(_WIN32)
-            #include <windows.h>
-            #define EIGHTSER_LOAD_MODULE(name) LoadLibraryA(#name\".dll\")
-        #elif defined(__linux__)
-            #include <dlfcn.h>
-            #define EIGHTSER_LOAD_MODULE(name) dlopen(#name\".so\", RTLD_NOW)
-        #elif defined(__APPLE__)
-            #include <dlfcn.h>
-            #define EIGHTSER_LOAD_MODULE(name) dlopen(#name\".dylib\", RTLD_NOW)
-        #endif
-        int main() {
-            EIGHTSER_LOAD_MODULE(EightserTesting);
-            TRY_CATCH(EXECUTE_ALL());
-            return !TESTING_STAT();
-        }"
-    )
-
-    add_executable("${EIGHTSER_TESTS_LAUNCHER_NAME}" "${EIGHTSER_TESTS_LAUNCHER_CPP}")
-
-    target_link_libraries("${EIGHTSER_TESTS_LAUNCHER_NAME}" PUBLIC "Eightest")    
-    if(LINUX)
-        target_link_libraries("${EIGHTSER_TESTS_LAUNCHER_NAME}" PUBLIC "dl")
-    endif()
-
-    set_target_properties("${EIGHTSER_TESTS_LAUNCHER_NAME}" PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE INSTALL_RPATH "${EIGHTSER_RPATH}")
-    if(APPLE)
-        set_target_properties("${EIGHTSER_TESTS_LAUNCHER_NAME}" PROPERTIES MACOSX_BUNDLE TRUE)
-    endif()
+    target_compile_definitions(Eightser PUBLIC "EIGHTSER_DEBUG")
 endif()
